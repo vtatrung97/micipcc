@@ -1,8 +1,8 @@
 # core-service
 
-Service điều phối của ProcessX (Flow System – IPCC 2.0): xác thực người dùng qua Keycloak và quản lý quy trình canvas (ticket call flow).
+Service điều phối của Ticket Flow: xác thực người dùng qua Keycloak và quản lý quy trình canvas (ticket call flow).
 
-**Công nghệ:** Java 17, Spring Boot 3.3, MariaDB, Redis, Keycloak.
+**Công nghệ:** Java 17, Spring Boot 3.5.4, MariaDB, Redis, Keycloak.
 
 ## Chạy local
 

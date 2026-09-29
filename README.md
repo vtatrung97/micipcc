@@ -1,12 +1,12 @@
-# ProcessX – Flow System (IPCC 2.0)
+# Ticket Flow
 
-Monorepo chứa toàn bộ source của ProcessX. Mỗi service nằm trong một thư mục riêng, có README và cách build/chạy riêng.
+Monorepo chứa toàn bộ source của Ticket Flow. Mỗi service nằm trong một thư mục riêng, có README và cách build/chạy riêng.
 
 ## Cấu trúc
 
 | Thư mục | Loại | Mô tả |
 |---|---|---|
-| [`common-lib`](common-lib) | BE – thư viện | Code dùng chung cho các service BE, build thành JAR để import |
+| [`libraries`](libraries) | BE – thư viện | Khu vực dành cho các thư viện dùng chung của backend |
 | [`core-service`](core-service) | BE – service | Điều phối: xác thực (Keycloak), quản lý quy trình canvas |
 | [`engine-service`](engine-service) | BE – service | Thực thi quy trình BPMN/DMN trên Flowable |
 | [`integration-service`](integration-service) | BE – service | Tích hợp hệ thống ngoài, gửi thông báo |
@@ -15,15 +15,15 @@ Monorepo chứa toàn bộ source của ProcessX. Mỗi service nằm trong mộ
 
 ## Công nghệ chung
 
-- BE: Java 17, Spring Boot 3.3, Maven
+- BE: Java 17, Spring Boot 3.5.4, Maven
 - FE: Angular
-- Hạ tầng: MariaDB (Galera + MaxScale), Keycloak (dùng chung IPCC 2.0), Kafka, Redis, MinIO, Kong, Kubernetes
+- Hạ tầng: MariaDB (Galera + MaxScale), Keycloak, Kafka, Redis, MinIO, Kong, Kubernetes
 
 ## Build
 
-`common-lib` phải được build/cài trước khi build các service BE:
+Mỗi service được build độc lập:
 
 ```bash
-cd common-lib && ./mvnw clean install
-cd ../core-service && ./mvnw clean package
+cd core-service && ./mvnw clean package
+cd ../engine-service && ./mvnw clean package
 ```

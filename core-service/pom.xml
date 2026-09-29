@@ -5,21 +5,21 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
+        <version>3.5.4</version>
         <relativePath/>
     </parent>
 
-    <groupId>com.lifesup.processx</groupId>
+    <groupId>com.lifesup.ticketflow</groupId>
     <artifactId>core-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>core-service</name>
-    <description>ProcessX (Flow System - IPCC 2.0) core-service: service dieu phoi</description>
+    <description>Ticket Flow core orchestration service</description>
 
     <properties>
         <java.version>17</java.version>
-        <lombok.version>1.18.34</lombok.version>
-        <springdoc.version>2.6.0</springdoc.version>
-        <keycloak.version>26.0.7</keycloak.version>
+        <lombok.version>1.18.38</lombok.version>
+        <springdoc.version>2.8.17</springdoc.version>
+        <keycloak.version>26.0.12</keycloak.version>
     </properties>
 
     <dependencies>
