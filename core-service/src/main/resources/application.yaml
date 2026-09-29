@@ -1,0 +1,132 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: core-service
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:mariadb://localhost:3307/flow_core}
+    username: ${DATASOURCE_USERNAME:flow_core}
+    password: ${DATASOURCE_PASSWORD:}
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      pool-name: core-hikari
+      maximum-pool-size: ${DATASOURCE_POOL_SIZE:20}
+      minimum-idle: ${DATASOURCE_MIN_IDLE:5}
+      connection-timeout: 5000
+      idle-timeout: 300000 # 5 phút
+      max-lifetime: 1800000 # 30 phút
+  jpa:
+    open-in-view: false
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  data:
+    redis:
+      repositories:
+        enabled: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  server:
+    # Cổng riêng cho probe/metrics, không đi qua Kong
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        # Redis không đưa vào readiness: Redis lỗi thì service chạy suy giảm, không rút pod khỏi load balancer
+        readiness:
+          include: readinessState,db
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+springdoc:
+  api-docs:
+    enabled: ${ENABLE_SWAGGER:true}
+  swagger-ui:
+    enabled: ${ENABLE_SWAGGER:true}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{requestId:-}]"
+
+# ==============================
+# KEYCLOAK CONFIG (API login, xác thực token qua Keycloak)
+# ==============================
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:ipcc}
+  client-id: ${KEYCLOAK_CLIENT_ID:processx-core}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+  role-clients: ${KEYCLOAK_ROLE_CLIENTS:processx-web,processx-core}
+  connect-timeout: ${KEYCLOAK_CONNECT_TIMEOUT:3s}
+  read-timeout: ${KEYCLOAK_READ_TIMEOUT:5s}
+  connection-pool-size: ${KEYCLOAK_POOL_SIZE:50}
+
+# ==============================
+# KEYCLOAK ADMIN CLIENT CONFIG (đọc user/group/role)
+# ==============================
+keycloak-admin-client:
+  enabled: ${KEYCLOAK_ADMIN_ENABLED:false}
+  auth-server-url: ${KEYCLOAK_ADMIN_AUTH_SERVER_URL:${keycloak.auth-server-url}}
+  realm: ${KEYCLOAK_ADMIN_REALM:${keycloak.realm}}
+  client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:processx-core}
+  client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:${keycloak.client-secret}}
+  # Để trống để dùng service account (client_credentials); điền nếu bắt buộc đăng nhập bằng tài khoản admin
+  master-username: ${KEYCLOAK_ADMIN_USERNAME:}
+  master-password: ${KEYCLOAK_ADMIN_PASSWORD:}
+
+app:
+  security:
+    # TẠM THỜI false khi chưa có Keycloak: mọi API đều public. Bật lại (true) khi đã có Keycloak
+    enabled: ${SECURITY_ENABLED:false}
+  api-key:
+    header-name: X-API-Key
+    # clientId:key, cách nhau bởi dấu phẩy; key tối thiểu 32 ký tự
+    keys: ${INTERNAL_API_KEYS:}
+  i18n:
+    default-locale: vi
+    supported-locales: vi,en
+  redis:
+    sentinel: ${REDIS_SENTINEL:false}
+    master: ${REDIS_MASTER_NAME:mymaster}
+    nodes: ${REDIS_SENTINEL_NODES:localhost:26379}
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    username: ${REDIS_USERNAME:}
+    password: ${REDIS_PASSWORD:}
+    database: ${REDIS_DATABASE:0}
+    ssl: ${REDIS_SSL_ENABLED:false}
+    timeout: ${REDIS_TIMEOUT:2s}
+    key-prefix: ${REDIS_KEY_PREFIX:processx:core:}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
