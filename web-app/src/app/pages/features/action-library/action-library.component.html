@@ -1,0 +1,125 @@
+<div class="feature-page-container">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-tag">PHÂN HỆ M1 • US-34</div>
+      <h2 class="page-title">🧩 Thư viện Action Dùng Chung (Action Library)</h2>
+      <p class="page-subtitle">Kho hành động chuẩn hóa có thể tái sử dụng qua các quy trình: REST API, Zalo ZNS, SMS, Email & Webhook</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" *hasPermission="['ActionLibrary', 'create']">
+        <span>➕ Đăng ký Action Mới</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-num">32</span>
+      <span class="stat-title">Tổng Action sẵn sàng</span>
+    </div>
+    <div class="stat-card active">
+      <span class="stat-num">18</span>
+      <span class="stat-title">REST API & Webhooks</span>
+    </div>
+    <div class="stat-card message">
+      <span class="stat-num">10</span>
+      <span class="stat-title">Kênh SMS / Zalo / Mail</span>
+    </div>
+    <div class="stat-card system">
+      <span class="stat-num">4</span>
+      <span class="stat-title">Core Services (OCS/CRM)</span>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div class="card-toolbar">
+      <h3 class="card-title">Danh mục Action chuẩn hóa</h3>
+      <div class="filter-actions">
+        <input type="text" placeholder="Tìm kiếm theo mã action, tên endpoint..." class="search-input" />
+        <select class="filter-select">
+          <option value="">Tất cả phân loại</option>
+          <option value="API">REST API</option>
+          <option value="MSG">SMS / ZNS</option>
+          <option value="MAIL">Email</option>
+          <option value="HOOK">Webhook</option>
+        </select>
+        <select class="filter-select">
+          <option value="">Tất cả trạng thái</option>
+          <option value="ACTIVE">Hoạt động</option>
+          <option value="MAINTENANCE">Bảo trì</option>
+        </select>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã Action</th>
+          <th>Tên Hành động</th>
+          <th>Phân loại</th>
+          <th>Phương thức / Giao thức</th>
+          <th>SLA Timeout</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ACT-SMS-01</code></td>
+          <td><strong>Gửi SMS Brandname Thông báo cước</strong></td>
+          <td><span class="pill-category msg">Messaging</span></td>
+          <td><span class="method-tag post">POST /api/v1/sms</span></td>
+          <td><app-sla-badge status="normal" text="1500ms"></app-sla-badge></td>
+          <td><span class="status-pill active">Active</span></td>
+          <td>
+            <button class="action-btn-sm">⚡ Test Ping</button>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ACT-ZNS-02</code></td>
+          <td><strong>Gửi thông báo Zalo ZNS mã OTP / Trạng thái</strong></td>
+          <td><span class="pill-category msg">Messaging</span></td>
+          <td><span class="method-tag post">POST /zns/template/send</span></td>
+          <td><app-sla-badge status="normal" text="2000ms"></app-sla-badge></td>
+          <td><span class="status-pill active">Active</span></td>
+          <td>
+            <button class="action-btn-sm">⚡ Test Ping</button>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ACT-CRM-03</code></td>
+          <td><strong>Cập nhật thông tin thuê bao OCS/CRM</strong></td>
+          <td><span class="pill-category api">Core API</span></td>
+          <td><span class="method-tag put">PUT /crm/v2/subscribers</span></td>
+          <td><app-sla-badge status="warning" text="4500ms"></app-sla-badge></td>
+          <td><span class="status-pill active">Active</span></td>
+          <td>
+            <button class="action-btn-sm">⚡ Test Ping</button>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ACT-HOOK-04</code></td>
+          <td><strong>Webhook bắn sự kiện Ticket sang Jira</strong></td>
+          <td><span class="pill-category hook">Webhook</span></td>
+          <td><span class="method-tag post">POST /hooks/jira/issue</span></td>
+          <td><app-sla-badge status="normal" text="3000ms"></app-sla-badge></td>
+          <td><span class="status-pill active">Active</span></td>
+          <td>
+            <button class="action-btn-sm">⚡ Test Ping</button>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ACT-MAIL-05</code></td>
+          <td><strong>Gửi Email Hóa đơn Điện tử & Báo cáo</strong></td>
+          <td><span class="pill-category mail">Email</span></td>
+          <td><span class="method-tag get">SMTP /sendmail</span></td>
+          <td><app-sla-badge status="normal" text="5000ms"></app-sla-badge></td>
+          <td><span class="status-pill active">Active</span></td>
+          <td>
+            <button class="action-btn-sm">⚡ Test Ping</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
