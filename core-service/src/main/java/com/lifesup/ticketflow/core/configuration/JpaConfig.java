@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.core.configuration;
 
-import com.lifesup.ticketflow.core.security.ApiKeyAuthenticationFilter.ApiKeyAuthenticationToken;
-import com.lifesup.ticketflow.core.security.KeycloakAuthenticationFilter.KeycloakAuthenticationToken;
+import com.lifesup.ticketflow.auth.filter.ApiKeyAuthenticationFilter.ApiKeyAuthenticationToken;
+import com.lifesup.ticketflow.auth.filter.KeycloakAuthenticationFilter.KeycloakAuthenticationToken;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.auditing.DateTimeProvider;

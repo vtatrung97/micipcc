@@ -1,9 +1,9 @@
 package com.lifesup.ticketflow.core.controller;
 
-import com.lifesup.ticketflow.core.dto.response.ApiResponse;
+import com.lifesup.ticketflow.common.api.ApiResponse;
 import com.lifesup.ticketflow.core.dto.response.HealthCheckResponse;
-import com.lifesup.ticketflow.core.exception.ErrorCode;
-import com.lifesup.ticketflow.core.configuration.Translator;
+import com.lifesup.ticketflow.common.exception.ErrorCode;
+import com.lifesup.ticketflow.common.i18n.Translator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;

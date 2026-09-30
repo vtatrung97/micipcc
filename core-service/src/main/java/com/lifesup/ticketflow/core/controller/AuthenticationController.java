@@ -2,7 +2,7 @@ package com.lifesup.ticketflow.core.controller;
 
 import com.lifesup.ticketflow.core.dto.request.LoginRequest;
 import com.lifesup.ticketflow.core.dto.request.RefreshTokenRequest;
-import com.lifesup.ticketflow.core.dto.response.ApiResponse;
+import com.lifesup.ticketflow.common.api.ApiResponse;
 import com.lifesup.ticketflow.core.dto.response.CurrentUserResponse;
 import com.lifesup.ticketflow.core.dto.response.TokenResponse;
 import com.lifesup.ticketflow.core.service.AuthenticationService;

@@ -15,4 +15,7 @@ cp .env.example .env
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - Health: `http://localhost:8081/actuator/health`
 
+Kết nối Redis và Spring Cache được cấu hình dùng chung từ `libraries/common-core`. Cache mặc định bật với TTL
+10 phút; có thể thay đổi bằng `CACHE_ENABLED` và `CACHE_DEFAULT_TTL`.
+
 Script tạo DB nằm trong [`src/main/resources/db/`](src/main/resources/db).

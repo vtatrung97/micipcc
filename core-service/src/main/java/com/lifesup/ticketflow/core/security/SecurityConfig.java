@@ -1,11 +1,14 @@
 package com.lifesup.ticketflow.core.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lifesup.ticketflow.auth.filter.ApiKeyAuthenticationFilter;
+import com.lifesup.ticketflow.auth.filter.AuthenticationErrorWriter;
+import com.lifesup.ticketflow.auth.filter.KeycloakAuthenticationFilter;
 import com.lifesup.ticketflow.core.configuration.AppProperties;
 import com.lifesup.ticketflow.core.configuration.KeycloakProperties;
-import com.lifesup.ticketflow.core.configuration.RequestIdFilter;
-import com.lifesup.ticketflow.core.dto.response.ApiResponse;
-import com.lifesup.ticketflow.core.exception.ErrorCode;
+import com.lifesup.ticketflow.common.api.ApiResponse;
+import com.lifesup.ticketflow.common.exception.ErrorCode;
+import com.lifesup.ticketflow.common.web.RequestIdFilter;
 import com.lifesup.ticketflow.core.service.KeycloakService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -97,12 +100,6 @@ public class SecurityConfig {
             .map(PathPatternRequestMatcher.withDefaults()::matcher)
             .toArray(RequestMatcher[]::new));
 
-    /** Cách filter ghi response lỗi, truyền vào 2 filter xác thực. */
-    @FunctionalInterface
-    interface ErrorWriter {
-        void write(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode) throws IOException;
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -112,15 +109,16 @@ public class SecurityConfig {
             ObjectMapper objectMapper,
             LocaleResolver localeResolver)
             throws Exception {
-        ErrorWriter errorWriter = (request, response, errorCode) ->
+        AuthenticationErrorWriter errorWriter = (request, response, errorCode) ->
                 writeError(request, response, errorCode, objectMapper, localeResolver);
 
         // Hai filter không khai báo @Component/@Bean để Spring Boot không tự đăng ký thêm vào servlet filter chain
         // (nếu có sẽ chạy 2 lần mỗi request)
         ApiKeyAuthenticationFilter apiKeyFilter = new ApiKeyAuthenticationFilter(
-                appProperties.apiKey().headerName(), appProperties.apiKey().keys(), errorWriter);
+                appProperties.apiKey().headerName(), appProperties.apiKey().keys(), errorWriter, PUBLIC_ENDPOINTS);
         KeycloakAuthenticationFilter keycloakFilter =
-                new KeycloakAuthenticationFilter(keycloakService, keycloakProperties.getRoleClients(), errorWriter);
+                new KeycloakAuthenticationFilter(
+                        keycloakService, keycloakProperties.getRoleClients(), errorWriter, PUBLIC_ENDPOINTS);
 
         http.csrf(AbstractHttpConfigurer::disable) // API stateless dùng header, không dùng cookie session
                 .cors(cors -> {}) // dùng bean corsConfigurationSource bên dưới

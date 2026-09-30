@@ -3,7 +3,7 @@ package com.lifesup.ticketflow.core.service;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
-import com.lifesup.ticketflow.core.dto.response.PageResponse;
+import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 

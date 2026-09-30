@@ -2,9 +2,9 @@ package com.lifesup.ticketflow.core.service.impl;
 
 import com.lifesup.ticketflow.core.configuration.KeycloakProperties;
 import com.lifesup.ticketflow.core.dto.response.KeycloakIntrospectionResponse;
-import com.lifesup.ticketflow.core.exception.AppException;
-import com.lifesup.ticketflow.core.exception.ErrorCode;
-import com.lifesup.ticketflow.core.exception.KeycloakClientException;
+import com.lifesup.ticketflow.common.exception.AppException;
+import com.lifesup.ticketflow.common.exception.ErrorCode;
+import com.lifesup.ticketflow.auth.exception.KeycloakClientException;
 import com.lifesup.ticketflow.core.repository.httpClient.KeycloakTokenIntrospectionClient;
 import com.lifesup.ticketflow.core.service.KeycloakService;
 import jakarta.ws.rs.ProcessingException;

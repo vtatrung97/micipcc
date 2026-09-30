@@ -2,7 +2,11 @@
 
 Thư mục dành cho các thư viện dùng chung của backend Ticket Flow.
 
-Hiện chưa có Maven module hoặc source code. Chỉ thêm module khi xuất hiện hợp đồng hoặc tiện ích thực sự được nhiều service tái sử dụng.
+Các module hiện có:
+
+- `common-parent`: Maven parent quản lý version dependency và plugin; được publish/install độc lập.
+- `common-core`: API response, exception, global exception handler, i18n và request ID dùng chung.
+- `common-auth`: authentication token, API-key/Keycloak filter và security-context utility dùng chung.
 
 ## Phạm vi dự kiến
 

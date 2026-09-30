@@ -1,5 +1,6 @@
 package com.lifesup.ticketflow.core.service;
 
+import com.lifesup.ticketflow.auth.service.AccessTokenVerifier;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
 
@@ -7,7 +8,7 @@ import org.keycloak.representations.AccessTokenResponse;
  * Gọi Keycloak qua thư viện Keycloak (KeycloakBuilder/TokenService) bằng client confidential {@code keycloak.client-id}.
  * Keycloak trả 4xx/5xx: ném KeycloakClientException; không kết nối được: ném AppException KEYCLOAK_UNAVAILABLE.
  */
-public interface KeycloakService {
+public interface KeycloakService extends AccessTokenVerifier {
 
     AccessTokenResponse login(String username, String password);
 
@@ -20,5 +21,6 @@ public interface KeycloakService {
      * Kiểm tra access token trực tiếp với Keycloak (introspection).
      * Token hết hạn, đã logout hoặc user bị khoá: ném AppException UNAUTHENTICATED.
      */
+    @Override
     AccessToken verifyToken(String token);
 }

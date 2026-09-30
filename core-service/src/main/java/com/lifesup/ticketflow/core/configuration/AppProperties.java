@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 
@@ -20,7 +19,6 @@ public record AppProperties(
         @NotNull Security security,
         @Valid @NotNull ApiKey apiKey,
         @Valid @NotNull I18n i18n,
-        @Valid @NotNull Redis redis,
         @NotNull Cors cors) {
 
     /**
@@ -35,24 +33,6 @@ public record AppProperties(
     public record ApiKey(@NotBlank String headerName, String keys) {}
 
     public record I18n(@NotNull Locale defaultLocale, @NotEmpty List<Locale> supportedLocales) {}
-
-    /**
-     * @param sentinel  true: kết nối qua Redis Sentinel, false: standalone
-     * @param nodes     danh sách sentinel {@code host:port}, cách nhau bởi dấu phẩy
-     * @param keyPrefix tiền tố key, tránh trùng khi dùng chung cụm Redis với Ticket Flow
-     */
-    public record Redis(
-            boolean sentinel,
-            String master,
-            List<String> nodes,
-            String host,
-            int port,
-            String username,
-            String password,
-            int database,
-            boolean ssl,
-            @NotNull Duration timeout,
-            @NotBlank String keyPrefix) {}
 
     public record Cors(List<String> allowedOrigins) {}
 }

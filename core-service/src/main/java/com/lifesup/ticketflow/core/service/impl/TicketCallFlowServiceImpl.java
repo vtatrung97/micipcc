@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
-import com.lifesup.ticketflow.core.dto.response.PageResponse;
+import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.entity.TicketCallFlowEntity;
-import com.lifesup.ticketflow.core.exception.AppException;
-import com.lifesup.ticketflow.core.exception.ErrorCode;
+import com.lifesup.ticketflow.common.exception.AppException;
+import com.lifesup.ticketflow.common.exception.ErrorCode;
 import com.lifesup.ticketflow.core.repository.TicketCallFlowRepository;
 import com.lifesup.ticketflow.core.service.TicketCallFlowService;
 import lombok.AccessLevel;
@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -64,6 +66,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "ticket-call-flow", key = "#id")
     public TicketCallFlowResponse update(Long id, TicketCallFlowUpdateRequest request) {
         TicketCallFlowEntity entity = findActive(id);
 
@@ -86,6 +89,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "ticket-call-flow", key = "#id", unless = "#result == null")
     public TicketCallFlowResponse getById(Long id) {
         return toResponse(findActive(id));
     }
@@ -100,6 +104,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "ticket-call-flow", key = "#id")
     public void delete(Long id) {
         TicketCallFlowEntity entity = findActive(id);
         entity.setDeleted(true);
