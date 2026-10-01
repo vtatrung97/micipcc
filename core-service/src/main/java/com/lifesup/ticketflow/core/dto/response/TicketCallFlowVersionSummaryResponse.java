@@ -8,9 +8,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
+
 /**
  * Thông tin một phiên bản (không kèm flowJson).
- * Thứ tự field khớp constructor dùng trong TicketCallFlowVersionRepository.findSummariesByFlowId.
+ * Thứ tự field khớp constructor dùng trong TemplateVersionRepository.findSummariesByTemplateId.
  */
 @Data
 @Builder
@@ -22,13 +24,13 @@ public class TicketCallFlowVersionSummaryResponse {
     TicketCallFlowVersionStatus status;
     String versionName;
     String versionDescription;
-    /** Timestamp mili giây (epoch millis). */
-    Long publishedAt;
+    /** UTC, ISO-8601. */
+    Instant publishedAt;
     String publishedBy;
-    /** Timestamp mili giây (epoch millis). */
-    Long createdAt;
+    /** UTC, ISO-8601. */
+    Instant createdAt;
     String createdBy;
-    /** Timestamp mili giây (epoch millis), lần lưu gần nhất của bản nháp. */
-    Long updatedAt;
+    /** Lần lưu gần nhất của bản nháp, UTC, ISO-8601. */
+    Instant updatedAt;
     String updatedBy;
 }

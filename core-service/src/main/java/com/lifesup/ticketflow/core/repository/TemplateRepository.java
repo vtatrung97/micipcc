@@ -3,7 +3,7 @@ package com.lifesup.ticketflow.core.repository;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
-import com.lifesup.ticketflow.core.entity.TicketCallFlowEntity;
+import com.lifesup.ticketflow.core.entity.TemplateEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,9 +12,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface TicketCallFlowRepository extends JpaRepository<TicketCallFlowEntity, Long> {
+public interface TemplateRepository extends JpaRepository<TemplateEntity, Long> {
 
-    Optional<TicketCallFlowEntity> findByIdAndDeletedFalse(Long id);
+    Optional<TemplateEntity> findByIdAndDeletedFalse(Long id);
 
     boolean existsByCodeAndDeletedFalse(String code);
 
@@ -32,12 +32,12 @@ public interface TicketCallFlowRepository extends JpaRepository<TicketCallFlowEn
                         t.id, t.code, t.name, t.caseCodePrefix, t.description, t.status,
                         p.versionNo, p.publishedAt, d.versionNo, d.updatedAt, d.updatedBy,
                         t.createdAt, t.createdBy, t.updatedAt, t.updatedBy, t.rowVersion)
-                    from TicketCallFlowEntity t
-                    left join TicketCallFlowVersionEntity p
-                        on p.flowId = t.id
+                    from TemplateEntity t
+                    left join TemplateVersionEntity p
+                        on p.templateId = t.id
                         and p.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.PUBLISHED
-                    left join TicketCallFlowVersionEntity d
-                        on d.flowId = t.id
+                    left join TemplateVersionEntity d
+                        on d.templateId = t.id
                         and d.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.DRAFT
                     where t.deleted = false
                       and (:status is null or t.status = :status)
@@ -46,9 +46,9 @@ public interface TicketCallFlowRepository extends JpaRepository<TicketCallFlowEn
                       and (:hasDraft is null or (:hasDraft = true and d.id is not null) or (:hasDraft = false and d.id is null))
                     """,
             countQuery = """
-                    select count(t) from TicketCallFlowEntity t
-                    left join TicketCallFlowVersionEntity d
-                        on d.flowId = t.id
+                    select count(t) from TemplateEntity t
+                    left join TemplateVersionEntity d
+                        on d.templateId = t.id
                         and d.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.DRAFT
                     where t.deleted = false
                       and (:status is null or t.status = :status)
@@ -69,9 +69,9 @@ public interface TicketCallFlowRepository extends JpaRepository<TicketCallFlowEn
                 coalesce(sum(case when t.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus.ACTIVE
                                   then 1 else 0 end), 0),
                 count(d))
-            from TicketCallFlowEntity t
-            left join TicketCallFlowVersionEntity d
-                on d.flowId = t.id
+            from TemplateEntity t
+            left join TemplateVersionEntity d
+                on d.templateId = t.id
                 and d.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.DRAFT
             where t.deleted = false
             """)

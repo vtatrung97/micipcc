@@ -2,12 +2,17 @@ package com.lifesup.ticketflow.core.dto.response;
 
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import java.time.Instant;
 
 /**
  * Chi tiết quy trình, kèm JSON canvas để FE vẽ lại.
@@ -19,6 +24,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TicketCallFlowResponse {
+    /** TSID, trả dạng chuỗi vì vượt giới hạn số nguyên an toàn của JavaScript. */
+    @JsonSerialize(using = ToStringSerializer.class)
+    @Schema(type = "string", example = "702305427898417152")
     Long id;
     String code;
     String name;
@@ -36,11 +44,11 @@ public class TicketCallFlowResponse {
     TicketCallFlowVersionSummaryResponse publishedVersion;
     /** Bản nháp, null = không có bản nháp. */
     TicketCallFlowVersionSummaryResponse draftVersion;
-    /** Timestamp mili giây (epoch millis). */
-    Long createdAt;
+    /** UTC, ISO-8601. */
+    Instant createdAt;
     String createdBy;
-    /** Timestamp mili giây (epoch millis). */
-    Long updatedAt;
+    /** UTC, ISO-8601. */
+    Instant updatedAt;
     String updatedBy;
     /** Gửi lại khi cập nhật / publish / huỷ bản nháp để chống lưu đè. */
     Long rowVersion;
