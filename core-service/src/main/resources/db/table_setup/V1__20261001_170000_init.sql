@@ -1,11 +1,12 @@
 -- -----------------------------------------------------------------------------------------------------
--- V1: khởi tạo schema flow_core. Quy ước theo Architecture Design v1.1 mục 2.1:
+-- Quy ước bảng theo Architecture Design v1.1 mục 2.1:
 --   - Tên bảng theo nghiệp vụ, không tiền tố.
 --   - Khoá chính BIGINT sinh theo thời gian (TSID) ở phía ứng dụng, không AUTO_INCREMENT.
 --   - Thời gian DATETIME(3) lưu theo UTC.
---   - Cột chuẩn: tenant_id, created_at, created_by, updated_at, updated_by, row_version; bảng cấu hình xoá mềm (deleted).
---   - Thêm realm, group_id (realm / group Keycloak của người tạo) theo quy ước của project.
--- Flyway quản lý file này: đã chạy lên môi trường nào thì KHÔNG sửa nữa, thay đổi tiếp theo viết V2, V3...
+--   - Cột chuẩn: tenant_id, realm, group_id, created_at, created_by, updated_at, updated_by, row_version;
+--     bảng cấu hình xoá mềm (deleted).
+-- Flyway quản lý file trong table_setup / data_setup, tên file V<n>__yyyymmdd_hhmmss_<y_nghia>.sql (n tăng dần trên cả 2 thư mục).
+-- File đã chạy lên môi trường nào thì KHÔNG sửa / đổi tên nữa, thay đổi tiếp theo viết file mới.
 -- -----------------------------------------------------------------------------------------------------
 
 -- template: quy trình nghiệp vụ (Template) thiết kế trên Canvas. Nội dung canvas nằm ở template_version.
