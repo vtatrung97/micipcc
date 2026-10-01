@@ -241,13 +241,14 @@ export class RbacService {
    */
   public canAccessUrl(url: string): {
     allowed: boolean;
+    isNotFound?: boolean;
     reason?: string;
     requiredResource?: string;
     breadcrumbs: string[];
   } {
     // 1. URL ngoại lệ hệ thống
-    if (['/forbidden', '/login'].some(p => url.startsWith(p)) || url === '/') {
-      return { allowed: true, breadcrumbs: ['Hệ thống'] };
+    if (['/forbidden', '/not-found', '/login'].some(p => url.startsWith(p)) || url === '/') {
+      return { allowed: true, isNotFound: false, breadcrumbs: ['Hệ thống'] };
     }
 
     // 2. Tra cứu cấu hình tập trung trong menu.config.ts
@@ -255,7 +256,8 @@ export class RbacService {
     if (!routeConfig) {
       return {
         allowed: false,
-        reason: 'Đường dẫn không xác định trong hệ thống điều hướng.',
+        isNotFound: true,
+        reason: 'Đường dẫn không tồn tại trong hệ thống điều hướng.',
         requiredResource: 'System',
         breadcrumbs: ['Không xác định']
       };
@@ -266,6 +268,7 @@ export class RbacService {
 
     return {
       allowed,
+      isNotFound: false,
       reason: allowed
         ? undefined
         : `Bạn không có quyền '${routeConfig.action}' trên tài nguyên '${routeConfig.resource}'`,

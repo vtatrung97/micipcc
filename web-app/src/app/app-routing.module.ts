@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { MainLayoutComponent } from '@layout/layouts/main-layout/main-layout.component';
 import { BlankLayoutComponent } from '@layout/layouts/blank-layout/blank-layout.component';
-import { ForbiddenComponent } from '@pages/features/forbidden/forbidden.component';
+import { ForbiddenComponent } from '@pages/system/forbidden/forbidden.component';
 import { DefaultLandingGuard } from '@core/rbac';
 
 const routes: Routes = [
@@ -37,6 +37,10 @@ const routes: Routes = [
       {
         path: 'forbidden',
         component: ForbiddenComponent
+      },
+      {
+        path: 'not-found',
+        loadChildren: () => import('@pages/system/not-found/not-found.module').then(m => m.NotFoundModule)
       }
     ]
   },
@@ -44,7 +48,7 @@ const routes: Routes = [
   // Fallback cho URL sai ở cấp root
   {
     path: '**',
-    redirectTo: '/forbidden'
+    redirectTo: '/not-found'
   }
 ];
 

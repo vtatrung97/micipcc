@@ -8,9 +8,9 @@ import { RbacService } from '@core/rbac';
 })
 export class TabBarComponent {
   tabs = [
-    { label: '🎨 BPMN Canvas', path: '/templates/graph' },
-    { label: '📋 Quản lý Template', path: '/templates/templates-management' },
-    { label: '🧩 Action Library', path: '/templates/action-library' },
+    { label: '🎨 BPMN Canvas', path: '/process/graph' },
+    { label: '📋 Quản lý Template', path: '/process/templates-list' },
+    { label: '🧩 Action Library', path: '/process/action-library' },
     { label: '📊 Giám sát Flow', path: '/instances/monitor' },
     { label: '☑️ Task của tôi', path: '/tasks/my-tasks' },
     { label: '📈 Dashboard SLA', path: '/reports/dashboard' },

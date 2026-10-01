@@ -18,28 +18,25 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
   // M1: Quản lý Quy trình (Process Templates)
   // ==========================================================================
   {
-    key: 'm1_process_management',
+    key: 'process_management',
     label: 'Quản lý Quy trình',
     icon: 'partition',
-    moduleCode: 'M1',
     requiredResource: 'Template',
     requiredPermission: 'view',
     children: [
       {
-        key: 'm1_templates_list',
+        key: 'templates_list',
         label: 'Danh sách Template',
-        path: '/templates/templates-management',
+        path: '/process/templates-list',
         icon: 'table',
-        moduleCode: 'M1',
         requiredResource: 'Template',
         requiredPermission: 'view'
       },
       {
-        key: 'm1_action_library',
-        label: 'Thư viện Action dùng chung',
-        path: '/templates/action-library',
+        key: 'action_library',
+        label: 'Thư viện Action',
+        path: '/process/action-library',
         icon: 'appstore',
-        moduleCode: 'M1',
         requiredResource: 'ActionLibrary',
         requiredPermission: 'view'
       }
@@ -50,37 +47,33 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
   // M2: Quản lý Flow Instance
   // ==========================================================================
   {
-    key: 'm2_flow_instances',
-    label: 'M2: Quản lý Flow Instance',
+    key: 'flow_instances_management',
+    label: 'Quản lý Flow Instance',
     icon: 'branches',
-    moduleCode: 'M2',
     requiredResource: 'Instance',
     requiredPermission: 'view',
     children: [
       {
-        key: 'm2_realtime_monitor',
+        key: 'realtime_monitor',
         label: 'Giám sát tiến trình thời gian thực',
         path: '/instances/monitor',
         icon: 'fund',
-        moduleCode: 'M2',
         requiredResource: 'Instance',
         requiredPermission: 'view'
       },
       {
-        key: 'm2_execution_history',
-        label: 'Lịch sử thực thi & Audit (US-23)',
+        key: 'execution_history',
+        label: 'Lịch sử thực thi & Audit',
         path: '/instances/history',
         icon: 'history',
-        moduleCode: 'M2',
         requiredResource: 'Instance',
         requiredPermission: 'view'
       },
       {
-        key: 'm2_immutable_logs',
-        label: 'Nhật ký Log hệ thống (FR-15)',
+        key: 'immutable_logs',
+        label: 'Nhật ký Log hệ thống',
         path: '/instances/logs',
         icon: 'file-text',
-        moduleCode: 'M2',
         requiredResource: 'Instance',
         requiredPermission: 'view'
       }
@@ -91,10 +84,9 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
   // M3: Quản lý Task
   // ==========================================================================
   {
-    key: 'm3_task_management',
-    label: 'M3: Quản lý Task',
+    key: 'task_management',
+    label: 'Quản lý Task',
     icon: 'check-square',
-    moduleCode: 'M3',
     requiredResource: 'Task',
     requiredPermission: 'view',
     badge: {
@@ -110,11 +102,10 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
     },
     children: [
       {
-        key: 'm3_my_tasks',
+        key: 'my_tasks',
         label: 'Task của tôi (My Tasks)',
         path: '/tasks/my-tasks',
         icon: 'user-switch',
-        moduleCode: 'M3',
         requiredResource: 'Task',
         requiredPermission: 'view',
         badge: {
@@ -130,20 +121,18 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
         }
       },
       {
-        key: 'm3_process_task',
-        label: 'Xử lý Task (Duyệt/Reject US-21)',
+        key: 'process_task',
+        label: 'Xử lý & Phê duyệt Task',
         path: '/tasks/process',
         icon: 'form',
-        moduleCode: 'M3',
         requiredResource: 'Task',
         requiredPermission: 'view'
       },
       {
-        key: 'm3_reference_data',
+        key: 'reference_data',
         label: 'Master Data tham chiếu (View-only)',
         path: '/tasks/reference',
         icon: 'database',
-        moduleCode: 'M3',
         requiredResource: 'Task',
         requiredPermission: 'view'
       }
@@ -154,28 +143,25 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
   // M4: Báo cáo & Dashboard
   // ==========================================================================
   {
-    key: 'm4_reports_dashboards',
-    label: 'M4: Báo cáo & Dashboard',
+    key: 'reports_dashboards',
+    label: 'Báo cáo & Dashboard',
     icon: 'dashboard',
-    moduleCode: 'M4',
     requiredResource: 'Report',
     requiredPermission: 'view',
     children: [
       {
-        key: 'm4_overview_dashboard',
-        label: 'Dashboard tổng quan (US-09)',
+        key: 'overview_dashboard',
+        label: 'Dashboard tổng quan',
         path: '/reports/dashboard',
         icon: 'pie-chart',
-        moduleCode: 'M4',
         requiredResource: 'Dashboard',
         requiredPermission: 'view'
       },
       {
-        key: 'm4_sla_process_report',
+        key: 'sla_process_report',
         label: 'Báo cáo SLA & Quy trình',
         path: '/reports/sla-process',
         icon: 'bar-chart',
-        moduleCode: 'M4',
         requiredResource: 'Report',
         requiredPermission: 'view'
       }
@@ -186,46 +172,41 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
   // M5: Cấu hình Vận hành (Admin Console)
   // ==========================================================================
   {
-    key: 'm5_operation_settings',
-    label: 'M5: Cấu hình Vận hành',
+    key: 'operation_settings',
+    label: 'Cấu hình Vận hành',
     icon: 'setting',
-    moduleCode: 'M5',
     requiredResource: 'Integration',
     requiredPermission: 'view',
     children: [
       {
-        key: 'm5_sla_escalation',
-        label: 'Cấu hình SLA & Leo thang (US-10)',
+        key: 'sla_escalation',
+        label: 'Cấu hình SLA & Leo thang',
         path: '/settings/sla-escalation',
         icon: 'alert',
-        moduleCode: 'M5',
         requiredResource: 'Integration',
         requiredPermission: 'view'
       },
       {
-        key: 'm5_auto_assignment',
-        label: 'Phân việc tự động (US-12)',
+        key: 'auto_assignment',
+        label: 'Phân việc tự động',
         path: '/settings/auto-assignment',
         icon: 'sync',
-        moduleCode: 'M5',
         requiredResource: 'Integration',
         requiredPermission: 'view'
       },
       {
-        key: 'm5_inbound_channels',
+        key: 'inbound_channels',
         label: 'Kênh tiếp nhận (Zalo/SMS/Webhook)',
         path: '/settings/inbound-channels',
         icon: 'api',
-        moduleCode: 'M5',
         requiredResource: 'Integration',
         requiredPermission: 'view'
       },
       {
-        key: 'm5_notification_templates',
-        label: 'Mẫu Email & Thông báo (US-15/30)',
+        key: 'notification_templates',
+        label: 'Mẫu Email & Thông báo',
         path: '/settings/notification-templates',
         icon: 'mail',
-        moduleCode: 'M5',
         requiredResource: 'Integration',
         requiredPermission: 'view'
       }
@@ -236,28 +217,25 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
   // M6: Master Data (Tham chiếu dữ liệu)
   // ==========================================================================
   {
-    key: 'm6_master_data',
-    label: 'M6: Master Data',
+    key: 'master_data',
+    label: 'Master Data',
     icon: 'folder-open',
-    moduleCode: 'M6',
     requiredResource: 'MasterData',
     requiredPermission: 'view',
     children: [
       {
-        key: 'm6_subscribers',
-        label: 'Tra cứu thông tin thuê bao (US-16)',
+        key: 'subscribers',
+        label: 'Tra cứu thông tin thuê bao',
         path: '/master-data/subscribers',
         icon: 'idcard',
-        moduleCode: 'M6',
         requiredResource: 'MasterData',
         requiredPermission: 'view'
       },
       {
-        key: 'm6_products_services',
-        label: 'Danh mục Sản phẩm/Dịch vụ (US-17)',
+        key: 'products_services',
+        label: 'Danh mục Sản phẩm & Dịch vụ',
         path: '/master-data/products-services',
         icon: 'shopping-cart',
-        moduleCode: 'M6',
         requiredResource: 'MasterData',
         requiredPermission: 'view'
       }
@@ -268,37 +246,33 @@ export const SYSTEM_MENU_CONFIG: MenuItem[] = [
   // M7: Quản trị Hệ thống
   // ==========================================================================
   {
-    key: 'm7_system_admin',
-    label: 'M7: Quản trị Hệ thống',
+    key: 'system_admin',
+    label: 'Quản trị Hệ thống',
     icon: 'safety-certificate',
-    moduleCode: 'M7',
     requiredResource: 'SystemAdmin',
     requiredPermission: 'view',
     children: [
       {
-        key: 'm7_organization',
-        label: 'Cơ cấu tổ chức & Phòng ban (US-18)',
+        key: 'organization',
+        label: 'Cơ cấu tổ chức & Phòng ban',
         path: '/admin/organization',
         icon: 'team',
-        moduleCode: 'M7',
         requiredResource: 'SystemAdmin',
         requiredPermission: 'view'
       },
       {
-        key: 'm7_users_management',
+        key: 'users_management',
         label: 'Quản lý danh sách Người dùng',
         path: '/admin/users',
         icon: 'user',
-        moduleCode: 'M7',
         requiredResource: 'SystemAdmin',
         requiredPermission: 'view'
       },
       {
-        key: 'm7_roles_permissions',
-        label: 'Phân quyền & Vai trò (FR-38)',
+        key: 'roles_permissions',
+        label: 'Phân quyền & Vai trò',
         path: '/admin/roles-permissions',
         icon: 'lock',
-        moduleCode: 'M7',
         requiredResource: 'SystemAdmin',
         requiredPermission: 'view'
       }
@@ -369,7 +343,6 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
       { resource: 'Dashboard', actions: ['view'], scope: 'Organization' },
       { resource: 'Report', actions: ['view', 'create'], scope: 'Organization' },
       { resource: 'MasterData', actions: ['view'], scope: 'Organization' }
-      // Lưu ý: Không có quyền 'view' trên 'Integration' (M5) và 'SystemAdmin' (M7) -> Tự động ẩn!
     ]
   },
 
@@ -384,7 +357,6 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     permissions: [
       { resource: 'Task', actions: ['view', 'edit', 'execute'], scope: 'Own' },
       { resource: 'MasterData', actions: ['view'], scope: 'Own' }
-      // Lưu ý: Không có quyền 'view' trên M1, M2, M4, M5, M7 -> Ẩn hoàn toàn!
     ]
   },
 
@@ -407,23 +379,17 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
 
 // ============================================================================
 // TRANG MẶC ĐỊNH THEO TỪNG NHÓM VAI TRÒ (ROLE-BASED DEFAULT LANDING PAGE)
-// Căn cứ nghiệp vụ: US-18, REQ-04, US-07, US-08, US-09
-// 1. AGENT (Điện thoại viên FO/BO): Trang đầu tiên "Task của tôi" (M3 - US-07, FR-18)
-// 2. SUPERVISOR (Giám sát / Quản lý): Trang đầu tiên Dashboard (M4 - US-08, US-09, FR-26)
-// 3. ADMIN / SUPER_ADMIN: Dashboard tổng quan hệ thống (M4 - US-08)
 // ============================================================================
 export const ROLE_DEFAULT_LANDING_PAGES: Record<UserRole, string> = {
   AGENT: '/tasks/my-tasks',
   SUPERVISOR: '/reports/dashboard',
-  ADMIN: '/templates/templates-management',
-  SUPER_ADMIN: '/templates/templates-management',
+  ADMIN: '/process/templates-list',
+  SUPER_ADMIN: '/process/templates-list',
   CUSTOM: '/tasks/my-tasks'
 };
 
 // ============================================================================
 // MA TRẬN ROUTING & RBAC TẬP TRUNG (CENTRALIZED ROUTE RBAC MAP)
-// Định nghĩa sẵn Route nào cần Resource & Action nào kèm Breadcrumbs chuẩn.
-// Giúp Router không cần phải hardcode data: { resource, action } trong từng route.
 // ============================================================================
 
 export const SYSTEM_ROUTES = {
@@ -431,28 +397,38 @@ export const SYSTEM_ROUTES = {
   // [PHÂN HỆ M1] - QUẢN LÝ QUY TRÌNH
   // ==========================================================================
   GRAPH: {
-    path: 'templates/graph',
-    fullPath: '/templates/graph',
+    path: 'process/graph',
+    fullPath: '/process/graph',
     resource: 'Template' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Canvas Builder (BPMN 7 Nodes)',
+    label: 'Canvas Builder',
     breadcrumbs: ['Quản lý Quy trình', 'Canvas Builder'],
     moduleCode: 'M1' as ModuleCode,
-    title: 'M1: BPMN Canvas Builder (AntV X6)'
+    title: 'BPMN Canvas Builder'
   },
   ACTION_LIBRARY: {
-    path: 'templates/action-library',
-    fullPath: '/templates/action-library',
+    path: 'process/action-library',
+    fullPath: '/process/action-library',
     resource: 'ActionLibrary' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Thư viện Action dùng chung (US-34)',
+    label: 'Thư viện Action dùng chung',
     breadcrumbs: ['Quản lý Quy trình', 'Thư viện Action dùng chung'],
     moduleCode: 'M1' as ModuleCode,
-    title: 'M1: Thư viện Action dùng chung'
+    title: 'Thư viện Action dùng chung'
+  },
+  TEMPLATES_LIST: {
+    path: 'process/templates-list',
+    fullPath: '/process/templates-list',
+    resource: 'Template' as ResourceType,
+    action: 'view' as ActionPermission,
+    label: 'Danh sách Template',
+    breadcrumbs: ['Quản lý Quy trình', 'Danh sách Template'],
+    moduleCode: 'M1' as ModuleCode,
+    title: 'Danh sách Quy trình'
   },
   TEMPLATES_MANAGEMENT: {
-    path: 'templates/templates-management',
-    fullPath: '/templates/templates-management',
+    path: 'process/templates-list',
+    fullPath: '/process/templates-list',
     resource: 'Template' as ResourceType,
     action: 'view' as ActionPermission,
     label: 'Danh sách Template',
@@ -464,69 +440,59 @@ export const SYSTEM_ROUTES = {
   // ==========================================================================
   // [PHÂN HỆ M2] - QUẢN LÝ FLOW INSTANCE
   // ==========================================================================
-  INSTANCES: {
-    path: 'instances',
+  INSTANCES_MONITOR: {
+    path: 'instances/monitor',
     fullPath: '/instances/monitor',
     resource: 'Instance' as ResourceType,
     action: 'view' as ActionPermission,
     label: 'Giám sát tiến trình thời gian thực',
-    breadcrumbs: ['M2: Quản lý Flow Instance', 'Giám sát tiến trình thời gian thực'],
+    breadcrumbs: ['Quản lý Flow Instance', 'Giám sát tiến trình thời gian thực'],
     moduleCode: 'M2' as ModuleCode,
-    title: 'M2: Giám sát tiến trình thời gian thực'
-  },
-  FLOW_INSTANCES: {
-    path: 'flow-instances',
-    fullPath: '/instances/monitor',
-    resource: 'Instance' as ResourceType,
-    action: 'view' as ActionPermission,
-    label: 'Giám sát tiến trình thời gian thực (Alias)',
-    breadcrumbs: ['M2: Quản lý Flow Instance', 'Giám sát tiến trình thời gian thực'],
-    moduleCode: 'M2' as ModuleCode,
-    title: 'M2: Giám sát tiến trình thời gian thực'
+    title: 'Giám sát tiến trình thời gian thực'
   },
   INSTANCES_HISTORY: {
     path: 'instances/history',
     fullPath: '/instances/history',
     resource: 'Instance' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Lịch sử thực thi & Audit (US-23)',
-    breadcrumbs: ['M2: Quản lý Flow Instance', 'Lịch sử thực thi & Audit (US-23)'],
+    label: 'Lịch sử thực thi & Audit',
+    breadcrumbs: ['Quản lý Flow Instance', 'Lịch sử thực thi & Audit'],
     moduleCode: 'M2' as ModuleCode,
-    title: 'M2: Lịch sử thực thi & Audit Trail'
+    title: 'Lịch sử thực thi & Audit Trail'
   },
   INSTANCES_LOGS: {
     path: 'instances/logs',
     fullPath: '/instances/logs',
     resource: 'Instance' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Nhật ký Log hệ thống (FR-15)',
-    breadcrumbs: ['M2: Quản lý Flow Instance', 'Nhật ký Log hệ thống (FR-15)'],
+    label: 'Nhật ký Log hệ thống',
+    breadcrumbs: ['Quản lý Flow Instance', 'Nhật ký Log hệ thống'],
     moduleCode: 'M2' as ModuleCode,
-    title: 'M2: Nhật ký Log hệ thống'
+    title: 'Nhật ký Log hệ thống'
   },
 
   // ==========================================================================
   // [PHÂN HỆ M3] - QUẢN LÝ TASK
   // ==========================================================================
-  TASKS: {
-    path: 'tasks',
+  TASKS_MY_TASKS: {
+    path: 'tasks/my-tasks',
     fullPath: '/tasks/my-tasks',
     resource: 'Task' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Task của tôi (My Tasks)',
-    breadcrumbs: ['M3: Quản lý Task', 'Task của tôi (My Tasks)'],
+    label: 'Task của tôi',
+    breadcrumbs: ['Quản lý Task', 'Task của tôi'],
     moduleCode: 'M3' as ModuleCode,
-    title: 'M3: Task của tôi (My Tasks)'
+    title: 'Task của tôi'
   },
   TASKS_PROCESS: {
     path: 'tasks/process',
     fullPath: '/tasks/process',
     resource: 'Task' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Xử lý Task (Duyệt/Reject US-21)',
-    breadcrumbs: ['M3: Quản lý Task', 'Xử lý Task (Duyệt/Reject US-21)'],
+    label: 'Xử lý & Phê duyệt Task',
+    breadcrumbs: ['Quản lý Task', 'Xử lý & Phê duyệt Task'],
     moduleCode: 'M3' as ModuleCode,
-    title: 'M3: Xử lý & Phê duyệt Task'
+    title: 'Xử lý & Phê duyệt Task'
   },
   TASKS_REFERENCE: {
     path: 'tasks/reference',
@@ -534,23 +500,33 @@ export const SYSTEM_ROUTES = {
     resource: 'Task' as ResourceType,
     action: 'view' as ActionPermission,
     label: 'Master Data tham chiếu (View-only)',
-    breadcrumbs: ['M3: Quản lý Task', 'Master Data tham chiếu (View-only)'],
+    breadcrumbs: ['Quản lý Task', 'Master Data tham chiếu (View-only)'],
     moduleCode: 'M3' as ModuleCode,
-    title: 'M3: Master Data tham chiếu'
+    title: 'Master Data tham chiếu'
   },
 
   // ==========================================================================
   // [PHÂN HỆ M4] - BÁO CÁO & DASHBOARD
   // ==========================================================================
-  REPORTS: {
-    path: 'reports',
+  REPORTS_DASHBOARD: {
+    path: 'reports/dashboard',
     fullPath: '/reports/dashboard',
     resource: 'Dashboard' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Dashboard tổng quan (US-09)',
-    breadcrumbs: ['M4: Báo cáo & Dashboard', 'Dashboard tổng quan (US-09)'],
+    label: 'Dashboard tổng quan',
+    breadcrumbs: ['Báo cáo & Dashboard', 'Dashboard tổng quan'],
     moduleCode: 'M4' as ModuleCode,
-    title: 'M4: Dashboard SLA & Vận hành'
+    title: 'Dashboard SLA & Vận hành'
+  },
+  REPORTS: {
+    path: 'reports/dashboard',
+    fullPath: '/reports/dashboard',
+    resource: 'Dashboard' as ResourceType,
+    action: 'view' as ActionPermission,
+    label: 'Dashboard tổng quan',
+    breadcrumbs: ['Báo cáo & Dashboard', 'Dashboard tổng quan'],
+    moduleCode: 'M4' as ModuleCode,
+    title: 'Dashboard SLA & Vận hành'
   },
   REPORTS_SLA_PROCESS: {
     path: 'reports/sla-process',
@@ -558,33 +534,43 @@ export const SYSTEM_ROUTES = {
     resource: 'Report' as ResourceType,
     action: 'view' as ActionPermission,
     label: 'Báo cáo SLA & Quy trình',
-    breadcrumbs: ['M4: Báo cáo & Dashboard', 'Báo cáo SLA & Quy trình'],
+    breadcrumbs: ['Báo cáo & Dashboard', 'Báo cáo SLA & Quy trình'],
     moduleCode: 'M4' as ModuleCode,
-    title: 'M4: Báo cáo chi tiết SLA theo Quy trình'
+    title: 'Báo cáo chi tiết SLA theo Quy trình'
   },
 
   // ==========================================================================
-  // [PHÂN HỆ M5] - THIẾT LẬP VẬN HÀNH
+  // [PHÂN HỆ M5] - CẤU HÌNH VẬN HÀNH
   // ==========================================================================
-  SETTINGS: {
-    path: 'settings',
+  SETTINGS_SLA_ESCALATION: {
+    path: 'settings/sla-escalation',
     fullPath: '/settings/sla-escalation',
     resource: 'Integration' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Cấu hình SLA & Leo thang (US-10)',
-    breadcrumbs: ['M5: Cấu hình Vận hành', 'Cấu hình SLA & Leo thang (US-10)'],
+    label: 'Cấu hình SLA & Leo thang',
+    breadcrumbs: ['Cấu hình Vận hành', 'Cấu hình SLA & Leo thang'],
     moduleCode: 'M5' as ModuleCode,
-    title: 'M5: Cấu hình SLA Escalation'
+    title: 'Cấu hình SLA Escalation'
+  },
+  SETTINGS: {
+    path: 'settings/sla-escalation',
+    fullPath: '/settings/sla-escalation',
+    resource: 'Integration' as ResourceType,
+    action: 'view' as ActionPermission,
+    label: 'Cấu hình SLA & Leo thang',
+    breadcrumbs: ['Cấu hình Vận hành', 'Cấu hình SLA & Leo thang'],
+    moduleCode: 'M5' as ModuleCode,
+    title: 'Cấu hình SLA Escalation'
   },
   SETTINGS_AUTO_ASSIGNMENT: {
     path: 'settings/auto-assignment',
     fullPath: '/settings/auto-assignment',
     resource: 'Integration' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Phân việc tự động (US-12)',
-    breadcrumbs: ['M5: Cấu hình Vận hành', 'Phân việc tự động (US-12)'],
+    label: 'Phân việc tự động',
+    breadcrumbs: ['Cấu hình Vận hành', 'Phân việc tự động'],
     moduleCode: 'M5' as ModuleCode,
-    title: 'M5: Quy tắc chia Task tự động'
+    title: 'Quy tắc chia Task tự động'
   },
   SETTINGS_INBOUND_CHANNELS: {
     path: 'settings/inbound-channels',
@@ -592,57 +578,77 @@ export const SYSTEM_ROUTES = {
     resource: 'Integration' as ResourceType,
     action: 'view' as ActionPermission,
     label: 'Kênh tiếp nhận (Zalo/SMS/Webhook)',
-    breadcrumbs: ['M5: Cấu hình Vận hành', 'Kênh tiếp nhận (Zalo/SMS/Webhook)'],
+    breadcrumbs: ['Cấu hình Vận hành', 'Kênh tiếp nhận (Zalo/SMS/Webhook)'],
     moduleCode: 'M5' as ModuleCode,
-    title: 'M5: Kênh tiếp nhận Webhook & API'
+    title: 'Kênh tiếp nhận Webhook & API'
   },
   SETTINGS_NOTIFICATION_TEMPLATES: {
     path: 'settings/notification-templates',
     fullPath: '/settings/notification-templates',
     resource: 'Integration' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Mẫu Email & Thông báo (US-15/30)',
-    breadcrumbs: ['M5: Cấu hình Vận hành', 'Mẫu Email & Thông báo (US-15/30)'],
+    label: 'Mẫu Email & Thông báo',
+    breadcrumbs: ['Cấu hình Vận hành', 'Mẫu Email & Thông báo'],
     moduleCode: 'M5' as ModuleCode,
-    title: 'M5: Mẫu tin thông báo đa kênh'
+    title: 'Mẫu tin thông báo đa kênh'
   },
 
   // ==========================================================================
   // [PHÂN HỆ M6] - DỮ LIỆU DANH MỤC (MASTER DATA)
   // ==========================================================================
-  MASTER_DATA: {
-    path: 'master-data',
+  MASTER_DATA_SUBSCRIBERS: {
+    path: 'master-data/subscribers',
     fullPath: '/master-data/subscribers',
     resource: 'MasterData' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Tra cứu thông tin thuê bao (US-16)',
-    breadcrumbs: ['M6: Master Data', 'Tra cứu thông tin thuê bao (US-16)'],
+    label: 'Tra cứu thông tin thuê bao',
+    breadcrumbs: ['Master Data', 'Tra cứu thông tin thuê bao'],
     moduleCode: 'M6' as ModuleCode,
-    title: 'M6: Tra cứu danh bạ thuê bao'
+    title: 'Tra cứu danh bạ thuê bao'
+  },
+  MASTER_DATA: {
+    path: 'master-data/subscribers',
+    fullPath: '/master-data/subscribers',
+    resource: 'MasterData' as ResourceType,
+    action: 'view' as ActionPermission,
+    label: 'Tra cứu thông tin thuê bao',
+    breadcrumbs: ['Master Data', 'Tra cứu thông tin thuê bao'],
+    moduleCode: 'M6' as ModuleCode,
+    title: 'Tra cứu danh bạ thuê bao'
   },
   MASTER_DATA_PRODUCTS_SERVICES: {
     path: 'master-data/products-services',
     fullPath: '/master-data/products-services',
     resource: 'MasterData' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Danh mục Sản phẩm/Dịch vụ (US-17)',
-    breadcrumbs: ['M6: Master Data', 'Danh mục Sản phẩm/Dịch vụ (US-17)'],
+    label: 'Danh mục Sản phẩm & Dịch vụ',
+    breadcrumbs: ['Master Data', 'Danh mục Sản phẩm & Dịch vụ'],
     moduleCode: 'M6' as ModuleCode,
-    title: 'M6: Danh mục sản phẩm & dịch vụ'
+    title: 'Danh mục sản phẩm & dịch vụ'
   },
 
   // ==========================================================================
   // [PHÂN HỆ M7] - QUẢN TRỊ HỆ THỐNG
   // ==========================================================================
-  ADMIN: {
-    path: 'admin',
+  ADMIN_ORGANIZATION: {
+    path: 'admin/organization',
     fullPath: '/admin/organization',
     resource: 'SystemAdmin' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Cơ cấu tổ chức & Phòng ban (US-18)',
-    breadcrumbs: ['M7: Quản trị Hệ thống', 'Cơ cấu tổ chức & Phòng ban (US-18)'],
+    label: 'Cơ cấu tổ chức & Phòng ban',
+    breadcrumbs: ['Quản trị Hệ thống', 'Cơ cấu tổ chức & Phòng ban'],
     moduleCode: 'M7' as ModuleCode,
-    title: 'M7: Cơ cấu tổ chức & Phòng ban'
+    title: 'Cơ cấu tổ chức & Phòng ban'
+  },
+  ADMIN: {
+    path: 'admin/organization',
+    fullPath: '/admin/organization',
+    resource: 'SystemAdmin' as ResourceType,
+    action: 'view' as ActionPermission,
+    label: 'Cơ cấu tổ chức & Phòng ban',
+    breadcrumbs: ['Quản trị Hệ thống', 'Cơ cấu tổ chức & Phòng ban'],
+    moduleCode: 'M7' as ModuleCode,
+    title: 'Cơ cấu tổ chức & Phòng ban'
   },
   ADMIN_USERS: {
     path: 'admin/users',
@@ -650,29 +656,29 @@ export const SYSTEM_ROUTES = {
     resource: 'SystemAdmin' as ResourceType,
     action: 'view' as ActionPermission,
     label: 'Quản lý danh sách Người dùng',
-    breadcrumbs: ['M7: Quản trị Hệ thống', 'Quản lý danh sách Người dùng'],
+    breadcrumbs: ['Quản trị Hệ thống', 'Quản lý danh sách Người dùng'],
     moduleCode: 'M7' as ModuleCode,
-    title: 'M7: Quản trị Người dùng'
+    title: 'Quản trị Người dùng'
   },
   ADMIN_ROLES_PERMISSIONS: {
     path: 'admin/roles-permissions',
     fullPath: '/admin/roles-permissions',
     resource: 'SystemAdmin' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Phân quyền & Vai trò (FR-38)',
-    breadcrumbs: ['M7: Quản trị Hệ thống', 'Phân quyền & Vai trò (FR-38)'],
+    label: 'Phân quyền & Vai trò',
+    breadcrumbs: ['Quản trị Hệ thống', 'Phân quyền & Vai trò'],
     moduleCode: 'M7' as ModuleCode,
-    title: 'M7: Phân vai & Ma trận quyền RBAC'
+    title: 'Phân vai & Ma trận quyền RBAC'
   },
   SYSTEM_ADMIN: {
-    path: 'system-admin',
+    path: 'admin/organization',
     fullPath: '/admin/organization',
     resource: 'SystemAdmin' as ResourceType,
     action: 'view' as ActionPermission,
-    label: 'Cơ cấu tổ chức & Phòng ban (Alias)',
-    breadcrumbs: ['M7: Quản trị Hệ thống', 'Cơ cấu tổ chức & Phòng ban (US-18)'],
+    label: 'Cơ cấu tổ chức & Phòng ban',
+    breadcrumbs: ['Quản trị Hệ thống', 'Cơ cấu tổ chức & Phòng ban'],
     moduleCode: 'M7' as ModuleCode,
-    title: 'M7: Cơ cấu tổ chức & Phòng ban'
+    title: 'Cơ cấu tổ chức & Phòng ban'
   },
   FORBIDDEN: {
     path: 'forbidden',
@@ -683,6 +689,16 @@ export const SYSTEM_ROUTES = {
     breadcrumbs: ['Hệ thống', '403 Forbidden'],
     moduleCode: 'M7' as ModuleCode,
     title: '403 Forbidden'
+  },
+  NOT_FOUND: {
+    path: 'not-found',
+    fullPath: '/not-found',
+    resource: 'SystemAdmin' as ResourceType,
+    action: 'view' as ActionPermission,
+    label: 'Không tìm thấy trang (404 Not Found)',
+    breadcrumbs: ['Hệ thống', '404 Not Found'],
+    moduleCode: 'M7' as ModuleCode,
+    title: '404 Not Found'
   }
 } as const;
 

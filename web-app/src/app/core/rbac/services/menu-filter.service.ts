@@ -211,10 +211,10 @@ export class RbacMenuService {
   // Trạng thái thu gọn/mở rộng Sidebar & Active path
   private navStateSubject = new BehaviorSubject<SidebarNavState>({
     collapsed: false,
-    activeKey: 'm1_canvas_builder',
-    activePath: '/templates/graph',
-    openKeys: ['m1_process_management'],
-    breadcrumbs: ['M1: Quản lý Quy trình', 'Canvas Builder (BPMN 7 Nodes)']
+    activeKey: 'templates_list',
+    activePath: '/process/templates-list',
+    openKeys: ['process_management'],
+    breadcrumbs: ['Quản lý Quy trình', 'Danh sách Template']
   });
   public navState$: Observable<SidebarNavState> = this.navStateSubject.asObservable();
 
@@ -313,10 +313,14 @@ export class RbacMenuService {
     const { item, breadcrumbs } = findMenuByPath(menuTree, path);
 
     const openKeys = [...current.openKeys];
-    if (item && item.moduleCode) {
-      const parentKey = this.getParentKeyForModule(item.moduleCode);
-      if (parentKey && !openKeys.includes(parentKey)) {
-        openKeys.push(parentKey);
+    if (item) {
+      for (const parent of menuTree) {
+        if (parent.children?.some(c => c.key === item.key || c.path === path)) {
+          if (!openKeys.includes(parent.key)) {
+            openKeys.push(parent.key);
+          }
+          break;
+        }
       }
     }
 
@@ -366,7 +370,7 @@ export class RbacMenuService {
    */
   private attachBadges(menu: MenuItem[], pending: number, overdue: number): void {
     for (const item of menu) {
-      if (item.key === 'm3_task_management' || item.key === 'm3_my_tasks') {
+      if (item.key === 'task_management' || item.key === 'my_tasks') {
         item.badge = {
           count: pending,
           variant: 'primary',
@@ -387,13 +391,13 @@ export class RbacMenuService {
 
   private getParentKeyForModule(mod: string): string {
     switch (mod) {
-      case 'M1': return 'm1_process_management';
-      case 'M2': return 'm2_flow_instances';
-      case 'M3': return 'm3_task_management';
-      case 'M4': return 'm4_reports_dashboards';
-      case 'M5': return 'm5_operation_settings';
-      case 'M6': return 'm6_master_data';
-      case 'M7': return 'm7_system_admin';
+      case 'M1': return 'process_management';
+      case 'M2': return 'flow_instances';
+      case 'M3': return 'task_management';
+      case 'M4': return 'reports_dashboards';
+      case 'M5': return 'operation_settings';
+      case 'M6': return 'master_data';
+      case 'M7': return 'system_admin';
       default: return '';
     }
   }

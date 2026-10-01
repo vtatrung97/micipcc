@@ -58,7 +58,9 @@ export class RbacRouteGuard implements CanActivate, CanActivateChild {
     } catch {}
 
     // 2. Cho phép các route đặc biệt
-    if (url === '/forbidden' || url.startsWith('/forbidden?') || url === '/login') {
+    if (url === '/forbidden' || url.startsWith('/forbidden?') || 
+        url === '/not-found' || url.startsWith('/not-found?') || 
+        url === '/login') {
       return true;
     }
 
@@ -71,15 +73,16 @@ export class RbacRouteGuard implements CanActivate, CanActivateChild {
       return true;
     }
 
-    // 4. Nếu không có quyền đối với URL hiện tại (ví dụ: F5 reload trên trang không hợp lệ):
-    // Tự động điều hướng đến URL tương ứng theo vai trò thay vì kẹt ở 403
-    const fallbackLandingUrl = this.rbacService.getDefaultLandingUrl();
-    if (url !== fallbackLandingUrl && !url.startsWith(fallbackLandingUrl)) {
-      console.warn(`[RBAC Route Guard] ⛔ URL ${url} không thuộc thẩm quyền vai trò ${this.rbacService.getCurrentRole()}. Điều hướng về URL tương ứng: ${fallbackLandingUrl}`);
-      return this.router.parseUrl(fallbackLandingUrl);
+    // 4. Nếu URL không tồn tại trong hệ thống: Điều hướng tới /not-found (404)
+    if (checkResult.isNotFound) {
+      console.warn(`[RBAC Route Guard] 🔍 URL ${url} không tồn tại trong hệ thống. Điều hướng về: /not-found`);
+      return this.router.createUrlTree(['/not-found'], {
+        queryParams: { attemptedUrl: url }
+      });
     }
 
-    // 5. User không có quyền và đã ở fallback URL -> Redirect về trang 403 Forbidden
+    // 5. Nếu URL tồn tại nhưng User không có quyền truy cập (người dùng tự gõ URL vào thanh địa chỉ):
+    // Điều hướng trực tiếp đến trang 403 Forbidden
     console.warn(`[RBAC Route Guard] ⛔ TRUY CẬP BỊ TỪ CHỐI: ${url}. Lý do: ${checkResult.reason}`);
 
     return this.router.createUrlTree(['/forbidden'], {

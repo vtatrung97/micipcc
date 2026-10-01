@@ -85,11 +85,10 @@ export interface RouteMeta {
 
 // 10. Cấu trúc Đối tượng Menu Item chuẩn hóa (Chuẩn Ant Design / Enterprise Navigation)
 export interface MenuItem {
-  key: string;                          // Unique Key nhận diện menu (VD: 'm1_templates')
+  key: string;                          // Unique Key nhận diện menu (VD: 'templates_list')
   label: string;                        // Tên hiển thị tiếng Việt chuẩn hóa
   path?: string;                        // Đường dẫn URL router (Leaf node bắt buộc có path)
   icon?: string;                        // Tên icon hoặc SVG định danh
-  moduleCode: ModuleCode;               // Mã phân hệ M1 - M7
   requiredResource: ResourceType;       // Tài nguyên yêu cầu kiểm tra quyền
   requiredPermission?: ActionPermission;// Mặc định là 'view'
   requiredScope?: DataScope;            // Phạm vi dữ liệu yêu cầu tối thiểu (optional)

@@ -10,7 +10,9 @@
     <!-- Dynamic Router Breadcrumb Trail -->
     <nav class="breadcrumb-container" aria-label="breadcrumb">
       <span class="breadcrumb-item home-item">
-        <span class="crumb-icon">🏢</span>
+        <span class="crumb-icon">
+          <ant-icon name="apartment" [size]="14"></ant-icon>
+        </span>
         <span class="crumb-text">Flow System</span>
         <span class="crumb-separator">/</span>
       </span>
@@ -29,7 +31,9 @@
             [class.is-default]="isCurrentPageDefault"
             (click)="toggleSetCurrentPageDefault()"
             [title]="isCurrentPageDefault ? 'Trang này đang là màn hình mặc định khi bạn đăng nhập (Bấm để hủy)' : 'Đặt trang này làm màn hình mặc định khi bạn đăng nhập (US-08, US-09)'">
-      <span class="pin-icon">{{ isCurrentPageDefault ? '⭐' : '☆' }}</span>
+      <span class="pin-icon">
+        <ant-icon [name]="isCurrentPageDefault ? 'star-fill' : 'star'" [size]="14" [color]="isCurrentPageDefault ? '#faad14' : 'inherit'"></ant-icon>
+      </span>
       <span class="pin-text">{{ isCurrentPageDefault ? 'Trang mặc định' : 'Đặt làm mặc định' }}</span>
     </button>
 
