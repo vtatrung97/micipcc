@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.core.configuration;
 
 import com.lifesup.ticketflow.auth.filter.ApiKeyAuthenticationFilter.ApiKeyAuthenticationToken;
-import com.lifesup.ticketflow.auth.filter.KeycloakAuthenticationFilter.KeycloakAuthenticationToken;
+import com.lifesup.ticketflow.auth.util.SecurityContextUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.auditing.DateTimeProvider;
@@ -35,8 +35,8 @@ public class JpaConfig {
     public AuditorAware<String> auditorAware() {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication instanceof KeycloakAuthenticationToken keycloak) {
-                return Optional.of(keycloak.getAccessToken().getSubject());
+            if (SecurityContextUtils.isJwtAuthenticationToken()) {
+                return Optional.ofNullable(SecurityContextUtils.getUserId());
             }
             if (authentication instanceof ApiKeyAuthenticationToken apiKey) {
                 return Optional.of("service:" + apiKey.getName());

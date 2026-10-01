@@ -1,13 +1,19 @@
 package com.lifesup.ticketflow.auth.util;
 
 import com.lifesup.ticketflow.auth.filter.ApiKeyAuthenticationFilter.ApiKeyAuthenticationToken;
-import com.lifesup.ticketflow.auth.filter.KeycloakAuthenticationFilter.KeycloakAuthenticationToken;
-import org.keycloak.representations.AccessToken;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.util.StringUtils;
 
-/** Truy cập thông tin người dùng/service đang gọi API từ SecurityContext. */
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/** Access to the user, roles and RPT permissions stored in the current SecurityContext. */
 public final class SecurityContextUtils {
 
     private SecurityContextUtils() {}
@@ -16,30 +22,34 @@ public final class SecurityContextUtils {
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
-    /** Authentication của người dùng Keycloak; ném ClassCastException nếu request gọi bằng X-API-Key. */
-    public static KeycloakAuthenticationToken getAuthentication() {
-        return (KeycloakAuthenticationToken) getCurrentAuthentication();
+    public static Jwt getJwt() {
+        if (getCurrentAuthentication() instanceof JwtAuthenticationToken authentication) {
+            return authentication.getToken();
+        }
+        throw new IllegalStateException("Current request is not authenticated with a JWT/RPT");
     }
 
-    public static AccessToken getAccessToken() {
-        return getAuthentication().getAccessToken();
-    }
-
-    /** Chuỗi access token gốc, dùng khi cần chuyển tiếp sang service khác. */
     public static String getTokenString() {
-        return getAuthentication().getTokenString();
+        return getJwt().getTokenValue();
     }
 
-    /** Keycloak user id (claim sub). */
     public static String getUserId() {
-        return getAccessToken().getSubject();
+        return getJwt().getSubject();
     }
 
     public static String getUsername() {
-        return getAccessToken().getPreferredUsername();
+        String username = getJwt().getClaimAsString("preferred_username");
+        return StringUtils.hasText(username) ? username : getJwt().getSubject();
     }
 
-    /** clientId của service gọi bằng X-API-Key. */
+    public static String getFullName() {
+        return getJwt().getClaimAsString("name");
+    }
+
+    public static String getEmail() {
+        return getJwt().getClaimAsString("email");
+    }
+
     public static String getApiKeyClientId() {
         return ((ApiKeyAuthenticationToken) getCurrentAuthentication()).getName();
     }
@@ -49,11 +59,100 @@ public final class SecurityContextUtils {
         return authentication == null || authentication instanceof AnonymousAuthenticationToken;
     }
 
-    public static boolean isKeycloakAuthenticationToken() {
-        return getCurrentAuthentication() instanceof KeycloakAuthenticationToken;
+    public static boolean isJwtAuthenticationToken() {
+        return getCurrentAuthentication() instanceof JwtAuthenticationToken;
     }
 
     public static boolean isApiKeyAuthenticationToken() {
         return getCurrentAuthentication() instanceof ApiKeyAuthenticationToken;
+    }
+
+    /** Checks Keycloak RPT authorization.permissions by resource name/id and scope. */
+    public static boolean checkPermission(String resourceName, String scope) {
+        if (!isJwtAuthenticationToken() || !StringUtils.hasText(resourceName)) {
+            return false;
+        }
+        return permissions().stream().anyMatch(permission -> resourceMatches(permission, resourceName)
+                && (!StringUtils.hasText(scope) || scopes(permission).contains(scope)));
+    }
+
+    public static boolean checkScopePermission(String scope) {
+        return isJwtAuthenticationToken()
+                && StringUtils.hasText(scope)
+                && permissions().stream().anyMatch(permission -> scopes(permission).contains(scope));
+    }
+
+    /** Checks the top-level OAuth/OIDC scope claim, not UMA permission scopes. */
+    public static boolean hasOAuthScope(String scope) {
+        if (!isJwtAuthenticationToken() || !StringUtils.hasText(scope)) {
+            return false;
+        }
+        Object tokenScopes = getJwt().getClaims().get("scope");
+        if (tokenScopes instanceof Collection<?> collection) {
+            return collection.contains(scope);
+        }
+        return tokenScopes instanceof String value && splitScopes(value).contains(scope);
+    }
+
+    public static boolean hasRealmRole(String role) {
+        return isJwtAuthenticationToken()
+                && roles(map(getJwt().getClaims().get("realm_access"))).contains(role);
+    }
+
+    public static boolean hasClientRole(String clientId, String role) {
+        if (!isJwtAuthenticationToken()) {
+            return false;
+        }
+        Object clientAccess = map(getJwt().getClaims().get("resource_access")).get(clientId);
+        return roles(map(clientAccess)).contains(role);
+    }
+
+    private static List<Map<String, Object>> permissions() {
+        Object permissions = map(getJwt().getClaims().get("authorization")).get("permissions");
+        if (!(permissions instanceof Collection<?> collection)) {
+            return List.of();
+        }
+        return collection.stream().filter(Map.class::isInstance).map(SecurityContextUtils::map).toList();
+    }
+
+    private static boolean resourceMatches(Map<String, Object> permission, String resourceName) {
+        return equalsIgnoreCase(resourceName, permission.get("rsname"))
+                || equalsIgnoreCase(resourceName, permission.get("rsid"));
+    }
+
+    private static List<String> scopes(Map<String, Object> permission) {
+        return strings(permission.get("scopes"));
+    }
+
+    private static List<String> roles(Map<String, Object> claims) {
+        return strings(claims.get("roles"));
+    }
+
+    private static List<String> strings(Object value) {
+        if (!(value instanceof Collection<?> collection)) {
+            return List.of();
+        }
+        return collection.stream().filter(String.class::isInstance).map(String.class::cast).toList();
+    }
+
+    private static List<String> splitScopes(String scopes) {
+        return StringUtils.hasText(scopes) ? List.of(scopes.trim().split("\\s+")) : List.of();
+    }
+
+    private static Map<String, Object> map(Object value) {
+        if (!(value instanceof Map<?, ?> source)) {
+            return Map.of();
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        source.forEach((key, mapValue) -> {
+            if (key instanceof String stringKey) {
+                result.put(stringKey, mapValue);
+            }
+        });
+        return result;
+    }
+
+    private static boolean equalsIgnoreCase(String expected, Object actual) {
+        return actual instanceof String value && expected.equalsIgnoreCase(value);
     }
 }

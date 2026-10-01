@@ -26,7 +26,7 @@ import java.util.List;
  *
  * <pre>
  *  endpoint public                → bỏ qua filter
- *  không có header X-API-Key      → đi tiếp, để KeycloakAuthenticationFilter kiểm Bearer token
+ *  không có header X-API-Key      → đi tiếp, để OAuth2 Resource Server kiểm Bearer token
  *  có header, key khớp cấu hình   → SecurityContext = ApiKeyAuthenticationToken(clientId, ROLE_SERVICE), đi tiếp
  *  có header, key sai             → trả 401 INVALID_API_KEY, dừng (không thử sang Bearer token)
  * </pre>

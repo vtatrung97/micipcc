@@ -30,7 +30,7 @@ public class OpenApiConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
-                                .description("Access token Keycloak (lấy qua POST /api/v1/auth/login)"))
+                                .description("Keycloak RPT chứa authorization.permissions"))
                         .addSecuritySchemes(API_KEY, new SecurityScheme()
                                 .type(SecurityScheme.Type.APIKEY)
                                 .in(SecurityScheme.In.HEADER)

@@ -19,3 +19,10 @@ Kết nối Redis và Spring Cache được cấu hình dùng chung từ `librar
 10 phút; có thể thay đổi bằng `CACHE_ENABLED` và `CACHE_DEFAULT_TTL`.
 
 Script tạo DB nằm trong [`src/main/resources/db/`](src/main/resources/db).
+
+
+## Before Run 
+mvn -f libraries/common-parent/pom.xml clean install
+mvn -f libraries/common-core/pom.xml clean install
+mvn -f libraries/common-auth/pom.xml clean install
+mvn -f core-service/pom.xml clean package -DskipTests

@@ -3,18 +3,17 @@ package com.lifesup.ticketflow.core.service.impl;
 import com.lifesup.ticketflow.core.dto.request.LoginRequest;
 import com.lifesup.ticketflow.core.dto.response.CurrentUserResponse;
 import com.lifesup.ticketflow.core.dto.response.TokenResponse;
+import com.lifesup.ticketflow.auth.dto.OAuthTokenResponse;
 import com.lifesup.ticketflow.common.exception.AppException;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
 import com.lifesup.ticketflow.auth.exception.KeycloakClientException;
+import com.lifesup.ticketflow.auth.service.KeycloakTokenService;
 import com.lifesup.ticketflow.core.service.AuthenticationService;
-import com.lifesup.ticketflow.core.service.KeycloakService;
 import com.lifesup.ticketflow.auth.util.SecurityContextUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.representations.AccessToken;
-import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
@@ -29,34 +28,40 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private static final String INVALID_GRANT = "invalid_grant";
 
-    KeycloakService keycloakService;
+    KeycloakTokenService keycloakTokenService;
 
     @Override
     public TokenResponse login(LoginRequest request) {
+        OAuthTokenResponse token;
         try {
-            AccessTokenResponse token = keycloakService.login(request.getUsername(), request.getPassword());
-            log.info("User {} logged in", request.getUsername());
-            return toResponse(token);
+            token = keycloakTokenService.login(request.getUsername(), request.getPassword());
         } catch (KeycloakClientException e) {
             log.warn("Login failed for user {}: {}", request.getUsername(), e.getMessage());
             throw new AppException(mapLoginError(e));
         }
+        OAuthTokenResponse rpt = requestRpt(token.accessToken());
+        log.info("User {} logged in and received an RPT", request.getUsername());
+        return toResponse(rpt, token.refreshToken(), token.refreshExpiresIn());
     }
 
     @Override
     public TokenResponse refreshToken(String refreshToken) {
+        OAuthTokenResponse token;
         try {
-            return toResponse(keycloakService.refreshToken(refreshToken));
+            token = keycloakTokenService.refresh(refreshToken);
         } catch (KeycloakClientException e) {
             log.warn("Refresh token failed: {}", e.getMessage());
             throw new AppException(mapTokenError(e, ErrorCode.INVALID_REFRESH_TOKEN));
         }
+        OAuthTokenResponse rpt = requestRpt(token.accessToken());
+        String rotatedRefreshToken = token.refreshToken() != null ? token.refreshToken() : refreshToken;
+        return toResponse(rpt, rotatedRefreshToken, token.refreshExpiresIn());
     }
 
     @Override
     public void logout(String refreshToken) {
         try {
-            keycloakService.logout(refreshToken);
+            keycloakTokenService.logout(refreshToken);
         } catch (KeycloakClientException e) {
             // Session đã hết hạn/đã logout trước đó thì coi như logout thành công
             if (!INVALID_GRANT.equals(e.getError())) {
@@ -85,13 +90,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .build();
         }
 
-        AccessToken accessToken = SecurityContextUtils.getAccessToken();
         return CurrentUserResponse.builder()
                 .authType("KEYCLOAK")
-                .subject(accessToken.getSubject())
-                .username(accessToken.getPreferredUsername())
-                .fullName(accessToken.getName())
-                .email(accessToken.getEmail())
+                .subject(SecurityContextUtils.getUserId())
+                .username(SecurityContextUtils.getUsername())
+                .fullName(SecurityContextUtils.getFullName())
+                .email(SecurityContextUtils.getEmail())
                 .authorities(authorities)
                 .build();
     }
@@ -133,14 +137,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return ErrorCode.KEYCLOAK_CONFIGURATION_ERROR;
     }
 
-    private static TokenResponse toResponse(AccessTokenResponse token) {
+    private static TokenResponse toResponse(
+            OAuthTokenResponse rpt,
+            String refreshToken,
+            Long refreshExpiresIn) {
         return TokenResponse.builder()
-                .accessToken(token.getToken())
-                .refreshToken(token.getRefreshToken())
-                .tokenType(token.getTokenType())
-                .expiresIn(token.getExpiresIn())
-                .refreshExpiresIn(token.getRefreshExpiresIn())
-                .scope(token.getScope())
+                .accessToken(rpt.accessToken())
+                .refreshToken(refreshToken)
+                .tokenType(rpt.tokenType())
+                .expiresIn(rpt.expiresIn())
+                .refreshExpiresIn(refreshExpiresIn)
+                .scope(rpt.scope())
                 .build();
+    }
+
+    private OAuthTokenResponse requestRpt(String accessToken) {
+        try {
+            return keycloakTokenService.requestRpt(accessToken);
+        } catch (KeycloakClientException e) {
+            log.warn("RPT request failed: {}", e.getMessage());
+            throw new AppException(mapTokenError(e, ErrorCode.ACCESS_DENIED));
+        }
     }
 }
