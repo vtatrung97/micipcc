@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-/** Bảng ticket_call_flow (sql/002_create_ticket_call_flow.sql): quy trình thiết kế trên Canvas, lưu JSON nguyên văn. */
+/** Bảng ticket_call_flow: thông tin chung của quy trình; nội dung canvas nằm ở ticket_call_flow_version. */
 @Getter
 @Setter
 @Entity
@@ -32,16 +32,16 @@ public class TicketCallFlowEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     String name;
 
+    /** Tiền tố mã hồ sơ, VD "PAKN" → hồ sơ PAKN-2026-00001. Không đổi sau khi tạo. */
+    @Column(name = "case_code_prefix", nullable = false, length = 20, updatable = false)
+    String caseCodePrefix;
+
     @Column(name = "description", length = 1000)
     String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     TicketCallFlowStatus status;
-
-    /** JSON canvas (nodes, edges...) FE gửi lên, lưu nguyên văn. */
-    @Column(name = "flow_json", nullable = false, columnDefinition = "longtext")
-    String flowJson;
 
     @Column(name = "deleted", nullable = false)
     boolean deleted;

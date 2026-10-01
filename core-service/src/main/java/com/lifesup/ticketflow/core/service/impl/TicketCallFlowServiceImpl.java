@@ -3,15 +3,23 @@ package com.lifesup.ticketflow.core.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
+import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCloneRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowPublishRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
 import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
+import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
+import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionResponse;
+import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
 import com.lifesup.ticketflow.core.entity.TicketCallFlowEntity;
+import com.lifesup.ticketflow.core.entity.TicketCallFlowVersionEntity;
 import com.lifesup.ticketflow.common.exception.AppException;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
 import com.lifesup.ticketflow.core.repository.TicketCallFlowRepository;
+import com.lifesup.ticketflow.core.repository.TicketCallFlowVersionRepository;
 import com.lifesup.ticketflow.core.service.TicketCallFlowService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +28,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Objects;
 
+/**
+ * Quy trình gồm thông tin chung (ticket_call_flow) và các phiên bản canvas (ticket_call_flow_version):
+ * - Tạo mới: phiên bản 1 ở trạng thái DRAFT, quy trình ở trạng thái DRAFT.
+ * - Lưu canvas: ghi vào bản nháp; chưa có bản nháp thì tạo bản nháp mới với số phiên bản kế tiếp.
+ * - Publish: bản nháp thành PUBLISHED, bản PUBLISHED cũ thành ARCHIVED; quy trình DRAFT chuyển sang ACTIVE.
+ * Mọi thao tác ghi đều tăng rowVersion của quy trình để FE dùng một giá trị chống lưu đè duy nhất.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -38,29 +55,49 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     static final int MAX_FLOW_JSON_LENGTH = 5_000_000;
 
     TicketCallFlowRepository ticketCallFlowRepository;
+    TicketCallFlowVersionRepository ticketCallFlowVersionRepository;
     ObjectMapper objectMapper;
+    AuditorAware<String> auditorAware;
 
     @Override
     @Transactional
     public TicketCallFlowResponse create(TicketCallFlowCreateRequest request) {
-        if (ticketCallFlowRepository.existsByCodeAndDeletedFalse(request.getCode())) {
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_CODE_EXISTED);
+        // Chưa có phiên bản hiệu lực nên chỉ có thể là DRAFT
+        if (request.getStatus() != null && request.getStatus() != TicketCallFlowStatus.DRAFT) {
+            throw new AppException(ErrorCode.TICKET_CALL_FLOW_STATUS_INVALID);
         }
 
         TicketCallFlowEntity entity = new TicketCallFlowEntity();
         entity.setCode(request.getCode());
         entity.setName(request.getName());
+        entity.setCaseCodePrefix(request.getCaseCodePrefix());
         entity.setDescription(request.getDescription());
-        entity.setStatus(request.getStatus() != null ? request.getStatus() : TicketCallFlowStatus.DRAFT);
-        entity.setFlowJson(validateFlowJson(request.getFlowJson()));
+        entity.setStatus(TicketCallFlowStatus.DRAFT);
 
-        try {
-            entity = ticketCallFlowRepository.saveAndFlush(entity);
-        } catch (DataIntegrityViolationException e) {
-            // 2 request cùng tạo 1 mã: request sau vướng unique key uk_ticket_call_flow_active_code
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_CODE_EXISTED, e);
-        }
+        entity = insertWithUniqueCode(entity, validateFlowJson(request.getFlowJson()));
         log.info("Created ticket_call_flow id={} code={}", entity.getId(), entity.getCode());
+        return toResponse(entity);
+    }
+
+    @Override
+    @Transactional
+    public TicketCallFlowResponse clone(Long sourceId, TicketCallFlowCloneRequest request) {
+        TicketCallFlowEntity source = findActive(sourceId);
+        // Sao chép nội dung mới nhất: bản nháp nếu có, không thì bản đang hiệu lực
+        TicketCallFlowVersionEntity sourceVersion = findEditingVersion(source.getId());
+
+        TicketCallFlowEntity entity = new TicketCallFlowEntity();
+        entity.setCode(request.getCode());
+        entity.setName(request.getName());
+        entity.setCaseCodePrefix(request.getCaseCodePrefix());
+        entity.setDescription(request.getDescription() != null ? request.getDescription() : source.getDescription());
+        // Bản sao luôn là bản nháp, người dùng chỉnh xong mới publish
+        entity.setStatus(TicketCallFlowStatus.DRAFT);
+
+        // flowJson của bản gốc đã được kiểm tra lúc lưu, sao chép nguyên văn
+        entity = insertWithUniqueCode(entity, sourceVersion.getFlowJson());
+        log.info("Cloned ticket_call_flow sourceId={} versionNo={} -> id={} code={}",
+                source.getId(), sourceVersion.getVersionNo(), entity.getId(), entity.getCode());
         return toResponse(entity);
     }
 
@@ -69,21 +106,77 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     @CacheEvict(cacheNames = "ticket-call-flow", key = "#id")
     public TicketCallFlowResponse update(Long id, TicketCallFlowUpdateRequest request) {
         TicketCallFlowEntity entity = findActive(id);
+        checkRowVersion(entity, request.getRowVersion());
 
-        // Người khác đã lưu sau lần FE lấy dữ liệu: chặn để không ghi đè mất thay đổi của họ
-        if (request.getRowVersion() != null && !Objects.equals(request.getRowVersion(), entity.getRowVersion())) {
-            throw new AppException(ErrorCode.DATA_CONFLICT);
-        }
-
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
         if (request.getStatus() != null) {
+            validateStatusChange(entity, request.getStatus());
             entity.setStatus(request.getStatus());
         }
-        entity.setFlowJson(validateFlowJson(request.getFlowJson()));
+        entity.setName(request.getName());
+        entity.setDescription(request.getDescription());
 
-        entity = ticketCallFlowRepository.saveAndFlush(entity);
-        log.info("Updated ticket_call_flow id={} rowVersion={}", entity.getId(), entity.getRowVersion());
+        TicketCallFlowVersionEntity draft = ticketCallFlowVersionRepository
+                .findByFlowIdAndStatus(id, TicketCallFlowVersionStatus.DRAFT)
+                .orElseGet(() -> newDraft(id, ticketCallFlowVersionRepository.findMaxVersionNo(id) + 1));
+        draft.setFlowJson(validateFlowJson(request.getFlowJson()));
+        applyVersionInfo(draft, request.getVersionName(), request.getVersionDescription());
+        ticketCallFlowVersionRepository.saveAndFlush(draft);
+
+        entity = touchAndSave(entity);
+        log.info("Updated ticket_call_flow id={} draftVersionNo={} rowVersion={}",
+                entity.getId(), draft.getVersionNo(), entity.getRowVersion());
+        return toResponse(entity);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = "ticket-call-flow", key = "#id")
+    public TicketCallFlowResponse publish(Long id, TicketCallFlowPublishRequest request) {
+        TicketCallFlowEntity entity = findActive(id);
+        checkRowVersion(entity, request.getRowVersion());
+        TicketCallFlowVersionEntity draft = findDraftOrThrow(id);
+        // TODO FR-06: chặn publish khi bản nháp chưa kiểm thử đạt (template_test_run)
+
+        // Lưu bản cũ thành ARCHIVED trước, nếu không sẽ vướng unique key "mỗi quy trình 1 bản PUBLISHED"
+        ticketCallFlowVersionRepository
+                .findByFlowIdAndStatus(id, TicketCallFlowVersionStatus.PUBLISHED)
+                .ifPresent(old -> {
+                    old.setStatus(TicketCallFlowVersionStatus.ARCHIVED);
+                    ticketCallFlowVersionRepository.saveAndFlush(old);
+                });
+
+        applyVersionInfo(draft, request.getVersionName(), request.getVersionDescription());
+        draft.setStatus(TicketCallFlowVersionStatus.PUBLISHED);
+        draft.setPublishedAt(System.currentTimeMillis());
+        draft.setPublishedBy(auditorAware.getCurrentAuditor().orElse(null));
+        ticketCallFlowVersionRepository.saveAndFlush(draft);
+
+        // Lần publish đầu tiên: quy trình bắt đầu có hiệu lực
+        if (entity.getStatus() == TicketCallFlowStatus.DRAFT) {
+            entity.setStatus(TicketCallFlowStatus.ACTIVE);
+        }
+        entity = touchAndSave(entity);
+        log.info("Published ticket_call_flow id={} versionNo={}", entity.getId(), draft.getVersionNo());
+        return toResponse(entity);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = "ticket-call-flow", key = "#id")
+    public TicketCallFlowResponse discardDraft(Long id, TicketCallFlowPublishRequest request) {
+        TicketCallFlowEntity entity = findActive(id);
+        checkRowVersion(entity, request.getRowVersion());
+        TicketCallFlowVersionEntity draft = findDraftOrThrow(id);
+
+        // Bản nháp duy nhất của quy trình chưa publish: huỷ đi thì quy trình không còn nội dung
+        if (ticketCallFlowVersionRepository.findByFlowIdAndStatus(id, TicketCallFlowVersionStatus.PUBLISHED).isEmpty()) {
+            throw new AppException(ErrorCode.TICKET_CALL_FLOW_DRAFT_NOT_DISCARDABLE);
+        }
+        ticketCallFlowVersionRepository.delete(draft);
+        ticketCallFlowVersionRepository.flush();
+
+        entity = touchAndSave(entity);
+        log.info("Discarded draft of ticket_call_flow id={} versionNo={}", entity.getId(), draft.getVersionNo());
         return toResponse(entity);
     }
 
@@ -97,9 +190,45 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<TicketCallFlowSummaryResponse> search(
-            String keyword, TicketCallFlowStatus status, int page, int size) {
+            String keyword, TicketCallFlowStatus status, Boolean hasDraft, int page, int size) {
         PageRequest pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.desc("updatedAt"), Sort.Order.desc("id")));
-        return new PageResponse<>(ticketCallFlowRepository.search(toLikePattern(keyword), status, pageable));
+        return new PageResponse<>(ticketCallFlowRepository.search(toLikePattern(keyword), status, hasDraft, pageable));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TicketCallFlowStatsResponse stats() {
+        return ticketCallFlowRepository.stats();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketCallFlowVersionSummaryResponse> getVersions(Long id) {
+        findActive(id);
+        return ticketCallFlowVersionRepository.findSummariesByFlowId(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TicketCallFlowVersionResponse getVersion(Long id, Integer versionNo) {
+        findActive(id);
+        TicketCallFlowVersionEntity version = ticketCallFlowVersionRepository
+                .findByFlowIdAndVersionNo(id, versionNo)
+                .orElseThrow(() -> new AppException(ErrorCode.TICKET_CALL_FLOW_VERSION_NOT_FOUND));
+        return TicketCallFlowVersionResponse.builder()
+                .flowId(version.getFlowId())
+                .versionNo(version.getVersionNo())
+                .status(version.getStatus())
+                .versionName(version.getVersionName())
+                .versionDescription(version.getVersionDescription())
+                .flowJson(version.getFlowJson())
+                .publishedAt(version.getPublishedAt())
+                .publishedBy(version.getPublishedBy())
+                .createdAt(version.getCreatedAt())
+                .createdBy(version.getCreatedBy())
+                .updatedAt(version.getUpdatedAt())
+                .updatedBy(version.getUpdatedBy())
+                .build();
     }
 
     @Override
@@ -107,9 +236,94 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     @CacheEvict(cacheNames = "ticket-call-flow", key = "#id")
     public void delete(Long id) {
         TicketCallFlowEntity entity = findActive(id);
+        // Các phiên bản giữ nguyên để tra cứu lịch sử
         entity.setDeleted(true);
         ticketCallFlowRepository.save(entity);
         log.info("Deleted ticket_call_flow id={} code={}", entity.getId(), entity.getCode());
+    }
+
+    /**
+     * Thêm quy trình mới kèm phiên bản 1 (DRAFT), báo lỗi nếu mã hoặc tiền tố mã hồ sơ
+     * đã có trong các bản ghi chưa xoá.
+     */
+    private TicketCallFlowEntity insertWithUniqueCode(TicketCallFlowEntity entity, String flowJson) {
+        if (ticketCallFlowRepository.existsByCodeAndDeletedFalse(entity.getCode())) {
+            throw new AppException(ErrorCode.TICKET_CALL_FLOW_CODE_EXISTED);
+        }
+        if (ticketCallFlowRepository.existsByCaseCodePrefixAndDeletedFalse(entity.getCaseCodePrefix())) {
+            throw new AppException(ErrorCode.TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED);
+        }
+        try {
+            entity = ticketCallFlowRepository.saveAndFlush(entity);
+        } catch (DataIntegrityViolationException e) {
+            // 2 request cùng tạo 1 mã / 1 tiền tố: request sau vướng unique key, phân biệt theo tên ràng buộc
+            String message = String.valueOf(e.getMostSpecificCause().getMessage());
+            throw new AppException(message.contains("uk_ticket_call_flow_active_case_prefix")
+                    ? ErrorCode.TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED
+                    : ErrorCode.TICKET_CALL_FLOW_CODE_EXISTED, e);
+        }
+        TicketCallFlowVersionEntity draft = newDraft(entity.getId(), 1);
+        draft.setFlowJson(flowJson);
+        ticketCallFlowVersionRepository.saveAndFlush(draft);
+        return entity;
+    }
+
+    /** Gán tên / mô tả phiên bản: null = giữ nguyên, chuỗi rỗng = xoá. */
+    private static void applyVersionInfo(TicketCallFlowVersionEntity version, String name, String description) {
+        if (name != null) {
+            version.setVersionName(StringUtils.hasText(name) ? name : null);
+        }
+        if (description != null) {
+            version.setVersionDescription(StringUtils.hasText(description) ? description : null);
+        }
+    }
+
+    private static TicketCallFlowVersionEntity newDraft(Long flowId, int versionNo) {
+        TicketCallFlowVersionEntity draft = new TicketCallFlowVersionEntity();
+        draft.setFlowId(flowId);
+        draft.setVersionNo(versionNo);
+        draft.setStatus(TicketCallFlowVersionStatus.DRAFT);
+        return draft;
+    }
+
+    /**
+     * Đánh dấu quy trình vừa thay đổi rồi lưu, để row_version tăng kể cả khi chỉ sửa canvas (nằm ở bảng phiên bản).
+     * Câu UPDATE kèm điều kiện row_version cũ nên 2 người lưu cùng lúc thì người sau nhận 409.
+     */
+    private TicketCallFlowEntity touchAndSave(TicketCallFlowEntity entity) {
+        long now = System.currentTimeMillis();
+        Long updatedAt = entity.getUpdatedAt();
+        entity.setUpdatedAt(updatedAt != null && updatedAt >= now ? updatedAt + 1 : now);
+        return ticketCallFlowRepository.saveAndFlush(entity);
+    }
+
+    /** Người khác đã lưu sau lần FE lấy dữ liệu: chặn để không ghi đè mất thay đổi của họ. */
+    private static void checkRowVersion(TicketCallFlowEntity entity, Long rowVersion) {
+        if (rowVersion != null && !Objects.equals(rowVersion, entity.getRowVersion())) {
+            throw new AppException(ErrorCode.DATA_CONFLICT);
+        }
+    }
+
+    /** Chưa publish lần nào: chỉ DRAFT. Đã publish: chỉ chuyển giữa ACTIVE và INACTIVE. */
+    private void validateStatusChange(TicketCallFlowEntity entity, TicketCallFlowStatus status) {
+        boolean published = entity.getStatus() != TicketCallFlowStatus.DRAFT;
+        if (published == (status == TicketCallFlowStatus.DRAFT)) {
+            throw new AppException(ErrorCode.TICKET_CALL_FLOW_STATUS_INVALID);
+        }
+    }
+
+    private TicketCallFlowVersionEntity findDraftOrThrow(Long flowId) {
+        return ticketCallFlowVersionRepository
+                .findByFlowIdAndStatus(flowId, TicketCallFlowVersionStatus.DRAFT)
+                .orElseThrow(() -> new AppException(ErrorCode.TICKET_CALL_FLOW_DRAFT_NOT_FOUND));
+    }
+
+    /** Bản đang sửa: bản nháp nếu có, không thì bản đang hiệu lực. */
+    private TicketCallFlowVersionEntity findEditingVersion(Long flowId) {
+        return ticketCallFlowVersionRepository
+                .findByFlowIdAndStatus(flowId, TicketCallFlowVersionStatus.DRAFT)
+                .or(() -> ticketCallFlowVersionRepository.findByFlowIdAndStatus(flowId, TicketCallFlowVersionStatus.PUBLISHED))
+                .orElseThrow(() -> new AppException(ErrorCode.TICKET_CALL_FLOW_VERSION_NOT_FOUND));
     }
 
     private TicketCallFlowEntity findActive(Long id) {
@@ -146,18 +360,49 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     }
 
     private TicketCallFlowResponse toResponse(TicketCallFlowEntity entity) {
+        TicketCallFlowVersionEntity published = ticketCallFlowVersionRepository
+                .findByFlowIdAndStatus(entity.getId(), TicketCallFlowVersionStatus.PUBLISHED)
+                .orElse(null);
+        TicketCallFlowVersionEntity draft = ticketCallFlowVersionRepository
+                .findByFlowIdAndStatus(entity.getId(), TicketCallFlowVersionStatus.DRAFT)
+                .orElse(null);
+        TicketCallFlowVersionEntity editing = draft != null ? draft : published;
+
         return TicketCallFlowResponse.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
                 .name(entity.getName())
+                .caseCodePrefix(entity.getCaseCodePrefix())
                 .description(entity.getDescription())
                 .status(entity.getStatus())
-                .flowJson(entity.getFlowJson())
+                .flowJson(editing != null ? editing.getFlowJson() : null)
+                .flowJsonVersionNo(editing != null ? editing.getVersionNo() : null)
+                .flowJsonVersionStatus(editing != null ? editing.getStatus() : null)
+                .publishedVersion(toVersionSummary(published))
+                .draftVersion(toVersionSummary(draft))
                 .createdAt(entity.getCreatedAt())
                 .createdBy(entity.getCreatedBy())
                 .updatedAt(entity.getUpdatedAt())
                 .updatedBy(entity.getUpdatedBy())
                 .rowVersion(entity.getRowVersion())
+                .build();
+    }
+
+    private static TicketCallFlowVersionSummaryResponse toVersionSummary(TicketCallFlowVersionEntity version) {
+        if (version == null) {
+            return null;
+        }
+        return TicketCallFlowVersionSummaryResponse.builder()
+                .versionNo(version.getVersionNo())
+                .status(version.getStatus())
+                .versionName(version.getVersionName())
+                .versionDescription(version.getVersionDescription())
+                .publishedAt(version.getPublishedAt())
+                .publishedBy(version.getPublishedBy())
+                .createdAt(version.getCreatedAt())
+                .createdBy(version.getCreatedBy())
+                .updatedAt(version.getUpdatedAt())
+                .updatedBy(version.getUpdatedBy())
                 .build();
     }
 }

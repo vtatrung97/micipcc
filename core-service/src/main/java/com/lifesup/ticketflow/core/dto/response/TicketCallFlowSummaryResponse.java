@@ -21,8 +21,19 @@ public class TicketCallFlowSummaryResponse {
     Long id;
     String code;
     String name;
+    /** Tiền tố mã hồ sơ, VD "PAKN". */
+    String caseCodePrefix;
     String description;
     TicketCallFlowStatus status;
+    /** Số phiên bản đang hiệu lực, null = chưa publish lần nào. */
+    Integer publishedVersionNo;
+    /** Timestamp mili giây (epoch millis). */
+    Long publishedAt;
+    /** Số phiên bản nháp, null = không có bản nháp. */
+    Integer draftVersionNo;
+    /** Lần lưu gần nhất của bản nháp, timestamp mili giây (epoch millis). */
+    Long draftUpdatedAt;
+    String draftUpdatedBy;
     /** Timestamp mili giây (epoch millis). */
     Long createdAt;
     String createdBy;
