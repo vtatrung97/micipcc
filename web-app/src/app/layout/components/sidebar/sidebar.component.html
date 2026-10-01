@@ -1,0 +1,195 @@
+<aside class="ant-pro-sider" [class.collapsed]="navState.collapsed">
+  <!-- Brand & Logo Header -->
+  <div class="sider-header">
+    <div class="logo-box">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" width="24" height="24" fill="none">
+          <rect width="32" height="32" rx="8" fill="#1677ff" />
+          <path d="M8 16h6l3-6 4 12 3-6h4" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="brand-info" *ngIf="!navState.collapsed">
+        <span class="system-title">FLOW SYSTEM</span>
+        <span class="system-version">IPCC 2.0 • RBAC</span>
+      </div>
+    </div>
+    
+    <!-- Collapse Toggle Button -->
+    <button class="collapse-toggle-btn" (click)="toggleCollapse()" [title]="navState.collapsed ? 'Mở rộng Menu' : 'Thu gọn Menu'">
+      <svg *ngIf="!navState.collapsed" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+      </svg>
+      <svg *ngIf="navState.collapsed" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Role Switcher Panel (Mô phỏng Chuyển đổi Quyền Nhanh) -->
+  <div class="role-switcher-container" *ngIf="!navState.collapsed">
+    <div class="role-label-row">
+      <span class="label-text">MÔ PHỎNG VAI TRÒ (RBAC):</span>
+      <span class="current-role-badge" [attr.data-role]="currentUser.role">{{ currentUser.role }}</span>
+    </div>
+    <div class="role-buttons-grid">
+      <button 
+        class="role-pill-btn" 
+        [class.active]="currentUser.role === 'ADMIN'" 
+        (click)="switchRole('ADMIN')"
+        title="Admin: Toàn quyền quản trị hệ thống">
+        Admin
+      </button>
+      <button 
+        class="role-pill-btn" 
+        [class.active]="currentUser.role === 'SUPERVISOR'" 
+        (click)="switchRole('SUPERVISOR')"
+        title="Trưởng ca: Giám sát quy trình, tiến trình & duyệt task">
+        Trưởng ca
+      </button>
+      <button 
+        class="role-pill-btn" 
+        [class.active]="currentUser.role === 'AGENT'" 
+        (click)="switchRole('AGENT')"
+        title="Điện thoại viên: Tiếp nhận và xử lý task công việc">
+        Điện thoại viên
+      </button>
+    </div>
+
+    <!-- Quick Search Menu -->
+    <div class="menu-search-box">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="🔍 Tìm nhanh chức năng..." 
+        [(ngModel)]="searchQuery" 
+        (input)="onSearchChange()" />
+      <button *ngIf="searchQuery" class="clear-search-btn" (click)="clearSearch()">✕</button>
+    </div>
+  </div>
+
+  <!-- Collapsed User Avatar Avatar Indicator -->
+  <div class="collapsed-user-indicator" *ngIf="navState.collapsed" [title]="currentUser.fullName + ' (' + currentUser.role + ')'">
+    <div class="mini-avatar" [attr.data-role]="currentUser.role">
+      {{ currentUser.role.charAt(0) }}
+    </div>
+  </div>
+
+  <!-- Main Navigation Menu Tree -->
+  <nav class="sider-menu-nav">
+    <ul class="ant-menu">
+      <ng-container *ngFor="let group of filteredMenu">
+        <!-- Submenu Item (Có danh mục con M1 - M7) -->
+        <li 
+          class="ant-menu-submenu" 
+          [class.ant-menu-submenu-open]="isSubmenuOpen(group.key)"
+          [class.ant-menu-submenu-active]="isParentActive(group)">
+          
+          <!-- Submenu Title Row -->
+          <div class="submenu-title" (click)="toggleSubmenu(group, $event)">
+            <!-- Group Icon -->
+            <span class="menu-icon">
+              <!-- M1 -->
+              <svg *ngIf="group.key === 'process_management'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              </svg>
+              <!-- M2 -->
+              <svg *ngIf="group.key === 'flow_instances' || group.key === 'flow_instances_management'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+              </svg>
+              <!-- M3 -->
+              <svg *ngIf="group.key === 'task_management'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              <!-- M4 -->
+              <svg *ngIf="group.key === 'reports_dashboards'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/>
+              </svg>
+              <!-- M5 -->
+              <svg *ngIf="group.key === 'operation_settings'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <!-- M6 -->
+              <svg *ngIf="group.key === 'master_data'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+              </svg>
+              <!-- M7 -->
+              <svg *ngIf="group.key === 'system_admin'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </span>
+
+            <!-- Label -->
+            <span class="menu-title-text" *ngIf="!navState.collapsed">{{ group.label }}</span>
+
+            <!-- Badges for M3 Group -->
+            <div class="badge-cluster" *ngIf="!navState.collapsed && group.badge">
+              <span class="ant-badge ant-badge-primary" [title]="group.badge.tooltip">
+                {{ group.badge.count }}
+              </span>
+              <span *ngIf="group.badgeWarning" class="ant-badge ant-badge-danger" [class.badge-pulse]="group.badgeWarning.isPulse" [title]="group.badgeWarning.tooltip">
+                {{ group.badgeWarning.count }}
+              </span>
+            </div>
+
+            <!-- Arrow Indicator -->
+            <span class="submenu-arrow" *ngIf="!navState.collapsed">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+              </svg>
+            </span>
+          </div>
+
+          <!-- Submenu Children Items -->
+          <ul class="submenu-children" *ngIf="!navState.collapsed && isSubmenuOpen(group.key)">
+            <li 
+              *ngFor="let child of group.children"
+              class="ant-menu-item"
+              [class.ant-menu-item-selected]="isItemActive(child)"
+              (click)="navigateTo(child, $event)">
+              
+              <ant-icon [name]="child.icon || 'file-text'" [size]="14" class="child-item-icon" style="margin-right: 8px; display: inline-flex; align-items: center;"></ant-icon>
+              <span class="child-item-text">{{ child.label }}</span>
+
+              <!-- Child Badges -->
+              <div class="badge-cluster" *ngIf="child.badge">
+                <span class="ant-badge ant-badge-primary" [title]="child.badge.tooltip">
+                  {{ child.badge.count }}
+                </span>
+                <span *ngIf="child.badgeWarning" class="ant-badge ant-badge-danger" [class.badge-pulse]="child.badgeWarning.isPulse" [title]="child.badgeWarning.tooltip">
+                  {{ child.badgeWarning.count }}
+                </span>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ng-container>
+
+      <!-- Empty state when search matches nothing -->
+      <li class="menu-empty-state" *ngIf="filteredMenu.length === 0 && searchQuery">
+        <span>Không tìm thấy menu phù hợp với vai trò của bạn.</span>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Footer Info & Live Badge Simulation -->
+  <div class="sider-footer" *ngIf="!navState.collapsed">
+    <div class="user-profile-row">
+      <div class="user-avatar" [attr.data-role]="currentUser.role">
+        {{ currentUser.role.charAt(0) }}
+      </div>
+      <div class="user-details">
+        <span class="user-fullname">{{ currentUser.fullName }}</span>
+        <span class="user-department">{{ currentUser.department }}</span>
+      </div>
+    </div>
+
+    <!-- Live SLA & Task Simulation Controls -->
+    <div class="badge-sim-row">
+      <span class="sim-label">Giả lập Task:</span>
+      <div class="sim-buttons">
+        <button class="sim-btn" (click)="simulateTaskChange(1)" title="Tăng thêm 1 task">+1</button>
+        <button class="sim-btn" (click)="simulateTaskChange(-1)" title="Giảm 1 task">-1</button>
+      </div>
+    </div>
+  </div>
+</aside>
