@@ -21,7 +21,7 @@ public class JpaConfig {
 
     public static final String SYSTEM_AUDITOR = "system";
 
-    /** Nguồn thời gian cho created_at/updated_at; Spring Data lưu vào field Long dưới dạng epoch millis. */
+    /** Nguồn thời gian cho created_at/updated_at (DATETIME(3) UTC), cắt về mili giây cho khớp độ chính xác của cột. */
     @Bean
     public DateTimeProvider auditingDateTimeProvider() {
         return () -> Optional.of(Instant.now().truncatedTo(ChronoUnit.MILLIS));
