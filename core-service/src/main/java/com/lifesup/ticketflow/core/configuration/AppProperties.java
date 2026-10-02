@@ -16,15 +16,9 @@ import java.util.Locale;
 @Validated
 @ConfigurationProperties(prefix = "app")
 public record AppProperties(
-        @NotNull Security security,
         @Valid @NotNull ApiKey apiKey,
         @Valid @NotNull I18n i18n,
         @NotNull Cors cors) {
-
-    /**
-     * @param enabled false: tắt xác thực, mọi API đều public (dùng tạm khi chưa có Keycloak). Production bắt buộc true.
-     */
-    public record Security(boolean enabled) {}
 
     /**
      * @param headerName tên header chứa API key
