@@ -1,0 +1,22 @@
+<div class="ant-form-item" [class.has-error]="!!error">
+  <label class="ant-form-item-label" *ngIf="label">
+    <span class="required-star" *ngIf="required">*</span>
+    <span class="label-text">{{ label }}</span>
+    <span class="label-colon" *ngIf="colon">:</span>
+  </label>
+
+  <div class="ant-form-item-control">
+    <div class="ant-form-item-control-input">
+      <ng-content></ng-content>
+    </div>
+
+    <div class="ant-form-item-explain-error" *ngIf="error">
+      <ant-icon name="close-circle-fill" [size]="12"></ant-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <div class="ant-form-item-extra" *ngIf="hint && !error">
+      {{ hint }}
+    </div>
+  </div>
+</div>

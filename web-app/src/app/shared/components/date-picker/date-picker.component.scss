@@ -1,0 +1,184 @@
+:host {
+  display: inline-block;
+  width: 100%;
+}
+
+.ant-picker-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.ant-picker {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px 11px;
+  background-color: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  box-sizing: border-box;
+
+  &:hover:not(.ant-picker-disabled) {
+    border-color: #4096ff;
+  }
+}
+
+.ant-picker-disabled .ant-picker {
+  background-color: #f5f5f5;
+  color: #00000040;
+  cursor: not-allowed;
+  border-color: #d9d9d9;
+
+  .ant-picker-input {
+    cursor: not-allowed;
+  }
+}
+
+.ant-picker-prefix, .ant-picker-suffix {
+  color: #8c8c8c;
+  display: flex;
+  align-items: center;
+}
+
+.ant-picker-prefix {
+  margin-right: 8px;
+}
+
+.ant-picker-suffix {
+  margin-left: auto;
+}
+
+.ant-picker-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #1f2937;
+  background: transparent;
+  cursor: pointer;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+}
+
+.ant-picker-separator {
+  padding: 0 8px;
+  color: #8c8c8c;
+}
+
+.ant-picker-clear {
+  margin-left: auto;
+  color: #bfbfbf;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  &:hover {
+    color: #595959;
+  }
+}
+
+.ant-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 260px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12);
+  border: 1px solid #f0f0f0;
+  padding: 12px;
+  z-index: 1050;
+  animation: pickerSlide 0.18s ease;
+}
+
+.picker-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+
+  .preset-btn {
+    padding: 3px 8px;
+    font-size: 12px;
+    color: #4b5563;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background: #e6f4ff;
+      color: #1677ff;
+    }
+  }
+}
+
+.picker-date-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .date-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    label {
+      font-size: 12px;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+
+    input {
+      padding: 4px 8px;
+      font-size: 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      outline: none;
+
+      &:focus {
+        border-color: #1677ff;
+      }
+    }
+  }
+}
+
+.picker-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+
+  .picker-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+
+    &.picker-btn-clear {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+    &.picker-btn-apply {
+      background: #1677ff;
+      color: #ffffff;
+    }
+  }
+}
+
+@keyframes pickerSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

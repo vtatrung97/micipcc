@@ -1,0 +1,7 @@
+<span 
+  class="ant-tag"
+  [class.ant-tag-sm]="size === 'small'"
+  [attr.data-status]="normalizedStatus">
+  <span class="ant-tag-dot" *ngIf="dot"></span>
+  <span class="ant-tag-text">{{ text || label }}</span>
+</span>

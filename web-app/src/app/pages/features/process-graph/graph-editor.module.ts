@@ -1,0 +1,72 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { GraphEditorComponent } from './graph-editor.component';
+import { GraphEditorRoutingModule } from './graph-editor-routing.module';
+import { SharedModule } from '@shared/shared.module';
+import { NodeConfigDrawerComponent } from './node-config-drawer/node-config-drawer.component';
+import {
+  TemplateInfoModalComponent,
+  NotifyConfigModalComponent,
+  JsonPreviewModalComponent,
+  ValidationModalComponent
+} from './modals';
+import {
+  ActionNodeConfigComponent,
+  ConditionNodeConfigComponent,
+  TaskNodeConfigComponent,
+  TriggerNodeConfigComponent,
+  SplitNodeConfigComponent,
+  MergeNodeConfigComponent,
+  EndNodeConfigComponent
+} from './node-config-drawer/components';
+
+// NG-ZORRO Modules
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzBadgeModule } from 'ng-zorro-antd/badge';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+
+@NgModule({
+  declarations: [
+    GraphEditorComponent,
+    NodeConfigDrawerComponent,
+    TemplateInfoModalComponent,
+    NotifyConfigModalComponent,
+    JsonPreviewModalComponent,
+    ValidationModalComponent,
+    ActionNodeConfigComponent,
+    ConditionNodeConfigComponent,
+    TaskNodeConfigComponent,
+    TriggerNodeConfigComponent,
+    SplitNodeConfigComponent,
+    MergeNodeConfigComponent,
+    EndNodeConfigComponent
+  ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SharedModule,
+    GraphEditorRoutingModule,
+    NzDrawerModule,
+    NzModalModule,
+    NzFormModule,
+    NzInputModule,
+    NzSelectModule,
+    NzSwitchModule,
+    NzButtonModule,
+    NzBadgeModule,
+    NzToolTipModule
+  ],
+  exports: [
+    GraphEditorComponent
+  ]
+})
+export class GraphEditorModule { }
+
+

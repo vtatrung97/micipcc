@@ -1,0 +1,68 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ant-form-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+
+  &.has-error {
+    .ant-form-item-label .label-text {
+      color: #ff4d4f;
+    }
+  }
+}
+
+.ant-form-item-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+
+  .required-star {
+    color: #ff4d4f;
+    margin-right: 4px;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .label-colon {
+    margin-left: 2px;
+    margin-right: 6px;
+  }
+}
+
+.ant-form-item-control {
+  display: flex;
+  flex-direction: column;
+}
+
+.ant-form-item-control-input {
+  position: relative;
+  width: 100%;
+}
+
+.ant-form-item-explain-error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #ff4d4f;
+  animation: errorFadeIn 0.2s ease;
+}
+
+.ant-form-item-extra {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+@keyframes errorFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}

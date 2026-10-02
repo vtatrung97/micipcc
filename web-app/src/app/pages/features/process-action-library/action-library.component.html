@@ -1,0 +1,178 @@
+<div class="feature-page-container">
+  <!-- 1. Breadcrumbs & Header -->
+  <div class="page-top-nav">
+    <app-breadcrumbs [items]="['Quản lý Quy trình', 'Thư viện Action']"></app-breadcrumbs>
+  </div>
+
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-tag">PHÂN HỆ M1 • US-34</div>
+      <h2 class="page-title">
+        <ant-icon name="apartment" [size]="20" style="margin-right: 8px; color: #1677ff;"></ant-icon>
+        Thư viện Action Dùng Chung (Action Library)
+      </h2>
+      <p class="page-subtitle">Kho hành động chuẩn hóa có thể tái sử dụng qua các quy trình: REST API, Zalo ZNS, SMS,
+        Email & Webhook</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openCreateModal()" *hasPermission="['ActionLibrary', 'create']">
+        <ant-icon name="plus" [size]="14" style="margin-right: 5px;"></ant-icon>
+        <span>Đăng ký Action Mới</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. Thống kê nhanh -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-num">{{ actions.length }}</span>
+      <span class="stat-title">Tổng Action sẵn sàng</span>
+    </div>
+    <div class="stat-card active">
+      <span class="stat-num">2</span>
+      <span class="stat-title">REST API & Webhooks</span>
+    </div>
+    <div class="stat-card message">
+      <span class="stat-num">2</span>
+      <span class="stat-title">Kênh SMS / Zalo / Mail</span>
+    </div>
+    <div class="stat-card system">
+      <span class="stat-num">1</span>
+      <span class="stat-title">Core Services (OCS/CRM)</span>
+    </div>
+  </div>
+
+  <!-- 3. Bảng dữ liệu với Form Input & Select Controls dùng chung -->
+  <div class="content-card">
+    <div class="card-toolbar">
+      <h3 class="card-title">Danh mục Action</h3>
+      <div class="filter-actions">
+        <div style="width: 320px;">
+          <ant-input [(ngModel)]="searchQuery" (valueChange)="filterActions()"
+            placeholder="Tìm kiếm theo mã action, tên endpoint..." [allowClear]="true" prefixIcon="search">
+          </ant-input>
+        </div>
+
+        <div style="width: 200px;">
+          <ant-select [(ngModel)]="selectedCategory" (valueChange)="filterActions()" [options]="categoryOptions"
+            placeholder="Tất cả phân loại" [allowClear]="true">
+          </ant-select>
+        </div>
+
+        <div style="width: 180px;">
+          <ant-select [(ngModel)]="selectedStatus" (valueChange)="filterActions()" [options]="statusOptions"
+            placeholder="Tất cả trạng thái" [allowClear]="true">
+          </ant-select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table bọc khung loading, empty state, pagination -->
+    <app-data-table [loading]="isLoading" [total]="filteredActions.length" [page]="page" [pageSize]="pageSize"
+      (onPageChange)="page = $event" emptyTitle="Không tìm thấy Action nào phù hợp"
+      emptyDescription="Thử nhập từ khóa khác hoặc xóa bộ lọc để xem toàn bộ action.">
+
+      <table>
+        <thead>
+          <tr>
+            <th>Mã Action</th>
+            <th>Tên Hành động</th>
+            <th>Phân loại</th>
+            <th>Loại kết nối</th>
+            <th>Phiên bản</th>
+            <th>Nhà cung cấp</th>
+            <th>Trạng thái</th>
+            <th style="text-align: right;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let act of paginatedActions">
+            <td><code>{{ act.code }}</code></td>
+            <td><strong>{{ act.name }}</strong></td>
+            <td><span class="pill-category">{{ act.category }}</span></td>
+            <td>
+              <span class="method-tag">{{ act.type }}</span>
+            </td>
+            <td>
+              <app-sla-badge status="normal" [text]="'v' + act.version" [showDot]="false"></app-sla-badge>
+            </td>
+            <td>{{ act.provider }}</td>
+            <td>
+              <app-status-tag [status]="act.status"></app-status-tag>
+            </td>
+            <td style="text-align: right;">
+              <button class="action-btn-sm" (click)="openPingModal(act)">
+                <ant-icon name="thunderbolt" [size]="12" style="margin-right: 4px;"></ant-icon>
+                <span>Test Ping</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </app-data-table>
+  </div>
+
+  <!-- Modal Đăng ký Action Mới sử dụng Shared Form Components -->
+  <div class="modal-backdrop" *ngIf="showCreateModal" (click)="showCreateModal = false">
+    <div class="modal-card"
+      style="width: 580px; max-width: 95vw; background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);"
+      (click)="$event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+          <ant-icon name="plus-circle" [size]="18" color="#1677ff"></ant-icon>
+          Đăng ký Hành động Mới (Action)
+        </h3>
+        <button type="button" style="border: none; background: none; cursor: pointer; color: #8c8c8c;"
+          (click)="showCreateModal = false">
+          <ant-icon name="close" [size]="14"></ant-icon>
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <app-form-field label="Tên Hành động" [required]="true">
+          <ant-input [(ngModel)]="newAction.name" placeholder="Ví dụ: Gửi SMS OTP qua Brandname">
+          </ant-input>
+        </app-form-field>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <app-form-field label="Mã Action (Code)" [required]="true" hint="Mã kỹ thuật viết hoa">
+            <ant-input [(ngModel)]="newAction.code" placeholder="Ví dụ: ACT_SMS_OTP">
+            </ant-input>
+          </app-form-field>
+
+          <app-form-field label="Loại kết nối" [required]="true">
+            <ant-select [(ngModel)]="newAction.type" [options]="typeOptions" placeholder="Chọn loại kết nối">
+            </ant-select>
+          </app-form-field>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <app-form-field label="Phân loại nghiệp vụ" [required]="true">
+            <ant-select [(ngModel)]="newAction.category" [options]="categoryOptions" placeholder="Chọn phân loại">
+            </ant-select>
+          </app-form-field>
+
+          <app-form-field label="Nhà cung cấp / Hệ thống">
+            <ant-input [(ngModel)]="newAction.provider" placeholder="Ví dụ: Viettel Telecom">
+            </ant-input>
+          </app-form-field>
+        </div>
+
+        <app-form-field label="Mô tả chức năng">
+          <ant-input [(ngModel)]="newAction.description" placeholder="Mô tả chức năng chi tiết của action này...">
+          </ant-input>
+        </app-form-field>
+      </div>
+
+      <div
+        style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+        <button type="button" class="btn btn-secondary" (click)="showCreateModal = false">Hủy</button>
+        <button type="button" class="btn btn-primary" [disabled]="!newAction.code || !newAction.name || isSavingAction"
+          (click)="saveNewAction()">
+          <ant-icon name="check" [size]="14" style="margin-right: 4px;"></ant-icon>
+          <span>Lưu Action</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

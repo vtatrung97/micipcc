@@ -1,0 +1,84 @@
+{
+  "actions": [
+    {
+      "id": "act_send_sms_brandname",
+      "code": "ACT_SEND_SMS",
+      "name": "Gửi SMS Brandname tự động",
+      "type": "API_CALL",
+      "category": "Thông báo & SMS",
+      "description": "Gọi cổng Brandname IPCC để gửi tin nhắn thông báo mã xác thực hoặc kết quả xử lý ticket.",
+      "version": "1.3",
+      "provider": "IPCC SMS Service",
+      "status": "Active",
+      "input_schema": [
+        { "key": "msisdn", "type": "string", "required": true, "label": "Số điện thoại nhận" },
+        { "key": "template_code", "type": "string", "required": true, "label": "Mã mẫu tin SMS" },
+        { "key": "params", "type": "object", "required": false, "label": "Tham số biến đổi" }
+      ],
+      "output_schema": [
+        { "key": "message_id", "type": "string" },
+        { "key": "status_code", "type": "number" },
+        { "key": "delivery_time", "type": "string" }
+      ]
+    },
+    {
+      "id": "act_check_cdr_billing",
+      "code": "ACT_CHECK_CDR",
+      "name": "Tra cứu Cước CDR & Lịch sử cuộc gọi",
+      "type": "DATABASE_QUERY",
+      "category": "Cước & Billing",
+      "description": "Truy vấn hệ thống Billing để tra cứu chi tiết cuộc gọi, cước phí phát sinh và gói cước ưu đãi.",
+      "version": "2.0",
+      "provider": "Billing Center API",
+      "status": "Active",
+      "input_schema": [
+        { "key": "account_id", "type": "string", "required": true, "label": "Mã tài khoản thuê bao" },
+        { "key": "from_date", "type": "string", "required": true, "label": "Từ ngày" },
+        { "key": "to_date", "type": "string", "required": true, "label": "Đến ngày" }
+      ],
+      "output_schema": [
+        { "key": "total_amount", "type": "number" },
+        { "key": "records_count", "type": "number" },
+        { "key": "cdr_list", "type": "array" }
+      ]
+    },
+    {
+      "id": "act_reset_olt_port",
+      "code": "ACT_RESET_OLT",
+      "name": "Reset Cổng OLT Trạm Cáp Quang",
+      "type": "SSH_COMMAND",
+      "category": "Kỹ thuật Mạng Broadband",
+      "description": "Thực thi lệnh reset mềm port OLT trạm băng rộng để khắc phục lỗi suy hao tín hiệu quang.",
+      "version": "1.0",
+      "provider": "Broadband Core Service",
+      "status": "Active",
+      "input_schema": [
+        { "key": "olt_ip", "type": "string", "required": true, "label": "Địa chỉ IP OLT" },
+        { "key": "port_slot", "type": "string", "required": true, "label": "Vị trí Port Slot" }
+      ],
+      "output_schema": [
+        { "key": "optics_power", "type": "string" },
+        { "key": "result", "type": "string" }
+      ]
+    },
+    {
+      "id": "act_trigger_zalo_zns",
+      "code": "ACT_ZALO_ZNS",
+      "name": "Gửi thông báo Zalo ZNS CSKH",
+      "type": "WEBHOOK",
+      "category": "Thông báo & SMS",
+      "description": "Gửi tin nhắn Zalo Notification Service (ZNS) theo mẫu đã xác thực với Zalo OA.",
+      "version": "1.1",
+      "provider": "Zalo OA Integration",
+      "status": "Active",
+      "input_schema": [
+        { "key": "phone", "type": "string", "required": true, "label": "Số điện thoại Zalo" },
+        { "key": "template_id", "type": "string", "required": true, "label": "Mã mẫu ZNS" }
+      ],
+      "output_schema": [
+        { "key": "msg_id", "type": "string" },
+        { "key": "sent_time", "type": "string" }
+      ]
+    }
+  ]
+}

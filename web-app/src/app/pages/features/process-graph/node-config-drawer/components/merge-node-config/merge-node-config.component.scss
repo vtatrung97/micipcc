@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+
+.drawer-section-heading {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+}
+
+.action-exception-callout {
+  background: #f0f7ff;
+  border: 1px solid #bae0ff;
+  border-radius: 6px;
+  padding: 10px 12px;
+
+  .callout-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+
+    .callout-icon {
+      font-size: 14px;
+      color: #0958d9;
+    }
+
+    .callout-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #003eb3;
+    }
+  }
+
+  .callout-desc {
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.4;
+    margin: 0;
+  }
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}

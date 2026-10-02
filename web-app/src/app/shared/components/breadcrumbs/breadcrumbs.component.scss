@@ -1,0 +1,15 @@
+.breadcrumb-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #8c8c8c;
+  padding: 4px 0;
+}
+.separator {
+  color: #bfbfbf;
+}
+.crumb-item.active {
+  color: #1677ff;
+  font-weight: 600;
+}

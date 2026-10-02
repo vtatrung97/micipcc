@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.template-info-container {
+  font-size: 13px;
+  color: #334155;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e8ecef;
+}
+
+.info-label {
+  color: #64748b;
+  font-size: 12.5px;
+}
+
+.info-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.info-desc {
+  margin-top: 6px;
+
+  p {
+    margin: 6px 0 0 0;
+    color: #475569;
+    line-height: 1.5;
+    font-size: 12.5px;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #f1f5f9;
+  }
+}

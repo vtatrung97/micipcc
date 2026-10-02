@@ -1,0 +1,69 @@
+<div 
+  class="ant-spin-container" 
+  [class.ant-spin-fullscreen]="fullScreen" 
+  [class.ant-spin-sm]="size === 'small'"
+  [class.ant-spin-lg]="size === 'large'"
+  *ngIf="loading">
+  
+  <!-- 1. Ant Design Classic 4-Dot Spinner -->
+  <ng-container *ngIf="type === 'dots'">
+    <div class="ant-spin ant-spin-spinning">
+      <span class="ant-spin-dot ant-spin-dot-spin" [style.color]="color || '#1677ff'">
+        <i class="ant-spin-dot-item"></i>
+        <i class="ant-spin-dot-item"></i>
+        <i class="ant-spin-dot-item"></i>
+        <i class="ant-spin-dot-item"></i>
+      </span>
+      <div class="ant-spin-text" *ngIf="showTip && tip">{{ tip }}</div>
+    </div>
+  </ng-container>
+
+  <!-- 2. High-visibility Rotating Spinner -->
+  <ng-container *ngIf="type === 'spinner'">
+    <div class="ant-spin ant-spin-spinning">
+      <div class="ant-spin-graphic">
+        <ng-container *ngIf="iconName === 'circle'; else antIconSpinner">
+          <span 
+            class="ant-spin-circle" 
+            [style.width.px]="iconSize" 
+            [style.height.px]="iconSize" 
+            [style.border-top-color]="color || '#1677ff'">
+          </span>
+        </ng-container>
+        <ng-template #antIconSpinner>
+          <ant-icon 
+            [name]="iconName || 'loading'" 
+            [size]="iconSize" 
+            [spin]="true" 
+            [color]="color || '#1677ff'">
+          </ant-icon>
+        </ng-template>
+      </div>
+      <div class="ant-spin-text" *ngIf="showTip && tip">
+        <span>{{ tip }}</span>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- 3. Skeleton Mode with optional Tip Header -->
+  <ng-container *ngIf="type === 'skeleton'">
+    <div class="ant-skeleton-wrapper">
+      <div class="ant-skeleton-header-tip" *ngIf="showTip && tip">
+        <ant-icon name="loading" [size]="16" [spin]="true" [color]="color || '#1677ff'"></ant-icon>
+        <span class="skeleton-tip-text">{{ tip }}</span>
+      </div>
+      <div class="ant-skeleton">
+        <div class="ant-skeleton-header" *ngIf="showSkeletonAvatar">
+          <span class="ant-skeleton-avatar"></span>
+        </div>
+        <div class="ant-skeleton-content">
+          <h3 class="ant-skeleton-title"></h3>
+          <ul class="ant-skeleton-paragraph">
+            <li *ngFor="let row of skeletonArray"></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+

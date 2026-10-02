@@ -1,0 +1,38 @@
+ant-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.anticon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  font-style: normal;
+  line-height: 0;
+  text-align: center;
+  text-transform: none;
+  vertical-align: -0.125em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+  }
+
+  &.anticon-spin svg {
+    animation: antIconSpin 1s infinite linear;
+  }
+}
+
+@keyframes antIconSpin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

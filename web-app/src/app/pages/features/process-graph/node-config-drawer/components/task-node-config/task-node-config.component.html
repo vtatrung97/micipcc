@@ -1,0 +1,75 @@
+<div class="task-config-container" *ngIf="nodeProps">
+  <div class="drawer-section-heading mt-4">
+    <ant-icon name="user" [size]="14" style="margin-right: 6px;"></ant-icon>
+    <span>CẤU HÌNH TÁC VỤ & PHÂN QUYỀN</span>
+  </div>
+
+  <!-- User Task: Approval Step switch -->
+  <div class="approval-toggle-box mb-3">
+    <div class="approval-toggle-content">
+      <span class="approval-toggle-title">Bước Phê duyệt (Approval Task)</span>
+      <span class="approval-toggle-desc">Tự động sinh 2 cổng ra: Đồng ý & Từ chối</span>
+    </div>
+    <nz-switch [(ngModel)]="nodeProps.isApprovalStep" (ngModelChange)="onUserTaskApprovalToggle()"
+      name="isApprovalStep">
+    </nz-switch>
+  </div>
+
+  <!-- Gán quyền xử lý (Assignee) -->
+  <nz-form-item>
+    <nz-form-label>Đối tượng xử lý (Assignee)</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="nodeProps.assignee" (ngModelChange)="onPropChange('assignee')"
+        name="stepAssignee">
+        <nz-option nzValue="Điện thoại viên (FO/BO)" nzLabel="Điện thoại viên (FO/BO)"></nz-option>
+        <nz-option nzValue="Tổ Tiếp nhận Khách hàng VIP" nzLabel="Tổ Tiếp nhận Khách hàng VIP"></nz-option>
+        <nz-option nzValue="Trưởng ca (Supervisor)" nzLabel="Trưởng ca (Supervisor)"></nz-option>
+        <nz-option nzValue="Phòng Cước & Đối soát CDR" nzLabel="Phòng Cước & Đối soát CDR"></nz-option>
+        <nz-option nzValue="Kỹ thuật viên FTTH / OLT" nzLabel="Kỹ thuật viên FTTH / OLT"></nz-option>
+        <nz-option nzValue="Hệ thống tự động (System)" nzLabel="Hệ thống tự động (System)"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Cam kết thời hạn SLA -->
+  <div class="form-row-2">
+    <nz-form-item>
+      <nz-form-label>Cam kết SLA</nz-form-label>
+      <nz-form-control>
+        <nz-select [(ngModel)]="nodeProps.sla" (ngModelChange)="onPropChange('sla')" name="stepSla">
+          <nz-option nzValue="15m SLA" nzLabel="15m SLA (Khẩn cấp)"></nz-option>
+          <nz-option nzValue="30m SLA" nzLabel="30m SLA"></nz-option>
+          <nz-option nzValue="1h SLA" nzLabel="1h SLA"></nz-option>
+          <nz-option nzValue="2h SLA" nzLabel="2h SLA (Tiêu chuẩn)"></nz-option>
+          <nz-option nzValue="4h SLA" nzLabel="4h SLA"></nz-option>
+          <nz-option nzValue="24h SLA" nzLabel="24h SLA"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label>Cảnh báo Timeout</nz-form-label>
+      <nz-form-control>
+        <nz-select [(ngModel)]="nodeProps.timeout" (ngModelChange)="onPropChange('timeout')" name="stepTimeout">
+          <nz-option nzValue="5 phút" nzLabel="5 phút (Cảnh báo vàng)"></nz-option>
+          <nz-option nzValue="15 phút" nzLabel="15 phút"></nz-option>
+          <nz-option nzValue="30 phút" nzLabel="30 phút"></nz-option>
+          <nz-option nzValue="1 giờ" nzLabel="1 giờ"></nz-option>
+          <nz-option nzValue="2 giờ" nzLabel="2 giờ"></nz-option>
+          <nz-option nzValue="Không giới hạn" nzLabel="Không giới hạn"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <!-- Ghi chú mô tả -->
+  <nz-form-item>
+    <nz-form-label>Mô tả tác vụ</nz-form-label>
+    <nz-form-control>
+      <textarea nz-input rows="3" [(ngModel)]="nodeProps.description"
+        (ngModelChange)="onPropChange('description')" name="stepDesc"
+        placeholder="Nhập ghi chú chi tiết nghiệp vụ bước này...">
+      </textarea>
+    </nz-form-control>
+  </nz-form-item>
+</div>

@@ -1,0 +1,159 @@
+<div class="drawer-overlay" *ngIf="visible" (click)="handleClose()">
+  <div class="timeline-drawer" (click)="$event.stopPropagation()">
+    <!-- Header Drawer -->
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <div class="drawer-badge-row">
+          <span class="drawer-code"><code>{{ instance?.process_instance_id }}</code></span>
+          <span class="status-badge" [ngClass]="getStatusBadgeClass(instance?.status!)">
+            {{ getStatusLabel(instance?.status!) }}
+          </span>
+        </div>
+        <h3 class="drawer-title">{{ instance?.template_name }} ({{ instance?.version_no }})</h3>
+      </div>
+      <button type="button" class="drawer-close-btn" (click)="handleClose()" title="Đóng">✕</button>
+    </div>
+
+    <!-- Body Drawer -->
+    <div class="drawer-body">
+      <!-- Instance Meta Summary Box -->
+      <div class="instance-meta-box">
+        <div class="meta-item">
+          <span class="meta-label">Mã nghiệp vụ:</span>
+          <span class="meta-value">{{ instance?.business_key || '--' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Người / Bộ phận:</span>
+          <span class="meta-value">{{ instance?.current_owner }} ({{ instance?.candidate_group || 'Chưa gán' }})</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Thời gian khởi tạo:</span>
+          <span class="meta-value">{{ formatDateTime(instance?.started_at) }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Thời hạn SLA:</span>
+          <span class="meta-value">{{ formatDateTime(instance?.due_at) }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Nguồn kích hoạt:</span>
+          <span class="meta-value">{{ instance?.trigger_source }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Bước hiện tại:</span>
+          <span class="meta-value text-primary font-bold">{{ instance?.current_step_name }}</span>
+        </div>
+      </div>
+
+      <!-- Timeline Section -->
+      <div class="timeline-section">
+        <h4 class="section-title">
+          <ant-icon name="history" [size]="15" style="margin-right: 6px; color: #1677ff;"></ant-icon>
+          Tuần tự các bước đã thực thi & Lý do rẽ nhánh (FR-12, US-03)
+        </h4>
+
+        <div *ngIf="isLoadingTimeline" class="drawer-loading" style="padding: 32px 0;">
+          <app-loading-spinner [loading]="true" tip="Đang tải chuỗi thực thi từ Engine..."></app-loading-spinner>
+        </div>
+
+        <div *ngIf="!isLoadingTimeline && timelineItems.length === 0" class="drawer-empty">
+          <span>Chưa ghi nhận bước thực thi nào cho tiến trình này.</span>
+        </div>
+
+        <div class="timeline-stepper" *ngIf="!isLoadingTimeline && timelineItems.length > 0">
+          <div 
+            class="stepper-item" 
+            *ngFor="let step of timelineItems; let idx = index" 
+            [class.step-completed]="step.status === 'COMPLETED'"
+            [class.step-running]="step.status === 'RUNNING'"
+            [class.step-failed]="step.status === 'FAILED'">
+            
+            <!-- Node Icon & Connector Line -->
+            <div class="stepper-indicator">
+              <div class="stepper-dot">
+                <span class="step-num">{{ idx + 1 }}</span>
+              </div>
+              <div class="stepper-line" *ngIf="idx < timelineItems.length - 1"></div>
+            </div>
+
+            <!-- Node Content -->
+            <div class="stepper-content">
+              <div class="step-header-row">
+                <span class="step-title-text">{{ step.step_name }}</span>
+                <span class="step-node-type">[{{ step.node_type | uppercase }}]</span>
+                <span class="step-status-tag" [ngClass]="'status-' + step.status.toLowerCase()">
+                  {{ step.status }}
+                </span>
+              </div>
+
+              <div class="step-meta-row">
+                <span class="step-time">
+                  <ant-icon name="clock-circle" [size]="11" style="margin-right: 3px;"></ant-icon>
+                  {{ formatDateTime(step.started_at) }}
+                </span>
+                <span class="step-duration" *ngIf="step.duration">• Thời lượng: {{ step.duration }}</span>
+                <span class="step-actor" *ngIf="step.actor">• Thực hiện: {{ step.actor }}</span>
+              </div>
+
+              <!-- Lý do rẽ nhánh (FR-12, US-03) -->
+              <div class="branch-reason-box" *ngIf="step.branch_reason">
+                <ant-icon name="branches" [size]="12" style="margin-right: 5px; color: #1677ff;"></ant-icon>
+                <strong>Lý do rẽ nhánh:</strong> {{ step.branch_reason }}
+              </div>
+
+              <!-- Khối ngoại lệ / Lỗi gặp sự cố (FR-14) -->
+              <div class="exception-box" *ngIf="step.status === 'FAILED' && step.exception_detail">
+                <div class="exception-header">
+                  <ant-icon name="warning" [size]="14" color="#ef4444" style="margin-right: 5px;"></ant-icon>
+                  <strong>Sự cố ngoại lệ: {{ step.exception_detail.error_code || 'ERROR' }}</strong>
+                </div>
+                <div class="exception-msg">{{ step.exception_detail.message }}</div>
+                <pre class="exception-stack" *ngIf="step.exception_detail.stack_trace">{{ step.exception_detail.stack_trace }}</pre>
+
+                <!-- Nút Retry nhanh ngay tại bước lỗi -->
+                <div class="exception-actions">
+                  <button 
+                    type="button" 
+                    class="btn btn-primary btn-sm" 
+                    (click)="handleRetry(step.step_id)"
+                    [disabled]="retryingInstanceId === instance?.process_instance_id">
+                    <ant-icon name="reload" [size]="12" [class.spin-animation]="retryingInstanceId === instance?.process_instance_id" style="margin-right: 4px;"></ant-icon>
+                    Thử lại bước này (Retry Node)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Drawer -->
+    <div class="drawer-footer">
+      <div class="drawer-footer-actions">
+        <!-- Xử lý sự cố: Retry hoặc Cancel -->
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          *ngIf="instance?.status === 'FAILED' || instance?.status === 'EXCEPTION'"
+          (click)="handleRetry()"
+          [disabled]="retryingInstanceId === instance?.process_instance_id">
+          <ant-icon name="reload" [size]="13" [class.spin-animation]="retryingInstanceId === instance?.process_instance_id" style="margin-right: 4px;"></ant-icon>
+          Thử lại bước lỗi (Retry)
+        </button>
+
+        <button 
+          type="button" 
+          class="btn btn-danger" 
+          *ngIf="instance?.status === 'RUNNING' || instance?.status === 'FAILED' || instance?.status === 'EXCEPTION'"
+          (click)="handleCancelFlow()">
+          <ant-icon name="close-circle" [size]="13" style="margin-right: 4px;"></ant-icon>
+          Hủy luồng tiến trình
+        </button>
+
+        <button type="button" class="btn btn-secondary" (click)="handleClose()">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

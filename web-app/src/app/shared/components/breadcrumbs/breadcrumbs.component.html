@@ -1,0 +1,7 @@
+<nav class="breadcrumb-container" aria-label="Breadcrumb">
+  <span class="home-crumb">🏠 Flow System</span>
+  <ng-container *ngFor="let item of items; let last = last">
+    <span class="separator">/</span>
+    <span class="crumb-item" [class.active]="last">{{ item }}</span>
+  </ng-container>
+</nav>

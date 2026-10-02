@@ -1,0 +1,107 @@
+<div class="drawer-overlay" *ngIf="visible" (click)="handleClose()">
+  <div class="audit-drawer" (click)="$event.stopPropagation()">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-badge-row">
+          <span class="instance-code-drawer"><code>{{ instance?.process_instance_id }}</code></span>
+          <span class="status-badge" [ngClass]="getStatusClass(instance?.final_status!)">
+            {{ getStatusLabel(instance?.final_status!) }}
+          </span>
+          <span class="integrity-badge" title="Tính toàn vẹn đã được ký số xác thực">
+            <ant-icon name="check-circle" [size]="12" color="#10b981"></ant-icon>
+            <span>Verified Checksum</span>
+          </span>
+        </div>
+        <h3 class="drawer-title">{{ instance?.template_name }} ({{ instance?.version_no }})</h3>
+      </div>
+      <button type="button" class="drawer-close-btn" (click)="handleClose()">✕</button>
+    </div>
+
+    <div class="drawer-tabs">
+      <button 
+        type="button" 
+        class="drawer-tab" 
+        [class.active]="activeTab === 'timeline'" 
+        (click)="setTab('timeline')">
+        <ant-icon name="history" [size]="14" style="margin-right: 5px;"></ant-icon>
+        Chuỗi thực thi & Phê duyệt
+      </button>
+      <button 
+        type="button" 
+        class="drawer-tab" 
+        [class.active]="activeTab === 'variables'" 
+        (click)="setTab('variables')">
+        <ant-icon name="profile" [size]="14" style="margin-right: 5px;"></ant-icon>
+        Biến động biến dữ liệu (Variables)
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <div *ngIf="isLoadingAudit" class="drawer-loading" style="padding: 40px 0;">
+        <app-loading-spinner [loading]="true" tip="Đang truy xuất vết kiểm toán Audit Trail từ API..."></app-loading-spinner>
+      </div>
+
+      <!-- TAB 1: TIMELINE -->
+      <div *ngIf="!isLoadingAudit && activeTab === 'timeline'" class="timeline-tab-content">
+        <div class="integrity-box" *ngIf="auditDetail?.integrity_hash">
+          <span class="hash-label">Mã băm toàn vẹn (SHA-256):</span>
+          <code class="hash-code">{{ auditDetail?.integrity_hash }}</code>
+        </div>
+
+        <div class="audit-steps-list">
+          <div class="audit-step-card" *ngFor="let step of auditDetail?.steps; let idx = index">
+            <div class="step-num-badge">{{ idx + 1 }}</div>
+            <div class="step-main">
+              <div class="step-head">
+                <span class="step-name">{{ step.step_name }}</span>
+                <span class="node-type-pill">[{{ step.node_type | uppercase }}]</span>
+                <span class="step-status">{{ step.status }}</span>
+              </div>
+              <div class="step-sub">
+                <span>{{ formatDateTime(step.started_at) }}</span>
+                <span *ngIf="step.duration">• Thời lượng: {{ step.duration }}</span>
+                <span *ngIf="step.actor">• Thao tác: <strong>{{ step.actor }}</strong></span>
+              </div>
+              <div class="step-reason" *ngIf="step.branch_reason">
+                <ant-icon name="branches" [size]="12" style="margin-right: 4px; color: #1677ff;"></ant-icon>
+                <strong>Rẽ nhánh:</strong> {{ step.branch_reason }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: VARIABLES DIFF -->
+      <div *ngIf="!isLoadingAudit && activeTab === 'variables'" class="vars-tab-content">
+        <div class="vars-empty" *ngIf="!auditDetail?.variable_changes?.length">
+          Chưa có ghi nhận thay đổi biến dữ liệu nào trong phiên này.
+        </div>
+
+        <table class="vars-table" *ngIf="auditDetail?.variable_changes?.length">
+          <thead>
+            <tr>
+              <th>Tên biến</th>
+              <th>Giá trị trước</th>
+              <th>Giá trị sau</th>
+              <th>Người đổi</th>
+              <th>Bước thay đổi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of auditDetail?.variable_changes">
+              <td><code>{{ v.variable_name }}</code></td>
+              <td><span class="val-old">{{ v.old_value !== null ? v.old_value : '(trống)' }}</span></td>
+              <td><span class="val-new">{{ v.new_value }}</span></td>
+              <td>{{ v.changed_by }}</td>
+              <td>{{ v.step_name }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-secondary" (click)="handleClose()">Đóng</button>
+    </div>
+  </div>
+</div>

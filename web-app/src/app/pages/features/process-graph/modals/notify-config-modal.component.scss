@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+.notify-config-container {
+  font-size: 13px;
+  color: #334155;
+}
+
+.notify-desc {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notify-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #1e293b;
+  cursor: pointer;
+  user-select: none;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: #1677ff;
+    width: 16px;
+    height: 16px;
+  }
+}

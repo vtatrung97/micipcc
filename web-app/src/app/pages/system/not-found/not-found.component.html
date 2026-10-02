@@ -1,0 +1,43 @@
+<div class="not-found-container">
+  <div class="result-card">
+    <div class="result-icon-wrapper">
+      <div class="compass-badge">
+        <svg viewBox="0 0 24 24" width="76" height="76" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10" stroke="#0284c7" stroke-dasharray="4 2" fill="#f0f9ff" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="#0284c7" stroke="#0369a1" />
+        </svg>
+      </div>
+      <div class="status-code">404</div>
+    </div>
+
+    <h1 class="result-title">Không Tìm Thấy Trang (Page Not Found)</h1>
+    <p class="result-subtitle">
+      Đường dẫn bạn yêu cầu không tồn tại, đã bị xóa hoặc thay đổi cấu trúc trong hệ thống Flow System.
+    </p>
+
+    <!-- Chi tiết URL không hợp lệ -->
+    <div class="url-details-box" *ngIf="attemptedUrl">
+      <div class="url-row">
+        <span class="label">Đường dẫn không tồn tại:</span>
+        <span class="value code-val">{{ attemptedUrl }}</span>
+      </div>
+    </div>
+
+    <!-- Hướng dẫn & Nút hành động -->
+    <div class="result-actions">
+      <button class="btn btn-primary" (click)="goToLanding()">
+        <ant-icon name="home" [size]="14" style="margin-right: 6px;"></ant-icon>
+        Quay lại Trang làm việc chính
+      </button>
+
+      <button class="btn btn-secondary" (click)="goBack()">
+        <ant-icon name="arrow-left" [size]="14" style="margin-right: 6px;"></ant-icon>
+        Quay lại trang trước
+      </button>
+    </div>
+
+    <div class="system-note">
+      <span>Vui lòng kiểm tra lại chính tả của đường dẫn URL hoặc liên hệ Quản trị viên hệ thống nếu bạn tin rằng đây là lỗi.</span>
+    </div>
+  </div>
+</div>

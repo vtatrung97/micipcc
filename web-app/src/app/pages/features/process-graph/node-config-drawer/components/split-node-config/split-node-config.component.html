@@ -1,0 +1,58 @@
+<div class="split-config-container" *ngIf="nodeProps">
+  <div class="drawer-section-heading mt-4">
+    <ant-icon name="fork" [size]="14" style="margin-right: 6px;"></ant-icon>
+    <span>CẤU HÌNH PHÂN TÁCH LUỒNG (SPLIT)</span>
+  </div>
+
+  <!-- Split Callout -->
+  <div class="action-exception-callout mb-3">
+    <div class="callout-header">
+      <span class="callout-icon">⑂</span>
+      <span class="callout-title">Split Gateway (Phân tách song song)</span>
+    </div>
+    <p class="callout-desc">
+      Quy tắc BPMN: <strong>In = 1 | Out >= 2</strong>.
+      <br />Cần nối tối thiểu 2 nhánh để phân tách luồng chạy song song đồng thời.
+    </p>
+  </div>
+
+  <!-- Cam kết thời hạn SLA -->
+  <div class="form-row-2">
+    <nz-form-item>
+      <nz-form-label>Cam kết SLA</nz-form-label>
+      <nz-form-control>
+        <nz-select [(ngModel)]="nodeProps.sla" (ngModelChange)="onPropChange('sla')" name="stepSla">
+          <nz-option nzValue="15m SLA" nzLabel="15m SLA (Khẩn cấp)"></nz-option>
+          <nz-option nzValue="30m SLA" nzLabel="30m SLA"></nz-option>
+          <nz-option nzValue="1h SLA" nzLabel="1h SLA"></nz-option>
+          <nz-option nzValue="2h SLA" nzLabel="2h SLA (Tiêu chuẩn)"></nz-option>
+          <nz-option nzValue="24h SLA" nzLabel="24h SLA"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label>Cảnh báo Timeout</nz-form-label>
+      <nz-form-control>
+        <nz-select [(ngModel)]="nodeProps.timeout" (ngModelChange)="onPropChange('timeout')" name="stepTimeout">
+          <nz-option nzValue="5 phút" nzLabel="5 phút (Cảnh báo vàng)"></nz-option>
+          <nz-option nzValue="15 phút" nzLabel="15 phút"></nz-option>
+          <nz-option nzValue="30 phút" nzLabel="30 phút"></nz-option>
+          <nz-option nzValue="1 giờ" nzLabel="1 giờ"></nz-option>
+          <nz-option nzValue="Không giới hạn" nzLabel="Không giới hạn"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <!-- Ghi chú mô tả -->
+  <nz-form-item>
+    <nz-form-label>Mô tả phân tách luồng</nz-form-label>
+    <nz-form-control>
+      <textarea nz-input rows="3" [(ngModel)]="nodeProps.description"
+        (ngModelChange)="onPropChange('description')" name="stepDesc"
+        placeholder="Ghi chú nghiệp vụ phân tách tiến trình...">
+      </textarea>
+    </nz-form-control>
+  </nz-form-item>
+</div>

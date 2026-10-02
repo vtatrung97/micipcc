@@ -1,0 +1,72 @@
+<div class="validation-modal-container">
+  <!-- Status Banner -->
+  <div class="validation-status-banner" [ngClass]="validationResult?.isValid ? 'banner-success' : 'banner-error'">
+    <div class="status-icon">
+      <ant-icon 
+        [name]="validationResult?.isValid ? 'check-circle-fill' : 'close-circle-fill'" 
+        [size]="24" 
+        [color]="validationResult?.isValid ? '#52c41a' : '#ff4d4f'">
+      </ant-icon>
+    </div>
+    <div class="status-content">
+      <h5 class="status-title">{{ validationResult?.summary }}</h5>
+      <p class="status-subtitle" *ngIf="validationResult?.isValid">
+        Mọi bước trong quy trình đều thoả mãn cấu hình cổng In/Out chuẩn BPMN 2.0, không có luồng bị ngắt quãng hoặc cô lập.
+      </p>
+      <p class="status-subtitle" *ngIf="!validationResult?.isValid">
+        Vui lòng xem danh sách các vi phạm bên dưới và điều chỉnh dây nối trước khi lưu hoặc xuất bản quy trình.
+      </p>
+    </div>
+  </div>
+
+  <!-- Errors List -->
+  <div class="validation-issues-list" *ngIf="validationResult && validationResult.errors.length > 0">
+    <div class="issues-heading">Chi tiết các vi phạm cấu hình ({{ validationResult.errors.length }})</div>
+    <div class="issue-item issue-error" *ngFor="let err of validationResult.errors">
+      <div class="issue-type-badge" [ngClass]="err.type">{{ err.type | uppercase }}</div>
+      <div class="issue-info">
+        <span class="issue-msg">{{ err.message }}</span>
+        <span class="issue-code" *ngIf="err.nodeKey">Mã bước: {{ err.nodeKey }}</span>
+      </div>
+      <button nz-button nzType="link" nzSize="small" *ngIf="err.nodeId" (click)="onFocusNode(err.nodeId)">
+        <span>Đến bước này →</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Warnings List -->
+  <div class="validation-issues-list mt-3" *ngIf="validationResult && validationResult.warnings.length > 0">
+    <div class="issues-heading text-amber-600">Cảnh báo ({{ validationResult.warnings.length }})</div>
+    <div class="issue-item issue-warning" *ngFor="let warn of validationResult.warnings">
+      <div class="issue-type-badge warning">{{ warn.type | uppercase }}</div>
+      <div class="issue-info">
+        <span class="issue-msg">{{ warn.message }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BPMN 7 Nodes Rules Summary Reference -->
+  <div class="bpmn-rules-summary">
+    <div class="rules-summary-title">Bảng quy tắc 7 Node chuẩn BPMN 2.0:</div>
+    <div class="rules-grid">
+      <div class="rule-chip"><span class="chip-type">⚡ Trigger:</span> In = 0 | Out = 1</div>
+      <div class="rule-chip"><span class="chip-type">👤 User Task:</span> In = 1 | Out = 1 (hoặc Out = 2 nếu Approval Step)</div>
+      <div class="rule-chip"><span class="chip-type">🚀 Action:</span> In = 1 | Out = 2 cố định (Success + Exception Path)</div>
+      <div class="rule-chip"><span class="chip-type">❓ Condition:</span> In = 1 | Out >= 2 (sinh cổng động theo nhánh)</div>
+      <div class="rule-chip"><span class="chip-type">⑂ Split:</span> In = 1 | Out >= 2 (phân tách luồng song song)</div>
+      <div class="rule-chip"><span class="chip-type">⑃ Merge:</span> In >= 2 | Out = 1 (gom và đồng bộ luồng song song)</div>
+      <div class="rule-chip"><span class="chip-type">🛑 End:</span> In >= 1 | Out = 0 (kết thúc tiến trình)</div>
+    </div>
+  </div>
+
+  <!-- Modal Footer Buttons -->
+  <div class="validation-modal-footer">
+    <button nz-button nzType="default" (click)="onRevalidate()">
+      <ant-icon name="reload" [size]="13" style="margin-right: 5px;"></ant-icon>
+      <span>Kiểm tra lại</span>
+    </button>
+    <button nz-button nzType="primary" (click)="closeModal()">
+      <span>Đóng</span>
+    </button>
+  </div>
+</div>

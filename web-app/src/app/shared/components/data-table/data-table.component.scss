@@ -1,0 +1,109 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ant-table-wrapper {
+  position: relative;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.ant-table-loading {
+    min-height: 240px;
+  }
+
+  /* Loading Overlay che phần body nhưng giữ nguyên header */
+  .ant-table-spin-overlay {
+    position: absolute;
+    top: 48px; /* Giữ Thead hiển thị phía trên */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    backdrop-filter: blur(1.5px);
+
+    app-loading-spinner {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+.ant-table-container {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+
+  &.is-loading-container {
+    min-height: 240px;
+  }
+}
+
+.ant-table-content {
+  width: 100%;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+
+  &.ant-table-blur {
+    opacity: 0.35;
+    pointer-events: none;
+    user-select: none;
+    filter: blur(0.5px);
+  }
+
+  ::ng-deep table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+    font-size: 13px;
+
+    thead > tr > th {
+      position: relative;
+      color: #1f2937;
+      font-weight: 600;
+      text-align: left;
+      background: #fafafa;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 12px 14px;
+      transition: background 0.2s ease;
+      white-space: nowrap;
+    }
+
+    tbody > tr > td {
+      position: relative;
+      padding: 12px 14px;
+      color: #374151;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s ease;
+      vertical-align: middle;
+    }
+
+    tbody > tr:hover > td {
+      background: #fafafa;
+    }
+
+    tbody > tr:last-child > td {
+      border-bottom: none;
+    }
+  }
+}
+
+.ant-table-empty-wrap {
+  padding: 36px 16px;
+  text-align: center;
+  background: #ffffff;
+}
+
+.ant-table-pagination-wrapper {
+  padding: 4px 16px;
+  border-top: 1px solid #f0f0f0;
+}

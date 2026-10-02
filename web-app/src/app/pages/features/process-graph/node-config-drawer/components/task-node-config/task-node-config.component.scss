@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.drawer-section-heading {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+}
+
+.approval-toggle-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+
+  .approval-toggle-content {
+    display: flex;
+    flex-direction: column;
+
+    .approval-toggle-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .approval-toggle-desc {
+      font-size: 11px;
+      color: #64748b;
+    }
+  }
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
