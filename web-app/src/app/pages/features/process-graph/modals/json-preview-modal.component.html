@@ -1,0 +1,14 @@
+<div class="json-preview-container">
+  <div class="json-preview-body">
+    <pre class="json-code-box"><code>{{ jsonPayload }}</code></pre>
+  </div>
+  <div class="json-preview-footer">
+    <button nz-button nzType="default" (click)="copyJson()">
+      <ant-icon name="copy" [size]="13" style="margin-right: 5px;"></ant-icon>
+      <span>Sao chép JSON</span>
+    </button>
+    <button nz-button nzType="primary" (click)="closeModal()">
+      <span>Đóng</span>
+    </button>
+  </div>
+</div>

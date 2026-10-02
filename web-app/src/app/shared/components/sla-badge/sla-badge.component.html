@@ -1,0 +1,4 @@
+<span class="sla-badge" [class.pulse]="isPulse" [attr.data-status]="status">
+  <span class="bullet" *ngIf="showDot">●</span>
+  <span class="text">{{ text || (count !== undefined ? count : status) }}</span>
+</span>

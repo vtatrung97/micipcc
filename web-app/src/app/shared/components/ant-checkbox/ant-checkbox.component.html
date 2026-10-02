@@ -1,0 +1,27 @@
+<label 
+  class="ant-checkbox-wrapper" 
+  [class.ant-checkbox-wrapper-disabled]="disabled"
+  [class.ant-checkbox-wrapper-checked]="checked">
+  
+  <span 
+    class="ant-checkbox"
+    [class.ant-checkbox-checked]="checked"
+    [class.ant-checkbox-disabled]="disabled"
+    [class.ant-checkbox-indeterminate]="indeterminate">
+    <input 
+      type="checkbox" 
+      class="ant-checkbox-input"
+      [checked]="checked"
+      [disabled]="disabled"
+      (change)="onCheckboxChange($event)" />
+    <span class="ant-checkbox-inner">
+      <ant-icon *ngIf="checked && !indeterminate" name="check" [size]="10" color="#ffffff"></ant-icon>
+      <span class="indeterminate-bar" *ngIf="indeterminate"></span>
+    </span>
+  </span>
+
+  <span class="ant-checkbox-label">
+    <ng-content></ng-content>
+    <span *ngIf="label">{{ label }}</span>
+  </span>
+</label>

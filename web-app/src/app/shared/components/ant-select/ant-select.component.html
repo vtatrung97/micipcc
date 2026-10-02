@@ -1,0 +1,118 @@
+<div 
+  #container
+  class="ant-select" 
+  [class.ant-select-open]="isOpen"
+  [class.ant-select-disabled]="disabled"
+  [class.ant-select-focused]="isOpen"
+  [class.ant-select-allow-clear]="allowClear"
+  [class.ant-select-sm]="size === 'small'"
+  [class.ant-select-lg]="size === 'large'"
+  [class.has-prefix]="!!prefixIcon">
+  
+  <!-- Selection trigger box -->
+  <div class="ant-select-selector" (click)="toggleDropdown($event)">
+    <!-- Prefix Icon if provided -->
+    <span class="ant-select-prefix" *ngIf="prefixIcon">
+      <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
+    </span>
+
+    <!-- Search input when showSearch is active and dropdown is open -->
+    <span class="ant-select-selection-search" *ngIf="showSearch && isOpen">
+      <input 
+        #searchInput
+        type="text" 
+        class="ant-select-selection-search-input"
+        [(ngModel)]="searchQuery" 
+        (click)="$event.stopPropagation()"
+        (keydown)="onKeyDown($event)"
+        [placeholder]="selectedOption ? selectedOption.label : placeholder" />
+    </span>
+
+    <!-- Selected item text display -->
+    <span class="ant-select-selection-item" *ngIf="selectedOption && (!showSearch || !isOpen)">
+      <span 
+        class="option-dot" 
+        *ngIf="selectedOption.dotColor" 
+        [style.background]="selectedOption.dotColor">
+      </span>
+
+      <ant-icon 
+        *ngIf="selectedOption.icon" 
+        [name]="selectedOption.icon" 
+        [size]="13" 
+        [color]="selectedOption.iconColor"
+        style="margin-right: 5px;">
+      </ant-icon>
+
+      <span class="selection-item-text">{{ selectedOption.label }}</span>
+    </span>
+
+    <!-- Placeholder when nothing selected -->
+    <span class="ant-select-selection-placeholder" *ngIf="!selectedOption && (!showSearch || !isOpen || !searchQuery)">
+      {{ placeholder }}
+    </span>
+
+    <!-- Clear Button -->
+    <span 
+      class="ant-select-clear" 
+      *ngIf="allowClear && selectedOption && !disabled" 
+      (click)="clearSelection($event)"
+      title="Xóa lựa chọn">
+      <ant-icon name="close-circle-fill" [size]="12"></ant-icon>
+    </span>
+
+    <!-- Dropdown Arrow -->
+    <span class="ant-select-arrow" [class.ant-select-arrow-loading]="loading">
+      <ant-icon *ngIf="!loading" name="down" [size]="11" [rotate]="isOpen ? 180 : 0"></ant-icon>
+      <ant-icon *ngIf="loading" name="sync" [size]="12" [spin]="true"></ant-icon>
+    </span>
+  </div>
+
+  <!-- Dropdown Popup Menu -->
+  <div 
+    class="ant-select-dropdown" 
+    *ngIf="isOpen" 
+    (click)="$event.stopPropagation()">
+    
+    <div class="dropdown-options-list" *ngIf="filteredOptions.length > 0">
+      <div 
+        *ngFor="let opt of filteredOptions; let i = index"
+        class="ant-select-item ant-select-item-option"
+        [class.ant-select-item-option-selected]="isSelected(opt)"
+        [class.ant-select-item-option-disabled]="opt.disabled"
+        [class.ant-select-item-option-active]="i === activeHoverIndex"
+        (click)="selectOption(opt, $event)"
+        (mouseenter)="activeHoverIndex = i">
+        
+        <div class="option-content">
+          <span 
+            class="option-dot" 
+            *ngIf="opt.dotColor" 
+            [style.background]="opt.dotColor">
+          </span>
+
+          <ant-icon 
+            *ngIf="opt.icon" 
+            [name]="opt.icon" 
+            [size]="13" 
+            [color]="opt.iconColor"
+            style="margin-right: 6px;">
+          </ant-icon>
+
+          <span class="option-label-text">{{ opt.label }}</span>
+          <span class="option-badge" *ngIf="opt.badge">{{ opt.badge }}</span>
+        </div>
+
+        <span class="option-check" *ngIf="isSelected(opt)">
+          <ant-icon name="check" [size]="12"></ant-icon>
+        </span>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="ant-select-empty" *ngIf="filteredOptions.length === 0">
+      <ant-icon name="inbox" [size]="28" color="#d9d9d9"></ant-icon>
+      <span class="empty-text">Không có dữ liệu</span>
+    </div>
+  </div>
+</div>

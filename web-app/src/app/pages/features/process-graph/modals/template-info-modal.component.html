@@ -1,0 +1,24 @@
+<div class="template-info-container" *ngIf="template">
+  <div class="info-grid">
+    <div class="info-row">
+      <span class="info-label">Mã quy trình:</span>
+      <span class="info-val font-mono">{{ template.code }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Tên quy trình:</span>
+      <span class="info-val font-bold">{{ template.name }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Phiên bản:</span>
+      <span class="info-val">{{ template.version }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">SLA chuẩn:</span>
+      <span class="info-val">{{ template.sla }}</span>
+    </div>
+    <div class="info-desc">
+      <span class="info-label">Mô tả quy trình:</span>
+      <p>{{ template.description || 'Chưa có mô tả' }}</p>
+    </div>
+  </div>
+</div>

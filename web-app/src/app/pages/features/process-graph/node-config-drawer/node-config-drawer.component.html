@@ -1,0 +1,91 @@
+<aside class="properties-side-drawer" [class.open]="isVisible && !!nodeProps" aria-label="Thuộc tính bước quy trình">
+  <!-- 1. HEADER: THÔNG TIN CHUNG & NÚT X ĐỂ THOÁT -->
+  <div class="drawer-header" *ngIf="nodeProps">
+    <div class="drawer-title-box">
+      <ant-icon name="profile" [size]="15" class="title-icon"></ant-icon>
+      <span class="drawer-section-title">THÔNG TIN CHUNG</span>
+    </div>
+    <div class="drawer-header-actions">
+      <button type="button" class="drawer-trash-btn" (click)="deleteNode()" title="Xoá bước này khỏi quy trình">
+        <ant-icon name="delete" [size]="15"></ant-icon>
+      </button>
+      <button type="button" class="drawer-close-btn" (click)="onClose()" title="Đóng bảng cấu hình">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. SCROLLABLE FORM BODY -->
+  <div class="drawer-body" *ngIf="nodeProps">
+    <div class="drawer-form-container">
+      <form nz-form nzLayout="vertical" (submit)="$event.preventDefault()">
+
+        <!-- Tên node -->
+        <nz-form-item>
+          <nz-form-label nzRequired>Tên bước / Tên hiển thị</nz-form-label>
+          <nz-form-control>
+            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" name="nodeName"
+              placeholder="Nhập tên bước quy trình..." />
+          </nz-form-control>
+        </nz-form-item>
+
+        <!-- Loại node & Mã node Key -->
+        <div class="form-row-2">
+          <nz-form-item>
+            <nz-form-label>Loại bước</nz-form-label>
+            <nz-form-control>
+              <input nz-input [value]="nodeProps.typeTitle" disabled readonly class="disabled-input" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>Mã bước (Node Key)</nz-form-label>
+            <nz-form-control>
+              <input nz-input class="font-mono text-xs" [(ngModel)]="nodeProps.nodeKey"
+                (ngModelChange)="onPropChange('nodeKey')" name="nodeKey" placeholder="VD: ACT_DISPATCH" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 2. PHẦN CẤU HÌNH CHI TIẾT TỪNG LOẠI NODE (SUB-COMPONENTS) -->
+        <!-- ========================================================= -->
+        <app-action-node-config 
+          *ngIf="nodeProps.type === 'action'" 
+          [nodeProps]="nodeProps">
+        </app-action-node-config>
+
+        <app-condition-node-config 
+          *ngIf="nodeProps.type === 'condition'" 
+          [nodeProps]="nodeProps">
+        </app-condition-node-config>
+
+        <app-task-node-config 
+          *ngIf="nodeProps.type === 'task'" 
+          [nodeProps]="nodeProps">
+        </app-task-node-config>
+
+        <app-trigger-node-config 
+          *ngIf="nodeProps.type === 'trigger'" 
+          [nodeProps]="nodeProps">
+        </app-trigger-node-config>
+
+        <app-split-node-config 
+          *ngIf="nodeProps.type === 'split'" 
+          [nodeProps]="nodeProps">
+        </app-split-node-config>
+
+        <app-merge-node-config 
+          *ngIf="nodeProps.type === 'merge'" 
+          [nodeProps]="nodeProps">
+        </app-merge-node-config>
+
+        <app-end-node-config 
+          *ngIf="nodeProps.type === 'end'" 
+          [nodeProps]="nodeProps">
+        </app-end-node-config>
+
+      </form>
+    </div>
+  </div>
+</aside>

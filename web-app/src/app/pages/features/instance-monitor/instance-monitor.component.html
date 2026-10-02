@@ -1,0 +1,447 @@
+<div class="feature-page-container">
+  <div class="page-top-nav">
+    <app-breadcrumbs [items]="['Giám sát & Lịch sử', 'Giám sát Tiến trình']"></app-breadcrumbs>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- 1. PAGE HEADER & CÔNG CỤ THỜI GIAN THỰC (REAL-TIME CONTROLS)         -->
+  <!-- ==================================================================== -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-tag-row">
+        <span class="header-tag">PHÂN HỆ M2</span>
+        <span class="live-status-chip" [class.is-live]="autoRefreshEnabled">
+          <span class="live-dot"></span>
+          {{ autoRefreshEnabled ? 'REAL-TIME SYNC' : 'OFFLINE' }}
+        </span>
+      </div>
+      <h2 class="page-title">
+        <ant-icon name="project" [size]="22" style="margin-right: 8px; color: #1677ff;"></ant-icon>
+        Giám sát tiến trình thời gian thực (Process Monitoring)
+      </h2>
+      <p class="page-subtitle">
+        Theo dõi trạng thái tiến trình thời gian thực (FR-11), phân định trách nhiệm bước mở (FR-13, US-20), kiểm soát SLA (FR-19) và khắc phục ngoại lệ (FR-14, US-22).
+      </p>
+    </div>
+
+    <!-- Công cụ thời gian thực (Real-time toolbar) -->
+    <div class="header-actions">
+      <div class="realtime-control-group">
+        <!-- Switch tự động làm mới -->
+        <label class="auto-refresh-toggle" title="Bật/Tắt tự động cập nhật dữ liệu">
+          <input 
+            type="checkbox" 
+            [checked]="autoRefreshEnabled" 
+            (change)="toggleAutoRefresh()" />
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Tự động làm mới</span>
+        </label>
+
+        <!-- Dropdown chọn chu kỳ làm mới (5s / 10s / 30s / 60s) -->
+        <select 
+          class="interval-select" 
+          [ngModel]="refreshIntervalSeconds" 
+          (ngModelChange)="setRefreshInterval($event)"
+          [disabled]="!autoRefreshEnabled"
+          title="Chọn chu kỳ cập nhật dữ liệu">
+          <option *ngFor="let sec of refreshIntervalOptions" [value]="sec">{{ sec }}s</option>
+        </select>
+
+        <!-- Nút Làm mới thủ công -->
+        <button 
+          type="button" 
+          class="btn btn-secondary btn-refresh" 
+          (click)="manualRefresh()"
+          [disabled]="isRefreshing || isLoading"
+          title="Lấy dữ liệu mới nhất từ Process Engine">
+          <ant-icon name="reload" [size]="14" [class.spin-animation]="isRefreshing || isLoading" style="margin-right: 5px;"></ant-icon>
+          <span>Làm mới</span>
+        </button>
+
+        <!-- Thời gian cập nhật gần nhất -->
+        <span class="last-sync-time" *ngIf="lastUpdatedTime">
+          Cập nhật: <strong>{{ lastUpdatedTime }}</strong>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- 2. KHỐI THỐNG KÊ ĐẦU TRANG (KPI SUMMARY CARDS - FR-11)               -->
+  <!-- ==================================================================== -->
+  <div class="stats-row">
+    <!-- Tổng số Instance -->
+    <div 
+      class="stat-card" 
+      (click)="filterByStatus('')" 
+      [class.active-filter]="selectedStatus === ''"
+      title="Bấm để xem tất cả tiến trình">
+      <div class="stat-header">
+        <span class="stat-num">{{ isLoadingSummary ? '--' : (summary.total | number) }}</span>
+        <span class="stat-icon stat-icon-total">
+          <ant-icon name="appstore" [size]="20" color="#1677ff"></ant-icon>
+        </span>
+      </div>
+      <span class="stat-title">Tổng số Instance</span>
+    </div>
+
+    <!-- Đang chạy (RUNNING) -->
+    <div 
+      class="stat-card active" 
+      (click)="filterByStatus('RUNNING')" 
+      [class.active-filter]="selectedStatus === 'RUNNING'"
+      title="Bấm để lọc các tiến trình đang chạy">
+      <div class="stat-header">
+        <span class="stat-num">{{ isLoadingSummary ? '--' : (summary.running | number) }}</span>
+        <span class="stat-icon stat-icon-active">
+          <ant-icon name="sync" [size]="20" color="#0891b2"></ant-icon>
+        </span>
+      </div>
+      <span class="stat-title">Đang chạy (RUNNING)</span>
+    </div>
+
+    <!-- Đã hoàn thành (COMPLETED) -->
+    <div 
+      class="stat-card completed" 
+      (click)="filterByStatus('COMPLETED')" 
+      [class.active-filter]="selectedStatus === 'COMPLETED'"
+      title="Bấm để lọc các tiến trình đã kết thúc">
+      <div class="stat-header">
+        <span class="stat-num">{{ isLoadingSummary ? '--' : (summary.completed | number) }}</span>
+        <span class="stat-icon stat-icon-completed">
+          <ant-icon name="check-circle" [size]="20" color="#10b981"></ant-icon>
+        </span>
+      </div>
+      <span class="stat-title">Đã hoàn thành (COMPLETED)</span>
+    </div>
+
+    <!-- Quá hạn (OVERDUE / SLA Breached) -->
+    <div 
+      class="stat-card overdue" 
+      (click)="filterByStatus('OVERDUE')" 
+      [class.active-filter]="selectedStatus === 'OVERDUE'"
+      title="Bấm để lọc các tiến trình bị trễ hạn SLA">
+      <div class="stat-header">
+        <span class="stat-num">{{ isLoadingSummary ? '--' : (summary.overdue | number) }}</span>
+        <span class="stat-icon stat-icon-overdue">
+          <ant-icon name="clock-circle" [size]="20" color="#f59e0b"></ant-icon>
+        </span>
+      </div>
+      <span class="stat-title">Quá hạn (OVERDUE SLA)</span>
+    </div>
+
+    <!-- Sự cố / Lỗi (FAILED / EXCEPTION) -->
+    <div 
+      class="stat-card failed" 
+      (click)="filterByStatus('FAILED')" 
+      [class.active-filter]="selectedStatus === 'FAILED'"
+      title="Bấm để lọc các tiến trình gặp sự cố ngoại lệ cần xử lý">
+      <div class="stat-header">
+        <span class="stat-num">{{ isLoadingSummary ? '--' : (summary.failed | number) }}</span>
+        <span class="stat-icon stat-icon-failed">
+          <ant-icon name="warning" [size]="20" color="#ef4444"></ant-icon>
+        </span>
+      </div>
+      <span class="stat-title">Sự cố / Lỗi (FAILED)</span>
+    </div>
+  </div>
+
+  <!-- Thông báo lỗi API (nếu có sự cố mạng) -->
+  <div class="api-error-alert" *ngIf="errorMessage">
+    <ant-icon name="warning" [size]="16" style="margin-right: 8px; color: #ef4444;"></ant-icon>
+    <span>{{ errorMessage }}</span>
+    <button type="button" class="btn-retry-alert" (click)="manualRefresh()">Thử lại</button>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- 3. KHU VỰC BỘ LỌC TÌM KIẾM (FILTER BAR - US-03, FR-11, FR-13, FR-14) -->
+  <!-- ==================================================================== -->
+  <div class="content-card">
+    <div class="card-filter-section">
+      <div class="filter-grid">
+        <!-- 1. Tìm kiếm từ khóa nhanh (Search input) -->
+        <div class="filter-item filter-search">
+          <label class="filter-label">Tìm kiếm từ khóa nhanh</label>
+          <ant-input 
+            [(ngModel)]="searchKeyword" 
+            (valueChange)="onSearchChange()"
+            placeholder="Mã Instance (INS-...) hoặc Mã nghiệp vụ (Thuê bao, Mã KN...)" 
+            [allowClear]="true" 
+            prefixIcon="search">
+          </ant-input>
+        </div>
+
+        <!-- 2. Lọc theo Quy trình / Mẫu (Template) -->
+        <div class="filter-item">
+          <label class="filter-label">Quy trình / Mẫu (Template)</label>
+          <ant-select 
+            [(ngModel)]="selectedTemplateId" 
+            (valueChange)="onFilterChange()" 
+            [options]="templateSelectOptions"
+            placeholder="Tất cả quy trình"
+            [allowClear]="true">
+          </ant-select>
+        </div>
+
+        <!-- 3. Lọc theo Trạng thái (Status) -->
+        <div class="filter-item">
+          <label class="filter-label">Trạng thái (Status)</label>
+          <ant-select 
+            [(ngModel)]="selectedStatus" 
+            (valueChange)="onFilterChange()" 
+            [options]="statusOptions"
+            placeholder="Tất cả trạng thái"
+            [allowClear]="true">
+          </ant-select>
+        </div>
+
+        <!-- 4. Lọc theo Người / Bộ phận phụ trách hiện tại (FR-13, US-20) -->
+        <div class="filter-item">
+          <label class="filter-label">Người / Bộ phận phụ trách</label>
+          <ant-select 
+            [(ngModel)]="selectedOwner" 
+            (valueChange)="onFilterChange()" 
+            [options]="assigneeSelectOptions"
+            placeholder="Tất cả người / bộ phận"
+            [allowClear]="true">
+          </ant-select>
+        </div>
+
+        <!-- 5. Lọc theo Thời gian khởi tạo (Date Range) -->
+        <div class="filter-item filter-date-range">
+          <label class="filter-label">Thời gian khởi tạo (started_at)</label>
+          <div class="date-inputs">
+            <input 
+              type="date" 
+              [(ngModel)]="fromDate" 
+              (change)="onFilterChange()" 
+              class="form-control date-input" 
+              title="Từ ngày" />
+            <span class="date-separator">→</span>
+            <input 
+              type="date" 
+              [(ngModel)]="toDate" 
+              (change)="onFilterChange()" 
+              class="form-control date-input" 
+              title="Đến ngày" />
+          </div>
+        </div>
+
+        <!-- 6. Nguồn kích hoạt (Trigger Source / Type) -->
+        <div class="filter-item">
+          <label class="filter-label">Nguồn kích hoạt (Channel)</label>
+          <ant-select 
+            [(ngModel)]="selectedTriggerSource" 
+            (valueChange)="onFilterChange()" 
+            [options]="triggerSourceOptions"
+            placeholder="Tất cả nguồn kích hoạt"
+            [allowClear]="true">
+          </ant-select>
+        </div>
+      </div>
+
+      <!-- Action reset bộ lọc khi có điều kiện active -->
+      <div class="filter-footer" *ngIf="hasActiveFilter">
+        <button type="button" class="btn-reset-filters" (click)="resetFilters()">
+          <ant-icon name="reload" [size]="13" style="margin-right: 4px;"></ant-icon>
+          <span>Đặt lại toàn bộ bộ lọc</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- 4. BẢNG DỮ LIỆU HIỂN THỊ DÙNG CHUNG (DATA TABLE)                      -->
+    <!-- ==================================================================== -->
+    <app-data-table
+      [loading]="isLoading"
+      [total]="totalCount"
+      [page]="currentPage"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      loadingTip="Đang tải dữ liệu tiến trình từ API..."
+      emptyTitle="Không tìm thấy tiến trình nào phù hợp"
+      emptyDescription="Thử điều chỉnh lại từ khóa hoặc xóa bớt tiêu chí trong bộ lọc tìm kiếm."
+      (onPageChange)="goToPage($event)"
+      (onPageSizeChange)="onPageSizeChange($event)">
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px; text-align: center;">STT</th>
+            <th style="width: 170px;">Mã Instance / Nghiệp vụ</th>
+            <th style="min-width: 200px;">Tên quy trình & Phiên bản</th>
+            <th style="width: 140px; text-align: center;">Trạng thái</th>
+            <th style="width: 170px;">Bước hiện tại</th>
+            <th style="width: 170px;">Người / Bộ phận phụ trách</th>
+            <th style="width: 150px;">Thời gian khởi tạo</th>
+            <th style="width: 140px;">Thời hạn SLA</th>
+            <th style="width: 150px; text-align: center;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dữ liệu bảng khi có bản ghi -->
+          <tr *ngFor="let item of instances; let i = index" [class.row-overdue]="item.status === 'OVERDUE'" [class.row-failed]="item.status === 'FAILED' || item.status === 'EXCEPTION'">
+            <!-- 1. STT -->
+            <td style="text-align: center; color: #64748b;">
+              {{ (currentPage - 1) * pageSize + i + 1 }}
+            </td>
+
+            <!-- 2. Mã Instance (Bấm vào để xem Timeline) -->
+            <td>
+              <div class="instance-id-cell">
+                <span class="instance-code-link" (click)="openTimeline(item)" title="Bấm xem Timeline tiến trình">
+                  <code>{{ item.process_instance_id }}</code>
+                </span>
+                <span class="business-key-pill" *ngIf="item.business_key" title="Mã nghiệp vụ liên kết">
+                  <ant-icon name="profile" [size]="11" style="margin-right: 3px;"></ant-icon>
+                  {{ item.business_key }}
+                </span>
+              </div>
+            </td>
+
+            <!-- 3. Tên quy trình & Phiên bản -->
+            <td>
+              <div class="process-name-cell">
+                <span class="process-title" [title]="item.template_name">{{ item.template_name }}</span>
+                <div class="process-meta-tags">
+                  <span class="version-tag">{{ item.version_no }}</span>
+                  <span class="trigger-tag" [title]="'Kênh tiếp nhận: ' + item.trigger_source">
+                    {{ item.trigger_source }}
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            <!-- 4. Trạng thái (Status Badge) -->
+            <td style="text-align: center;">
+              <app-status-tag [status]="item.status"></app-status-tag>
+            </td>
+
+            <!-- 5. Bước hiện tại (Current Step / Activity ID) -->
+            <td>
+              <div class="step-cell">
+                <span class="step-name" [title]="item.current_step_name">{{ item.current_step_name }}</span>
+                <span class="activity-code" [title]="item.activity_id">#{{ item.activity_id }}</span>
+              </div>
+            </td>
+
+            <!-- 6. Người / Bộ phận phụ trách hiện tại (FR-13, US-20) -->
+            <td>
+              <div class="owner-cell">
+                <span class="owner-name">
+                  <ant-icon name="user" [size]="12" style="margin-right: 4px; color: #64748b;"></ant-icon>
+                  {{ item.current_owner }}
+                </span>
+                <span class="dept-tag" *ngIf="item.candidate_group">
+                  {{ item.candidate_group }}
+                </span>
+              </div>
+            </td>
+
+            <!-- 7. Thời gian khởi tạo (DD/MM/YYYY HH:mm:ss) -->
+            <td>
+              <span class="timestamp-text">{{ formatDateTime(item.started_at) }}</span>
+            </td>
+
+            <!-- 8. Thời hạn SLA / Tiến độ (FR-19, US-19) -->
+            <td>
+              <div class="sla-cell">
+                <app-sla-badge 
+                  [status]="getSlaCountdown(item.due_at, item.status).isOverdue ? 'overdue' : 'normal'" 
+                  [text]="getSlaCountdown(item.due_at, item.status).text">
+                </app-sla-badge>
+                <span class="sla-due-time" [title]="'Hạn cam kết: ' + formatDateTime(item.due_at)">
+                  Hạn: {{ formatDateTime(item.due_at) }}
+                </span>
+              </div>
+            </td>
+
+            <!-- 9. Thao tác (Actions: Xem Timeline, Retry, Cancel) -->
+            <td style="text-align: center;">
+              <div class="action-buttons-cell">
+                <!-- Nút Xem Timeline (FR-12, US-03) -->
+                <button 
+                  type="button" 
+                  class="action-btn btn-view-timeline" 
+                  (click)="openTimeline(item)" 
+                  title="Xem Timeline tuần tự các bước và lý do rẽ nhánh">
+                  <ant-icon name="history" [size]="13"></ant-icon>
+                  <span>Timeline</span>
+                </button>
+
+                <!-- Nút Thử lại Retry nếu gặp sự cố ngoại lệ (FR-14, US-22) -->
+                <button 
+                  type="button" 
+                  class="action-btn btn-retry" 
+                  *ngIf="item.status === 'FAILED' || item.status === 'EXCEPTION'"
+                  (click)="retryStep(item)"
+                  [disabled]="retryingInstanceId === item.process_instance_id"
+                  title="Thử lại bước lỗi (Retry Node)">
+                  <ant-icon name="reload" [size]="13" [class.spin-animation]="retryingInstanceId === item.process_instance_id"></ant-icon>
+                  <span>Retry</span>
+                </button>
+
+                <!-- Nút Hủy luồng Cancel (FR-14, US-22) -->
+                <button 
+                  type="button" 
+                  class="action-btn btn-cancel" 
+                  *ngIf="item.status === 'RUNNING' || item.status === 'FAILED' || item.status === 'EXCEPTION'"
+                  (click)="openCancelModal(item)"
+                  title="Hủy bỏ luồng tiến trình này">
+                  <ant-icon name="close-circle" [size]="13"></ant-icon>
+                  <span>Hủy</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </app-data-table>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- 6. DRAWER XEM TIMELINE TIẾN TRÌNH & XỬ LÝ SỰ CỐ (Component tách riêng) -->
+  <!-- ==================================================================== -->
+  <app-instance-timeline-drawer
+    [visible]="showTimelineDrawer"
+    [instance]="selectedInstance"
+    [timelineItems]="timelineItems"
+    [isLoadingTimeline]="isLoadingTimeline"
+    [retryingInstanceId]="retryingInstanceId"
+    (onClose)="closeTimelineDrawer()"
+    (onRetry)="retryStep($event.instance, $event.stepId)"
+    (onCancelFlow)="openCancelModal($event)">
+  </app-instance-timeline-drawer>
+
+  <!-- ==================================================================== -->
+  <!-- 7. MODAL XÁC NHẬN HỦY LUỒNG TIẾN TRÌNH (Dùng confirm-dialog dùng chung)-->
+  <!-- ==================================================================== -->
+  <app-confirm-dialog
+    [visible]="showCancelModal"
+    title="Xác nhận Hủy luồng tiến trình"
+    type="danger"
+    confirmText="Xác nhận Hủy luồng"
+    cancelText="Bỏ qua"
+    [loading]="isCancelling"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="closeCancelModal()">
+    <p style="margin: 0 0 12px 0; color: #475569; font-size: 0.875rem;">
+      Bạn đang yêu cầu hủy luồng cho tiến trình 
+      <strong style="color: #0f172a;">{{ targetCancelInstance?.process_instance_id }}</strong> 
+      ({{ targetCancelInstance?.template_name }}). Hành động này không thể hoàn tác!
+    </p>
+
+    <div style="margin-top: 10px;">
+      <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.82rem; color: #334155;">
+        Lý do hủy luồng <span style="color: #ef4444;">*</span>
+      </label>
+      <textarea 
+        [(ngModel)]="cancelReason" 
+        rows="3" 
+        class="form-control" 
+        style="width: 100%; border: 1px solid #d9d9d9; border-radius: 6px; padding: 8px 10px; font-size: 0.85rem; resize: vertical; box-sizing: border-box;"
+        placeholder="Nhập chi tiết nguyên nhân hủy luồng (VD: Khách hàng hủy khiếu nại, dữ liệu đầu vào sai lệch, lỗi hệ thống đối tác...)"></textarea>
+    </div>
+  </app-confirm-dialog>
+</div>
+

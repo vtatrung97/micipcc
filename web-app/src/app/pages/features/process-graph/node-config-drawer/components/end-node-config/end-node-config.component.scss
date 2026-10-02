@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+.drawer-section-heading {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+}

@@ -1,0 +1,70 @@
+{
+  "items": [
+    {
+      "log_id": "LOG-2026-10001",
+      "timestamp": "2026-10-01T08:15:05Z",
+      "level": "INFO",
+      "module": "M2: Flow Engine",
+      "service_name": "Engine Service",
+      "trace_id": "tr-8899001122",
+      "process_instance_id": "INST-2026-09081",
+      "action": "EXECUTE_NODE",
+      "message": "Chuyển tiếp thành công tiến trình sang bước BO Phê duyệt Hoàn cước",
+      "actor": "System Agent (Worker-01)",
+      "ip_address": "10.100.4.15",
+      "host_node": "k8s-engine-node-03"
+    },
+    {
+      "log_id": "LOG-2026-10002",
+      "timestamp": "2026-10-01T07:45:12Z",
+      "level": "WARN",
+      "module": "M2: Flow Engine",
+      "service_name": "IPCC Gateway",
+      "trace_id": "tr-8899001123",
+      "process_instance_id": "INST-2026-09082",
+      "action": "API_CALL",
+      "message": "Thời gian phản hồi API OLT Ba Đình vượt ngưỡng cảnh báo (3,200ms)",
+      "actor": "IPCC Gateway Worker",
+      "ip_address": "10.100.4.18",
+      "host_node": "k8s-gateway-node-01"
+    },
+    {
+      "log_id": "LOG-2026-10003",
+      "timestamp": "2026-10-01T07:00:15Z",
+      "level": "ERROR",
+      "module": "M2: Flow Engine",
+      "service_name": "Webhook Worker",
+      "trace_id": "tr-8899001124",
+      "process_instance_id": "INST-2026-09083",
+      "action": "EXCEPTION",
+      "message": "HTTP 502 Bad Gateway từ cổng Chuyển mạng Quốc gia MNP-GW",
+      "actor": "Webhook Worker (MNP)",
+      "ip_address": "10.100.4.22",
+      "host_node": "k8s-worker-node-05",
+      "stack_trace": "HttpException: 502 Bad Gateway at MnpConnector.sendPayload (mnp-connector.ts:45)"
+    },
+    {
+      "log_id": "LOG-2026-10004",
+      "timestamp": "2026-10-01T06:30:00Z",
+      "level": "INFO",
+      "module": "M1: Template",
+      "service_name": "Template Manager",
+      "trace_id": "tr-8899001125",
+      "action": "STATE_CHANGE",
+      "message": "Xuất bản thành công phiên bản V2.1 cho quy trình PRC_COMPLAINT_BILLING",
+      "actor": "Nguyễn Văn Quản trị (ADM_001)",
+      "ip_address": "192.168.1.50",
+      "host_node": "web-app-client"
+    }
+  ],
+  "total": 4,
+  "page": 1,
+  "page_size": 10,
+  "summary": {
+    "total": 124,
+    "info": 95,
+    "warn": 18,
+    "error": 10,
+    "fatal": 1
+  }
+}

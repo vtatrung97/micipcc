@@ -1,0 +1,103 @@
+{
+  "items": [
+    {
+      "process_instance_id": "INST-2026-09081",
+      "business_key": "KN-0903123456",
+      "template_id": "PRC_COMPLAINT_BILLING",
+      "template_name": "Quy trình xử lý khiếu nại cước di động trả sau đa phòng ban",
+      "version_no": "V2.1",
+      "status": "RUNNING",
+      "current_step_name": "User Task: BO Phê duyệt Hoàn cước",
+      "activity_id": "act_bo_approval",
+      "current_owner": "Phòng Cước Miền Bắc (BO_BILLING_MB)",
+      "assignee": "Trần Văn Cường (BO_001)",
+      "candidate_group": "Phòng Cước Miền Bắc",
+      "started_at": "2026-10-01T08:15:00Z",
+      "due_at": "2026-10-01T10:15:00Z",
+      "sla_status": "warning",
+      "trigger_source": "IPCC 2.0",
+      "variables": {
+        "msisdn": "0903123456",
+        "amount": 500000,
+        "reason": "Tính sai cước Data 5G tháng 9"
+      }
+    },
+    {
+      "process_instance_id": "INST-2026-09082",
+      "business_key": "BH-0988777666",
+      "template_id": "PRC_FTTH_SUPPORT",
+      "template_name": "Hỗ trợ kỹ thuật truyền hình & Internet cáp quang FTTH",
+      "version_no": "V1.4",
+      "status": "OVERDUE",
+      "current_step_name": "Action: Reset Port OLT trạm Ba Đình",
+      "activity_id": "act_reset_olt",
+      "current_owner": "Tổ Kỹ thuật Broadband Ba Đình",
+      "assignee": "Nguyễn Kỹ Thuật (KT_004)",
+      "candidate_group": "Tổ Kỹ thuật Ba Đình",
+      "started_at": "2026-10-01T05:30:00Z",
+      "due_at": "2026-10-01T09:30:00Z",
+      "sla_status": "overdue",
+      "trigger_source": "Zalo",
+      "last_error_message": "Cổng OLT Ba Đình mất kết nối SSH Timeout.",
+      "variables": {
+        "msisdn": "0988777666",
+        "olt_ip": "10.240.12.88",
+        "signal_loss": "-28.5dBm"
+      }
+    },
+    {
+      "process_instance_id": "INST-2026-09083",
+      "business_key": "MNP-0912345678",
+      "template_id": "PRC_MNP_AUTOMATION",
+      "template_name": "Chuyển mạng giữ số (MNP) tự động & Đồng bộ CSDL quốc gia",
+      "version_no": "V1.0",
+      "status": "FAILED",
+      "current_step_name": "Service Task: Đồng bộ CSDL Chuyển mạng Quốc gia",
+      "activity_id": "act_sync_national_db",
+      "current_owner": "Trung tâm Tính cước Billing",
+      "assignee": "Lê Văn Hùng (BL_002)",
+      "candidate_group": "Tổ MNP Quốc gia",
+      "started_at": "2026-10-01T07:00:00Z",
+      "due_at": "2026-10-02T07:00:00Z",
+      "sla_status": "normal",
+      "trigger_source": "Webhook",
+      "last_error_message": "HTTP 502 Bad Gateway từ cổng Chuyển mạng Quốc gia MNP-GW.",
+      "variables": {
+        "msisdn": "0912345678",
+        "target_network": "VMP"
+      }
+    },
+    {
+      "process_instance_id": "INST-2026-09084",
+      "business_key": "TS-0977112233",
+      "template_id": "PRC_TELESALES_UPGRADE",
+      "template_name": "Happy Call khảo sát & Telesales nâng cấp gói cước băng rộng Home Mesh",
+      "version_no": "V1.2",
+      "status": "COMPLETED",
+      "current_step_name": "End Event: Hoàn tất nâng cấp gói Mesh",
+      "activity_id": "end_telesales",
+      "current_owner": "Phòng Telesales Miền Nam",
+      "assignee": "Phạm Hoàng Yến (TS_009)",
+      "candidate_group": "Tổ Telesales VIP",
+      "started_at": "2026-10-01T08:00:00Z",
+      "ended_at": "2026-10-01T08:45:00Z",
+      "due_at": "2026-10-01T16:00:00Z",
+      "sla_status": "normal",
+      "trigger_source": "MANUAL",
+      "variables": {
+        "msisdn": "0977112233",
+        "package": "Home Mesh 2"
+      }
+    }
+  ],
+  "total": 4,
+  "page": 1,
+  "page_size": 10,
+  "summary": {
+    "total": 14,
+    "running": 7,
+    "completed": 3,
+    "overdue": 3,
+    "failed": 1
+  }
+}

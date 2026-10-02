@@ -1,0 +1,225 @@
+<div class="feature-page-container">
+  <div class="page-top-nav">
+    <app-breadcrumbs [items]="['Giám sát & Lịch sử', 'Nhật ký Log Hệ thống']"></app-breadcrumbs>
+  </div>
+
+  <!-- 1. PAGE HEADER -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-tag-row">
+        <span class="header-tag">PHÂN HỆ M2</span>
+        <span class="immutable-tag">IMMUTABLE LOGS (FR-15)</span>
+      </div>
+      <h2 class="page-title">
+        <ant-icon name="file-text" [size]="22" style="margin-right: 8px; color: #1677ff;"></ant-icon>
+        Nhật ký Log hệ thống (WORM / Immutable System Logs)
+      </h2>
+      <p class="page-subtitle">
+        Lưu trữ bất biến toàn bộ vết giao dịch API, sự kiện chuyển trạng thái, cảnh báo ngoại lệ và lỗi tích hợp máy chủ theo chuẩn kiểm toán FR-15.
+      </p>
+    </div>
+
+    <!-- Live Tail & Refresh Controls -->
+    <div class="header-actions">
+      <div class="log-controls-group">
+        <button 
+          type="button" 
+          class="btn-live-stream" 
+          [class.is-streaming]="isLiveStreaming"
+          (click)="toggleLiveStreaming()"
+          title="Bật/Tắt chế độ theo dõi Log trực tiếp thời gian thực">
+          <span class="stream-dot"></span>
+          <span>{{ isLiveStreaming ? 'Đang Live Stream (3s)' : 'Bật Live Stream' }}</span>
+        </button>
+
+        <button type="button" class="btn btn-secondary" (click)="loadLogs()" [disabled]="isLoading">
+          <ant-icon name="reload" [size]="13" [class.spin-animation]="isLoading" style="margin-right: 4px;"></ant-icon>
+          <span>Làm mới</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. KPI LOG SUMMARY CARDS -->
+  <div class="stats-row">
+    <div class="stat-card" (click)="selectedLevel = ''; onFilterChange()" [class.active-filter]="selectedLevel === ''">
+      <div class="stat-header">
+        <span class="stat-num">{{ isLoadingSummary ? '--' : (summary.total | number) }}</span>
+        <span class="stat-icon icon-total"><ant-icon name="appstore" [size]="18" color="#1677ff"></ant-icon></span>
+      </div>
+      <span class="stat-title">Tổng số bản ghi Log</span>
+    </div>
+
+    <div class="stat-card" (click)="selectedLevel = 'INFO'; onFilterChange()" [class.active-filter]="selectedLevel === 'INFO'">
+      <div class="stat-header">
+        <span class="stat-num text-info">{{ isLoadingSummary ? '--' : (summary.info | number) }}</span>
+        <span class="stat-icon icon-info"><ant-icon name="info-circle" [size]="18" color="#0284c7"></ant-icon></span>
+      </div>
+      <span class="stat-title">Thông tin (INFO)</span>
+    </div>
+
+    <div class="stat-card" (click)="selectedLevel = 'WARN'; onFilterChange()" [class.active-filter]="selectedLevel === 'WARN'">
+      <div class="stat-header">
+        <span class="stat-num text-warn">{{ isLoadingSummary ? '--' : (summary.warn | number) }}</span>
+        <span class="stat-icon icon-warn"><ant-icon name="warning" [size]="18" color="#f59e0b"></ant-icon></span>
+      </div>
+      <span class="stat-title">Cảnh báo (WARN)</span>
+    </div>
+
+    <div class="stat-card" (click)="selectedLevel = 'ERROR'; onFilterChange()" [class.active-filter]="selectedLevel === 'ERROR'">
+      <div class="stat-header">
+        <span class="stat-num text-error">{{ isLoadingSummary ? '--' : (summary.error | number) }}</span>
+        <span class="stat-icon icon-error"><ant-icon name="close-circle" [size]="18" color="#ef4444"></ant-icon></span>
+      </div>
+      <span class="stat-title">Sự cố & Lỗi (ERROR / FATAL)</span>
+    </div>
+  </div>
+
+  <!-- 3. FILTER BAR -->
+  <div class="content-card">
+    <div class="card-filter-section">
+      <div class="filter-grid">
+        <!-- Tìm kiếm từ khóa -->
+        <div class="filter-item filter-search">
+          <label class="filter-label">Tìm kiếm Trace ID / Thông điệp / Instance ID</label>
+          <ant-input 
+            [(ngModel)]="searchKeyword" 
+            (valueChange)="onSearchChange()"
+            placeholder="Nhập Trace ID, nội dung log, mã instance..." 
+            [allowClear]="true" 
+            prefixIcon="search">
+          </ant-input>
+        </div>
+
+        <!-- Cấp độ Log -->
+        <div class="filter-item">
+          <label class="filter-label">Cấp độ (Level)</label>
+          <ant-select 
+            [(ngModel)]="selectedLevel" 
+            (valueChange)="onFilterChange()" 
+            [options]="levelOptions"
+            placeholder="Tất cả cấp độ"
+            [allowClear]="true">
+          </ant-select>
+        </div>
+
+        <!-- Phân hệ -->
+        <div class="filter-item">
+          <label class="filter-label">Phân hệ / Module</label>
+          <ant-select 
+            [(ngModel)]="selectedModule" 
+            (valueChange)="onFilterChange()" 
+            [options]="moduleOptions"
+            placeholder="Tất cả phân hệ"
+            [allowClear]="true">
+          </ant-select>
+        </div>
+
+        <!-- Dịch vụ -->
+        <div class="filter-item">
+          <label class="filter-label">Dịch vụ (Service)</label>
+          <ant-select 
+            [(ngModel)]="selectedService" 
+            (valueChange)="onFilterChange()" 
+            [options]="serviceOptions"
+            placeholder="Tất cả dịch vụ"
+            [allowClear]="true">
+          </ant-select>
+        </div>
+
+        <!-- Khoảng thời gian -->
+        <div class="filter-item filter-date-range">
+          <label class="filter-label">Thời gian phát sinh</label>
+          <div class="date-inputs">
+            <input type="date" [(ngModel)]="fromDate" (change)="onFilterChange()" class="form-control date-input" />
+            <span class="date-separator">→</span>
+            <input type="date" [(ngModel)]="toDate" (change)="onFilterChange()" class="form-control date-input" />
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-footer" *ngIf="hasActiveFilter">
+        <button type="button" class="btn-reset-filters" (click)="resetFilters()">
+          <ant-icon name="reload" [size]="13" style="margin-right: 4px;"></ant-icon>
+          <span>Đặt lại bộ lọc</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. LOGS DATA TABLE DÙNG CHUNG -->
+    <app-data-table
+      [loading]="isLoading"
+      [total]="totalCount"
+      [page]="currentPage"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      loadingTip="Đang tải dữ liệu nhật ký Log hệ thống từ API..."
+      emptyTitle="Không tìm thấy bản ghi Log nào phù hợp"
+      emptyDescription="Thử điều chỉnh lại cấp độ hoặc từ khóa tìm kiếm."
+      (onPageChange)="goToPage($event)"
+      (onPageSizeChange)="onPageSizeChange($event)">
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px; text-align: center;">STT</th>
+            <th style="width: 175px;">Thời gian (Timestamp)</th>
+            <th style="width: 90px; text-align: center;">Level</th>
+            <th style="width: 160px;">Dịch vụ & Module</th>
+            <th style="width: 160px;">Trace ID / Instance ID</th>
+            <th style="width: 130px;">Hành động</th>
+            <th>Nội dung thông điệp Log</th>
+            <th style="width: 130px;">Tác nhân (Actor)</th>
+            <th style="width: 70px; text-align: center;">Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of logs; let i = index" [class.row-error]="log.level === 'ERROR' || log.level === 'FATAL'">
+            <td style="text-align: center; color: #64748b;">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <span class="timestamp-code"><code>{{ formatTimestamp(log.timestamp) }}</code></span>
+            </td>
+            <td style="text-align: center;">
+              <app-status-tag [status]="log.level"></app-status-tag>
+            </td>
+            <td>
+              <div class="service-col">
+                <span class="service-name">{{ log.service_name }}</span>
+                <span class="module-sub">{{ log.module }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="trace-col">
+                <span class="trace-pill" [title]="'Trace ID: ' + log.trace_id">#{{ log.trace_id | slice:0:12 }}...</span>
+                <span class="instance-sub" *ngIf="log.process_instance_id">{{ log.process_instance_id }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="action-tag">{{ log.action }}</span>
+            </td>
+            <td>
+              <div class="message-cell" [title]="log.message">
+                <span class="msg-text">{{ log.message }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="actor-text">{{ log.actor }}</span>
+            </td>
+            <td style="text-align: center;">
+              <button type="button" class="btn-view-detail" (click)="openLogDetail(log)" title="Xem chi tiết Log Payload & Stacktrace">
+                <ant-icon name="eye" [size]="13"></ant-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </app-data-table>
+  </div>
+
+  <!-- 6. LOG DETAIL MODAL (Component tách riêng) -->
+  <app-log-detail-modal
+    [visible]="showLogDetailModal"
+    [log]="selectedLog"
+    (onClose)="closeLogDetail()">
+  </app-log-detail-modal>
+</div>

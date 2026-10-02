@@ -1,0 +1,100 @@
+<div class="action-config-container" *ngIf="nodeProps">
+  <div class="drawer-section-heading mt-4">
+    <ant-icon name="rocket" [size]="14" style="margin-right: 6px;"></ant-icon>
+    <span>NGUỒN ACTION & TỰ ĐỘNG HÓA</span>
+  </div>
+
+  <div class="action-source-toggle mb-3">
+    <button type="button" class="source-toggle-btn" [class.active]="nodeProps.actionSource === 'library'"
+      (click)="setActionSource('library')">
+      📦 Thư viện Action mẫu
+    </button>
+    <button type="button" class="source-toggle-btn" [class.active]="nodeProps.actionSource === 'custom'"
+      (click)="setActionSource('custom')">
+      ⚙️ Cấu hình API riêng
+    </button>
+  </div>
+
+  <!-- Dropdown chọn mẫu Action từ Library -->
+  <nz-form-item *ngIf="nodeProps.actionSource === 'library'">
+    <nz-form-label>Chọn Action mẫu từ thư viện</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="nodeProps.actionLibraryId" (ngModelChange)="onActionLibrarySelect($event)"
+        name="actionLibrarySelect" nzPlaceHolder="Chọn mẫu API...">
+        <nz-option *ngFor="let lib of actionLibraries" [nzValue]="lib.id"
+          [nzLabel]="'[' + lib.method + '] ' + lib.name + ' (' + lib.category + ')'">
+        </nz-option>
+      </nz-select>
+      <span class="field-hint">Tự động nạp sẵn Endpoint, Request/Response mapping và các thông số tối ưu.</span>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- API Endpoint & Method -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Endpoint URL & Method</nz-form-label>
+    <nz-form-control>
+      <nz-input-group [nzAddOnBefore]="methodSelectTpl">
+        <input nz-input class="font-mono text-xs" [(ngModel)]="nodeProps.actionEndpoint"
+          (ngModelChange)="onPropChange('actionEndpoint')" name="actionEndpoint"
+          placeholder="https://api.domain.vn/v1/..." />
+      </nz-input-group>
+      <ng-template #methodSelectTpl>
+        <nz-select [(ngModel)]="nodeProps.actionMethod" (ngModelChange)="onPropChange('actionMethod')"
+          name="actionMethod" style="width: 90px;">
+          <nz-option nzValue="GET" nzLabel="GET"></nz-option>
+          <nz-option nzValue="POST" nzLabel="POST"></nz-option>
+          <nz-option nzValue="PUT" nzLabel="PUT"></nz-option>
+          <nz-option nzValue="DELETE" nzLabel="DELETE"></nz-option>
+        </nz-select>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Request Body Mapping -->
+  <nz-form-item>
+    <nz-form-label>
+      <span>Request Body Mapping</span>
+      <span class="label-subtext">(JSON map từ flow.variables)</span>
+    </nz-form-label>
+    <nz-form-control>
+      <textarea nz-input rows="3" class="font-mono text-xs" [(ngModel)]="nodeProps.requestBodyMapping"
+        (ngModelChange)="onPropChange('requestBodyMapping')" name="requestBodyMapping"
+        placeholder="&#123;&#10;  &quot;callId&quot;: &quot;${flow.variables.call_id}&quot;&#10;&#125;">
+      </textarea>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Response Mapping -->
+  <nz-form-item>
+    <nz-form-label>
+      <span>Response Mapping</span>
+      <span class="label-subtext">(Lưu biến vào flow.variables)</span>
+    </nz-form-label>
+    <nz-form-control>
+      <textarea nz-input rows="2" class="font-mono text-xs" [(ngModel)]="nodeProps.responseMapping"
+        (ngModelChange)="onPropChange('responseMapping')" name="responseMapping"
+        placeholder="flow.variables.status = response.data.status;">
+      </textarea>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- SLA & Resilience Settings -->
+  <div class="form-row-2">
+    <nz-form-item>
+      <nz-form-label>SLA bước (giây)</nz-form-label>
+      <nz-form-control>
+        <input nz-input type="number" [(ngModel)]="nodeProps.slaSeconds"
+          (ngModelChange)="onPropChange('slaSeconds')" name="slaSeconds" min="1" />
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label>Circuit Breaker (ms)</nz-form-label>
+      <nz-form-control>
+        <input nz-input type="number" class="font-mono" [(ngModel)]="nodeProps.circuitBreakerTimeoutMs"
+          (ngModelChange)="onPropChange('circuitBreakerTimeoutMs')" name="circuitBreakerTimeoutMs"
+          placeholder="3000" />
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+</div>

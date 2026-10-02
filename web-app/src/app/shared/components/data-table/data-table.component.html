@@ -1,0 +1,37 @@
+<div class="ant-table-wrapper" [class.ant-table-loading]="loading">
+  <!-- 1. Loading Overlay bao trọn phần Body (Header giữ nguyên) -->
+  <div class="ant-table-spin-overlay" *ngIf="loading">
+    <app-loading-spinner 
+      [loading]="true" 
+      [type]="loadingType" 
+      [tip]="loadingTip"
+      [color]="loadingColor">
+    </app-loading-spinner>
+  </div>
+
+  <div class="ant-table-container" [class.is-loading-container]="loading">
+    <div class="ant-table-content" [class.ant-table-blur]="loading">
+      <ng-content></ng-content>
+    </div>
+
+    <!-- 2. Empty State khi nạp xong và danh sách rỗng -->
+    <div class="ant-table-empty-wrap" *ngIf="!loading && total === 0">
+      <app-empty-state 
+        [title]="emptyTitle || 'Không tìm thấy dữ liệu'" 
+        [description]="emptyDescription || 'Thử điều chỉnh lại bộ lọc tìm kiếm.'">
+      </app-empty-state>
+    </div>
+  </div>
+
+  <!-- 3. Pagination tự động khi có dữ liệu -->
+  <div class="ant-table-pagination-wrapper" *ngIf="showPagination && total > 0 && !loading">
+    <app-pagination
+      [total]="total"
+      [page]="page"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange.emit($event)"
+      (pageSizeChange)="onPageSizeChange.emit($event)">
+    </app-pagination>
+  </div>
+</div>

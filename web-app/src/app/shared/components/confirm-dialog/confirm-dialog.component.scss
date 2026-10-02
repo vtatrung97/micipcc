@@ -1,0 +1,171 @@
+.ant-modal-root {
+  position: relative;
+  z-index: 1100;
+}
+
+.ant-modal-mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 1100;
+  animation: modalFadeIn 0.2s ease;
+}
+
+.ant-modal-wrap {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+  outline: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ant-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ant-modal-content {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  padding: 24px;
+}
+
+.ant-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  padding: 0;
+  color: #9ca3af;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #1f2937;
+  }
+}
+
+.confirm-dialog-body {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.confirm-icon-wrapper {
+  flex-shrink: 0;
+  line-height: 1;
+
+  &[data-type="danger"] {
+    color: #ff4d4f;
+  }
+  &[data-type="warning"] {
+    color: #faad14;
+  }
+  &[data-type="info"] {
+    color: #1677ff;
+  }
+}
+
+.confirm-content-wrapper {
+  flex: 1;
+
+  .confirm-title {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .confirm-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.confirm-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+
+  .ant-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 4px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+    border: 1px solid transparent;
+
+    &.ant-btn-default {
+      background-color: #ffffff;
+      border-color: #d9d9d9;
+      color: #374151;
+
+      &:hover:not([disabled]) {
+        border-color: #4096ff;
+        color: #4096ff;
+      }
+    }
+
+    &.ant-btn-primary {
+      background-color: #1677ff;
+      color: #ffffff;
+
+      &:hover:not([disabled]) {
+        background-color: #4096ff;
+      }
+    }
+
+    &.ant-btn-danger {
+      background-color: #ff4d4f;
+      color: #ffffff;
+
+      &:hover:not([disabled]) {
+        background-color: #ff7875;
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleUp {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

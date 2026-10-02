@@ -1,0 +1,76 @@
+<div class="ant-picker-wrapper" [class.ant-picker-disabled]="disabled">
+  <div class="ant-picker" (click)="togglePicker($event)">
+    <span class="ant-picker-prefix">
+      <ant-icon name="calendar" [size]="14"></ant-icon>
+    </span>
+
+    <ng-container *ngIf="!isRange">
+      <input 
+        type="text" 
+        class="ant-picker-input" 
+        [placeholder]="placeholder || 'DD/MM/YYYY'" 
+        [value]="displaySingle" 
+        readonly />
+    </ng-container>
+
+    <ng-container *ngIf="isRange">
+      <input 
+        type="text" 
+        class="ant-picker-input" 
+        [placeholder]="startPlaceholder || 'Từ ngày'" 
+        [value]="displayStart" 
+        readonly />
+      <span class="ant-picker-separator">~</span>
+      <input 
+        type="text" 
+        class="ant-picker-input" 
+        [placeholder]="endPlaceholder || 'Đến ngày'" 
+        [value]="displayEnd" 
+        readonly />
+    </ng-container>
+
+    <span 
+      class="ant-picker-clear" 
+      *ngIf="allowClear && hasValue && !disabled" 
+      (click)="clearValue($event)"
+      title="Xóa ngày">
+      <ant-icon name="close-circle-fill" [size]="12"></ant-icon>
+    </span>
+
+    <span class="ant-picker-suffix" *ngIf="!allowClear || !hasValue">
+      <ant-icon name="calendar" [size]="14"></ant-icon>
+    </span>
+  </div>
+
+  <!-- Popup Dropdown for Quick Presets / Selection -->
+  <div class="ant-picker-dropdown" *ngIf="isOpen" (click)="$event.stopPropagation()">
+    <div class="picker-presets" *ngIf="isRange">
+      <button type="button" class="preset-btn" (click)="selectPreset('today')">Hôm nay</button>
+      <button type="button" class="preset-btn" (click)="selectPreset('7days')">7 ngày qua</button>
+      <button type="button" class="preset-btn" (click)="selectPreset('30days')">30 ngày qua</button>
+      <button type="button" class="preset-btn" (click)="selectPreset('thisMonth')">Tháng này</button>
+    </div>
+
+    <div class="picker-date-inputs">
+      <div class="date-field">
+        <label>{{ isRange ? 'Từ ngày:' : 'Chọn ngày:' }}</label>
+        <input 
+          type="date" 
+          [value]="rawStart" 
+          (change)="onDateChange($event, 'start')" />
+      </div>
+      <div class="date-field" *ngIf="isRange">
+        <label>Đến ngày:</label>
+        <input 
+          type="date" 
+          [value]="rawEnd" 
+          (change)="onDateChange($event, 'end')" />
+      </div>
+    </div>
+
+    <div class="picker-actions">
+      <button type="button" class="picker-btn picker-btn-clear" (click)="clearValue($event)">Xóa</button>
+      <button type="button" class="picker-btn picker-btn-apply" (click)="applySelection()">Áp dụng</button>
+    </div>
+  </div>
+</div>

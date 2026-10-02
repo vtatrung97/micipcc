@@ -1,0 +1,18 @@
+<div class="notify-config-container">
+  <p class="notify-desc">Thiết lập kênh cảnh báo cho quy trình khi sắp hết hạn hoặc vượt ngưỡng cam kết SLA:</p>
+  
+  <div class="notify-checks">
+    <label class="check-item">
+      <input type="checkbox" [(ngModel)]="webNotify" />
+      <span>Thông báo Web Notification trong IPCC 2.0</span>
+    </label>
+    <label class="check-item">
+      <input type="checkbox" [(ngModel)]="smsNotify" />
+      <span>SMS nhắc việc cho Trưởng ca nếu vượt SLA 50%</span>
+    </label>
+    <label class="check-item">
+      <input type="checkbox" [(ngModel)]="emailNotify" />
+      <span>Email báo cáo hàng ngày tiến độ xử lý ticket</span>
+    </label>
+  </div>
+</div>

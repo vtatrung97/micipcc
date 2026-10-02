@@ -1,0 +1,127 @@
+:host {
+  display: inline-block;
+  width: 100%;
+}
+
+.ant-input-affix-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 11px;
+  color: #1f2937;
+  font-size: 13px;
+  line-height: 1.5714;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  box-sizing: border-box;
+
+  &:hover:not(.ant-input-affix-wrapper-disabled) {
+    border-color: #4096ff;
+  }
+
+  &.ant-input-affix-wrapper-focused {
+    border-color: #1677ff;
+    box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.15);
+    outline: 0;
+  }
+
+  &.ant-input-affix-wrapper-disabled {
+    color: #00000040;
+    background-color: #f5f5f5;
+    border-color: #d9d9d9;
+    cursor: not-allowed;
+
+    .ant-input {
+      background-color: transparent;
+      cursor: not-allowed;
+    }
+  }
+
+  &.ant-input-affix-wrapper-status-error {
+    border-color: #ff4d4f;
+
+    &.ant-input-affix-wrapper-focused {
+      box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+    }
+  }
+
+  &.ant-input-affix-wrapper-status-warning {
+    border-color: #faad14;
+
+    &.ant-input-affix-wrapper-focused {
+      box-shadow: 0 0 0 2px rgba(250, 173, 20, 0.2);
+    }
+  }
+
+  /* Sizes */
+  &.ant-input-affix-wrapper-sm {
+    padding: 1px 7px;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+
+  &.ant-input-affix-wrapper-lg {
+    padding: 7px 14px;
+    font-size: 15px;
+    border-radius: 8px;
+  }
+}
+
+.ant-input {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  border: none;
+  outline: none;
+  background: transparent;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+}
+
+.ant-input-prefix {
+  margin-right: 8px;
+  color: #8c8c8c;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ant-input-suffix {
+  margin-left: 8px;
+  color: #8c8c8c;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ant-input-clear-icon {
+  margin-left: 6px;
+  color: #bfbfbf;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #595959;
+  }
+}
+
+.ant-input-show-count {
+  margin-left: 8px;
+  color: #8c8c8c;
+  font-size: 12px;
+  white-space: nowrap;
+  user-select: none;
+}

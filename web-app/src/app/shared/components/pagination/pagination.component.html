@@ -1,0 +1,39 @@
+<div class="ant-pagination" *ngIf="total > 0">
+  <div class="ant-pagination-total-text" *ngIf="showTotal">
+    Tổng số <strong>{{ total }}</strong> bản ghi
+  </div>
+
+  <ul class="ant-pagination-list">
+    <!-- Prev Button -->
+    <li 
+      class="ant-pagination-prev" 
+      [class.ant-pagination-disabled]="page <= 1"
+      (click)="goToPage(page - 1)">
+      <button type="button" [disabled]="page <= 1">‹</button>
+    </li>
+
+    <!-- Page Numbers -->
+    <li 
+      *ngFor="let p of pages"
+      class="ant-pagination-item"
+      [class.ant-pagination-item-active]="p === page"
+      (click)="goToPage(p)">
+      <a>{{ p }}</a>
+    </li>
+
+    <!-- Next Button -->
+    <li 
+      class="ant-pagination-next" 
+      [class.ant-pagination-disabled]="page >= totalPages"
+      (click)="goToPage(page + 1)">
+      <button type="button" [disabled]="page >= totalPages">›</button>
+    </li>
+  </ul>
+
+  <!-- Page Size Selector -->
+  <div class="ant-pagination-options" *ngIf="showSizeChanger">
+    <select class="page-size-select" [value]="pageSize" (change)="onPageSizeChange($event)">
+      <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / trang</option>
+    </select>
+  </div>
+</div>

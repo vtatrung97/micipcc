@@ -1,0 +1,271 @@
+<div class="x6-editor-wrapper">
+  <!-- ==================================================================== -->
+  <!-- 1. TOP TAB BAR                                                       -->
+  <!-- ==================================================================== -->
+  <header class="studio-topbar">
+    <div class="topbar-tabs-container">
+      <button type="button" class="tab-item" [class.active]="activeTab === 'flow'" (click)="activeTab = 'flow'">
+        <span>Cấu hình Flow</span>
+      </button>
+      <button type="button" class="tab-item" [class.active]="activeTab === 'info'" (click)="openTemplateInfoModal()">
+        <span>Thông tin chung</span>
+      </button>
+      <button type="button" class="tab-item" [class.active]="activeTab === 'notify'" (click)="openNotifyConfigModal()">
+        <span>Cấu hình thông báo</span>
+      </button>
+    </div>
+
+    <div class="topbar-actions-container">
+      <div class="process-meta-badge" [title]="currentTemplate.description">
+        <span class="process-code">{{ currentTemplate.code }}</span>
+        <span class="process-name">{{ currentTemplate.name }}</span>
+        <span class="process-ver">{{ currentTemplate.version }}</span>
+        <app-status-tag [status]="currentTemplate.status" size="small"></app-status-tag>
+      </div>
+
+      <a class="back-btn" routerLink="/process/templates-list" title="Quay lại Danh sách Quy trình">
+        <span class="back-icon">←</span>
+        <span>Quay lại</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==================================================================== -->
+  <!-- 2. WORKSPACE AREA (SLIM ICON RAIL + CANVAS + FLOATING TOOLBAR)       -->
+  <!-- ==================================================================== -->
+  <div class="studio-workspace">
+
+    <!-- 1. KÉO THẢ (DRAGGABLE ONLY) -->
+    <aside class="compact-icon-rail" aria-label="Palette công cụ Flow System">
+      <div class="rail-items-list">
+
+        <!-- 1. Trigger (⚡) -->
+        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'trigger')">
+          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <div class="dark-tooltip" role="tooltip"><span>Trigger</span></div>
+        </div>
+
+        <!-- 2. Task (👤) -->
+        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'task')">
+          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <div class="dark-tooltip" role="tooltip"><span>User Task</span></div>
+        </div>
+
+        <!-- 3. Action (🚀) -->
+        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'action')">
+          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+            <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z">
+            </path>
+          </svg>
+          <div class="dark-tooltip" role="tooltip"><span>Action</span></div>
+        </div>
+
+        <!-- 4. Condition (❓) -->
+        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'condition')">
+          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <div class="dark-tooltip" role="tooltip"><span>Condition</span></div>
+        </div>
+
+        <!-- 5. Split (⑂) -->
+        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'split')">
+          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="3" x2="6" y2="15"></line>
+            <circle cx="18" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <path d="M18 9a9 9 0 0 1-9 9"></path>
+          </svg>
+          <div class="dark-tooltip" role="tooltip"><span>Split</span></div>
+        </div>
+
+        <!-- 6. Merge (⑃) -->
+        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'merge')">
+          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="18" r="3"></circle>
+            <circle cx="6" cy="6" r="3"></circle>
+            <path d="M6 9a9 9 0 0 0 9 9"></path>
+            <line x1="18" y1="9" x2="18" y2="21"></line>
+          </svg>
+          <div class="dark-tooltip" role="tooltip"><span>Merge</span></div>
+        </div>
+
+        <!-- 7. End (🛑) -->
+        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'end')">
+          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <rect x="9" y="9" width="6" height="6" fill="currentColor"></rect>
+          </svg>
+          <div class="dark-tooltip" role="tooltip"><span>End</span></div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- 2. CANVAS WORKSPACE -->
+    <main class="canvas-area-host" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)">
+
+      <!-- AntV X6 Canvas Container -->
+      <div #container class="x6-graph-container"></div>
+
+      <!-- 3. CỤM PHÍM NỔI ĐIỀU KHIỂN CANVAS -->
+      <div class="floating-studio-toolbar" role="toolbar" aria-label="Thanh công cụ điều khiển Canvas">
+
+        <!-- Cụm Undo / Redo (FR-02) -->
+        <button type="button" class="pill-tool-btn icon-only" (click)="undo()" [disabled]="!canUndo"
+          title="Hoàn tác - Undo (FR-02)">
+          <span class="symbol-btn">↶</span>
+        </button>
+
+        <button type="button" class="pill-tool-btn icon-only" (click)="redo()" [disabled]="!canRedo"
+          title="Làm lại - Redo (FR-02)">
+          <span class="symbol-btn">↷</span>
+        </button>
+
+        <!-- Nút Debug (Xem JSON Payload) -->
+        <button type="button" class="pill-tool-btn debug-btn" (click)="toggleJsonPreview()"
+          title="Kiểm tra dữ liệu JSON Payload (Debug)">
+          <span class="btn-icon">🐞</span>
+          <span class="btn-text">Debug</span>
+        </button>
+
+        <!-- Nút Kiểm tra luồng (Validate BPMN) -->
+        <button type="button" class="pill-tool-btn validate-btn" (click)="onValidateGraphClick()"
+          title="Kiểm tra tính hợp lệ quy trình (BPMN Validation)">
+          <span class="btn-icon">🛡️</span>
+          <span class="btn-text">Kiểm tra</span>
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Nút Erase / Làm sạch -->
+        <button type="button" class="pill-tool-btn icon-only" (click)="clearCanvas()"
+          title="Xóa trắng / Làm sạch Canvas">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 21L20 8l-4-4L3 17l4 4z"></path>
+            <path d="M14 6l4 4"></path>
+          </svg>
+        </button>
+
+        <!-- Cụm Zoom: Minus -->
+        <button type="button" class="pill-tool-btn icon-only" (click)="zoomOut()" title="Thu nhỏ">
+          <span class="symbol-btn">−</span>
+        </button>
+
+        <!-- Nút Reset 100% (Circular arrow) -->
+        <button type="button" class="pill-tool-btn zoom-level-btn" (click)="resetZoom()" title="Đặt lại tỷ lệ 100%">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          <span class="zoom-pct">{{ currentZoom }}%</span>
+        </button>
+
+        <!-- Cụm Zoom: Plus -->
+        <button type="button" class="pill-tool-btn icon-only" (click)="zoomIn()" title="Phóng to">
+          <span class="symbol-btn">+</span>
+        </button>
+
+        <!-- Nút Auto-layout (Magic wand) -->
+        <button type="button" class="pill-tool-btn auto-layout-btn" (click)="autoLayout()"
+          title="Tự động căn chỉnh luồng (FR-03)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 4V2m0 16v-2m-8-6h2m10 0h2M7.5 7.5L9 9m9 9l-1.5-1.5m0-9L15 9m-6 9l1.5-1.5"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span class="btn-text">Auto</span>
+        </button>
+
+        <!-- Nút Bật/Tắt Minimap -->
+        <button type="button" class="pill-tool-btn minimap-btn" [class.active-tool]="showMinimap" (click)="toggleMinimap()"
+          title="Bật / Tắt Bản đồ thu nhỏ (Minimap)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            <line x1="8" y1="2" x2="8" y2="18"></line>
+            <line x1="16" y1="6" x2="16" y2="22"></line>
+          </svg>
+          <span class="btn-text">Map</span>
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Nút Xoá (Outline đỏ) -->
+        <button type="button" class="action-btn-red" (click)="deleteOrClear()" title="Xóa bước đang chọn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Xoá</span>
+        </button>
+
+        <!-- Nút Huỷ (Outline xám) -->
+        <button type="button" class="action-btn-gray" (click)="revertChanges()" title="Hủy bỏ các thay đổi">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          <span>Huỷ</span>
+        </button>
+
+        <!-- Nút Lưu (Filled blue) -->
+        <button type="button" class="action-btn-blue" (click)="saveProcessTemplate()" title="Lưu cấu hình quy trình">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Lưu</span>
+        </button>
+
+      </div>
+
+      <!-- 4. FLOATING MINIMAP WIDGET (GÓC DƯỚI BÊN PHẢI) -->
+      <div class="floating-minimap-card" [class.collapsed]="!showMinimap" [class.with-drawer-open]="isDrawerOpen">
+        <div class="minimap-header">
+          <div class="minimap-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              <line x1="8" y1="2" x2="8" y2="18"></line>
+              <line x1="16" y1="6" x2="16" y2="22"></line>
+            </svg>
+            <span>Bản đồ thu nhỏ</span>
+          </div>
+          <button type="button" class="minimap-close-btn" (click)="toggleMinimap()" title="Thu nhỏ / Ẩn Minimap">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div #minimapContainer class="minimap-canvas-body"></div>
+      </div>
+    </main>
+
+    <!-- 4. RIGHT SIDE CONFIG DRAWER (CONFINED TO GRAPH WORKSPACE) -->
+    <app-node-config-drawer></app-node-config-drawer>
+  </div>
+</div>

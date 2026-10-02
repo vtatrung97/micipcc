@@ -1,0 +1,273 @@
+:host {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ant-spin-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 24px 16px;
+  box-sizing: border-box;
+
+  &.ant-spin-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.75);
+    z-index: 2000;
+    backdrop-filter: blur(3px);
+  }
+}
+
+.ant-spin {
+  display: flex !important;
+  position: static !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+
+  .ant-spin-graphic {
+    display: inline-flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+
+    ant-icon {
+      display: inline-flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+    }
+
+    .ant-spin-circle {
+      display: inline-block;
+      box-sizing: border-box;
+      border-radius: 50%;
+      border: 3px solid #e2e8f0;
+      border-top-color: #1677ff;
+      animation: spinRotate 0.8s linear infinite;
+    }
+  }
+
+  .ant-spin-text {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    font-size: 13.5px;
+    color: #1677ff;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    line-height: 1.5;
+  }
+}
+
+@keyframes spinRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinDash {
+  0% {
+    stroke-dasharray: 1px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  50% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -20px;
+  }
+  100% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -125px;
+  }
+}
+
+/* ==================================================================== */
+/* ANT DESIGN CLASSIC 4-DOT SPINNER                                    */
+/* ==================================================================== */
+.ant-spin-dot {
+  position: relative;
+  display: inline-block;
+  font-size: 24px;
+  width: 1em;
+  height: 1em;
+
+  &.ant-spin-dot-spin {
+    transform: rotate(45deg);
+    animation: antRotate 1.2s infinite linear;
+  }
+
+  .ant-spin-dot-item {
+    position: absolute;
+    display: block;
+    width: 10px;
+    height: 10px;
+    background-color: currentColor;
+    border-radius: 100%;
+    transform: scale(0.75);
+    transform-origin: 50% 50%;
+    opacity: 0.3;
+    animation: antSpinMove 1s infinite linear alternate;
+
+    &:nth-child(1) {
+      top: 0;
+      left: 0;
+    }
+    &:nth-child(2) {
+      top: 0;
+      right: 0;
+      animation-delay: 0.4s;
+    }
+    &:nth-child(3) {
+      right: 0;
+      bottom: 0;
+      animation-delay: 0.8s;
+    }
+    &:nth-child(4) {
+      left: 0;
+      bottom: 0;
+      animation-delay: 1.2s;
+    }
+  }
+}
+
+/* Kích thước size */
+.ant-spin-container.ant-spin-sm {
+  padding: 16px 12px;
+
+  .ant-spin-dot {
+    font-size: 16px;
+
+    .ant-spin-dot-item {
+      width: 7px;
+      height: 7px;
+    }
+  }
+
+  .ant-spin-text {
+    font-size: 12px;
+  }
+}
+
+.ant-spin-container.ant-spin-lg {
+  padding: 48px 24px;
+
+  .ant-spin-dot {
+    font-size: 36px;
+
+    .ant-spin-dot-item {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  .ant-spin-text {
+    font-size: 15px;
+  }
+}
+
+@keyframes antSpinMove {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes antRotate {
+  to {
+    transform: rotate(405deg);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================================================================== */
+/* SKELETON WITH TIP HEADER                                             */
+/* ==================================================================== */
+.ant-skeleton-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .ant-skeleton-header-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    color: #1677ff;
+    font-weight: 500;
+  }
+}
+
+.ant-skeleton {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+
+  .ant-skeleton-avatar {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f2f2f2;
+    animation: skeletonShimmer 1.4s ease infinite;
+  }
+
+  .ant-skeleton-content {
+    flex: 1;
+
+    .ant-skeleton-title {
+      width: 38%;
+      height: 16px;
+      margin: 0 0 12px;
+      background: #f2f2f2;
+      border-radius: 4px;
+      animation: skeletonShimmer 1.4s ease infinite;
+    }
+
+    .ant-skeleton-paragraph {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+
+      li {
+        width: 100%;
+        height: 14px;
+        margin-bottom: 8px;
+        background: #f2f2f2;
+        border-radius: 4px;
+        animation: skeletonShimmer 1.4s ease infinite;
+
+        &:last-child {
+          width: 60%;
+        }
+      }
+    }
+  }
+}
+
+@keyframes skeletonShimmer {
+  0% { background-color: #f2f2f2; }
+  50% { background-color: #e5e5e5; }
+  100% { background-color: #f2f2f2; }
+}
+

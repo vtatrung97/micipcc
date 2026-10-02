@@ -1,0 +1,30 @@
+<div class="end-config-container" *ngIf="nodeProps">
+  <div class="drawer-section-heading mt-4">
+    <ant-icon name="stop" [size]="14" style="margin-right: 6px;"></ant-icon>
+    <span>CẤU HÌNH KẾT THÚC TIẾN TRÌNH (END)</span>
+  </div>
+
+  <!-- Trạng thái kết thúc -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Trạng thái kết thúc tiến trình</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="nodeProps.assignee" (ngModelChange)="onPropChange('assignee')"
+        name="endStatus">
+        <nz-option nzValue="Thành công (Completed)" nzLabel="Thành công (Completed)"></nz-option>
+        <nz-option nzValue="Huỷ bỏ (Cancelled)" nzLabel="Huỷ bỏ (Cancelled)"></nz-option>
+        <nz-option nzValue="Thất bại sự cố (Failed/Terminated)" nzLabel="Thất bại sự cố (Failed/Terminated)"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Ghi chú mô tả kết thúc -->
+  <nz-form-item>
+    <nz-form-label>Mô tả kết quả kết thúc</nz-form-label>
+    <nz-form-control>
+      <textarea nz-input rows="3" [(ngModel)]="nodeProps.description"
+        (ngModelChange)="onPropChange('description')" name="stepDesc"
+        placeholder="Ghi chú điều kiện và kết quả khi quy trình đi vào bước kết thúc này...">
+      </textarea>
+    </nz-form-control>
+  </nz-form-item>
+</div>

@@ -1,0 +1,13 @@
+<div class="ant-empty">
+  <div class="ant-empty-image">
+    <ant-icon [name]="icon" [size]="48" color="#bfbfbf"></ant-icon>
+  </div>
+  <p class="ant-empty-title">{{ title }}</p>
+  <p class="ant-empty-description" *ngIf="description">{{ description }}</p>
+  <div class="ant-empty-footer" *ngIf="actionText">
+    <button type="button" class="ant-btn ant-btn-primary" (click)="onAction.emit()">
+      <ant-icon name="plus" [size]="14"></ant-icon>
+      <span>{{ actionText }}</span>
+    </button>
+  </div>
+</div>

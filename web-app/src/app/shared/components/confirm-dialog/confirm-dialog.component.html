@@ -1,0 +1,45 @@
+<div class="ant-modal-root" *ngIf="visible">
+  <div class="ant-modal-mask" (click)="handleCancel()"></div>
+  <div class="ant-modal-wrap">
+    <div class="ant-modal confirm-dialog-modal" [class.is-danger]="type === 'danger'">
+      <div class="ant-modal-content">
+        <button type="button" class="ant-modal-close" (click)="handleCancel()">
+          <span class="ant-modal-close-x">✕</span>
+        </button>
+
+        <div class="confirm-dialog-body">
+          <div class="confirm-icon-wrapper" [attr.data-type]="type">
+            <ant-icon 
+              [name]="type === 'danger' ? 'exclamation-circle-fill' : (type === 'warning' ? 'warning-fill' : 'info-circle-fill')" 
+              [size]="24">
+            </ant-icon>
+          </div>
+
+          <div class="confirm-content-wrapper">
+            <h4 class="confirm-title">{{ title || 'Xác nhận thực hiện' }}</h4>
+            <div class="confirm-desc">
+              <ng-content></ng-content>
+              <span *ngIf="content">{{ content }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="confirm-dialog-footer">
+          <button type="button" class="ant-btn ant-btn-default" (click)="handleCancel()" [disabled]="loading">
+            {{ cancelText || 'Hủy bỏ' }}
+          </button>
+          <button 
+            type="button" 
+            class="ant-btn" 
+            [class.ant-btn-danger]="type === 'danger'"
+            [class.ant-btn-primary]="type !== 'danger'"
+            (click)="handleConfirm()" 
+            [disabled]="loading">
+            <ant-icon *ngIf="loading" name="sync" [size]="12" [spin]="true" style="margin-right: 6px;"></ant-icon>
+            {{ confirmText || (type === 'danger' ? 'Đồng ý xóa' : 'Xác nhận') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
