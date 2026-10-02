@@ -13,7 +13,7 @@ cp .env.example .env
 
 - API: `http://localhost:8080/api/v1/...`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
-- Health: `http://localhost:8081/actuator/health`
+- Health: `http://localhost:8080/actuator/health`
 
 Kết nối Redis và Spring Cache được cấu hình dùng chung từ `libraries/common-core`. Cache mặc định bật với TTL
 10 phút; có thể thay đổi bằng `CACHE_ENABLED` và `CACHE_DEFAULT_TTL`.
