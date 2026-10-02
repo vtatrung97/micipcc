@@ -4,12 +4,14 @@ import { MainLayoutComponent } from '@layout/layouts/main-layout/main-layout.com
 import { BlankLayoutComponent } from '@layout/layouts/blank-layout/blank-layout.component';
 import { ForbiddenComponent } from '@pages/system/forbidden/forbidden.component';
 import { DefaultLandingGuard } from '@core/rbac';
+import { AuthGuard } from '@core/auth';
 
 const routes: Routes = [
   // 1. Phân luồng MainLayout (Ứng dụng chính)
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [AuthGuard],
     children: [
       {
         path: '',

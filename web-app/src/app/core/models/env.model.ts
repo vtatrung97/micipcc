@@ -8,6 +8,8 @@ export interface KeycloakConfig {
   endpoint: string;
   realm?: string;
   clientId?: string;
+  clientSecret?: string;
+  dummyClientSecret?: string;
   requireHttps?: boolean;
   showDebugInformation?: boolean;
   strictDiscoveryDocumentValidation?: boolean;

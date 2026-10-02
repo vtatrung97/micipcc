@@ -6,9 +6,16 @@ import { KEYCLOAK } from '@environments/environment';
  * Tự động nạp giá trị từ window.env (thông qua KEYCLOAK trong environment.ts)
  */
 export function buildAuthConfig(): AuthConfig {
-  const endpoint = (KEYCLOAK?.endpoint || 'http://localhost:8080').replace(/\/+$/, '');
+  let endpoint = (KEYCLOAK?.endpoint || 'http://192.168.10.27:8081').replace(/\/+$/, '');
   const realm = KEYCLOAK?.realm || 'ticket-flow';
-  const clientId = KEYCLOAK?.clientId || 'ticket-flow-web';
+  const clientId = KEYCLOAK?.clientId || 'agent-web';
+
+  // Chuẩn hóa endpoint nếu cấu hình có kèm /realms/... hoặc /<realm>
+  if (endpoint.endsWith(`/realms/${realm}`)) {
+    endpoint = endpoint.substring(0, endpoint.length - `/realms/${realm}`.length).replace(/\/+$/, '');
+  } else if (endpoint.endsWith(`/${realm}`)) {
+    endpoint = endpoint.substring(0, endpoint.length - `/${realm}`.length).replace(/\/+$/, '');
+  }
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200';
 
@@ -32,7 +39,7 @@ export function buildAuthConfig(): AuthConfig {
     scope: 'openid profile email offline_access',
 
     // Cấu hình HTTPS và Debug
-    showDebugInformation: KEYCLOAK?.showDebugInformation ?? false,
+    showDebugInformation: true,
     requireHttps: KEYCLOAK?.requireHttps ?? false,
     strictDiscoveryDocumentValidation: KEYCLOAK?.strictDiscoveryDocumentValidation ?? false,
 

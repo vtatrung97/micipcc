@@ -14,13 +14,25 @@ export class TokenService {
   }
 
   /**
-   * Lấy chuỗi Access Token hiện tại (ưu tiên cache trong memory, sau đó tới sessionStorage và localStorage)
+   * Đọc giá trị cookie theo tên từ document.cookie
+   */
+  public static getCookie(name: string): string {
+    if (typeof document === 'undefined') return '';
+    const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+    return match ? decodeURIComponent(match[3]) : '';
+  }
+
+  /**
+   * Lấy chuỗi Access Token hiện tại (ưu tiên cache trong memory, cookie, sau đó tới sessionStorage và localStorage)
    */
   public static getAccessToken(): string {
     if (this.cachedToken) {
       return this.cachedToken;
     }
     return (
+      this.getCookie('access_token') ||
+      this.getCookie('token') ||
+      this.getCookie('jwt') ||
       sessionStorage.getItem('access_token') ||
       localStorage.getItem('access_token') ||
       sessionStorage.getItem('id_token') ||

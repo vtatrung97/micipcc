@@ -7,9 +7,9 @@ const _window: any = window;
 const windowEnv = _window["env"] || {};
 
 export const KEYCLOAK: KeycloakConfig = windowEnv.KEYCLOAK || {
-  endpoint: 'http://localhost:8080/auth',
+  endpoint: 'http://192.168.10.27:8081',
   realm: 'ticket-flow',
-  clientId: 'ticket-flow-web'
+  clientId: 'agent-web'
 };
 
 export const SERVICES: ServiceCategory = windowEnv.SERVICES || {

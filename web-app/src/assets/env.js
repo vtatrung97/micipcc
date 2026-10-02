@@ -5,9 +5,9 @@
 
   /*========================================================================*/
   const KEYCLOAK = {
-    endpoint: 'http://localhost:8080',
+    endpoint: 'http://192.168.10.27:8081',
     realm: 'ticket-flow',
-    clientId: 'ticket-flow-web',
+    clientId: 'agent-web',
     requireHttps: false,
     showDebugInformation: false,
     strictDiscoveryDocumentValidation: false
