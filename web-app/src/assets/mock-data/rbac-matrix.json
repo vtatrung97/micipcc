@@ -1,0 +1,15 @@
+{
+  "roles": ["ADMIN", "SUPERVISOR", "AGENT"],
+  "resources": [
+    "Template",
+    "ActionLibrary",
+    "Instance",
+    "Task",
+    "Dashboard",
+    "Report",
+    "Integration",
+    "MasterData",
+    "SystemAdmin"
+  ],
+  "scopes": ["All", "Organization", "Group", "Own"]
+}

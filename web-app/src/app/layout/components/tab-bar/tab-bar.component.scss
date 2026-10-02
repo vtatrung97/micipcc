@@ -1,0 +1,34 @@
+.tabs-nav-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+}
+
+.tab-list {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-link {
+  text-decoration: none;
+  font-size: 13px;
+  color: #595959;
+  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-weight: 500;
+
+  &:hover {
+    color: #1677ff;
+  }
+
+  &.active {
+    color: #1677ff;
+    border-bottom-color: #1677ff;
+    font-weight: 600;
+  }
+}
