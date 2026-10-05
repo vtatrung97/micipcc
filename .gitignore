@@ -8,6 +8,5 @@ dist/
 local.env
 .DS_Store
 Thumbs.db
-/core-service/CLAUDE.md
 /web-app/.angular/
 /web-app/node_modules/
