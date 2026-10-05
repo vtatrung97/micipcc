@@ -20,12 +20,30 @@ export const DEFAULT_GRAPH_OPTIONS = {
     allowLoop: false,
     highlight: true,
     connector: {
-      name: 'smooth'
+      name: 'rounded',
+      args: {
+        radius: 8
+      }
     },
     router: {
       name: 'manhattan',
       args: {
-        padding: 16
+        step: 10,
+        padding: 10,
+        startDirections: ['right', 'bottom'],
+        endDirections: ['left', 'top']
+      }
+    },
+    attrs: {
+      line: {
+        stroke: '#94a3b8',
+        strokeWidth: 1.5,
+        targetMarker: {
+          name: 'block',
+          width: 7,
+          height: 7,
+          fill: '#94a3b8'
+        }
       }
     },
     validateConnection(params: any) {

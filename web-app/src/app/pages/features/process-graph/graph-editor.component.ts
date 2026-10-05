@@ -475,12 +475,18 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         allowLoop: false,
         highlight: true,
         connector: {
-          name: 'smooth',
+          name: 'rounded',
+          args: {
+            radius: 8,
+          },
         },
         router: {
           name: 'manhattan',
           args: {
-            padding: 20,
+            step: 10,
+            padding: 10,
+            startDirections: ['right', 'bottom'],
+            endDirections: ['left', 'top'],
           },
         },
         attrs: {
@@ -489,8 +495,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
             strokeWidth: 1.5,
             targetMarker: {
               name: 'block',
-              width: 6,
-              height: 6,
+              width: 7,
+              height: 7,
               fill: '#94a3b8',
             },
           },
@@ -544,12 +550,14 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.graph.on('edge:mouseenter', ({ edge }: { edge: any }) => {
       edge.attr('line/stroke', '#1677ff');
       edge.attr('line/strokeWidth', 2);
+      edge.attr('line/targetMarker/fill', '#1677ff');
     });
 
     this.graph.on('edge:mouseleave', ({ edge }: { edge: any }) => {
       if (this.selectedCell !== edge) {
         edge.attr('line/stroke', '#94a3b8');
         edge.attr('line/strokeWidth', 1.5);
+        edge.attr('line/targetMarker/fill', '#94a3b8');
       }
     });
 
@@ -558,6 +566,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.selectedCell = edge;
       edge.attr('line/stroke', '#1677ff');
       edge.attr('line/strokeWidth', 2);
+      edge.attr('line/targetMarker/fill', '#1677ff');
       this.selectedNode = null;
       this.isDrawerOpen = false;
       this.bridgeService.clearSelection();
@@ -623,6 +632,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.selectedCell && this.selectedCell.isEdge?.()) {
       this.selectedCell.attr('line/stroke', '#94a3b8');
       this.selectedCell.attr('line/strokeWidth', 1.5);
+      this.selectedCell.attr('line/targetMarker/fill', '#94a3b8');
     }
     this.selectedCell = null;
   }
@@ -1742,7 +1752,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     // 1. Trigger
-    const trigger = this.createCompactCardNode('trigger', 60, 185, 'Bắt đầu tiếp nhận', {
+    const trigger = this.createCompactCardNode('trigger', 60, 179, 'Bắt đầu tiếp nhận', {
       nodeKey: 'TRG_CSAT_01',
       triggerType: 'Webhook',
       triggerEvent: 'Portal CSAT Feedback Submitted',
@@ -1751,7 +1761,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 2. Task
-    const task = this.createCompactCardNode('task', 230, 165, 'Giao việc phân loại', {
+    const task = this.createCompactCardNode('task', 210, 176, 'Giao việc phân loại', {
       nodeKey: 'TSK_CSAT_REVIEW',
       department: 'TT CSKH Miền Bắc',
       team: 'Nhóm Chăm sóc khách hàng',
@@ -1765,7 +1775,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 3. Notification
-    const notif = this.createCompactCardNode('notification', 500, 165, 'Gửi SMS cảm ơn', {
+    const notif = this.createCompactCardNode('notification', 490, 176, 'Gửi SMS cảm ơn', {
       nodeKey: 'NTF_CSAT_THANKYOU',
       notificationChannel: 'SMS',
       channelNotification: true,
@@ -1776,7 +1786,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 4. End
-    const end = this.createCompactCardNode('end', 770, 185, 'Kết thúc', {
+    const end = this.createCompactCardNode('end', 770, 179, 'Kết thúc', {
       nodeKey: 'END_CSAT_01',
       description: 'Đóng luồng và lưu vết lịch sử instance'
     });
@@ -1827,14 +1837,14 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     // 1. Trigger
-    const trigger = this.createCompactCardNode('trigger', 40, 205, 'Tiếp nhận khiếu nại', {
+    const trigger = this.createCompactCardNode('trigger', 40, 179, 'Tiếp nhận khiếu nại', {
       nodeKey: 'TRG_BILLING_01',
       triggerType: 'Inbound Call',
       triggerEvent: 'Customer Call via Hotline 18008098'
     });
 
     // 2. Task Tra cứu
-    const taskCheck = this.createCompactCardNode('task', 160, 185, 'Tra cứu chi tiết cước', {
+    const taskCheck = this.createCompactCardNode('task', 180, 176, 'Tra cứu chi tiết cước', {
       nodeKey: 'TSK_CHECK_CDR',
       department: 'Trung tâm Đối soát & Tính cước',
       team: 'Tổ Xử lý khiếu nại cước',
@@ -1845,7 +1855,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 3. Condition (Chọn một nhánh)
-    const condition = this.createCompactCardNode('condition', 400, 160, 'Kiểm tra hạn mức cước', {
+    const condition = this.createCompactCardNode('condition', 460, 178, 'Kiểm tra hạn mức cước', {
       nodeKey: 'CND_AMOUNT_CHECK',
       gatewayType: 'exclusive',
       conditionVariable: 'flow.variables.dispute_amount',
@@ -1856,7 +1866,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 4. Action Hoàn cước API
-    const actRefund = this.createCompactCardNode('action', 670, 95, 'Tác vụ hoàn cước API', {
+    const actRefund = this.createCompactCardNode('action', 740, 110, 'Tác vụ hoàn cước API', {
       nodeKey: 'ACT_CORE_REFUND',
       actionSource: 'custom',
       integratedSystem: 'BILLING_CORE_BSS',
@@ -1869,7 +1879,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 5. Task Trưởng ca duyệt (Approval)
-    const taskApprove = this.createCompactCardNode('task', 670, 240, 'Trưởng ca duyệt hoàn cước', {
+    const taskApprove = this.createCompactCardNode('task', 740, 260, 'Trưởng ca duyệt hoàn cước', {
       nodeKey: 'TSK_LEADER_APPROVE',
       department: 'TT CSKH Miền Bắc',
       team: 'Ban Giám đốc / Trưởng ca',
@@ -1879,7 +1889,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 6. Notification SMS
-    const notif = this.createCompactCardNode('notification', 930, 95, 'SMS thông báo kết quả', {
+    const notif = this.createCompactCardNode('notification', 1020, 110, 'SMS thông báo kết quả', {
       nodeKey: 'NTF_REFUND_SUCCESS',
       notificationChannel: 'SMS',
       notificationRecipient: '${flow.variables.customer_phone}',
@@ -1887,12 +1897,12 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 7. End thành công
-    const endSuccess = this.createCompactCardNode('end', 1190, 115, 'Hoàn tất thành công', {
+    const endSuccess = this.createCompactCardNode('end', 1300, 113, 'Hoàn tất thành công', {
       nodeKey: 'END_BILLING_SUCCESS'
     });
 
     // 8. End lỗi
-    const endError = this.createCompactCardNode('end', 930, 260, 'Kết thúc lỗi ngoại lệ', {
+    const endError = this.createCompactCardNode('end', 1020, 263, 'Kết thúc lỗi ngoại lệ', {
       nodeKey: 'END_BILLING_ERROR'
     });
 
@@ -1972,13 +1982,13 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     // 1. Trigger
-    const trigger = this.createCompactCardNode('trigger', 40, 195, 'Cảnh báo NMS Kênh truyền', {
+    const trigger = this.createCompactCardNode('trigger', 40, 179, 'Cảnh báo NMS Kênh truyền', {
       nodeKey: 'TRG_NMS_ALARM',
       triggerType: 'Hệ thống giám sát NMS'
     });
 
     // 2. Task
-    const taskTriage = this.createCompactCardNode('task', 150, 175, 'Điều phối & Phân loại cấp 1', {
+    const taskTriage = this.createCompactCardNode('task', 180, 176, 'Điều phối & Phân loại cấp 1', {
       nodeKey: 'TSK_INCIDENT_TRIAGE',
       department: 'Phòng Kỹ thuật Broadband',
       team: 'Tổ Điều hành mạng NOC',
@@ -1986,7 +1996,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 3. Parallel Split
-    const split = this.createCompactCardNode('split', 370, 150, 'Chạy song song 2 luồng', {
+    const split = this.createCompactCardNode('split', 460, 176, 'Chạy song song 2 luồng', {
       nodeKey: 'SPL_PARALLEL_DISPATCH',
       gatewayType: 'parallel',
       branches: [
@@ -1996,7 +2006,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 4. SubProcess
-    const subProcess = this.createCompactCardNode('sub_process', 610, 95, 'Quy trình con: Kỹ thuật trạm', {
+    const subProcess = this.createCompactCardNode('sub_process', 740, 110, 'Quy trình con: Kỹ thuật trạm', {
       nodeKey: 'SUB_NETWORK_DIAGNOSIS',
       subProcessTemplateId: 'PRC_BTS_SITE_MAINTENANCE',
       subProcessVersion: 'V2.3',
@@ -2004,7 +2014,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 5. Task KAM
-    const taskKam = this.createCompactCardNode('task', 610, 245, 'Quản lý KH VIP liên hệ', {
+    const taskKam = this.createCompactCardNode('task', 740, 260, 'Quản lý KH VIP liên hệ', {
       nodeKey: 'TSK_KAM_SUPPORT',
       department: 'Phòng Kinh doanh & Telesales',
       team: 'Bộ phận Quản lý Khách hàng Lớn (KAM)',
@@ -2012,7 +2022,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 6. Notification VIP
-    const notifVip = this.createCompactCardNode('notification', 840, 245, 'Gửi SMS & Email cam kết SLA', {
+    const notifVip = this.createCompactCardNode('notification', 1020, 260, 'Gửi SMS & Email cam kết SLA', {
       nodeKey: 'NTF_VIP_SLA_COMMIT',
       notificationChannel: 'SMS, Email',
       channelNotification: true,
@@ -2020,26 +2030,26 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // 7. Join Parallel (Sử dụng merge)
-    const joinNode = this.createCompactCardNode('merge', 1080, 175, 'Hội tụ đồng bộ 2 luồng', {
+    const joinNode = this.createCompactCardNode('merge', 1300, 176, 'Hội tụ đồng bộ 2 luồng', {
       nodeKey: 'JON_PARALLEL_SYNC'
     });
 
     // 8. Action CRM
-    const actCrm = this.createCompactCardNode('action', 1280, 175, 'Đóng ticket trên CRM BSS', {
+    const actCrm = this.createCompactCardNode('action', 1580, 176, 'Đóng ticket trên CRM BSS', {
       nodeKey: 'ACT_CLOSE_TICKET_CRM',
       integratedSystem: 'VIETTEL_CRM_ENTERPRISE',
       actionMethod: 'PUT'
     });
 
     // 9. Notification Handover
-    const notifReport = this.createCompactCardNode('notification', 1500, 175, 'Email biên bản nghiệm thu', {
+    const notifReport = this.createCompactCardNode('notification', 1860, 176, 'Email biên bản nghiệm thu', {
       nodeKey: 'NTF_HANDOVER_REPORT',
       notificationChannel: 'Email',
       channelEmail: true
     });
 
     // 10. End
-    const end = this.createCompactCardNode('end', 1730, 195, 'Hoàn tất sự cố VIP', {
+    const end = this.createCompactCardNode('end', 2140, 179, 'Hoàn tất sự cố VIP', {
       nodeKey: 'END_VIP_INCIDENT'
     });
 
@@ -2126,65 +2136,152 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     const edges = this.graph.getEdges();
     if (nodes.length === 0) return;
 
+    // 1. Reset mọi điểm bẻ cong (vertices) thủ công của edges để đường nối tính toán chuẩn nhất
+    edges.forEach((edge: any) => {
+      edge.setVertices([]);
+    });
+
     const inDegree: Record<string, number> = {};
+    const outDegree: Record<string, number> = {};
     const levels: Record<string, number> = {};
 
     nodes.forEach((n: any) => {
       inDegree[n.id] = 0;
+      outDegree[n.id] = 0;
       levels[n.id] = 0;
     });
 
     edges.forEach((e: any) => {
+      const sourceId = typeof e.source === 'object' ? (e.source as any).cell : e.source;
       const targetId = typeof e.target === 'object' ? (e.target as any).cell : e.target;
       if (targetId && inDegree[targetId] !== undefined) {
         inDegree[targetId]++;
       }
+      if (sourceId && outDegree[sourceId] !== undefined) {
+        outDegree[sourceId]++;
+      }
     });
 
-    const queue = nodes.filter((n: any) => inDegree[n.id] === 0).map((n: any) => n.id);
-    if (queue.length === 0 && nodes.length > 0) {
-      queue.push(nodes[0].id);
+    // Tách riêng các node chưa kết nối (isolated) để không làm lệch luồng chính
+    const isolatedNodes = nodes.filter((n: any) => {
+      const isConnected = inDegree[n.id] > 0 || outDegree[n.id] > 0;
+      const isStartNode = (n.getData()?.type || '') === 'trigger';
+      return !isConnected && !isStartNode;
+    });
+
+    const flowNodes = nodes.filter((n: any) => !isolatedNodes.includes(n));
+
+    // Tính toán level (cột) theo thuật toán BFS Topo
+    const queue = flowNodes.filter((n: any) => inDegree[n.id] === 0).map((n: any) => n.id);
+    if (queue.length === 0 && flowNodes.length > 0) {
+      queue.push(flowNodes[0].id);
     }
 
+    const visited = new Set<string>();
     while (queue.length > 0) {
       const currentId = queue.shift()!;
+      visited.add(currentId);
       const currentLevel = levels[currentId];
 
       edges.forEach((e: any) => {
         const sourceId = typeof e.source === 'object' ? (e.source as any).cell : e.source;
         const targetId = typeof e.target === 'object' ? (e.target as any).cell : e.target;
         if (sourceId === currentId && targetId) {
-          levels[targetId] = Math.max(levels[targetId], currentLevel + 1);
-          queue.push(targetId);
+          levels[targetId] = Math.max(levels[targetId] || 0, currentLevel + 1);
+          if (!visited.has(targetId) && !queue.includes(targetId)) {
+            queue.push(targetId);
+          }
         }
       });
     }
 
     const levelGroups: Record<number, any[]> = {};
-    nodes.forEach((n: any) => {
+    flowNodes.forEach((n: any) => {
       const lvl = levels[n.id] || 0;
       if (!levelGroups[lvl]) levelGroups[lvl] = [];
       levelGroups[lvl].push(n);
     });
 
-    const startX = 80;
-    const startY = 160;
-    const levelGapX = 210;
-    const nodeGapY = 100;
+    // 2. Tính toán toạ độ X cho từng cột với khoảng cách chuẩn (khoảng cách giữa các node tối thiểu 90-100px)
+    const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => a - b);
+    const colXMap: Record<number, number> = {};
+    let currentX = 80;
 
-    Object.keys(levelGroups).forEach(lvlStr => {
-      const lvl = parseInt(lvlStr, 10);
+    sortedLevels.forEach((lvl) => {
+      colXMap[lvl] = currentX;
+      const colNodes = levelGroups[lvl];
+      let maxColWidth = 180;
+      colNodes.forEach((n: any) => {
+        const size = n.getSize();
+        if (size?.width) {
+          maxColWidth = Math.max(maxColWidth, size.width);
+        }
+      });
+      // Khoảng trống giữa các bước trên luồng: 100px (đảm bảo mũi tên thẳng tắp, không bị gấp khúc hay vòng đè)
+      currentX += maxColWidth + 100;
+    });
+
+    // 3. Căn chỉnh Y chuẩn theo tim cổng (port center alignment)
+    // Giúp các đường nối giữa Trigger -> Task -> Notification -> End luôn nằm trên cùng 1 trục hoành (thẳng tắp 180 độ)
+    const baseCenterY = 200;
+    const branchRowGap = 120; // Khoảng cách giãn giữa các nhánh rẽ điều kiện / song song
+
+    sortedLevels.forEach(lvl => {
       const group = levelGroups[lvl];
-      const x = startX + lvl * levelGapX;
+      const count = group.length;
 
       group.forEach((node: any, idx: number) => {
-        const y = startY + idx * nodeGapY;
+        const nodeType = (node.getData()?.type || 'task') as NodeType;
+        const size = node.getSize();
+        const height = size?.height || (nodeType === 'trigger' || nodeType === 'end' ? 42 : 48);
+
+        // Tim Y của hàng này (đối xứng quanh baseCenterY nếu có nhiều nhánh)
+        let targetCenterY = baseCenterY;
+        if (count > 1) {
+          targetCenterY = baseCenterY + (idx - (count - 1) / 2) * branchRowGap;
+        }
+
+        // Port offset theo từng loại node:
+        // - Trigger (h=42, port 'out' ở cx=42, cy=21) -> portOffset = 21
+        // - End (h=42, port 'in' ở cx=0, cy=21) -> portOffset = 21
+        // - Task, Notification, SubProcess, Action, Split, Merge (h=48, port ở y=24) -> portOffset = 24
+        // - Condition (port 'inHeader' ở y=22) -> portOffset = 22
+        let portOffsetY = 24;
+        if (nodeType === 'trigger' || nodeType === 'end') {
+          portOffsetY = 21;
+        } else if (nodeType === 'condition') {
+          portOffsetY = 22;
+        }
+
+        const x = colXMap[lvl];
+        const y = Math.round(targetCenterY - portOffsetY);
+
         node.setPosition(x, y);
       });
     });
 
+    // 4. Nếu có các node chưa nối dây (như node nháp kéo thả), xếp gọn gàng bên dưới sơ đồ chính
+    if (isolatedNodes.length > 0) {
+      let maxFlowY = 200;
+      flowNodes.forEach((n: any) => {
+        const pos = n.getPosition();
+        const size = n.getSize();
+        maxFlowY = Math.max(maxFlowY, pos.y + (size?.height || 48));
+      });
+
+      const stagingY = maxFlowY + 80;
+      let stagingX = 80;
+      isolatedNodes.forEach((node: any) => {
+        const size = node.getSize();
+        const width = size?.width || 180;
+        node.setPosition(stagingX, stagingY);
+        stagingX += width + 40;
+      });
+    }
+
     this.graph.centerContent();
-    this.selectedCellInfo = '✨ Đã tự động căn chỉnh sơ đồ (Auto Layout)!';
+    this.pushHistorySnapshot();
+    this.selectedCellInfo = '✨ Đã tự động căn chỉnh sơ đồ theo chuẩn luồng chuẩn!';
   }
 
   public zoomIn(): void {
