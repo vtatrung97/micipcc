@@ -1,4 +1,4 @@
-import { ActionLibraryItem } from '../../../graph-editor.component';
+import { ActionLibraryItem } from '../../../models/node-property.model';
 
 export const DEFAULT_ACTION_LIBRARIES: ActionLibraryItem[] = [
   {

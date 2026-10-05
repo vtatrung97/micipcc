@@ -1,8 +1,8 @@
-<aside class="properties-side-drawer" [class.open]="isVisible && !!nodeProps" aria-label="Thuộc tính bước quy trình">
+<aside class="properties-side-drawer" [class.open]="isVisible && !!nodeProps" [attr.aria-label]="'PROCESS_GRAPH.DRAWER.ARIA' | translate">
   <!-- 1. DRAWER HEADER (Tiêu đề khớp Figma + Nút tròn X) -->
   <div class="drawer-header" *ngIf="nodeProps">
     <h3 class="drawer-title">{{ getDrawerTitle() }}</h3>
-    <button type="button" class="drawer-close-circle-btn" (click)="onClose()" title="Đóng bảng thuộc tính">
+    <button type="button" class="drawer-close-circle-btn" (click)="onClose()" [title]="'PROCESS_GRAPH.DRAWER.CLOSE_TITLE' | translate">
       ✕
     </button>
   </div>
@@ -13,32 +13,39 @@
     <!-- ===================================================================== -->
     <!-- CASE 1: BẮT ĐẦU (Trigger)                                             -->
     <!-- ===================================================================== -->
-    <div class="flat-drawer-section" *ngIf="nodeProps.type === 'trigger'">
+    <div class="flat-drawer-section" *ngIf="nodeProps.type === 'START'">
       <div class="form-group-item">
-        <label class="drawer-field-label">Kiểu kích hoạt</label>
-        <input nz-input [value]="nodeProps.triggerType || 'Kiểu kích hoạt'" disabled class="readonly-pill-input" />
+        <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.TRIGGER_TYPE' | translate }}</label>
+        <input nz-input [value]="nodeProps.triggerType || ('PROCESS_GRAPH.DRAWER.TRIGGER_TYPE' | translate)" disabled class="readonly-pill-input" />
       </div>
 
       <div class="form-group-item">
-        <label class="drawer-field-label">Form / Lịch được chọn</label>
-        <input nz-input [value]="nodeProps.triggerFormSchedule || 'Form / Lịch được chọn'" disabled class="readonly-pill-input" />
+        <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.TRIGGER_FORM' | translate }}</label>
+        <input nz-input [value]="nodeProps.triggerFormSchedule || ('PROCESS_GRAPH.DRAWER.TRIGGER_FORM' | translate)" disabled class="readonly-pill-input" />
+      </div>
+    </div>
+
+    <div class="flat-drawer-section" *ngIf="nodeProps.type === 'JOIN'">
+      <div class="form-group-item">
+        <label class="drawer-field-label">{{ 'PROCESS_GRAPH.NODE_TYPES.JOIN' | translate }}</label>
+        <input nz-input [value]="nodeProps.label || ('PROCESS_GRAPH.NODE_TYPES.JOIN' | translate)" disabled class="readonly-pill-input" />
       </div>
     </div>
 
     <!-- ===================================================================== -->
     <!-- CASE 2: KẾT THÚC (End)                                                -->
     <!-- ===================================================================== -->
-    <div class="flat-drawer-section" *ngIf="nodeProps.type === 'end'">
+    <div class="flat-drawer-section" *ngIf="nodeProps.type === 'END'">
       <div class="form-group-item">
-        <label class="drawer-field-label">Biểu mẫu kết thúc</label>
+        <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.END_FORM' | translate }}</label>
         <nz-select 
           [(ngModel)]="nodeProps.endFormTemplate" 
           (ngModelChange)="onPropChange('endFormTemplate')" 
-          nzPlaceHolder="Chọn tại đây"
+          [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"
           class="custom-drawer-select">
-          <nz-option nzValue="default" nzLabel="Biểu mẫu mặc định kết thúc"></nz-option>
-          <nz-option nzValue="close_pakn" nzLabel="Biểu mẫu đóng PAKN"></nz-option>
-          <nz-option nzValue="csat" nzLabel="Biểu mẫu khảo sát CSAT"></nz-option>
+          <nz-option nzValue="default" [nzLabel]="'PROCESS_GRAPH.OPTIONS.END_FORMS.DEFAULT' | translate"></nz-option>
+          <nz-option nzValue="close_pakn" [nzLabel]="'PROCESS_GRAPH.OPTIONS.END_FORMS.CLOSE_PAKN' | translate"></nz-option>
+          <nz-option nzValue="csat" [nzLabel]="'PROCESS_GRAPH.OPTIONS.END_FORMS.CSAT' | translate"></nz-option>
         </nz-select>
       </div>
     </div>
@@ -46,11 +53,11 @@
     <!-- ===================================================================== -->
     <!-- CASE 3: GIAO VIỆC (User Task)                                         -->
     <!-- ===================================================================== -->
-    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'task'">
+    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'USER_TASK'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('general')">
-          <span class="accordion-title">Thông tin chung</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['general']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -59,18 +66,18 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['general']">
           <div class="form-group-item">
-            <label class="drawer-field-label required">Tên bước</label>
-            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" placeholder="Nhập tại đây" class="custom-drawer-input" />
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate }}</label>
+            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label required">Mã bước</label>
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate }}</label>
             <input nz-input [value]="nodeProps.nodeKey || 'ma_buoc'" disabled class="readonly-pill-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Mô tả</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" placeholder="Nhập tại đây" class="custom-drawer-textarea"></textarea>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate }}</label>
+            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
           </div>
         </div>
       </div>
@@ -78,7 +85,7 @@
       <!-- Accordion 2: Người thực hiện -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('actor')">
-          <span class="accordion-title">Người thực hiện</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.ACTOR' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['actor']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -87,28 +94,28 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['actor']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Phòng ban</label>
-            <nz-select [(ngModel)]="nodeProps.department" (ngModelChange)="onPropChange('department')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="cskh" nzLabel="Trung tâm Chăm sóc khách hàng"></nz-option>
-              <nz-option nzValue="kt" nzLabel="Phòng Kỹ thuật & Hạ tầng"></nz-option>
-              <nz-option nzValue="cuoc" nzLabel="Phòng Cước & Đối soát"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DEPARTMENT' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.department" (ngModelChange)="onPropChange('department')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="cskh" [nzLabel]="'PROCESS_GRAPH.OPTIONS.DEPARTMENTS.CSKH' | translate"></nz-option>
+              <nz-option nzValue="kt" [nzLabel]="'PROCESS_GRAPH.OPTIONS.DEPARTMENTS.KT' | translate"></nz-option>
+              <nz-option nzValue="cuoc" [nzLabel]="'PROCESS_GRAPH.OPTIONS.DEPARTMENTS.CUOC' | translate"></nz-option>
             </nz-select>
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Nhóm</label>
-            <nz-select [(ngModel)]="nodeProps.team" (ngModelChange)="onPropChange('team')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="team_bo" nzLabel="Tổ Xử lý Khiếu nại BO"></nz-option>
-              <nz-option nzValue="team_vip" nzLabel="Tổ Tiếp nhận Khách hàng VIP"></nz-option>
-              <nz-option nzValue="team_ftth" nzLabel="Đội Kỹ thuật FTTH"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.GROUP' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.team" (ngModelChange)="onPropChange('team')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="team_bo" [nzLabel]="'PROCESS_GRAPH.OPTIONS.TEAMS.BO' | translate"></nz-option>
+              <nz-option nzValue="team_vip" [nzLabel]="'PROCESS_GRAPH.OPTIONS.TEAMS.VIP' | translate"></nz-option>
+              <nz-option nzValue="team_ftth" [nzLabel]="'PROCESS_GRAPH.OPTIONS.TEAMS.FTTH' | translate"></nz-option>
             </nz-select>
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Agent</label>
-            <nz-select [(ngModel)]="nodeProps.agent" (ngModelChange)="onPropChange('agent')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="auto" nzLabel="Tự động luân chuyển"></nz-option>
-              <nz-option nzValue="lead" nzLabel="Trưởng nhóm chỉ định"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.AGENT' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.agent" (ngModelChange)="onPropChange('agent')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="auto" [nzLabel]="'PROCESS_GRAPH.OPTIONS.AGENTS.AUTO' | translate"></nz-option>
+              <nz-option nzValue="lead" [nzLabel]="'PROCESS_GRAPH.OPTIONS.AGENTS.LEAD' | translate"></nz-option>
             </nz-select>
           </div>
         </div>
@@ -117,7 +124,7 @@
       <!-- Accordion 3: SLA -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('sla')">
-          <span class="accordion-title">SLA</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.SLA' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['sla']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -126,20 +133,20 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['sla']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Thời hạn xử lý</label>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.SLA_DURATION' | translate }}</label>
             <div class="sla-input-group">
-              <input nz-input type="number" [(ngModel)]="nodeProps.slaSeconds" (ngModelChange)="onPropChange('slaSeconds')" placeholder="Nhập số" class="custom-drawer-input sla-number-input" />
-              <nz-select [(ngModel)]="nodeProps.sla" (ngModelChange)="onPropChange('sla')" nzPlaceHolder="Ngày" class="sla-unit-select">
-                <nz-option nzValue="Giờ" nzLabel="Giờ"></nz-option>
-                <nz-option nzValue="Ngày" nzLabel="Ngày"></nz-option>
-                <nz-option nzValue="Tuần" nzLabel="Tuần"></nz-option>
+              <input nz-input type="number" [(ngModel)]="nodeProps.slaSeconds" (ngModelChange)="onPropChange('slaSeconds')" [placeholder]="'PROCESS_GRAPH.COMMON.NUMBER_PLACEHOLDER' | translate" class="custom-drawer-input sla-number-input" />
+              <nz-select [(ngModel)]="nodeProps.sla" (ngModelChange)="onPropChange('sla')" [nzPlaceHolder]="'PROCESS_GRAPH.DRAWER.UNITS.DAY' | translate" class="sla-unit-select">
+                <nz-option nzValue="Giờ" [nzLabel]="'PROCESS_GRAPH.DRAWER.UNITS.HOUR' | translate"></nz-option>
+                <nz-option nzValue="Ngày" [nzLabel]="'PROCESS_GRAPH.DRAWER.UNITS.DAY' | translate"></nz-option>
+                <nz-option nzValue="Tuần" [nzLabel]="'PROCESS_GRAPH.DRAWER.UNITS.WEEK' | translate"></nz-option>
               </nz-select>
             </div>
           </div>
 
           <div class="form-checkbox-row">
             <label nz-checkbox [(ngModel)]="nodeProps.slaWarning" (ngModelChange)="onPropChange('slaWarning')">
-              Cảnh báo trước khi quá hạn
+              {{ 'PROCESS_GRAPH.DRAWER.FIELDS.SLA_WARNING' | translate }}
             </label>
           </div>
         </div>
@@ -148,7 +155,7 @@
       <!-- Accordion 4: Output từ biểu mẫu -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('output')">
-          <span class="accordion-title">Output từ biểu mẫu</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.FORM_OUTPUT' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['output']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -157,18 +164,18 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['output']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Biểu mẫu</label>
-            <nz-select [(ngModel)]="nodeProps.formTemplate" (ngModelChange)="onPropChange('formTemplate')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="form_xm" nzLabel="Biểu mẫu Xác minh Khiếu nại"></nz-option>
-              <nz-option nzValue="form_bs" nzLabel="Biểu mẫu Bổ sung Thông tin"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.FORM' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.formTemplate" (ngModelChange)="onPropChange('formTemplate')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="form_xm" [nzLabel]="'PROCESS_GRAPH.OPTIONS.FORMS.XM' | translate"></nz-option>
+              <nz-option nzValue="form_bs" [nzLabel]="'PROCESS_GRAPH.OPTIONS.FORMS.BS' | translate"></nz-option>
             </nz-select>
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Output từ biểu mẫu</label>
-            <nz-select [(ngModel)]="nodeProps.formOutput" (ngModelChange)="onPropChange('formOutput')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="out_ketqua" nzLabel="Kết quả xác minh (result_status)"></nz-option>
-              <nz-option nzValue="out_phuongan" nzLabel="Phương án giải quyết (solution_code)"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.FORM_OUTPUT' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.formOutput" (ngModelChange)="onPropChange('formOutput')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="out_ketqua" [nzLabel]="'PROCESS_GRAPH.OPTIONS.FORM_OUTPUTS.RESULT' | translate"></nz-option>
+              <nz-option nzValue="out_phuongan" [nzLabel]="'PROCESS_GRAPH.OPTIONS.FORM_OUTPUTS.SOLUTION' | translate"></nz-option>
             </nz-select>
           </div>
         </div>
@@ -178,11 +185,11 @@
     <!-- ===================================================================== -->
     <!-- CASE 4: THÔNG BÁO (Notification)                                      -->
     <!-- ===================================================================== -->
-    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'notification'">
+    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'NOTIFICATION'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('general')">
-          <span class="accordion-title">Thông tin chung</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['general']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -191,18 +198,18 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['general']">
           <div class="form-group-item">
-            <label class="drawer-field-label required">Tên bước</label>
-            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" placeholder="Nhập tại đây" class="custom-drawer-input" />
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate }}</label>
+            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label required">Mã bước</label>
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate }}</label>
             <input nz-input [value]="nodeProps.nodeKey || 'ma_buoc'" disabled class="readonly-pill-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Mô tả</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" placeholder="Nhập tại đây" class="custom-drawer-textarea"></textarea>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate }}</label>
+            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
           </div>
         </div>
       </div>
@@ -210,7 +217,7 @@
       <!-- Accordion 2: Thông báo -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('notification')">
-          <span class="accordion-title">Thông báo</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.NOTIFICATION' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['notification']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -219,24 +226,24 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['notification']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Người nhận</label>
-            <nz-select [(ngModel)]="nodeProps.notificationRecipient" (ngModelChange)="onPropChange('notificationRecipient')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="customer" nzLabel="Khách hàng gửi khiếu nại"></nz-option>
-              <nz-option nzValue="creator" nzLabel="Điện thoại viên tạo phiếu"></nz-option>
-              <nz-option nzValue="manager" nzLabel="Trưởng ca trực ban"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.RECIPIENT' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.notificationRecipient" (ngModelChange)="onPropChange('notificationRecipient')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="customer" [nzLabel]="'PROCESS_GRAPH.OPTIONS.RECIPIENTS.CUSTOMER' | translate"></nz-option>
+              <nz-option nzValue="creator" [nzLabel]="'PROCESS_GRAPH.OPTIONS.RECIPIENTS.CREATOR' | translate"></nz-option>
+              <nz-option nzValue="manager" [nzLabel]="'PROCESS_GRAPH.OPTIONS.RECIPIENTS.MANAGER' | translate"></nz-option>
             </nz-select>
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Nội dung thông báo</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.notificationContent" (ngModelChange)="onPropChange('notificationContent')" placeholder="Nhập tại đây" class="custom-drawer-textarea"></textarea>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CONTENT' | translate }}</label>
+            <textarea nz-input rows="3" [(ngModel)]="nodeProps.notificationContent" (ngModelChange)="onPropChange('notificationContent')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Kênh thông báo</label>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CHANNEL' | translate }}</label>
             <div class="channel-vertical-checkbox-list">
-              <label nz-checkbox [(ngModel)]="nodeProps.channelNotification" (ngModelChange)="onPropChange('channelNotification')">Notification</label>
-              <label nz-checkbox [(ngModel)]="nodeProps.channelEmail" (ngModelChange)="onPropChange('channelEmail')">Email</label>
+              <label nz-checkbox [(ngModel)]="nodeProps.channelNotification" (ngModelChange)="onPropChange('channelNotification')">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CHANNEL_NOTIFICATION' | translate }}</label>
+              <label nz-checkbox [(ngModel)]="nodeProps.channelEmail" (ngModelChange)="onPropChange('channelEmail')">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CHANNEL_EMAIL' | translate }}</label>
             </div>
           </div>
         </div>
@@ -246,11 +253,11 @@
     <!-- ===================================================================== -->
     <!-- CASE 5: QUY TRÌNH CON (Sub Process)                                   -->
     <!-- ===================================================================== -->
-    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'sub_process'">
+    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'SUB_PROCESS'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('general')">
-          <span class="accordion-title">Thông tin chung</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['general']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -259,18 +266,18 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['general']">
           <div class="form-group-item">
-            <label class="drawer-field-label required">Tên bước</label>
-            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" placeholder="Nhập tại đây" class="custom-drawer-input" />
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate }}</label>
+            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label required">Mã bước</label>
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate }}</label>
             <input nz-input [value]="nodeProps.nodeKey || 'ma_buoc'" disabled class="readonly-pill-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Mô tả</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" placeholder="Nhập tại đây" class="custom-drawer-textarea"></textarea>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate }}</label>
+            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
           </div>
         </div>
       </div>
@@ -278,7 +285,7 @@
       <!-- Accordion 2: Quy trình con -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('subProcess')">
-          <span class="accordion-title">Quy trình con</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.SUB_PROCESS' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['subProcess']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -287,11 +294,11 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['subProcess']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Chọn quy trình con</label>
-            <nz-select [(ngModel)]="nodeProps.subProcessTemplateId" (ngModelChange)="onPropChange('subProcessTemplateId')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="SUB_CUOC" nzLabel="Quy trình Kiểm tra & Tính cước"></nz-option>
-              <nz-option nzValue="SUB_KT" nzLabel="Quy trình Đo kiểm tuyến cáp FTTH"></nz-option>
-              <nz-option nzValue="SUB_CSAT" nzLabel="Quy trình Khảo sát mức độ hài lòng CSAT"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.SUB_PROCESS' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.subProcessTemplateId" (ngModelChange)="onPropChange('subProcessTemplateId')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="SUB_CUOC" [nzLabel]="'PROCESS_GRAPH.OPTIONS.SUB_PROCESSES.CUOC' | translate"></nz-option>
+              <nz-option nzValue="SUB_KT" [nzLabel]="'PROCESS_GRAPH.OPTIONS.SUB_PROCESSES.KT' | translate"></nz-option>
+              <nz-option nzValue="SUB_CSAT" [nzLabel]="'PROCESS_GRAPH.OPTIONS.SUB_PROCESSES.CSAT' | translate"></nz-option>
             </nz-select>
           </div>
         </div>
@@ -300,7 +307,7 @@
       <!-- Accordion 3: Mapping Input -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('mappingInput')">
-          <span class="accordion-title">Mapping Input</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.MAPPING_INPUT' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['mappingInput']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -310,28 +317,28 @@
         <div class="accordion-content" *ngIf="accordions['mappingInput']">
           <div class="mapping-table-wrapper">
             <div class="mapping-table-header">
-              <div class="col-head">Đầu vào</div>
-              <div class="col-head">Đầu ra</div>
+              <div class="col-head">{{ 'PROCESS_GRAPH.COMMON.INPUT' | translate }}</div>
+              <div class="col-head">{{ 'PROCESS_GRAPH.COMMON.OUTPUT' | translate }}</div>
             </div>
-            <div class="mapping-table-row" *ngFor="let row of subProcessInputRows; let i = index">
+            <div class="mapping-table-row" *ngFor="let row of nodeProps.subProcessInputMappings; let i = index">
               <div class="col-cell source-cell">{{ row.source }}</div>
               <div class="col-cell target-cell">
-                <nz-select [(ngModel)]="row.target" nzPlaceHolder="Chọn tại đây" class="table-compact-select">
+                <nz-select [(ngModel)]="row.target" (ngModelChange)="onPropChange('all')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="table-compact-select">
                   <nz-option [nzValue]="row.source" [nzLabel]="row.source"></nz-option>
-                  <nz-option nzValue="ma_khieu_nai" nzLabel="Mã khiếu nại"></nz-option>
-                  <nz-option nzValue="so_thue_bao" nzLabel="Số thuê bao"></nz-option>
+                  <nz-option nzValue="ma_khieu_nai" [nzLabel]="'PROCESS_GRAPH.OPTIONS.MAPPING_TARGETS.MA_KHIEU_NAI' | translate"></nz-option>
+                  <nz-option nzValue="so_thue_bao" [nzLabel]="'PROCESS_GRAPH.OPTIONS.MAPPING_TARGETS.SO_THUE_BAO' | translate"></nz-option>
                 </nz-select>
               </div>
             </div>
           </div>
-          <button type="button" class="btn-link-add-mapping" (click)="addInputMapping()">+ Thêm mới</button>
+          <button type="button" class="btn-link-add-mapping" (click)="addInputMapping()">{{ 'PROCESS_GRAPH.COMMON.ADD_NEW' | translate }}</button>
         </div>
       </div>
 
       <!-- Accordion 4: Output -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('mappingOutput')">
-          <span class="accordion-title">Output</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.OUTPUT' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['mappingOutput']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -341,21 +348,21 @@
         <div class="accordion-content" *ngIf="accordions['mappingOutput']">
           <div class="mapping-table-wrapper">
             <div class="mapping-table-header">
-              <div class="col-head">Đầu vào</div>
-              <div class="col-head">Đầu ra</div>
+              <div class="col-head">{{ 'PROCESS_GRAPH.COMMON.INPUT' | translate }}</div>
+              <div class="col-head">{{ 'PROCESS_GRAPH.COMMON.OUTPUT' | translate }}</div>
             </div>
-            <div class="mapping-table-row" *ngFor="let row of subProcessOutputRows; let i = index">
+            <div class="mapping-table-row" *ngFor="let row of nodeProps.subProcessOutputMappings; let i = index">
               <div class="col-cell source-cell">{{ row.source }}</div>
               <div class="col-cell target-cell">
-                <nz-select [(ngModel)]="row.target" nzPlaceHolder="Chọn tại đây" class="table-compact-select">
+                <nz-select [(ngModel)]="row.target" (ngModelChange)="onPropChange('all')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="table-compact-select">
                   <nz-option [nzValue]="row.source" [nzLabel]="row.source"></nz-option>
-                  <nz-option nzValue="ket_qua" nzLabel="Kết quả xử lý"></nz-option>
-                  <nz-option nzValue="ma_loi" nzLabel="Mã lỗi"></nz-option>
+                  <nz-option nzValue="ket_qua" [nzLabel]="'PROCESS_GRAPH.OPTIONS.MAPPING_TARGETS.KET_QUA' | translate"></nz-option>
+                  <nz-option nzValue="ma_loi" [nzLabel]="'PROCESS_GRAPH.OPTIONS.MAPPING_TARGETS.MA_LOI' | translate"></nz-option>
                 </nz-select>
               </div>
             </div>
           </div>
-          <button type="button" class="btn-link-add-mapping" (click)="addOutputMapping()">+ Thêm mới</button>
+          <button type="button" class="btn-link-add-mapping" (click)="addOutputMapping()">{{ 'PROCESS_GRAPH.COMMON.ADD_NEW' | translate }}</button>
         </div>
       </div>
     </div>
@@ -363,11 +370,11 @@
     <!-- ===================================================================== -->
     <!-- CASE 6: TÁC VỤ HỆ THỐNG (Action) - KHỚP ẢNH 1                         -->
     <!-- ===================================================================== -->
-    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'action'">
+    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'SYSTEM_TASK'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('general')">
-          <span class="accordion-title">Thông tin chung</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['general']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -376,18 +383,18 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['general']">
           <div class="form-group-item">
-            <label class="drawer-field-label required">Tên bước</label>
-            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" placeholder="Nhập tại đây" class="custom-drawer-input" />
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate }}</label>
+            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label required">Mã bước</label>
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate }}</label>
             <input nz-input [value]="nodeProps.nodeKey || 'ma_buoc'" disabled class="readonly-pill-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Mô tả</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" placeholder="Nhập tại đây" class="custom-drawer-textarea"></textarea>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate }}</label>
+            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
           </div>
         </div>
       </div>
@@ -395,7 +402,7 @@
       <!-- Accordion 2: Hệ thống tích hợp -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('integration')">
-          <span class="accordion-title">Hệ thống tích hợp</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.INTEGRATION' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['integration']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -404,18 +411,18 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['integration']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Hệ thống tích hợp</label>
-            <nz-select [(ngModel)]="nodeProps.integratedSystem" (ngModelChange)="onPropChange('integratedSystem')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="crm" nzLabel="Hệ thống CRM Viettel"></nz-option>
-              <nz-option nzValue="ipcc" nzLabel="Tổng đài chăm sóc khách hàng IPCC"></nz-option>
-              <nz-option nzValue="billing" nzLabel="Hệ thống Tính cước & Đối soát CDR"></nz-option>
-              <nz-option nzValue="ftth" nzLabel="Hạ tầng mạng FTTH"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.INTEGRATION_SYSTEM' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.integratedSystem" (ngModelChange)="onPropChange('integratedSystem')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="crm" [nzLabel]="'PROCESS_GRAPH.OPTIONS.SYSTEMS.CRM' | translate"></nz-option>
+              <nz-option nzValue="ipcc" [nzLabel]="'PROCESS_GRAPH.OPTIONS.SYSTEMS.IPCC' | translate"></nz-option>
+              <nz-option nzValue="billing" [nzLabel]="'PROCESS_GRAPH.OPTIONS.SYSTEMS.BILLING' | translate"></nz-option>
+              <nz-option nzValue="ftth" [nzLabel]="'PROCESS_GRAPH.OPTIONS.SYSTEMS.FTTH' | translate"></nz-option>
             </nz-select>
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">API</label>
-            <nz-select [(ngModel)]="nodeProps.selectedApi" (ngModelChange)="onPropChange('selectedApi')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.API' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.selectedApi" (ngModelChange)="onPropChange('selectedApi')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
               <nz-option nzValue="api_dispatch" nzLabel="POST /api/v2/call/dispatch"></nz-option>
               <nz-option nzValue="api_sync_ticket" nzLabel="PUT /api/v1/tickets/sync"></nz-option>
               <nz-option nzValue="api_query_cdr" nzLabel="GET /api/v3/cdr/query"></nz-option>
@@ -424,7 +431,7 @@
 
           <div class="form-group-item mt-2">
             <button type="button" class="btn-test-connection" (click)="testConnection()">
-              Kiểm tra kết nối
+              {{ 'PROCESS_GRAPH.DRAWER.FIELDS.TEST_CONNECTION' | translate }}
             </button>
           </div>
         </div>
@@ -433,7 +440,7 @@
       <!-- Accordion 3: Cấu hình thực thi -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('execution')">
-          <span class="accordion-title">Cấu hình thực thi</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.EXECUTION' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['execution']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -443,15 +450,15 @@
         <div class="accordion-content" *ngIf="accordions['execution']">
           <div class="execution-grid-2">
             <div class="form-group-item">
-              <label class="drawer-field-label">Timeout</label>
+              <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.TIMEOUT' | translate }}</label>
               <div class="input-with-suffix">
                 <input nz-input type="number" [(ngModel)]="nodeProps.timeoutSeconds" (ngModelChange)="onPropChange('timeoutSeconds')" placeholder="0" class="custom-drawer-input" />
-                <span class="input-suffix">giây</span>
+                <span class="input-suffix">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.SECONDS' | translate }}</span>
               </div>
             </div>
 
             <div class="form-group-item">
-              <label class="drawer-field-label">Retry</label>
+              <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.RETRY' | translate }}</label>
               <input nz-input type="number" [(ngModel)]="nodeProps.retryCount" (ngModelChange)="onPropChange('retryCount')" placeholder="0" class="custom-drawer-input" />
             </div>
           </div>
@@ -461,7 +468,7 @@
       <!-- Accordion 4: Mapping Input -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('mappingInput')">
-          <span class="accordion-title">Mapping Input</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.MAPPING_INPUT' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['mappingInput']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -471,28 +478,28 @@
         <div class="accordion-content" *ngIf="accordions['mappingInput']">
           <div class="mapping-table-wrapper">
             <div class="mapping-table-header">
-              <div class="col-head">Đầu vào</div>
-              <div class="col-head">Đầu ra</div>
+              <div class="col-head">{{ 'PROCESS_GRAPH.COMMON.INPUT' | translate }}</div>
+              <div class="col-head">{{ 'PROCESS_GRAPH.COMMON.OUTPUT' | translate }}</div>
             </div>
-            <div class="mapping-table-row" *ngFor="let row of actionInputRows; let i = index">
+            <div class="mapping-table-row" *ngFor="let row of nodeProps.actionInputMappings; let i = index">
               <div class="col-cell source-cell">{{ row.source }}</div>
               <div class="col-cell target-cell">
-                <nz-select [(ngModel)]="row.target" nzPlaceHolder="Chọn tại đây" class="table-compact-select">
-                  <nz-option nzValue="phan_loai_1" nzLabel="Phân loại phản ánh cấp 1"></nz-option>
-                  <nz-option nzValue="phan_loai_2" nzLabel="Phân loại phản ánh cấp 2"></nz-option>
-                  <nz-option nzValue="ma_khieu_nai" nzLabel="Mã khiếu nại"></nz-option>
+                <nz-select [(ngModel)]="row.target" (ngModelChange)="onPropChange('all')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="table-compact-select">
+                  <nz-option nzValue="phan_loai_1" [nzLabel]="'PROCESS_GRAPH.OPTIONS.MAPPING_TARGETS.PHAN_LOAI_1' | translate"></nz-option>
+                  <nz-option nzValue="phan_loai_2" [nzLabel]="'PROCESS_GRAPH.OPTIONS.MAPPING_TARGETS.PHAN_LOAI_2' | translate"></nz-option>
+                  <nz-option nzValue="ma_khieu_nai" [nzLabel]="'PROCESS_GRAPH.OPTIONS.MAPPING_TARGETS.MA_KHIEU_NAI' | translate"></nz-option>
                 </nz-select>
               </div>
             </div>
           </div>
-          <button type="button" class="btn-link-add-mapping" (click)="addActionMapping()">+ Thêm mới</button>
+          <button type="button" class="btn-link-add-mapping" (click)="addActionMapping()">{{ 'PROCESS_GRAPH.COMMON.ADD_NEW' | translate }}</button>
         </div>
       </div>
 
       <!-- Accordion 5: Output API -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('outputApi')">
-          <span class="accordion-title">Output API</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.OUTPUT_API' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['outputApi']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -501,11 +508,11 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['outputApi']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Output từ biểu mẫu</label>
-            <nz-select [(ngModel)]="nodeProps.apiOutput" (ngModelChange)="onPropChange('apiOutput')" nzPlaceHolder="Chọn tại đây" class="custom-drawer-select">
-              <nz-option nzValue="out_status" nzLabel="Mã trạng thái trả về (response_status)"></nz-option>
-              <nz-option nzValue="out_ticket_id" nzLabel="Mã Ticket ID (ticket_id)"></nz-option>
-              <nz-option nzValue="out_body" nzLabel="Toàn bộ JSON Body kết quả"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.FORM_OUTPUT' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.apiOutput" (ngModelChange)="onPropChange('apiOutput')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
+              <nz-option nzValue="out_status" [nzLabel]="'PROCESS_GRAPH.OPTIONS.API_OUTPUTS.STATUS' | translate"></nz-option>
+              <nz-option nzValue="out_ticket_id" [nzLabel]="'PROCESS_GRAPH.OPTIONS.API_OUTPUTS.TICKET_ID' | translate"></nz-option>
+              <nz-option nzValue="out_body" [nzLabel]="'PROCESS_GRAPH.OPTIONS.API_OUTPUTS.BODY' | translate"></nz-option>
             </nz-select>
           </div>
         </div>
@@ -516,11 +523,11 @@
     <!-- CASE 7: ĐIỀU KIỆN (CHỌN 1 NHÁNH, CHẠY SONG SONG, CHỌN NHIỀU NHÁNH)   -->
     <!-- CHUNG THÔNG TIN - KHÁC TYPE - KHỚP ẢNH 2, 3, 4, 5                     -->
     <!-- ===================================================================== -->
-    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'condition' || nodeProps.type === 'split' || nodeProps.type === 'merge'">
+    <div class="accordion-drawer-group" *ngIf="isGateway(nodeProps.type)">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('general')">
-          <span class="accordion-title">Thông tin chung</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['general']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -529,18 +536,18 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['general']">
           <div class="form-group-item">
-            <label class="drawer-field-label required">Tên bước</label>
-            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" placeholder="Nhập tại đây" class="custom-drawer-input" />
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate }}</label>
+            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label required">Mã bước</label>
+            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate }}</label>
             <input nz-input [value]="nodeProps.nodeKey || 'ma_buoc'" disabled class="readonly-pill-input" />
           </div>
 
           <div class="form-group-item">
-            <label class="drawer-field-label">Mô tả</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" placeholder="Nhập tại đây" class="custom-drawer-textarea"></textarea>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate }}</label>
+            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
           </div>
         </div>
       </div>
@@ -548,7 +555,7 @@
       <!-- Accordion 2: Các trường hợp -->
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('cases')">
-          <span class="accordion-title">Các trường hợp</span>
+          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.CASES' | translate }}</span>
           <span class="accordion-arrow" [class.collapsed]="!accordions['cases']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15"></polyline>
@@ -568,14 +575,14 @@
                   [(ngModel)]="branch.name" 
                   (ngModelChange)="onPropChange('branches')" 
                   class="case-title-input" 
-                  placeholder="Tên trường hợp" />
+                  [placeholder]="'PROCESS_GRAPH.DRAWER.FIELDS.CASE_NAME_PLACEHOLDER' | translate" />
               </div>
               <button 
                 *ngIf="!branch.isDefault" 
                 type="button" 
                 class="btn-remove-case" 
                 (click)="removeCase(i)" 
-                title="Xóa trường hợp">
+                [title]="'PROCESS_GRAPH.DRAWER.FIELDS.REMOVE_CASE' | translate">
                 ✕
               </button>
             </div>
@@ -583,21 +590,21 @@
             <!-- Case summary button: Điều kiện (X) & + Thêm điều kiện -->
             <div class="case-card-body">
               <div class="case-condition-pill" (click)="openConditionModal(branch)">
-                <span class="pill-text">Điều kiện ({{ branch.rules?.length || (branch.isDefault ? 0 : 1) }})</span>
+                <span class="pill-text">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CONDITION_COUNT' | translate: { count: branch.rules?.length || (branch.isDefault ? 0 : 1) } }}</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </div>
 
               <button type="button" class="btn-link-add-condition" (click)="openConditionModal(branch)">
-                + Thêm điều kiện
+                {{ 'PROCESS_GRAPH.DRAWER.FIELDS.ADD_CONDITION' | translate }}
               </button>
             </div>
           </div>
 
           <!-- + Thêm trường hợp button -->
           <button type="button" class="btn-add-case-action" (click)="addCase()">
-            + Thêm trường hợp
+            {{ 'PROCESS_GRAPH.DRAWER.FIELDS.ADD_CASE' | translate }}
           </button>
         </div>
       </div>
@@ -606,8 +613,8 @@
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('defaultFlow')">
           <div class="title-with-info">
-            <span class="accordion-title">Luồng mặc định</span>
-            <span class="info-tooltip-icon" title="Các trường hợp còn lại chưa được liệt kê sẽ đi theo luồng này.">ⓘ</span>
+            <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.DEFAULT_FLOW' | translate }}</span>
+            <span class="info-tooltip-icon" [title]="'PROCESS_GRAPH.DRAWER.FIELDS.DEFAULT_FLOW_HINT' | translate">ⓘ</span>
           </div>
           <span class="accordion-arrow" [class.collapsed]="!accordions['defaultFlow']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -617,10 +624,10 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['defaultFlow']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Đầu ra</label>
-            <nz-select [(ngModel)]="nodeProps.defaultFlowOutput" (ngModelChange)="onPropChange('defaultFlowOutput')" nzPlaceHolder="Chọn đầu ra" class="custom-drawer-select">
-              <nz-option nzValue="default" nzLabel="Mặc định"></nz-option>
-              <nz-option nzValue="tiep_tuc" nzLabel="Tiếp tục luồng chính"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.COMMON.OUTPUT' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.defaultFlowOutput" (ngModelChange)="onPropChange('defaultFlowOutput')" [nzPlaceHolder]="'PROCESS_GRAPH.DRAWER.FIELDS.SELECT_OUTPUT' | translate" class="custom-drawer-select">
+              <nz-option nzValue="default" [nzLabel]="'PROCESS_GRAPH.OPTIONS.DEFAULT_FLOW_OUTPUTS.DEFAULT' | translate"></nz-option>
+              <nz-option nzValue="tiep_tuc" [nzLabel]="'PROCESS_GRAPH.OPTIONS.DEFAULT_FLOW_OUTPUTS.CONTINUE' | translate"></nz-option>
             </nz-select>
           </div>
         </div>
@@ -630,8 +637,8 @@
       <div class="drawer-accordion-section">
         <div class="accordion-header" (click)="toggleAccordion('errorFlow')">
           <div class="title-with-info">
-            <span class="accordion-title">Luồng lỗi</span>
-            <span class="info-tooltip-icon" title="Áp dụng khi không gọi được API, timeout hoặc xảy ra lỗi.">ⓘ</span>
+            <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.ERROR_FLOW' | translate }}</span>
+            <span class="info-tooltip-icon" [title]="'PROCESS_GRAPH.DRAWER.FIELDS.ERROR_FLOW_HINT' | translate">ⓘ</span>
           </div>
           <span class="accordion-arrow" [class.collapsed]="!accordions['errorFlow']">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -641,10 +648,10 @@
         </div>
         <div class="accordion-content" *ngIf="accordions['errorFlow']">
           <div class="form-group-item">
-            <label class="drawer-field-label">Đầu ra</label>
-            <nz-select [(ngModel)]="nodeProps.errorFlowOutput" (ngModelChange)="onPropChange('errorFlowOutput')" nzPlaceHolder="Chọn đầu ra" class="custom-drawer-select">
-              <nz-option nzValue="error_end" nzLabel="Kết thúc lỗi sự cố"></nz-option>
-              <nz-option nzValue="retry" nzLabel="Thử lại bước trước"></nz-option>
+            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.COMMON.OUTPUT' | translate }}</label>
+            <nz-select [(ngModel)]="nodeProps.errorFlowOutput" (ngModelChange)="onPropChange('errorFlowOutput')" [nzPlaceHolder]="'PROCESS_GRAPH.DRAWER.FIELDS.SELECT_OUTPUT' | translate" class="custom-drawer-select">
+              <nz-option nzValue="error_end" [nzLabel]="'PROCESS_GRAPH.OPTIONS.ERROR_FLOW_OUTPUTS.ERROR_END' | translate"></nz-option>
+              <nz-option nzValue="retry" [nzLabel]="'PROCESS_GRAPH.OPTIONS.ERROR_FLOW_OUTPUTS.RETRY' | translate"></nz-option>
             </nz-select>
           </div>
         </div>
@@ -660,15 +667,15 @@
 <div class="condition-modal-backdrop" *ngIf="isConditionModalVisible">
   <div class="condition-modal-card">
     <div class="condition-modal-header">
-      <h3 class="condition-modal-title">Điều kiện</h3>
+      <h3 class="condition-modal-title">{{ 'PROCESS_GRAPH.CONDITION_MODAL.TITLE' | translate }}</h3>
       <button type="button" class="modal-close-circle-btn" (click)="closeConditionModal()">✕</button>
     </div>
 
     <div class="condition-modal-body">
       <div class="condition-rules-table-header">
-        <div class="col-param">Tham số</div>
-        <div class="col-op">Kiểu so sánh</div>
-        <div class="col-val">Giá trị so sánh</div>
+        <div class="col-param">{{ 'PROCESS_GRAPH.CONDITION_MODAL.PARAM' | translate }}</div>
+        <div class="col-op">{{ 'PROCESS_GRAPH.CONDITION_MODAL.OPERATOR' | translate }}</div>
+        <div class="col-val">{{ 'PROCESS_GRAPH.CONDITION_MODAL.VALUE' | translate }}</div>
         <div class="col-action"></div>
       </div>
 
@@ -684,35 +691,35 @@
 
           <div class="rule-inputs-group">
             <div class="col-param">
-              <nz-select [(ngModel)]="rule.param" nzPlaceHolder="Chọn tham số" class="custom-drawer-select">
-                <nz-option-group nzLabel="Sự kiện khởi tạo">
-                  <nz-option nzValue=".priority" nzLabel=".priority (Mức ưu tiên)"></nz-option>
-                  <nz-option nzValue="paknID" nzLabel="paknID (Mã PAKN)"></nz-option>
-                  <nz-option nzValue="complaintType" nzLabel="complaintType (Loại khiếu nại)"></nz-option>
+              <nz-select [(ngModel)]="rule.param" [nzPlaceHolder]="'PROCESS_GRAPH.CONDITION_MODAL.PARAM_PLACEHOLDER' | translate" class="custom-drawer-select">
+                <nz-option-group [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.GROUP_TRIGGER_EVENT' | translate">
+                  <nz-option nzValue=".priority" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.PRIORITY' | translate"></nz-option>
+                  <nz-option nzValue="paknID" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.PAKN_ID' | translate"></nz-option>
+                  <nz-option nzValue="complaintType" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.COMPLAINT_TYPE' | translate"></nz-option>
                 </nz-option-group>
-                <nz-option-group nzLabel="Hồ sơ">
-                  <nz-option nzValue="code" nzLabel="code (Mã hồ sơ)"></nz-option>
-                  <nz-option nzValue="startedAt" nzLabel="startedAt (Thời điểm bắt đầu)"></nz-option>
+                <nz-option-group [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.GROUP_CASE' | translate">
+                  <nz-option nzValue="code" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.CODE' | translate"></nz-option>
+                  <nz-option nzValue="startedAt" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.STARTED_AT' | translate"></nz-option>
                 </nz-option-group>
               </nz-select>
             </div>
 
             <div class="col-op">
-              <nz-select [(ngModel)]="rule.operator" nzPlaceHolder="Kiểu so sánh" class="custom-drawer-select">
-                <nz-option nzValue="Bằng (=)" nzLabel="Bằng (=)"></nz-option>
-                <nz-option nzValue="Khác (!=)" nzLabel="Khác (!=)"></nz-option>
-                <nz-option nzValue="Lớn hơn (>)" nzLabel="Lớn hơn (>)"></nz-option>
-                <nz-option nzValue="Nhỏ hơn (<)" nzLabel="Nhỏ hơn (<)"></nz-option>
-                <nz-option nzValue="Chứa (contains)" nzLabel="Chứa (contains)"></nz-option>
+              <nz-select [(ngModel)]="rule.operator" [nzPlaceHolder]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATOR_PLACEHOLDER' | translate" class="custom-drawer-select">
+                <nz-option nzValue="EQ" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.EQ' | translate"></nz-option>
+                <nz-option nzValue="NEQ" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.NEQ' | translate"></nz-option>
+                <nz-option nzValue="GT" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.GT' | translate"></nz-option>
+                <nz-option nzValue="LT" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.LT' | translate"></nz-option>
+                <nz-option nzValue="CONTAINS" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.CONTAINS' | translate"></nz-option>
               </nz-select>
             </div>
 
             <div class="col-val">
-              <input nz-input [(ngModel)]="rule.value" placeholder="Nhập tại đây" class="custom-drawer-input" />
+              <input nz-input [(ngModel)]="rule.value" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" />
             </div>
 
             <div class="col-action">
-              <button type="button" class="btn-trash-rule" (click)="removeRule(i)" title="Xoá điều kiện">
+              <button type="button" class="btn-trash-rule" (click)="removeRule(i)" [title]="'PROCESS_GRAPH.CONDITION_MODAL.REMOVE' | translate">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"></polyline>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -724,13 +731,13 @@
       </div>
 
       <button type="button" class="btn-link-add-rule" (click)="addRule()">
-        + Thêm điều kiện
+        {{ 'PROCESS_GRAPH.DRAWER.FIELDS.ADD_CONDITION' | translate }}
       </button>
     </div>
 
     <div class="condition-modal-footer">
-      <button type="button" class="btn-modal-cancel" (click)="closeConditionModal()">Hủy</button>
-      <button type="button" class="btn-modal-save" (click)="saveConditionModal()">Lưu</button>
+      <button type="button" class="btn-modal-cancel" (click)="closeConditionModal()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="btn-modal-save" (click)="saveConditionModal()">{{ 'PROCESS_GRAPH.COMMON.SAVE' | translate }}</button>
     </div>
   </div>
 </div>

@@ -1,24 +1,24 @@
 <div class="template-info-container" *ngIf="template">
   <div class="info-grid">
     <div class="info-row">
-      <span class="info-label">Mã quy trình:</span>
+      <span class="info-label">{{ 'PROCESS_GRAPH.MODALS.TEMPLATE_INFO.CODE' | translate }}</span>
       <span class="info-val font-mono">{{ template.code }}</span>
     </div>
     <div class="info-row">
-      <span class="info-label">Tên quy trình:</span>
+      <span class="info-label">{{ 'PROCESS_GRAPH.MODALS.TEMPLATE_INFO.NAME' | translate }}</span>
       <span class="info-val font-bold">{{ template.name }}</span>
     </div>
     <div class="info-row">
-      <span class="info-label">Phiên bản:</span>
+      <span class="info-label">{{ 'PROCESS_GRAPH.MODALS.TEMPLATE_INFO.VERSION' | translate }}</span>
       <span class="info-val">{{ template.version }}</span>
     </div>
     <div class="info-row">
-      <span class="info-label">SLA chuẩn:</span>
+      <span class="info-label">{{ 'PROCESS_GRAPH.MODALS.TEMPLATE_INFO.SLA' | translate }}</span>
       <span class="info-val">{{ template.sla }}</span>
     </div>
     <div class="info-desc">
-      <span class="info-label">Mô tả quy trình:</span>
-      <p>{{ template.description || 'Chưa có mô tả' }}</p>
+      <span class="info-label">{{ 'PROCESS_GRAPH.MODALS.TEMPLATE_INFO.DESCRIPTION' | translate }}</span>
+      <p>{{ template.description || ('PROCESS_GRAPH.MODALS.TEMPLATE_INFO.NO_DESCRIPTION' | translate) }}</p>
     </div>
   </div>
 </div>

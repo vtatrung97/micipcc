@@ -1,0 +1,408 @@
+{
+  "PROCESS_GRAPH": {
+    "COMMON": {
+      "SELECT_PLACEHOLDER": "Chọn tại đây",
+      "INPUT_PLACEHOLDER": "Nhập tại đây",
+      "NUMBER_PLACEHOLDER": "Nhập số",
+      "CLOSE": "Đóng",
+      "CANCEL": "Hủy",
+      "SAVE": "Lưu",
+      "ADD_NEW": "+ Thêm mới",
+      "INPUT": "Đầu vào",
+      "OUTPUT": "Đầu ra"
+    },
+    "NODE_TYPES": {
+      "START": "Bắt đầu",
+      "GATEWAY_EXCLUSIVE": "Chọn một nhánh",
+      "GATEWAY_PARALLEL": "Chạy song song",
+      "GATEWAY_INCLUSIVE": "Chọn nhiều nhánh",
+      "JOIN": "Gộp nhánh",
+      "USER_TASK": "Giao việc",
+      "SYSTEM_TASK": "Tác vụ hệ thống",
+      "NOTIFICATION": "Thông báo",
+      "SUB_PROCESS": "Quy trình con",
+      "END": "Kết thúc",
+      "STEP": "Bước"
+    },
+    "JOIN_LABELS": {
+      "GATEWAY_EXCLUSIVE": "Một nhánh bất kỳ đến",
+      "GATEWAY_PARALLEL": "Tất cả nhánh đến",
+      "GATEWAY_INCLUSIVE": "Các nhánh đã chọn đến"
+    },
+    "HEADER": {
+      "BACK_TITLE": "Quay lại Danh sách Quy trình",
+      "DEFAULT_NAME": "Xử lý khiếu nại đa phòng ban",
+      "VERSION_TITLE": "Phiên bản quy trình",
+      "VERSION": "Phiên bản {{version}}",
+      "DRAFT_TAG": "Nháp",
+      "CANCEL": "Hủy",
+      "CANCEL_TITLE": "Hủy bỏ thay đổi",
+      "SAVE_DRAFT": "Lưu nháp",
+      "SAVE_DRAFT_TITLE": "Lưu nháp tiến trình",
+      "PUBLISH": "Ban hành",
+      "PUBLISH_TITLE": "Ban hành quy trình"
+    },
+    "TABS": {
+      "GENERAL": "Thông tin chung",
+      "DESIGN": "Thiết kế quy trình"
+    },
+    "SAMPLES": {
+      "BUTTON": "Mẫu quy trình",
+      "BUTTON_TITLE": "Chọn và nạp mẫu quy trình chuẩn",
+      "BASIC": {
+        "BADGE": "Cơ bản",
+        "TITLE": "Mẫu 1: Tuyến tính CSAT",
+        "SUB": "Bắt đầu ➔ Giao việc ➔ Gửi SMS ➔ Kết thúc"
+      },
+      "MEDIUM": {
+        "BADGE": "Trung bình",
+        "TITLE": "Mẫu 2: Rẽ nhánh & Hoàn cước API",
+        "SUB": "Tra cứu CDR ➔ Exclusive Gateway ➔ Core API / Phê duyệt"
+      },
+      "COMPLEX": {
+        "BADGE": "Phức tạp",
+        "TITLE": "Mẫu 3: Song song & Kênh truyền VIP",
+        "SUB": "Parallel Split ➔ Quy trình con BTS + KAM Đa kênh ➔ Hội tụ"
+      },
+      "DEFAULT": {
+        "BADGE": "Viettel CSKH",
+        "TITLE": "Mẫu mặc định: Đa phòng ban",
+        "SUB": "Khớp 100% bản vẽ giao diện Figma chuẩn"
+      }
+    },
+    "PALETTE": {
+      "TITLE": "Thư viện bước",
+      "TOGGLE_TITLE": "Thu gọn / Mở rộng thư viện bước",
+      "OPEN_TITLE": "Mở Thư viện bước",
+      "SUBTITLE": "Kéo bước vào canvas, hoặc bấm để thêm ngay sau bước đang chọn.",
+      "SEARCH": "Tìm bước",
+      "CONDITION_GROUP": "Điều kiện",
+      "ITEMS": {
+        "GATEWAY_EXCLUSIVE": { "TITLE": "Chọn một nhánh", "TOOLTIP": "Rẽ 1 nhánh duy nhất theo điều kiện thoả mãn" },
+        "GATEWAY_PARALLEL": { "TITLE": "Chạy song song", "TOOLTIP": "Chia luồng chạy song song các nhánh" },
+        "GATEWAY_INCLUSIVE": { "TITLE": "Chọn nhiều nhánh", "TOOLTIP": "Rẽ tất cả nhánh có điều kiện thoả mãn" },
+        "USER_TASK": { "TITLE": "Giao việc", "TOOLTIP": "Giao việc cho nhân viên / chuyên viên" },
+        "SYSTEM_TASK": { "TITLE": "Tác vụ hệ thống", "TOOLTIP": "Tác vụ tự động / Gọi API dịch vụ hệ thống" },
+        "NOTIFICATION": { "TITLE": "Gửi thông báo", "TOOLTIP": "Gửi SMS / Email / Webhook / Thông báo OTT" },
+        "SUB_PROCESS": { "TITLE": "Quy trình con", "TOOLTIP": "Gọi thực thi một quy trình con khác" },
+        "END": { "TITLE": "Kết thúc", "TOOLTIP": "Kết thúc quy trình" }
+      }
+    },
+    "TOOLBAR": {
+      "ARIA": "Thanh công cụ điều khiển Canvas",
+      "UNDO_TITLE": "Hoàn tác - Undo",
+      "REDO_TITLE": "Làm lại - Redo",
+      "DEBUG": "Debug",
+      "DEBUG_TITLE": "Kiểm tra dữ liệu JSON Payload (Debug)",
+      "VALIDATE": "Kiểm tra",
+      "VALIDATE_TITLE": "Kiểm tra tính hợp lệ quy trình (BPMN Validation)",
+      "CLEAR_TITLE": "Xóa trắng / Làm sạch Canvas",
+      "ZOOM_OUT_TITLE": "Thu nhỏ",
+      "ZOOM_RESET_TITLE": "Đặt lại tỷ lệ 100%",
+      "ZOOM_IN_TITLE": "Phóng to",
+      "AUTO": "Auto",
+      "AUTO_TITLE": "Tự động căn chỉnh luồng",
+      "DELETE": "Xoá",
+      "DELETE_TITLE": "Xóa bước đang chọn",
+      "REVERT": "Huỷ",
+      "REVERT_TITLE": "Hủy bỏ các thay đổi",
+      "SAVE": "Lưu",
+      "SAVE_TITLE": "Lưu cấu hình quy trình"
+    },
+    "FOOTER": {
+      "COPYRIGHT": "Copy right 2026 Viettel Customer Service, Inc"
+    },
+    "CANVAS": {
+      "ROUTING": "Định tuyến",
+      "DEFAULT_BRANCH": "Mặc định",
+      "BRANCH_N": "Nhánh {{index}}",
+      "DEFAULT_CASE_NAME": "Đủ thông tin",
+      "SUCCESS": "Thành công",
+      "FAILURE": "Thất bại",
+      "APPROVE": "Đồng ý",
+      "REJECT": "Từ chối",
+      "PORTS": {
+        "IN": "Cổng vào (In)",
+        "OUT": "Cổng ra (Output)",
+        "START_OUT": "Khởi tạo luồng (Trigger Out)",
+        "COMPLETE": "Hoàn tất (Complete)",
+        "APPROVE": "Đồng ý (Approve)",
+        "REJECT": "Từ chối (Reject)",
+        "SUCCESS": "Thành công (200 OK)",
+        "FAILURE": "Ngoại lệ / Lỗi (Exception Path)",
+        "DEFAULT_BRANCH": "Nhánh Mặc định",
+        "MERGE_IN_N": "Luồng song song {{index}}",
+        "CONTINUE": "Tiếp tục luồng",
+        "END_IN": "Điểm kết thúc (End)",
+        "NOTIFY_DONE": "Hoàn tất gửi",
+        "SUB_PROCESS_DONE": "Hoàn tất quy trình con"
+      }
+    },
+    "STATUS": {
+      "READY": "Sẵn sàng",
+      "NODE_ADDED": "✨ Đã thêm [{{type}}]",
+      "REVERTED": "Đã khôi phục lại trạng thái ban đầu.",
+      "EDGE_SELECTED": "[Đường liên kết] ID: {{id}}...",
+      "UNDO": "↶ Đã hoàn tác (Undo)",
+      "REDO": "↷ Đã làm lại (Redo)",
+      "AUTO_LAYOUT": "✨ Đã tự động căn chỉnh sơ đồ theo chuẩn luồng chuẩn!",
+      "NODE_DELETED": "🗑️ Đã xóa bước [{{name}}]",
+      "EDGE_DELETED": "🗑️ Đã xóa đường liên kết",
+      "CANVAS_CLEARED": "🧹 Đã làm sạch bản vẽ!",
+      "CANNOT_SAVE": "⚠️ Chưa thể lưu: Có {{count}} lỗi vi phạm quy tắc BPMN",
+      "PUBLISHED": "💾 Đã xuất bản quy trình [{{code}}]!",
+      "DRAFT_SAVED": "💾 Đã lưu nháp quy trình [{{code}}] (rowVersion {{rowVersion}})",
+      "DRAFT_OPENED": "📂 Đã mở bản nháp [{{code}}] (rowVersion {{rowVersion}})"
+    },
+    "MESSAGES": {
+      "REVERT_CONFIRM": "Khôi phục lại sơ đồ quy trình ban đầu? Mọi chỉnh sửa chưa lưu sẽ bị hủy.",
+      "PUBLISH_SUCCESS": "Đã lưu và xuất bản thành công quy trình [{{code}}: {{name}}]!",
+      "SAVE_DRAFT_FAILED": "Lưu nháp thất bại: {{error}}",
+      "DEFAULT_BRANCH_LOCKED": "Nhánh Mặc định là cố định của node điều kiện, không thể xoá.",
+      "JOIN_DELETE_BLOCKED": "Gộp nhánh đi kèm node điều kiện. Hãy xoá node điều kiện để xoá Gộp nhánh.",
+      "CLEAR_CONFIRM": "Bạn có chắc chắn muốn làm sạch toàn bộ bản vẽ?",
+      "DELETE_NODE_CONFIRM": "Bạn có chắc chắn muốn xoá bước [{{name}}]?",
+      "TEST_CONNECTION_OK": "Kiểm tra kết nối: Đã kết nối thành công tới hệ thống API tích hợp!",
+      "JSON_COPIED": "Đã sao chép dữ liệu JSON vào Clipboard!"
+    },
+    "MODALS": {
+      "VALIDATION_TITLE": "🛡️ Kiểm tra tính hợp lệ đồ thị (BPMN 2.0 Graph Validation)",
+      "TEMPLATE_INFO_TITLE": "📋 Thông tin chung quy trình",
+      "NOTIFY_CONFIG_TITLE": "🔔 Cấu hình thông báo quy trình",
+      "SAVE_CONFIG": "Lưu cấu hình",
+      "JSON_SAVE_DRAFT_TITLE": "💾 Lưu nháp – Payload gửi BE (flowJson hiển thị dạng object, gửi thật là chuỗi JSON)",
+      "JSON_DEBUG_TITLE": "🐞 Debug: Payload Lưu nháp (flowJson hiển thị dạng object, gửi thật là chuỗi JSON)",
+      "SERIALIZE_ERROR": "Không thể serialize graph",
+      "JSON_PREVIEW": {
+        "VIEW_FULL": "📁 Toàn bộ file Map (Full Payload)",
+        "VIEW_EXECUTION": "⚡ Đồ thị thực thi (executionGraph)",
+        "VIEW_GRAPH": "🎨 Raw Canvas (graphData)",
+        "NODES": "🔢 {{count}} Nodes",
+        "TRANSITIONS": "🔗 {{count}} Transitions",
+        "DOWNLOAD": "Tải file .json",
+        "DOWNLOAD_TITLE": "Tải xuống tệp JSON về máy tính",
+        "COPY": "Sao chép JSON",
+        "COPY_TITLE": "Sao chép toàn bộ JSON vào bộ nhớ đệm"
+      },
+      "NOTIFY_CONFIG": {
+        "DESC": "Thiết lập kênh cảnh báo cho quy trình khi sắp hết hạn hoặc vượt ngưỡng cam kết SLA:",
+        "WEB": "Thông báo Web Notification trong IPCC 2.0",
+        "SMS": "SMS nhắc việc cho Trưởng ca nếu vượt SLA 50%",
+        "EMAIL": "Email báo cáo hàng ngày tiến độ xử lý ticket"
+      },
+      "TEMPLATE_INFO": {
+        "CODE": "Mã quy trình:",
+        "NAME": "Tên quy trình:",
+        "VERSION": "Phiên bản:",
+        "SLA": "SLA chuẩn:",
+        "DESCRIPTION": "Mô tả quy trình:",
+        "NO_DESCRIPTION": "Chưa có mô tả"
+      },
+      "VALIDATION": {
+        "VALID_DESC": "Mọi bước trong quy trình đều thoả mãn cấu hình cổng In/Out chuẩn BPMN 2.0, không có luồng bị ngắt quãng hoặc cô lập.",
+        "INVALID_DESC": "Vui lòng xem danh sách các vi phạm bên dưới và điều chỉnh dây nối trước khi lưu hoặc xuất bản quy trình.",
+        "ERRORS_HEADING": "Chi tiết các vi phạm cấu hình ({{count}})",
+        "STEP_CODE": "Mã bước: {{key}}",
+        "GO_TO_STEP": "Đến bước này →",
+        "WARNINGS_HEADING": "Cảnh báo ({{count}})",
+        "RULES_TITLE": "Bảng quy tắc nối các bước:",
+        "RULES": {
+          "START": "In = 0 | Out = 1",
+          "USER_TASK": "In = 1 | Out = 1 (hoặc Out = 2 nếu là bước phê duyệt)",
+          "SYSTEM_TASK": "In = 1 | Out = 1 (Out = 2 khi bật cổng lỗi: Thành công + Lỗi)",
+          "GATEWAY": "In = 1 | Out >= 2 (sinh cổng theo các trường hợp)",
+          "JOIN": "In >= 2 | Out = 1 (gom các nhánh trước khi đi tiếp)",
+          "END": "In >= 1 | Out = 0 (kết thúc tiến trình)"
+        },
+        "REVALIDATE": "Kiểm tra lại"
+      }
+    },
+    "DRAWER": {
+      "ARIA": "Thuộc tính bước quy trình",
+      "CLOSE_TITLE": "Đóng bảng thuộc tính",
+      "DEFAULT_TITLE": "Thuộc tính bước",
+      "GATEWAY_TITLE": "Điều kiện ({{type}})",
+      "TRIGGER_TYPE": "Kiểu kích hoạt",
+      "TRIGGER_FORM": "Form / Lịch được chọn",
+      "END_FORM": "Biểu mẫu kết thúc",
+      "SECTIONS": {
+        "GENERAL": "Thông tin chung",
+        "ACTOR": "Người thực hiện",
+        "SLA": "SLA",
+        "FORM_OUTPUT": "Output từ biểu mẫu",
+        "NOTIFICATION": "Thông báo",
+        "SUB_PROCESS": "Quy trình con",
+        "MAPPING_INPUT": "Mapping Input",
+        "OUTPUT": "Output",
+        "INTEGRATION": "Hệ thống tích hợp",
+        "EXECUTION": "Cấu hình thực thi",
+        "OUTPUT_API": "Output API",
+        "CASES": "Các trường hợp",
+        "DEFAULT_FLOW": "Luồng mặc định",
+        "ERROR_FLOW": "Luồng lỗi"
+      },
+      "FIELDS": {
+        "STEP_NAME": "Tên bước",
+        "STEP_CODE": "Mã bước",
+        "DESCRIPTION": "Mô tả",
+        "DEPARTMENT": "Phòng ban",
+        "GROUP": "Nhóm",
+        "AGENT": "Agent",
+        "SLA_DURATION": "Thời hạn xử lý",
+        "SLA_WARNING": "Cảnh báo trước khi quá hạn",
+        "FORM": "Biểu mẫu",
+        "FORM_OUTPUT": "Output từ biểu mẫu",
+        "RECIPIENT": "Người nhận",
+        "CONTENT": "Nội dung thông báo",
+        "CHANNEL": "Kênh thông báo",
+        "CHANNEL_NOTIFICATION": "Notification",
+        "CHANNEL_EMAIL": "Email",
+        "SUB_PROCESS": "Chọn quy trình con",
+        "INTEGRATION_SYSTEM": "Hệ thống tích hợp",
+        "API": "API",
+        "TEST_CONNECTION": "Kiểm tra kết nối",
+        "TIMEOUT": "Timeout",
+        "SECONDS": "giây",
+        "RETRY": "Retry",
+        "CASE_NAME_PLACEHOLDER": "Tên trường hợp",
+        "REMOVE_CASE": "Xóa trường hợp",
+        "CONDITION_COUNT": "Điều kiện ({{count}})",
+        "ADD_CONDITION": "+ Thêm điều kiện",
+        "ADD_CASE": "+ Thêm trường hợp",
+        "DEFAULT_FLOW_HINT": "Các trường hợp còn lại chưa được liệt kê sẽ đi theo luồng này.",
+        "ERROR_FLOW_HINT": "Áp dụng khi không gọi được API, timeout hoặc xảy ra lỗi.",
+        "SELECT_OUTPUT": "Chọn đầu ra"
+      },
+      "UNITS": {
+        "HOUR": "Giờ",
+        "DAY": "Ngày",
+        "WEEK": "Tuần"
+      },
+      "NEW_PARAM": "Tham số mới",
+      "NEW_CASE": "Trường hợp {{index}}",
+      "DEFAULT_MAPPING_1": "Phân loại phản ánh cấp 1",
+      "DEFAULT_MAPPING_2": "Phân loại phản ánh cấp 2"
+    },
+    "CONDITION_MODAL": {
+      "TITLE": "Điều kiện",
+      "PARAM": "Tham số",
+      "OPERATOR": "Kiểu so sánh",
+      "VALUE": "Giá trị so sánh",
+      "PARAM_PLACEHOLDER": "Chọn tham số",
+      "OPERATOR_PLACEHOLDER": "Kiểu so sánh",
+      "REMOVE": "Xoá điều kiện",
+      "GROUP_TRIGGER_EVENT": "Sự kiện khởi tạo",
+      "GROUP_CASE": "Hồ sơ",
+      "OPERATORS": {
+        "EQ": "Bằng (=)",
+        "NEQ": "Khác (!=)",
+        "GT": "Lớn hơn (>)",
+        "LT": "Nhỏ hơn (<)",
+        "CONTAINS": "Chứa (contains)"
+      },
+      "PARAMS": {
+        "PRIORITY": ".priority (Mức ưu tiên)",
+        "PAKN_ID": "paknID (Mã PAKN)",
+        "COMPLAINT_TYPE": "complaintType (Loại khiếu nại)",
+        "CODE": "code (Mã hồ sơ)",
+        "STARTED_AT": "startedAt (Thời điểm bắt đầu)"
+      }
+    },
+    "OPTIONS": {
+      "END_FORMS": {
+        "DEFAULT": "Biểu mẫu mặc định kết thúc",
+        "CLOSE_PAKN": "Biểu mẫu đóng PAKN",
+        "CSAT": "Biểu mẫu khảo sát CSAT"
+      },
+      "DEPARTMENTS": {
+        "CSKH": "Trung tâm Chăm sóc khách hàng",
+        "KT": "Phòng Kỹ thuật & Hạ tầng",
+        "CUOC": "Phòng Cước & Đối soát"
+      },
+      "TEAMS": {
+        "BO": "Tổ Xử lý Khiếu nại BO",
+        "VIP": "Tổ Tiếp nhận Khách hàng VIP",
+        "FTTH": "Đội Kỹ thuật FTTH"
+      },
+      "AGENTS": {
+        "AUTO": "Tự động luân chuyển",
+        "LEAD": "Trưởng nhóm chỉ định"
+      },
+      "FORMS": {
+        "XM": "Biểu mẫu Xác minh Khiếu nại",
+        "BS": "Biểu mẫu Bổ sung Thông tin"
+      },
+      "FORM_OUTPUTS": {
+        "RESULT": "Kết quả xác minh (result_status)",
+        "SOLUTION": "Phương án giải quyết (solution_code)"
+      },
+      "RECIPIENTS": {
+        "CUSTOMER": "Khách hàng gửi khiếu nại",
+        "CREATOR": "Điện thoại viên tạo phiếu",
+        "MANAGER": "Trưởng ca trực ban"
+      },
+      "SUB_PROCESSES": {
+        "CUOC": "Quy trình Kiểm tra & Tính cước",
+        "KT": "Quy trình Đo kiểm tuyến cáp FTTH",
+        "CSAT": "Quy trình Khảo sát mức độ hài lòng CSAT"
+      },
+      "MAPPING_TARGETS": {
+        "MA_KHIEU_NAI": "Mã khiếu nại",
+        "SO_THUE_BAO": "Số thuê bao",
+        "KET_QUA": "Kết quả xử lý",
+        "MA_LOI": "Mã lỗi",
+        "PHAN_LOAI_1": "Phân loại phản ánh cấp 1",
+        "PHAN_LOAI_2": "Phân loại phản ánh cấp 2"
+      },
+      "SYSTEMS": {
+        "CRM": "Hệ thống CRM Viettel",
+        "IPCC": "Tổng đài chăm sóc khách hàng IPCC",
+        "BILLING": "Hệ thống Tính cước & Đối soát CDR",
+        "FTTH": "Hạ tầng mạng FTTH"
+      },
+      "API_OUTPUTS": {
+        "STATUS": "Mã trạng thái trả về (response_status)",
+        "TICKET_ID": "Mã Ticket ID (ticket_id)",
+        "BODY": "Toàn bộ JSON Body kết quả"
+      },
+      "DEFAULT_FLOW_OUTPUTS": {
+        "DEFAULT": "Mặc định",
+        "CONTINUE": "Tiếp tục luồng chính"
+      },
+      "ERROR_FLOW_OUTPUTS": {
+        "ERROR_END": "Kết thúc lỗi sự cố",
+        "RETRY": "Thử lại bước trước"
+      }
+    },
+    "VALIDATION": {
+      "SUMMARY_VALID": "✅ Sơ đồ quy trình hoàn toàn hợp lệ theo chuẩn BPMN 2.0!",
+      "SUMMARY_INVALID": "❌ Phát hiện {{count}} lỗi vi phạm quy tắc cấu hình BPMN.",
+      "GRAPH_NULL": "Đồ thị chưa được khởi tạo",
+      "GRAPH_EMPTY": "Sơ đồ trống, vui lòng thêm các bước quy trình",
+      "GRAPH_EMPTY_SUMMARY": "Bản vẽ đang trống",
+      "TRIGGER_MISSING": "Quy trình thiếu điểm Bắt đầu (bắt buộc có ít nhất 1)",
+      "TRIGGER_MULTIPLE": "Quy trình đang có {{count}} điểm Bắt đầu",
+      "TRIGGER_IN_INVALID": "Bắt đầu [{{label}}] không được phép có luồng vào (In = 0, hiện có {{count}})",
+      "TRIGGER_OUT_ZERO": "Bắt đầu [{{label}}] chưa kết nối với bước tiếp theo (Out = 1)",
+      "TRIGGER_OUT_EXCESS": "Bắt đầu [{{label}}] chỉ được phép có đúng 1 luồng ra (Out = 1, hiện có {{count}})",
+      "END_MISSING": "Quy trình thiếu điểm Kết thúc",
+      "END_IN_ZERO": "Điểm kết thúc [{{label}}] chưa nhận bất kỳ luồng nào (In >= 1)",
+      "END_OUT_INVALID": "Điểm kết thúc [{{label}}] không được phép có luồng ra (Out = 0, hiện có {{count}})",
+      "ACTION_IN_ZERO": "Tác vụ hệ thống [{{label}}] chưa có luồng kích hoạt từ bước trước (In = 1)",
+      "ACTION_SUCCESS_OUT_MISSING": "Tác vụ hệ thống [{{label}}] bắt buộc phải nối dây cổng Thành công",
+      "ACTION_EXCEPTION_OUT_MISSING": "Tác vụ hệ thống [{{label}}] bắt buộc phải nối dây cổng Lỗi",
+      "CONDITION_IN_ZERO": "Điều kiện [{{label}}] chưa nhận luồng từ bước trước (In = 1)",
+      "CONDITION_BRANCH_LESS_THAN_2": "Điều kiện [{{label}}] cần tối thiểu 2 nhánh rẽ (Out >= 2, hiện có {{count}})",
+      "CONDITION_DEFAULT_UNCONNECTED": "Nhánh mặc định [{{branch}}] của Điều kiện [{{label}}] chưa được nối dây (tuỳ chọn dự phòng)",
+      "CONDITION_BRANCH_UNCONNECTED": "Nhánh [{{branch}}] của Điều kiện [{{label}}] chưa được nối dây (Out >= 2)",
+      "TASK_IN_ZERO": "Giao việc [{{label}}] chưa nhận luồng từ bước trước (In = 1)",
+      "TASK_APPROVAL_OUT_MISSING": "Bước duyệt [{{label}}] bắt buộc nối cả 2 cổng Duyệt và Từ chối",
+      "TASK_OUT_ZERO": "Giao việc [{{label}}] chưa kết nối luồng ra bước tiếp theo (Out = 1)",
+      "TASK_OUT_EXCESS": "Giao việc [{{label}}] chỉ được có đúng 1 luồng ra (Out = 1)",
+      "MERGE_IN_LESS_THAN_2": "Gộp nhánh [{{label}}] phải gom tối thiểu 2 luồng trước khi đi tiếp (In >= 2, hiện có {{count}})",
+      "MERGE_OUT_ZERO": "Gộp nhánh [{{label}}] chưa có luồng ra (Out = 1)",
+      "MERGE_OUT_EXCESS": "Gộp nhánh [{{label}}] chỉ được có đúng 1 luồng ra (Out = 1, hiện có {{count}})",
+      "NODE_ISOLATED": "Bước [{{label}}] đang đứng cô lập (chưa có dây nối nào)"
+    }
+  }
+}

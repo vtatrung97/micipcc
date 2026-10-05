@@ -17,6 +17,9 @@
   const WEB_DOMAIN_URL = '';
   const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
 
+  // false = tắt đăng nhập Keycloak (dùng khi dev chưa có Keycloak/BE), true = bật
+  const AUTH_ENABLED = false;
+
   /*========================================================================*/
   const SERVICES = {
     TICKET_SERVICE_API: { url: 'https://demo.moj.gov.vn:8100/ticket-service', authJwt: true, crossbarJwt: false },
@@ -32,6 +35,7 @@
   window.env.SERVICES = SERVICES;
   window.env.WEB_DOMAIN_URL = WEB_DOMAIN_URL;
   window.env.DEFAULT_TIMEZONE = DEFAULT_TIMEZONE;
+  window.env.AUTH_ENABLED = AUTH_ENABLED;
 
   console.log("=======================TICKET_FLOW_PROFILE=======================");
   console.log("PROFILE " + PROFILE + ", ENV: ", window.env);

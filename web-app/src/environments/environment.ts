@@ -21,6 +21,7 @@ export const SERVICES: ServiceCategory = windowEnv.SERVICES || {
 
 export const WEB_DOMAIN_URL: string = windowEnv.WEB_DOMAIN_URL || '';
 export const DEFAULT_TIMEZONE: string = windowEnv.DEFAULT_TIMEZONE || 'Asia/Ho_Chi_Minh';
+export const AUTH_ENABLED: boolean = windowEnv.AUTH_ENABLED ?? true;
 
 export const environment = {
   production: windowEnv.production ?? false,
@@ -30,5 +31,6 @@ export const environment = {
   KEYCLOAK,
   SERVICES,
   WEB_DOMAIN_URL,
-  DEFAULT_TIMEZONE
+  DEFAULT_TIMEZONE,
+  AUTH_ENABLED
 };

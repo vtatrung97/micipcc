@@ -615,6 +615,40 @@
   background: #f8fafc;
 }
 
+// Nút nổi mở lại Thư viện bước (hiện khi sidebar đã thu gọn)
+.expand-palette-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  color: #18181b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+  svg {
+    color: #a1a1aa;
+  }
+
+  &:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+
+    svg {
+      color: #52525b;
+    }
+  }
+}
+
 .floating-presence-tab.right-dock-avatar {
   position: absolute;
   right: 0;
