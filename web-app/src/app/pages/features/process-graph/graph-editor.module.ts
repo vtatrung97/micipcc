@@ -18,7 +18,9 @@ import {
   TriggerNodeConfigComponent,
   SplitNodeConfigComponent,
   MergeNodeConfigComponent,
-  EndNodeConfigComponent
+  EndNodeConfigComponent,
+  NotificationNodeConfigComponent,
+  SubProcessNodeConfigComponent
 } from './node-config-drawer/components';
 
 // NG-ZORRO Modules
@@ -31,6 +33,9 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzMenuModule } from 'ng-zorro-antd/menu';
 
 @NgModule({
   declarations: [
@@ -46,7 +51,9 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
     TriggerNodeConfigComponent,
     SplitNodeConfigComponent,
     MergeNodeConfigComponent,
-    EndNodeConfigComponent
+    EndNodeConfigComponent,
+    NotificationNodeConfigComponent,
+    SubProcessNodeConfigComponent
   ],
   imports: [
     CommonModule,
@@ -61,7 +68,10 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
     NzSwitchModule,
     NzButtonModule,
     NzBadgeModule,
-    NzToolTipModule
+    NzToolTipModule,
+    NzCheckboxModule,
+    NzDropDownModule,
+    NzMenuModule
   ],
   exports: [
     GraphEditorComponent

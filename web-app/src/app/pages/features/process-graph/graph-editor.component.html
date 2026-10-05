@@ -1,125 +1,244 @@
 <div class="x6-editor-wrapper">
   <!-- ==================================================================== -->
-  <!-- 1. TOP TAB BAR                                                       -->
+  <!-- 1. TOP HEADER (Back arrow, Tiêu đề, Phiên bản 4 [Nháp v], Hủy, Lưu nháp, Ban hành) -->
   <!-- ==================================================================== -->
   <header class="studio-topbar">
-    <div class="topbar-tabs-container">
-      <button type="button" class="tab-item" [class.active]="activeTab === 'flow'" (click)="activeTab = 'flow'">
-        <span>Cấu hình Flow</span>
-      </button>
-      <button type="button" class="tab-item" [class.active]="activeTab === 'info'" (click)="openTemplateInfoModal()">
-        <span>Thông tin chung</span>
-      </button>
-      <button type="button" class="tab-item" [class.active]="activeTab === 'notify'" (click)="openNotifyConfigModal()">
-        <span>Cấu hình thông báo</span>
-      </button>
+    <div class="topbar-left-section">
+      <a class="back-btn" routerLink="/process/templates-list" title="Quay lại Danh sách Quy trình">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+
+      <div class="topbar-divider-vertical"></div>
+
+      <div class="process-title-group">
+        <h1 class="process-title-text" [title]="currentTemplate.name">{{ currentTemplate.name || 'Xử lý khiếu nại đa
+          phòng ban' }}</h1>
+
+        <!-- Version selector dropdown badge: Phiên bản 4 [Nháp v] -->
+        <div class="version-dropdown-badge" title="Phiên bản quy trình">
+          <span class="version-name">Phiên bản {{ currentTemplate.version || '4' }}</span>
+          <span class="draft-tag">Nháp</span>
+          <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
     </div>
 
     <div class="topbar-actions-container">
-      <div class="process-meta-badge" [title]="currentTemplate.description">
-        <span class="process-code">{{ currentTemplate.code }}</span>
-        <span class="process-name">{{ currentTemplate.name }}</span>
-        <span class="process-ver">{{ currentTemplate.version }}</span>
-        <app-status-tag [status]="currentTemplate.status" size="small"></app-status-tag>
-      </div>
+      <button type="button" class="topbar-btn text-btn" (click)="cancelEdit()" title="Hủy bỏ thay đổi">
+        <span>Hủy</span>
+      </button>
 
-      <a class="back-btn" routerLink="/process/templates-list" title="Quay lại Danh sách Quy trình">
-        <span class="back-icon">←</span>
-        <span>Quay lại</span>
-      </a>
+      <button type="button" class="topbar-btn outline-btn" (click)="saveDraft()" title="Lưu nháp tiến trình">
+        <span>Lưu nháp</span>
+      </button>
+
+      <!-- Primary Red Button: Ban hành -->
+      <button type="button" class="topbar-btn primary-red-btn" (click)="saveProcessTemplate()"
+        title="Ban hành quy trình">
+        <span>Ban hành</span>
+      </button>
     </div>
   </header>
 
   <!-- ==================================================================== -->
-  <!-- 2. WORKSPACE AREA (SLIM ICON RAIL + CANVAS + FLOATING TOOLBAR)       -->
+  <!-- 2. SUB-HEADER TABS (Thông tin chung | Thiết kế quy trình)             -->
+  <!-- ==================================================================== -->
+  <div class="sub-header-tabs">
+    <div class="tabs-left-nav">
+      <button type="button" class="sub-tab-item" [class.active]="activeSubTab === 'info'" (click)="setSubTab('info')">
+        Thông tin chung
+      </button>
+      <button type="button" class="sub-tab-item" [class.active]="activeSubTab === 'design'" (click)="setSubTab('design')">
+        Thiết kế quy trình
+      </button>
+    </div>
+
+    <div class="tabs-right-actions">
+      <button nz-dropdown [nzDropdownMenu]="sampleMenu" nzPlacement="bottomRight" class="sample-dropdown-btn" title="Chọn và nạp mẫu quy trình chuẩn">
+        <span class="sample-btn-icon">⚡</span>
+        <span class="sample-btn-text">Mẫu quy trình</span>
+        <svg class="sample-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      <nz-dropdown-menu #sampleMenu="nzDropdownMenu">
+        <ul nz-menu class="sample-flow-menu">
+          <li nz-menu-item (click)="loadSampleFlow('basic')">
+            <div class="sample-menu-row">
+              <span class="sample-badge badge-basic">Cơ bản</span>
+              <div class="sample-menu-meta">
+                <span class="sample-menu-title">Mẫu 1: Tuyến tính CSAT</span>
+                <span class="sample-menu-sub">Bắt đầu ➔ Giao việc ➔ Gửi SMS ➔ Kết thúc</span>
+              </div>
+            </div>
+          </li>
+          <li nz-menu-item (click)="loadSampleFlow('medium')">
+            <div class="sample-menu-row">
+              <span class="sample-badge badge-medium">Trung bình</span>
+              <div class="sample-menu-meta">
+                <span class="sample-menu-title">Mẫu 2: Rẽ nhánh & Hoàn cước API</span>
+                <span class="sample-menu-sub">Tra cứu CDR ➔ Exclusive Gateway ➔ Core API / Phê duyệt</span>
+              </div>
+            </div>
+          </li>
+          <li nz-menu-item (click)="loadSampleFlow('complex')">
+            <div class="sample-menu-row">
+              <span class="sample-badge badge-complex">Phức tạp</span>
+              <div class="sample-menu-meta">
+                <span class="sample-menu-title">Mẫu 3: Song song & Kênh truyền VIP</span>
+                <span class="sample-menu-sub">Parallel Split ➔ Quy trình con BTS + KAM Đa kênh ➔ Hội tụ</span>
+              </div>
+            </div>
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item (click)="loadSampleFlow('default')">
+            <div class="sample-menu-row">
+              <span class="sample-badge badge-default">Viettel CSKH</span>
+              <div class="sample-menu-meta">
+                <span class="sample-menu-title">Mẫu mặc định: Đa phòng ban</span>
+                <span class="sample-menu-sub">Khớp 100% bản vẽ giao diện Figma chuẩn</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- 3. WORKSPACE AREA (THƯ VIỆN BƯỚC + CANVAS + TOOLBAR)                 -->
   <!-- ==================================================================== -->
   <div class="studio-workspace">
 
-    <!-- 1. KÉO THẢ (DRAGGABLE ONLY) -->
-    <aside class="compact-icon-rail" aria-label="Palette công cụ Flow System">
-      <div class="rail-items-list">
+    <!-- THƯ VIỆN BƯỚC (Sidebar chuẩn Figma) -->
+    <aside class="figma-node-palette" [class.collapsed]="isPaletteCollapsed" aria-label="Thư viện bước">
+      <div class="palette-header">
+        <div class="palette-title-row">
+          <h2 class="palette-title">Thư viện bước</h2>
+          <button type="button" class="collapse-palette-btn" (click)="togglePaletteCollapse()"
+            title="Thu gọn / Mở rộng thư viện bước">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="11 17 6 12 11 7"></polyline>
+              <polyline points="18 17 13 12 18 7"></polyline>
+            </svg>
+          </button>
+        </div>
+        <p class="palette-subtitle">Kéo bước vào canvas, hoặc bấm để thêm ngay sau bước đang chọn.</p>
+      </div>
 
-        <!-- 1. Trigger (⚡) -->
-        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'trigger')">
-          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      <!-- Search input: Tìm bước -->
+      <div class="palette-search-box">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <div class="dark-tooltip" role="tooltip"><span>Trigger</span></div>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Tìm bước" class="palette-search-input" />
+          <button *ngIf="searchQuery" type="button" class="clear-search-btn" (click)="searchQuery = ''">×</button>
+        </div>
+      </div>
+
+      <!-- Palette Items Body -->
+      <div class="palette-scroll-content">
+        <!-- NHÓM: Điều kiện -->
+        <div class="palette-group condition-group" *ngIf="conditionPaletteItems.length > 0">
+          <div class="group-title">Điều kiện</div>
+          <!-- Vertical tree line connecting condition items -->
+          <div class="condition-tree-line">
+            <div *ngFor="let item of conditionPaletteItems" class="palette-item-row" draggable="true"
+              (dragstart)="onPaletteDragStart($event, item.type)" (click)="addStandardNode(item.type)"
+              [title]="item.tooltipText">
+              <div class="palette-icon-box condition-box">
+                <!-- SVG Icon for Condition / Split -->
+                <svg *ngIf="item.gatewayType === 'exclusive'" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                  stroke="#52525b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
+                  <line x1="9.5" y1="9.5" x2="14.5" y2="14.5"></line>
+                  <line x1="14.5" y1="9.5" x2="9.5" y2="14.5"></line>
+                </svg>
+                <svg *ngIf="item.gatewayType === 'parallel'" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                  stroke="#52525b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                <svg *ngIf="item.gatewayType === 'inclusive'" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                  stroke="#52525b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
+                  <circle cx="12" cy="12" r="3.2"></circle>
+                </svg>
+              </div>
+              <span class="palette-item-label">{{ item.typeTitle }}</span>
+            </div>
+          </div>
         </div>
 
-        <!-- 2. Task (👤) -->
-        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'task')">
-          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          <div class="dark-tooltip" role="tooltip"><span>User Task</span></div>
-        </div>
+        <!-- NHÓM: Các bước chức năng -->
+        <div class="palette-group functional-group" *ngIf="generalPaletteItems.length > 0">
+          <div class="functional-items-list">
+            <div *ngFor="let item of generalPaletteItems" class="palette-item-row" draggable="true"
+              (dragstart)="onPaletteDragStart($event, item.type)" (click)="addStandardNode(item.type)"
+              [title]="item.tooltipText">
 
-        <!-- 3. Action (🚀) -->
-        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'action')">
-          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-            <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z">
-            </path>
-          </svg>
-          <div class="dark-tooltip" role="tooltip"><span>Action</span></div>
-        </div>
+              <!-- Icon Container -->
+              <div class="palette-icon-box" [ngClass]="'box-' + item.type">
+                <!-- User Task -->
+                <svg *ngIf="item.type === 'task'" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
 
-        <!-- 4. Condition (❓) -->
-        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'condition')">
-          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <div class="dark-tooltip" role="tooltip"><span>Condition</span></div>
-        </div>
+                <!-- Action / System -->
+                <svg *ngIf="item.type === 'action'" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
 
-        <!-- 5. Split (⑂) -->
-        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'split')">
-          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="6" y1="3" x2="6" y2="15"></line>
-            <circle cx="18" cy="6" r="3"></circle>
-            <circle cx="6" cy="18" r="3"></circle>
-            <path d="M18 9a9 9 0 0 1-9 9"></path>
-          </svg>
-          <div class="dark-tooltip" role="tooltip"><span>Split</span></div>
-        </div>
+                <!-- Notification -->
+                <svg *ngIf="item.type === 'notification'" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="#db2777" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
 
-        <!-- 6. Merge (⑃) -->
-        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'merge')">
-          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="18" r="3"></circle>
-            <circle cx="6" cy="6" r="3"></circle>
-            <path d="M6 9a9 9 0 0 0 9 9"></path>
-            <line x1="18" y1="9" x2="18" y2="21"></line>
-          </svg>
-          <div class="dark-tooltip" role="tooltip"><span>Merge</span></div>
-        </div>
+                <!-- SubProcess -->
+                <svg *ngIf="item.type === 'sub_process'" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="6" cy="6" r="2.5"></circle>
+                  <circle cx="6" cy="18" r="2.5"></circle>
+                  <circle cx="18" cy="18" r="2.5"></circle>
+                  <path d="M8.5 6h3a4 4 0 0 1 4 4v5.5"></path>
+                  <line x1="6" y1="8.5" x2="6" y2="15.5"></line>
+                </svg>
 
-        <!-- 7. End (🛑) -->
-        <div class="rail-icon-btn" draggable="true" (dragstart)="onPaletteDragStart($event, 'end')">
-          <svg class="rail-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"></circle>
-            <rect x="9" y="9" width="6" height="6" fill="currentColor"></rect>
-          </svg>
-          <div class="dark-tooltip" role="tooltip"><span>End</span></div>
-        </div>
+                <!-- End -->
+                <svg *ngIf="item.type === 'end'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="4" width="16" height="16" rx="4"></rect>
+                </svg>
+              </div>
 
+              <!-- Text Label -->
+              <span class="palette-item-label">{{ item.typeTitle }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </aside>
 
-    <!-- 2. CANVAS WORKSPACE -->
+    <!-- CANVAS HOST -->
     <main class="canvas-area-host" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)">
-
       <!-- AntV X6 Canvas Container -->
       <div #container class="x6-graph-container"></div>
 
@@ -194,18 +313,6 @@
           <span class="btn-text">Auto</span>
         </button>
 
-        <!-- Nút Bật/Tắt Minimap -->
-        <button type="button" class="pill-tool-btn minimap-btn" [class.active-tool]="showMinimap" (click)="toggleMinimap()"
-          title="Bật / Tắt Bản đồ thu nhỏ (Minimap)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-            <line x1="8" y1="2" x2="8" y2="18"></line>
-            <line x1="16" y1="6" x2="16" y2="22"></line>
-          </svg>
-          <span class="btn-text">Map</span>
-        </button>
-
         <div class="toolbar-divider"></div>
 
         <!-- Nút Xoá (Outline đỏ) -->
@@ -241,31 +348,14 @@
 
       </div>
 
-      <!-- 4. FLOATING MINIMAP WIDGET (GÓC DƯỚI BÊN PHẢI) -->
-      <div class="floating-minimap-card" [class.collapsed]="!showMinimap" [class.with-drawer-open]="isDrawerOpen">
-        <div class="minimap-header">
-          <div class="minimap-title">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-              <line x1="8" y1="2" x2="8" y2="18"></line>
-              <line x1="16" y1="6" x2="16" y2="22"></line>
-            </svg>
-            <span>Bản đồ thu nhỏ</span>
-          </div>
-          <button type="button" class="minimap-close-btn" (click)="toggleMinimap()" title="Thu nhỏ / Ẩn Minimap">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <div #minimapContainer class="minimap-canvas-body"></div>
-      </div>
+      <!-- COPYRIGHT FOOTER (Bottom-left: ProcessX Copy right 2026 Viettel Customer Service, Inc) -->
+      <footer class="canvas-copyright-footer">
+        <span class="process-text">Process</span><span class="x-text">X</span>
+        <span class="copy-desc">Copy right 2026 Viettel Customer Service, Inc</span>
+      </footer>
     </main>
 
-    <!-- 4. RIGHT SIDE CONFIG DRAWER (CONFINED TO GRAPH WORKSPACE) -->
+    <!-- RIGHT SIDE CONFIG DRAWER -->
     <app-node-config-drawer></app-node-config-drawer>
   </div>
 </div>

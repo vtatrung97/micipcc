@@ -26,6 +26,11 @@ const routes: Routes = [
         loadChildren: () => import('./features/process-graph/graph-editor.module').then(m => m.GraphEditorModule)
       },
       {
+        path: 'graph',
+        redirectTo: SYSTEM_ROUTES.GRAPH.path,
+        pathMatch: 'full'
+      },
+      {
         path: SYSTEM_ROUTES.ACTION_LIBRARY.path,
         loadChildren: () => import('./features/process-action-library/action-library.module').then(m => m.ActionLibraryModule)
       },

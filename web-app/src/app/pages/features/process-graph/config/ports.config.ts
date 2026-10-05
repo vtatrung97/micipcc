@@ -11,7 +11,7 @@
  * 7. End: In >= 1 | Out = 0 (kết thúc tiến trình)
  */
 
-export type NodeType = 'trigger' | 'task' | 'action' | 'condition' | 'split' | 'merge' | 'end';
+export type NodeType = 'trigger' | 'task' | 'action' | 'condition' | 'split' | 'merge' | 'end' | 'notification' | 'sub_process';
 
 export interface BpmnNodePortRule {
   type: NodeType;
@@ -86,6 +86,24 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     minOut: 0,
     maxOut: 0,
     description: 'End: Kết thúc tiến trình. In >= 1 | Out = 0'
+  },
+  notification: {
+    type: 'notification',
+    title: 'Thông báo',
+    minIn: 1,
+    maxIn: 1,
+    minOut: 1,
+    maxOut: 1,
+    description: 'Thông báo: Gửi tin nhắn SMS / Email / Webhook. In = 1 | Out = 1'
+  },
+  sub_process: {
+    type: 'sub_process',
+    title: 'Quy trình con',
+    minIn: 1,
+    maxIn: 1,
+    minOut: 1,
+    maxOut: 1,
+    description: 'Quy trình con: Gọi lồng tiến trình con. In = 1 | Out = 1'
   }
 };
 
@@ -152,10 +170,10 @@ export const BPMN_PORT_GROUPS = {
     ],
     attrs: {
       portCircle: {
-        r: 4,
+        r: 3.5,
         magnet: true,
         stroke: '#ffffff',
-        fill: '#22c55e',
+        fill: '#ef4444',
         strokeWidth: 1.5
       },
       portTitle: { text: 'Cổng ra (Output)' }
@@ -169,10 +187,10 @@ export const BPMN_PORT_GROUPS = {
     ],
     attrs: {
       portCircle: {
-        r: 4,
+        r: 3.5,
         magnet: true,
         stroke: '#ffffff',
-        fill: '#22c55e',
+        fill: '#ef4444',
         strokeWidth: 1.5
       },
       portTitle: { text: 'Thành công (200 OK)' }
@@ -186,10 +204,10 @@ export const BPMN_PORT_GROUPS = {
     ],
     attrs: {
       portCircle: {
-        r: 4,
+        r: 3.5,
         magnet: true,
         stroke: '#ffffff',
-        fill: '#22c55e',
+        fill: '#ef4444',
         strokeWidth: 1.5
       },
       portTitle: { text: 'Ngoại lệ / Lỗi (Exception Path - BR-INT-05)' }
@@ -203,10 +221,10 @@ export const BPMN_PORT_GROUPS = {
     ],
     attrs: {
       portCircle: {
-        r: 4,
+        r: 3.5,
         magnet: true,
         stroke: '#ffffff',
-        fill: '#22c55e',
+        fill: '#ef4444',
         strokeWidth: 1.5
       },
       portTitle: { text: 'Cổng rẽ nhánh (Condition Out)' }
@@ -220,10 +238,10 @@ export const BPMN_PORT_GROUPS = {
     ],
     attrs: {
       portCircle: {
-        r: 4,
+        r: 3.5,
         magnet: true,
         stroke: '#ffffff',
-        fill: '#22c55e',
+        fill: '#ef4444',
         strokeWidth: 1.5
       },
       portTitle: { text: 'Đồng ý / Duyệt (Approve)' }
@@ -237,10 +255,10 @@ export const BPMN_PORT_GROUPS = {
     ],
     attrs: {
       portCircle: {
-        r: 4,
+        r: 3.5,
         magnet: true,
         stroke: '#ffffff',
-        fill: '#22c55e',
+        fill: '#ef4444',
         strokeWidth: 1.5
       },
       portTitle: { text: 'Từ chối (Reject)' }
@@ -254,10 +272,10 @@ export const BPMN_PORT_GROUPS = {
     ],
     attrs: {
       portCircle: {
-        r: 4,
+        r: 3.5,
         magnet: true,
         stroke: '#ffffff',
-        fill: '#22c55e',
+        fill: '#ef4444',
         strokeWidth: 1.5
       },
       portTitle: { text: 'Cổng luồng song song (Parallel Out)' }
@@ -305,31 +323,35 @@ export function getNodePortItems(type: NodeType, customData?: any, cardWidth: nu
       ];
 
     case 'action':
-      // Action (Service Task): In = 1 | Out = 2 cố định (Success + Exception Path)
+      // Action: 1 cổng ra chuẩn (hoặc 2 cổng nếu bật hasExceptionPort)
+      if (customData?.hasExceptionPort) {
+        return [
+          { id: 'in', group: 'inHeader', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
+          {
+            id: 'out-success',
+            group: 'outSuccess',
+            args: { x: cardWidth, y: 60 },
+            attrs: { portTitle: { text: 'Thành công (200 OK)' } }
+          },
+          {
+            id: 'out-failure',
+            group: 'outException',
+            args: { x: cardWidth, y: 82 },
+            attrs: { portTitle: { text: 'Ngoại lệ / Lỗi (Exception Path - BR-INT-05)' } }
+          }
+        ];
+      }
       return [
-        { id: 'in', group: 'inHeader', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
-        {
-          id: 'out-success',
-          group: 'outSuccess',
-          args: { x: cardWidth, y: 60 },
-          attrs: { portTitle: { text: 'Thành công (200 OK)' } }
-        },
-        {
-          id: 'out-failure',
-          group: 'outException',
-          args: { x: cardWidth, y: 82 },
-          attrs: { portTitle: { text: 'Ngoại lệ / Lỗi (Exception Path - BR-INT-05)' } }
-        }
+        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Cổng ra (Output)' } } }
       ];
 
     case 'condition': {
       // Condition (Exclusive Gateway): In = 1 | Out >= 2
-      // Lưu ý: Dòng chữ 'Định tuyến' là tiêu đề khu vực (Header), KHÔNG CÓ PORT OUT.
-      // Cổng ra bắt đầu từ nhánh 'Mặc định' (y = 78) và các nhánh con tiếp theo (Nhánh 1, Nhánh 2...)
       let branches: any[] = customData?.branches ? [...customData.branches] : [];
       if (!branches || branches.length === 0) {
         branches = [
-          { id: 'br-1', name: 'Nhánh 1', value: '> 500k', expression: '${flow.variables.cuoc > 500000}', isDefault: false, defaultLabel: 'Nhánh 1' },
+          { id: 'br-1', name: 'Đủ thông tin', value: 'valid', expression: 'true', isDefault: false, defaultLabel: 'Đủ thông tin' },
           { id: 'br-default', name: 'Mặc định', value: 'default', expression: 'default', isDefault: true, defaultLabel: 'Mặc định' }
         ];
       }
@@ -348,12 +370,12 @@ export function getNodePortItems(type: NodeType, customData?: any, cardWidth: nu
         ...branches.map((b: any, idx: number) => ({
           id: b.id || (b.isDefault ? 'out-default' : `out-branch-${idx}`),
           group: 'outCondition',
-          args: { x: cardWidth, y: 78 + idx * 22 },
+          args: { x: cardWidth, y: 48 + idx * 20 },
           attrs: {
             portCircle: {
-              r: 4,
+              r: 3.5,
               magnet: true,
-              fill: '#22c55e',
+              fill: '#ef4444',
               stroke: '#ffffff',
               strokeWidth: 1.5
             },
@@ -383,6 +405,18 @@ export function getNodePortItems(type: NodeType, customData?: any, cardWidth: nu
       // End: In >= 1 | Out = 0
       return [
         { id: 'in', group: 'in', attrs: { portTitle: { text: 'Điểm kết thúc (End)' } } }
+      ];
+
+    case 'notification':
+      return [
+        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Hoàn tất gửi' } } }
+      ];
+
+    case 'sub_process':
+      return [
+        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Hoàn tất quy trình con' } } }
       ];
 
     default:

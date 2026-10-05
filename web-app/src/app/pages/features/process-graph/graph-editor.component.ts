@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Graph, Scroller, MiniMap } from '@antv/x6';
+import { Graph, Scroller } from '@antv/x6';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { TemplateService, ProcessTemplateItem } from '@core/services/template.service';
 import { GraphBridgeService } from './services/graph-bridge.service';
@@ -24,7 +24,7 @@ import {
 
 declare const X6: any;
 
-export type NodeType = 'trigger' | 'task' | 'action' | 'condition' | 'split' | 'merge' | 'end';
+export type NodeType = 'trigger' | 'task' | 'action' | 'condition' | 'split' | 'merge' | 'end' | 'notification' | 'sub_process';
 
 export interface ActionLibraryItem {
   id: string;
@@ -37,6 +37,12 @@ export interface ActionLibraryItem {
   defaultResponseMapping?: string;
 }
 
+export interface ConditionRuleItem {
+  param: string;
+  operator: string;
+  value: string;
+}
+
 export interface ConditionBranch {
   id: string;
   name: string;
@@ -45,12 +51,15 @@ export interface ConditionBranch {
   expression: string;
   variableSource?: string;
   isDefault?: boolean;
+  rules?: ConditionRuleItem[];
+  logicOperator?: 'AND' | 'OR';
 }
 
 export interface NodePropertyModel {
   id: string;
   nodeKey?: string;
   type: NodeType;
+  gatewayType?: 'exclusive' | 'parallel' | 'inclusive';
   typeTitle: string;
   label: string;
   icon: string;
@@ -82,10 +91,47 @@ export interface NodePropertyModel {
   sla?: string;
   assignee?: string;
   triggerEvent?: string;
+
+  // Notification specific
+  notificationChannel?: string;
+  notificationRecipient?: string;
+  notificationTitle?: string;
+  notificationContent?: string;
+
+  // Sub-process specific
+  subProcessTemplateId?: string;
+  subProcessVersion?: string;
+  subProcessWaitComplete?: boolean;
+  subProcessInputMapping?: string;
+
+  // Viettel Customer Service Node Config fields
+  department?: string;
+  team?: string;
+  agent?: string;
+  slaWarning?: boolean;
+  formTemplate?: string;
+  formOutput?: string;
+  endFormTemplate?: string;
+  triggerType?: string;
+  triggerFormSchedule?: string;
+  channelNotification?: boolean;
+  channelEmail?: boolean;
+
+  // Action fields
+  integratedSystem?: string;
+  selectedApi?: string;
+  timeoutSeconds?: number;
+  apiOutput?: string;
+
+  // Condition flow outputs
+  defaultFlowOutput?: string;
+  errorFlowOutput?: string;
 }
 
 export interface PaletteItem {
   type: NodeType;
+  gatewayType?: 'exclusive' | 'parallel' | 'inclusive';
+  category?: 'condition' | 'general';
   typeTitle: string;
   defaultName: string;
   icon: string;
@@ -95,14 +141,18 @@ export interface PaletteItem {
   border: string;
   color: string;
   tooltipText: string;
+  avatarInitial?: string;
+  avatarBg?: string;
 }
 
 /**
  * ============================================================================
- * IPCC 2.0 FLOW SYSTEM - COMPACT CALL FLOW / WORKFLOW STUDIO
- * Giữ nguyên kích thước nhỏ gọn tinh tế (Node 168px x 48px, Palette 44px, Floating Toolbar)
- * với 7 loại Node chuẩn BPMN / IPCC:
- * ⚡ Trigger | 👤 Task | 🚀 Action (2 Ports) | ❓ Condition (Multi-branch) | ⑂ Split | ⑃ Merge | 🛑 End
+ * VIETTEL CUSTOMER SERVICE WORKFLOW STUDIO
+ * Giao diện thiết kế quy trình chuẩn Viettel Customer Service:
+ * Header: Quay lại, Tên quy trình, Phiên bản 4 [Nháp v], Hủy, Lưu nháp, Ban hành (Đỏ)
+ * Subheader Tabs: Thông tin chung | Thiết kế quy trình
+ * Sidebar Thư viện bước: Tìm bước, Nhóm Điều kiện & Các bước giao việc, tác vụ, thông báo, quy trình con, kết thúc.
+ * Canvas: Start circle (▶), Step cards bo góc với chấm cổng đỏ, End circle (⏹)
  * ============================================================================
  */
 @Component({
@@ -112,12 +162,13 @@ export interface PaletteItem {
 })
 export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('container', { static: true }) containerRef!: ElementRef<HTMLDivElement>;
-  @ViewChild('minimapContainer', { static: true }) minimapContainerRef!: ElementRef<HTMLDivElement>;
-
   private graph!: any;
-  private miniMapPlugin: any = null;
-  public showMinimap: boolean = true;
   public activeTab: 'flow' | 'info' | 'notify' = 'flow';
+  public activeSubTab: 'info' | 'design' = 'design';
+  public canvasMode: 'select' | 'pan' = 'select';
+  public searchQuery: string = '';
+  public isPaletteCollapsed: boolean = false;
+
   public selectedCellInfo: string = 'Sẵn sàng';
   public nodeCount: number = 0;
   public edgeCount: number = 0;
@@ -143,107 +194,147 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   // Validation State
   public validationResult: GraphValidationResult | null = null;
 
-  // 1. PALETTE ICON RAIL: 7 LOẠI NODE CHUẨN CỦA IPCC 2.0 (ANT DESIGN MONOCHROME)
+  // PALETTE ITEMS CHUẨN THIẾT KẾ VIETTEL CUSTOMER SERVICE
   public paletteItems: PaletteItem[] = [
-    {
-      type: 'trigger',
-      typeTitle: 'Trigger',
-      defaultName: '',
-      icon: '⚡',
-      label: 'Trigger',
-      badge: 'Trigger',
-      bg: '#fffbe6',
-      border: '#ffe58f',
-      color: '#d97706',
-      tooltipText: 'Trigger (Khởi tạo luồng)'
-    },
-    {
-      type: 'task',
-      typeTitle: 'User Task',
-      defaultName: '',
-      icon: '👤',
-      label: 'User Task',
-      badge: 'Task',
-      bg: '#f0f5ff',
-      border: '#adc6ff',
-      color: '#1677ff',
-      tooltipText: 'User Task (Tác vụ người dùng)'
-    },
-    {
-      type: 'action',
-      typeTitle: 'Action',
-      defaultName: '',
-      icon: '🚀',
-      label: 'Action',
-      badge: 'Action',
-      bg: '#f9f0ff',
-      border: '#d3adf7',
-      color: '#722ed1',
-      tooltipText: 'Action (Gọi API / Tự động hoá ngầm)'
-    },
+    // 1. NHÓM ĐIỀU KIỆN
     {
       type: 'condition',
-      typeTitle: 'Condition',
-      defaultName: '',
-      icon: '❓',
-      label: 'Condition',
-      badge: 'Condition',
-      bg: '#fffbe6',
-      border: '#ffe58f',
-      color: '#d48806',
-      tooltipText: 'Condition (Exclusive Gateway - Rẽ nhánh logic)'
+      gatewayType: 'exclusive',
+      category: 'condition',
+      typeTitle: 'Chọn một nhánh',
+      defaultName: 'Tên bước quy trình',
+      icon: 'diamond-x',
+      label: 'Chọn một nhánh',
+      badge: 'Exclusive',
+      bg: '#f8fafc',
+      border: '#e2e8f0',
+      color: '#475569',
+      tooltipText: 'Rẽ 1 nhánh duy nhất theo điều kiện thoả mãn'
     },
     {
       type: 'split',
-      typeTitle: 'Split',
-      defaultName: '',
-      icon: '⑂',
-      label: 'Split',
-      badge: 'Split',
-      bg: '#f0f5ff',
-      border: '#adc6ff',
-      color: '#0958d9',
-      tooltipText: 'Split (Phân nhánh song song)'
+      gatewayType: 'parallel',
+      category: 'condition',
+      typeTitle: 'Chạy song song',
+      defaultName: 'Chạy song song',
+      icon: 'diamond-plus',
+      label: 'Chạy song song',
+      badge: 'Parallel',
+      bg: '#f8fafc',
+      border: '#e2e8f0',
+      color: '#475569',
+      tooltipText: 'Chia luồng chạy song song các nhánh'
     },
     {
-      type: 'merge',
-      typeTitle: 'Merge',
-      defaultName: '',
-      icon: '⑃',
-      label: 'Merge',
-      badge: 'Merge',
-      bg: '#f0f5ff',
-      border: '#adc6ff',
-      color: '#0958d9',
-      tooltipText: 'Merge (Gom nhánh song song)'
+      type: 'condition',
+      gatewayType: 'inclusive',
+      category: 'condition',
+      typeTitle: 'Chọn nhiều nhánh',
+      defaultName: 'Chọn nhiều nhánh',
+      icon: 'diamond-circle',
+      label: 'Chọn nhiều nhánh',
+      badge: 'Inclusive',
+      bg: '#f8fafc',
+      border: '#e2e8f0',
+      color: '#475569',
+      tooltipText: 'Rẽ tất cả nhánh có điều kiện thoả mãn'
+    },
+
+    // 2. NHÓM CÁC BƯỚC THÔNG THƯỜNG
+    {
+      type: 'task',
+      category: 'general',
+      typeTitle: 'Giao việc',
+      defaultName: 'Giao việc',
+      icon: 'user',
+      label: 'Giao việc',
+      badge: 'Task',
+      bg: '#ecfdf5',
+      border: '#a7f3d0',
+      color: '#10b981',
+      tooltipText: 'Giao việc cho nhân viên / chuyên viên'
+    },
+    {
+      type: 'action',
+      category: 'general',
+      typeTitle: 'Tác vụ hệ thống',
+      defaultName: 'Tác vụ hệ thống',
+      icon: 'code',
+      label: 'Tác vụ hệ thống',
+      badge: 'System',
+      bg: '#eff6ff',
+      border: '#bfdbfe',
+      color: '#3b82f6',
+      tooltipText: 'Tác vụ tự động / Gọi API dịch vụ hệ thống',
+      avatarInitial: 'T',
+      avatarBg: '#3b82f6'
+    },
+    {
+      type: 'notification',
+      category: 'general',
+      typeTitle: 'Gửi thông báo',
+      defaultName: 'Gửi thông báo',
+      icon: 'bell',
+      label: 'Gửi thông báo',
+      badge: 'Notify',
+      bg: '#fdf2f8',
+      border: '#fbcfe8',
+      color: '#ec4899',
+      tooltipText: 'Gửi SMS / Email / Webhook / Thông báo OTT',
+      avatarInitial: 'T',
+      avatarBg: '#3b82f6'
+    },
+    {
+      type: 'sub_process',
+      category: 'general',
+      typeTitle: 'Quy trình con',
+      defaultName: 'Quy trình con',
+      icon: 'subflow',
+      label: 'Quy trình con',
+      badge: 'SubProcess',
+      bg: '#fffbeb',
+      border: '#fde68a',
+      color: '#d97706',
+      tooltipText: 'Gọi thực thi một quy trình con khác'
     },
     {
       type: 'end',
-      typeTitle: 'End',
-      defaultName: '',
-      icon: '🛑',
-      label: 'End',
+      category: 'general',
+      typeTitle: 'Kết thúc',
+      defaultName: 'Kết thúc',
+      icon: 'stop',
+      label: 'Kết thúc',
       badge: 'End',
-      bg: '#fff1f0',
-      border: '#ffa39e',
-      color: '#cf1322',
-      tooltipText: 'End (Kết thúc tiến trình)'
+      bg: '#fef2f2',
+      border: '#fecaca',
+      color: '#ef4444',
+      tooltipText: 'Kết thúc quy trình'
     }
   ];
 
+  public get conditionPaletteItems(): PaletteItem[] {
+    const q = (this.searchQuery || '').trim().toLowerCase();
+    return this.paletteItems.filter(p => p.category === 'condition' && (!q || p.typeTitle.toLowerCase().includes(q) || p.tooltipText.toLowerCase().includes(q)));
+  }
+
+  public get generalPaletteItems(): PaletteItem[] {
+    const q = (this.searchQuery || '').trim().toLowerCase();
+    return this.paletteItems.filter(p => p.category === 'general' && (!q || p.typeTitle.toLowerCase().includes(q) || p.tooltipText.toLowerCase().includes(q)));
+  }
+
   public currentTemplate: ProcessTemplateItem = {
-    code: 'PRC_COMPLAINT_BILLING',
-    name: 'Xử lý phản ánh cước di động trả sau',
+    code: 'PRC_MULTI_DEPT_COMPLAINT',
+    name: 'Xử lý khiếu nại đa phòng ban',
     category: 'Xử lý khiếu nại',
     owner_org_id: 'ORG_CSKH_MB',
-    owner_org_name: 'TT CSKH Miền Bắc',
-    version: 'V2.1',
+    owner_org_name: 'Viettel Customer Service, Inc',
+    version: '4',
     sla: '2h SLA',
     slaStatus: 'normal',
-    status: 'Published',
-    description: 'Quy trình tiếp nhận, tra cứu cước CDR, đối soát khuyến mãi và gửi SMS kết quả cho khách hàng',
-    published_at: '28/09/2026 14:30',
-    active_instances_count: 14
+    status: 'Draft',
+    description: 'Quy trình tiếp nhận, phối hợp và xử lý khiếu nại đa phòng ban',
+    published_at: '05/10/2026 14:30',
+    active_instances_count: 5
   };
   private routeSub = new Subscription();
 
@@ -364,10 +455,10 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       grid: {
         size: 15,
         visible: true,
-        type: 'mesh',
+        type: 'dot',
         args: {
-          color: '#f0f3f6',
-          thickness: 1,
+          color: '#cbd5e1',
+          thickness: 1.2,
         },
       },
       background: {
@@ -389,14 +480,19 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         router: {
           name: 'manhattan',
           args: {
-            padding: 16,
+            padding: 20,
           },
         },
         attrs: {
           line: {
             stroke: '#94a3b8',
             strokeWidth: 1.5,
-            targetMarker: null,
+            targetMarker: {
+              name: 'block',
+              width: 6,
+              height: 6,
+              fill: '#94a3b8',
+            },
           },
         },
         validateConnection: (params: any) => {
@@ -429,20 +525,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    if (this.minimapContainerRef?.nativeElement) {
-      try {
-        this.miniMapPlugin = new MiniMap({
-          container: this.minimapContainerRef.nativeElement,
-          width: 216,
-          height: 130,
-          padding: 8,
-          scalable: false,
-        });
-        this.graph.use(this.miniMapPlugin);
-      } catch (e) {
-        console.warn('MiniMap notice:', e);
-      }
-    }
+
 
     // Node Hover Highlight (Ant Design monochrome style)
     this.graph.on('node:mouseenter', ({ node }: { node: any }) => {
@@ -518,9 +601,16 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Load initial workflow
+    const templateCode = this.route.snapshot.queryParams['id'] || this.currentTemplate?.code;
     const initType = this.route.snapshot.queryParams['initType'];
     if (this.currentTemplate.graphData) {
       this.loadGraphData(this.currentTemplate.graphData);
+    } else if (templateCode === 'PRC_BASIC_CSAT_FEEDBACK') {
+      this.loadSampleBasicFlow();
+    } else if (templateCode === 'PRC_BILLING_DISPUTE_REVERSAL') {
+      this.loadSampleConditionApiFlow();
+    } else if (templateCode === 'PRC_VIP_ENTERPRISE_INCIDENT') {
+      this.loadSampleComplexEnterpriseFlow();
     } else if (initType === 'blank') {
       this.createBlankWorkflowSample();
     } else {
@@ -561,13 +651,15 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   public getNodeSvgDataUri(type: NodeType): string {
     const strokeWidth = '1.8';
     const svgMap: Record<NodeType, string> = {
-      trigger: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-      task: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1677ff" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
-      action: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#722ed1" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path></svg>`,
-      condition: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d48806" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
-      split: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0958d9" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>`,
-      merge: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0958d9" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M6 9a9 9 0 0 0 9 9"></path><line x1="18" y1="9" x2="18" y2="21"></line></svg>`,
-      end: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#cf1322" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><rect x="9" y="9" width="6" height="6" fill="#cf1322"></rect></svg>`
+      trigger: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+      task: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+      action: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+      condition: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 12l10 10 10-10L12 2z"></path><line x1="9.5" y1="9.5" x2="14.5" y2="14.5"></line><line x1="14.5" y1="9.5" x2="9.5" y2="14.5"></line></svg>`,
+      split: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 12l10 10 10-10L12 2z"></path><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`,
+      merge: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a3 3 0 0 0 3 3h9"></path><path d="M6 21v-6a3 3 0 0 1 3-3"></path><polyline points="15 9 18 12 15 15"></polyline></svg>`,
+      notification: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`,
+      sub_process: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M9 6h3a6 6 0 0 1 6 6v3"></path><line x1="6" y1="9" x2="6" y2="15"></line></svg>`,
+      end: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect></svg>`
     };
     const raw = svgMap[type] || svgMap.task;
     return `data:image/svg+xml;utf8,${encodeURIComponent(raw.trim())}`;
@@ -579,6 +671,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       task: 'TSK',
       action: 'ACT',
       condition: 'CND',
+      notification: 'NTF',
+      sub_process: 'SUB',
       split: 'SPL',
       merge: 'MRG',
       end: 'END'
@@ -861,52 +955,66 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     const itemDef = this.paletteItems.find(p => p.type === type) || this.paletteItems[1];
     const nodeLabel = label !== undefined ? label : (customData?.label !== undefined ? customData.label : '');
 
-    // 1. TRIGGER BPMN EVENT: Circle 48px, single border #e2e8f0, center lightning bolt icon, single out port on right
+    // 1. TRIGGER BPMN EVENT: Circle 42px, subtle shadow, red inner circle with white play triangle, single out port on right
     if (type === 'trigger') {
-      const portItems = getNodePortItems('trigger', customData, 48);
+      const portItems = getNodePortItems('trigger', customData, 42);
       const node = this.graph.addNode({
         shape: 'rect',
         x,
         y,
-        width: 48,
-        height: 48,
+        width: 42,
+        height: 42,
         markup: [
+          { tagName: 'circle', selector: 'shadowCircle' },
           { tagName: 'circle', selector: 'body' },
-          { tagName: 'text', selector: 'iconText' },
+          { tagName: 'circle', selector: 'innerCircle' },
+          { tagName: 'polygon', selector: 'playTriangle' },
           { tagName: 'text', selector: 'nameText' }
         ],
         attrs: {
-          body: {
-            cx: 24,
-            cy: 24,
-            r: 23,
+          shadowCircle: {
+            cx: 21,
+            cy: 21,
+            r: 20,
             fill: '#ffffff',
             stroke: '#e2e8f0',
             strokeWidth: 1.5,
             cursor: 'pointer'
           },
-          iconText: {
-            ref: 'body',
-            refX: 24,
-            refY: 24,
-            text: '⚡',
-            fontSize: 20,
-            textAnchor: 'middle',
-            textVerticalAnchor: 'middle',
+          body: {
+            cx: 21,
+            cy: 21,
+            r: 18,
+            fill: '#ffffff',
+            stroke: 'none',
+            cursor: 'pointer'
+          },
+          innerCircle: {
+            cx: 21,
+            cy: 21,
+            r: 12,
+            fill: '#ef4444',
+            stroke: 'none',
+            cursor: 'pointer'
+          },
+          playTriangle: {
+            points: '18,15 18,27 27,21',
+            fill: '#ffffff',
             cursor: 'pointer'
           },
           nameText: {
-            ref: 'body',
-            refX: 24,
+            ref: 'shadowCircle',
+            refX: 21,
             refY: '100%',
-            refY2: 8,
+            refY2: 6,
             text: nodeLabel || '',
             fontSize: 11,
             fontWeight: 500,
             fill: '#475569',
             textAnchor: 'middle',
             textVerticalAnchor: 'top',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: nodeLabel ? 'block' : 'none'
           }
         },
         ports: {
@@ -920,7 +1028,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         type,
         typeTitle: itemDef.typeTitle,
         label: nodeLabel,
-        icon: '⚡',
+        icon: '▶',
         description: customData?.description || '',
         triggerEvent: customData?.triggerEvent || 'Inbound Call (Tổng đài 1800xxxx)',
         ...customData
@@ -929,52 +1037,72 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       return node;
     }
 
-    // 2. END BPMN EVENT: Circle 48px, border #e2e8f0, center red terminate square, single in port on left
+    // 2. END BPMN EVENT: Circle 42px, red ring with red stop square, single in port on left
     if (type === 'end') {
-      const portItems = getNodePortItems('end', customData, 48);
+      const portItems = getNodePortItems('end', customData, 42);
       const node = this.graph.addNode({
         shape: 'rect',
         x,
         y,
-        width: 48,
-        height: 48,
+        width: 42,
+        height: 42,
         markup: [
+          { tagName: 'circle', selector: 'shadowCircle' },
           { tagName: 'circle', selector: 'body' },
+          { tagName: 'circle', selector: 'innerRing' },
           { tagName: 'rect', selector: 'centerSquare' },
           { tagName: 'text', selector: 'nameText' }
         ],
         attrs: {
-          body: {
-            cx: 24,
-            cy: 24,
-            r: 23,
+          shadowCircle: {
+            cx: 21,
+            cy: 21,
+            r: 20,
             fill: '#ffffff',
             stroke: '#e2e8f0',
             strokeWidth: 1.5,
             cursor: 'pointer'
           },
+          body: {
+            cx: 21,
+            cy: 21,
+            r: 18,
+            fill: '#ffffff',
+            stroke: 'none',
+            cursor: 'pointer'
+          },
+          innerRing: {
+            cx: 21,
+            cy: 21,
+            r: 12,
+            fill: '#ffffff',
+            stroke: '#ef4444',
+            strokeWidth: 2,
+            cursor: 'pointer'
+          },
           centerSquare: {
-            x: 17,
-            y: 17,
-            width: 14,
-            height: 14,
-            rx: 3,
-            fill: '#ff4d4f',
+            x: 16,
+            y: 16,
+            width: 10,
+            height: 10,
+            rx: 2,
+            fill: '#ef4444',
             stroke: 'none',
             cursor: 'pointer'
           },
           nameText: {
-            ref: 'body',
-            refX: 24,
+            ref: 'shadowCircle',
+            refX: 21,
             refY: '100%',
-            refY2: 8,
+            refY2: 6,
             text: nodeLabel || '',
             fontSize: 11,
             fontWeight: 500,
             fill: '#475569',
             textAnchor: 'middle',
             textVerticalAnchor: 'top',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: nodeLabel ? 'block' : 'none'
           }
         },
         ports: {
@@ -988,7 +1116,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         type,
         typeTitle: itemDef.typeTitle,
         label: nodeLabel,
-        icon: '🛑',
+        icon: '⏹',
         description: customData?.description || '',
         ...customData
       };
@@ -996,15 +1124,13 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       return node;
     }
 
-    const isAction = type === 'action';
     const isCondition = type === 'condition';
-    const isSplit = type === 'split';
-    const isMerge = type === 'merge';
     const isApprovalTask = type === 'task' && !!customData?.isApprovalStep;
-    const isMultiRow = isAction || isApprovalTask || isCondition;
+    const isActionException = type === 'action' && !!customData?.hasExceptionPort;
 
     let branches: ConditionBranch[] = isCondition
       ? (customData?.branches && customData.branches.length > 0 ? [...customData.branches] : [
+        { id: 'br-1', name: 'Đủ thông tin', defaultLabel: 'Đủ thông tin', value: 'du_thong_tin', expression: '${flow.variables.du_thong_tin == true}', variableSource: 'flow.variables', isDefault: false },
         { id: 'br-default', name: 'Mặc định', defaultLabel: 'Mặc định', value: 'default', expression: 'default', variableSource: 'flow.variables', isDefault: true }
       ])
       : [];
@@ -1019,28 +1145,22 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    const cardWidth = 168;
-    const nodeHeight = (isAction || isApprovalTask)
-      ? 96
-      : isCondition
-        ? (64 + branches.length * 22 + 8)
-        : (isSplit || isMerge)
-          ? 54
-          : 48;
-
-    const hasLabel = !!(nodeLabel && nodeLabel.trim());
-    const centerY = isMultiRow ? 22 : Math.round(nodeHeight / 2);
-    const iconBoxY = isMultiRow ? 7 : Math.round((nodeHeight - 32) / 2);
+    const cardWidth = 180;
+    const nodeHeight = isCondition
+      ? (44 + branches.length * 20 + 6)
+      : (isApprovalTask || isActionException)
+        ? 90
+        : 48;
 
     // Dynamic SVG markup
     const markup: any[] = [
       { tagName: 'rect', selector: 'body' },
       { tagName: 'rect', selector: 'iconBox' },
       { tagName: 'image', selector: 'iconImg' },
-      { tagName: 'text', selector: 'typeTitle' },
       { tagName: 'text', selector: 'nameText' },
-      { tagName: 'line', selector: 'divider' },
-      { tagName: 'text', selector: 'sectionHeader' },
+      { tagName: 'circle', selector: 'warningBg' },
+      { tagName: 'text', selector: 'warningText' },
+      { tagName: 'text', selector: 'moreBtn' },
     ];
 
     // Pre-declare rowText_0 through rowText_15 for multi-row nodes
@@ -1052,141 +1172,128 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       body: {
         refWidth: '100%',
         refHeight: '100%',
-        rx: 8,
-        ry: 8,
+        rx: 10,
+        ry: 10,
         fill: '#ffffff',
         stroke: '#e2e8f0',
-        strokeWidth: 1.5,
+        strokeWidth: 1.2,
         cursor: 'pointer',
       },
       iconBox: {
         ref: 'body',
-        refX: 8,
-        refY: iconBoxY,
-        width: 32,
-        height: 32,
-        rx: 6,
-        ry: 6,
-        fill: isAction ? '#f9f0ff' : itemDef.bg,
-        stroke: itemDef.border || '#e2e8f0',
+        refX: 9,
+        refY: isCondition ? 7 : 9,
+        width: 30,
+        height: 30,
+        rx: 7,
+        ry: 7,
+        fill: isCondition ? '#f8fafc' : itemDef.bg,
+        stroke: isCondition ? '#e2e8f0' : (itemDef.border || '#e2e8f0'),
         strokeWidth: 1,
       },
       iconImg: {
         ref: 'body',
         refX: 15,
-        refY: iconBoxY + 7,
+        refY: isCondition ? 13 : 15,
         width: 18,
         height: 18,
         'xlink:href': this.getNodeSvgDataUri(type),
         href: this.getNodeSvgDataUri(type),
       },
-      typeTitle: {
+      nameText: {
         ref: 'body',
-        refX: 48,
-        refY: hasLabel ? 16 : centerY,
-        text: itemDef.typeTitle,
-        fontSize: hasLabel ? 11 : 12,
-        fontWeight: 600,
+        refX: 46,
+        refY: isCondition ? 22 : 24,
+        text: this.truncateLabel(nodeLabel || itemDef.typeTitle, isCondition ? 15 : 20),
+        fontSize: isCondition ? 12 : 12.5,
+        fontWeight: isCondition ? 600 : 500,
         fill: '#1e293b',
         textAnchor: 'start',
         textVerticalAnchor: 'middle',
       },
-      nameText: {
+      warningBg: {
         ref: 'body',
-        refX: 48,
-        refY: 32,
-        text: this.truncateLabel(nodeLabel, 16),
-        fontSize: 11,
-        fontWeight: 400,
-        fill: '#64748b',
-        textAnchor: 'start',
-        textVerticalAnchor: 'middle',
+        refX: cardWidth - 28,
+        refY: 16,
+        r: 6,
+        fill: '#eab308',
+        stroke: 'none',
+        display: isCondition ? 'block' : 'none'
       },
-      divider: {
-        x1: 8,
-        y1: 44,
-        x2: cardWidth - 8,
-        y2: 44,
-        stroke: '#f1f5f9',
-        strokeWidth: 1,
-        display: isMultiRow ? 'block' : 'none'
-      },
-      sectionHeader: {
+      warningText: {
         ref: 'body',
-        refX: 14,
-        refY: 58,
-        text: 'Định tuyến',
-        fontSize: 10,
-        fontWeight: 600,
-        fill: '#94a3b8',
-        textAnchor: 'start',
+        refX: cardWidth - 28,
+        refY: 16,
+        text: '!',
+        fontSize: 9,
+        fontWeight: 800,
+        fill: '#ffffff',
+        textAnchor: 'middle',
         textVerticalAnchor: 'middle',
         display: isCondition ? 'block' : 'none'
+      },
+      moreBtn: {
+        ref: 'body',
+        refX: cardWidth - 14,
+        refY: isCondition ? 16 : 24,
+        text: '⋮',
+        fontSize: 16,
+        fontWeight: 700,
+        fill: '#94a3b8',
+        textAnchor: 'middle',
+        textVerticalAnchor: 'middle',
+        cursor: 'pointer'
       }
     };
 
     for (let i = 0; i < 16; i++) {
-      if (isAction) {
-        if (i === 0) {
-          attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 60, text: 'Thành công',
-            fontSize: 11, fontWeight: 500, fill: '#475569',
-            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'block'
-          };
-        } else if (i === 1) {
-          attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 82, text: 'Thất bại',
-            fontSize: 11, fontWeight: 500, fill: '#475569',
-            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'block'
-          };
-        } else {
-          attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 60 + i * 22,
-            fontSize: 11, fontWeight: 500, fill: '#475569',
-            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'none'
-          };
-        }
-      } else if (isApprovalTask) {
-        if (i === 0) {
-          attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 60, text: 'Đồng ý',
-            fontSize: 11, fontWeight: 500, fill: '#475569',
-            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'block'
-          };
-        } else if (i === 1) {
-          attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 82, text: 'Từ chối',
-            fontSize: 11, fontWeight: 500, fill: '#475569',
-            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'block'
-          };
-        } else {
-          attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 60 + i * 22,
-            fontSize: 11, fontWeight: 500, fill: '#475569',
-            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'none'
-          };
-        }
-      } else if (isCondition) {
+      if (isCondition) {
         if (i < branches.length) {
           const br = branches[i];
           const displayText = br.name || br.defaultLabel || (br.isDefault ? 'Mặc định' : `Nhánh ${i + 1}`);
           attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 78 + i * 22,
+            ref: 'body',
+            refX: cardWidth - 14,
+            refY: 48 + i * 20,
             text: this.truncateLabel(displayText, 18),
-            fontSize: 11, fontWeight: 500, fill: '#475569',
-            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'block'
+            fontSize: 11,
+            fontWeight: 400,
+            fill: '#64748b',
+            textAnchor: 'end',
+            textVerticalAnchor: 'middle',
+            display: 'block'
           };
         } else {
           attrs[`rowText_${i}`] = {
-            ref: 'body', refX: 14, refY: 78 + i * 22,
-            fontSize: 11, fontWeight: 500, fill: '#475569',
+            ref: 'body', refX: 14, refY: 48 + i * 20,
+            fontSize: 11, fontWeight: 400, fill: '#64748b',
+            textAnchor: 'start', textVerticalAnchor: 'middle', display: 'none'
+          };
+        }
+      } else if (isActionException) {
+        if (i === 0) {
+          attrs[`rowText_${i}`] = {
+            ref: 'body', refX: cardWidth - 14, refY: 60, text: 'Thành công',
+            fontSize: 11, fontWeight: 400, fill: '#64748b',
+            textAnchor: 'end', textVerticalAnchor: 'middle', display: 'block'
+          };
+        } else if (i === 1) {
+          attrs[`rowText_${i}`] = {
+            ref: 'body', refX: cardWidth - 14, refY: 82, text: 'Thất bại',
+            fontSize: 11, fontWeight: 400, fill: '#64748b',
+            textAnchor: 'end', textVerticalAnchor: 'middle', display: 'block'
+          };
+        } else {
+          attrs[`rowText_${i}`] = {
+            ref: 'body', refX: 14, refY: 60 + i * 22,
+            fontSize: 11, fontWeight: 400, fill: '#475569',
             textAnchor: 'start', textVerticalAnchor: 'middle', display: 'none'
           };
         }
       } else {
         attrs[`rowText_${i}`] = {
           ref: 'body', refX: 14, refY: 60 + i * 22,
-          fontSize: 11, fontWeight: 500, fill: '#475569',
+          fontSize: 11, fontWeight: 400, fill: '#475569',
           textAnchor: 'start', textVerticalAnchor: 'middle', display: 'none'
         };
       }
@@ -1194,7 +1301,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const portItems = getNodePortItems(
       type,
-      { ...customData, branches, isApprovalStep: isApprovalTask },
+      { ...customData, branches, isApprovalStep: isApprovalTask, hasExceptionPort: isActionException },
       cardWidth
     );
 
@@ -1306,6 +1413,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       id: node.id,
       nodeKey: data.nodeKey || this.generateNodeKey(data.type || 'task', data.label || textAttr),
       type: data.type || 'task',
+      gatewayType: data.gatewayType || (data.type === 'split' ? 'parallel' : (itemDef.gatewayType || 'exclusive')),
       typeTitle: data.typeTitle || itemDef.typeTitle,
       label: data.label !== undefined ? data.label : (textAttr || ''),
       icon: data.icon || itemDef.icon,
@@ -1323,13 +1431,18 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       retryCount: data.retryCount !== undefined ? data.retryCount : 3,
       retryInterval: data.retryInterval || '5s',
       circuitBreakerTimeoutMs: data.circuitBreakerTimeoutMs !== undefined ? data.circuitBreakerTimeoutMs : 3000,
+      integratedSystem: data.integratedSystem || '',
+      selectedApi: data.selectedApi || '',
+      timeoutSeconds: data.timeoutSeconds !== undefined ? data.timeoutSeconds : 0,
+      apiOutput: data.apiOutput || '',
 
       // Condition fields
-      branches: data.branches && data.branches.length > 0 ? JSON.parse(JSON.stringify(data.branches)) : (data.type === 'condition' ? [
-        { id: 'br-default', name: 'Định tuyến', value: 'default', expression: 'default', variableSource: 'flow.variables', isDefault: true },
-        { id: 'br-1', name: 'Hợp lệ', value: '> 500000', expression: '${flow.variables.cuoc > 500000}', variableSource: 'flow.variables', isDefault: false },
-        { id: 'br-2', name: 'Từ chối', value: '<= 500000', expression: '${flow.variables.cuoc <= 500000}', variableSource: 'flow.variables', isDefault: false }
+      branches: data.branches && data.branches.length > 0 ? JSON.parse(JSON.stringify(data.branches)) : ((data.type === 'condition' || data.type === 'split') ? [
+        { id: 'br-1', name: 'Đủ thông tin', value: 'valid', expression: '.priority == "Cao"', rules: [{ param: '.priority', operator: 'Bằng (=)', value: 'Cao' }] },
+        { id: 'br-default', name: 'Mặc định', value: 'default', expression: 'default', isDefault: true, rules: [] }
       ] : undefined),
+      defaultFlowOutput: data.defaultFlowOutput || '',
+      errorFlowOutput: data.errorFlowOutput || '',
       servicePivotSource: data.servicePivotSource || 'flow.variables',
       conditionVariable: data.conditionVariable || 'flow.variables.cuoc',
       conditionRule: data.conditionRule || 'cuoc_phat_sinh > 500000',
@@ -1338,14 +1451,45 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       timeout: data.timeout || '30 phút',
       sla: data.sla || '2h SLA',
       assignee: data.assignee || 'Điện thoại viên (FO/BO)',
-      triggerEvent: data.triggerEvent || 'Inbound Call (Tổng đài 1800xxxx)'
+      triggerEvent: data.triggerEvent || 'Inbound Call (Tổng đài 1800xxxx)',
+
+      // Notification fields
+      notificationChannel: data.notificationChannel || 'SMS',
+      notificationRecipient: data.notificationRecipient || 'CUSTOMER',
+      notificationTitle: data.notificationTitle || '',
+      notificationContent: data.notificationContent || '',
+
+      // Sub-process fields
+      subProcessTemplateId: data.subProcessTemplateId || '',
+      subProcessVersion: data.subProcessVersion || 'LATEST',
+      subProcessWaitComplete: data.subProcessWaitComplete !== undefined ? data.subProcessWaitComplete : true,
+      subProcessInputMapping: data.subProcessInputMapping || ''
     };
 
     this.selectedCellInfo = `[${this.selectedNodeProps.label}] ${this.selectedNodeProps.typeTitle}`;
     this.bridgeService.selectNode(node, this.selectedNodeProps);
+
+    // Highlight selected node with rose/red outline (as in Figma screenshot)
+    if (this.graph) {
+      this.graph.getNodes().forEach((n: any) => {
+        if (n.id === node.id) {
+          n.attr('body/stroke', '#f43f5e');
+          n.attr('body/strokeWidth', 2);
+        } else {
+          n.attr('body/stroke', '#e4e4e7');
+          n.attr('body/strokeWidth', 1);
+        }
+      });
+    }
   }
 
   public clearSelection(): void {
+    if (this.graph) {
+      this.graph.getNodes().forEach((n: any) => {
+        n.attr('body/stroke', '#e4e4e7');
+        n.attr('body/strokeWidth', 1);
+      });
+    }
     this.selectedNode = null;
     this.isDrawerOpen = false;
     this.bridgeService.clearSelection();
@@ -1423,118 +1567,144 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ============================================================================
-  // WORKFLOW SAMPLE CHUẨN (CÁC NODE VỚI THIẾT KẾ CARD 2 DÒNG TINH TẾ)
+  // WORKFLOW SAMPLE CHUẨN (KHỚP 100% THIẾT KẾ VIETTEL TRONG ẢNH CHỤP)
+  // ▶ -> [◇ Tên bước quy trình] -> (Đủ thông tin -> </> Trả lời sơ bộ) & (Mặc định -> 👤 Bổ sung thông tin)
+  //   -> ⤹ Tất cả nhánh đến -> 👤 Xác minh khiếu nại -> </> Cập nhật & đóng PAKN -> ⏹
   // ============================================================================
   private createCompactWorkflowSample(): void {
     if (!this.graph) return;
     this.graph.clearCells();
 
-    // 1. [⚡ Trigger] Tiếp nhận cước
-    const trigger = this.createCompactCardNode('trigger', 60, 160, 'Tiếp nhận cước', {
-      triggerEvent: 'Tiếp nhận cuộc gọi phản ánh cước',
-      assignee: 'Hệ thống tự động (System)',
-      nodeKey: 'TRG_INBOUND_CALL'
-    });
+    // 1. [Start] (trigger)
+    const trigger = this.createCompactCardNode('trigger', 40, 185, '');
 
-    // 2. [👤 User Task] BO Duyệt hồ sơ
-    const boTask = this.createCompactCardNode('task', 270, 160, 'BO Duyệt hồ sơ', {
-      assignee: 'Điện thoại viên (FO/BO)',
-      sla: '2h SLA',
-      description: 'Tiếp nhận và xác minh hồ sơ phản ánh cước',
-      nodeKey: 'TSK_BO_REVIEW'
-    });
-
-    // 3. [❓ Condition] Cước > 500k? (Exclusive Gateway - Multi-branch)
-    const condition = this.createCompactCardNode('condition', 460, 130, 'Cước > 500k?', {
-      nodeKey: 'CND_CHECK_AMOUNT',
-      description: 'Kiểm tra xem số tiền cước phát sinh khiếu nại có vượt ngưỡng 500.000 VNĐ',
-      servicePivotSource: 'flow.variables',
-      conditionVariable: 'flow.variables.cuoc',
+    // 2. [Condition] Tên bước quy trình
+    const condition = this.createCompactCardNode('condition', 150, 155, 'Tên bước quy trình', {
+      nodeKey: 'CND_BRANCH_CHECK',
+      description: 'Phân nhánh xử lý theo điều kiện đầy đủ thông tin hay mặc định',
       branches: [
-        { id: 'br-default', name: 'Định tuyến', value: 'default', expression: 'default', variableSource: 'flow.variables', isDefault: true },
-        { id: 'br-1', name: 'Hợp lệ', value: '> 500k', expression: '${flow.variables.cuoc > 500000}', variableSource: 'flow.variables', isDefault: false },
-        { id: 'br-2', name: 'Từ chối', value: '<= 500k', expression: '${flow.variables.cuoc <= 500000}', variableSource: 'flow.variables', isDefault: false }
+        { id: 'br-info', name: 'Đủ thông tin', value: 'du_thong_tin', expression: '${flow.variables.du_thong_tin == true}', isDefault: false },
+        { id: 'br-default', name: 'Mặc định', value: 'default', expression: 'default', isDefault: true }
       ]
     });
 
-    // 4. [🚀 Action] Gọi API IPCC 2.0 (BẮT BUỘC 2 CỔNG RA: Thành công & Ngoại lệ)
-    const action = this.createCompactCardNode('action', 700, 120, 'Gọi API IPCC 2.0', {
-      nodeKey: 'ACT_DISPATCH_IPCC',
-      actionSource: 'library',
-      actionLibraryId: 'act-ipcc-api',
-      actionMethod: 'POST',
-      actionEndpoint: 'https://ipcc.vnpt.vn/api/v2/call/dispatch',
-      requestBodyMapping: '{\n  "callId": "${flow.variables.call_id}",\n  "queue": "HOTLINE_1800"\n}',
-      responseMapping: 'flow.variables.ticket_id = response.data.ticketId;',
-      slaSeconds: 3,
-      retryCount: 3,
-      retryInterval: '5s',
-      circuitBreakerTimeoutMs: 3000,
-      description: 'Điều phối luồng và ghi nhận ticket sang IPCC 2.0 Core'
+    // 3. [Action] Trả lời sơ bộ
+    const traLoiSoBo = this.createCompactCardNode('action', 390, 115, 'Trả lời sơ bộ', {
+      nodeKey: 'ACT_PRELIMINARY_REPLY',
+      description: 'Hệ thống gửi tin nhắn/phản hồi sơ bộ cho khách hàng'
     });
 
-    // 5. [🛑 End] Hoàn tất xử lý (Cổng Thành công 200)
-    const end = this.createCompactCardNode('end', 960, 100, 'Hoàn tất xử lý', {
-      description: 'Quy trình hoàn tất thành công',
-      nodeKey: 'END_SUCCESS'
+    // 4. [Task] Bổ sung thông tin
+    const boSungThongTin = this.createCompactCardNode('task', 390, 215, 'Bổ sung thông tin', {
+      nodeKey: 'TSK_SUPPLEMENT_INFO',
+      description: 'Yêu cầu khách hàng hoặc điện thoại viên bổ sung thêm thông tin khiếu nại'
     });
 
-    // 6. [🛑 End] Kết thúc ngoại lệ (Cổng Ngoại lệ / Lỗi - US-22, BR-INT-05)
-    const errorEnd = this.createCompactCardNode('end', 960, 210, 'Kết thúc sự cố', {
-      description: 'Kết thúc tiến trình tại nhánh ngoại lệ',
-      nodeKey: 'END_EXCEPTION'
+    // 5. [Merge] Tất cả nhánh đến
+    const tatCaNhanhDen = this.createCompactCardNode('merge', 620, 165, 'Tất cả nhánh đến', {
+      nodeKey: 'MRG_JOIN_BRANCHES',
+      description: 'Gom và đồng bộ kết quả từ các nhánh xử lý'
     });
 
-    // 7. [🛑 End] Từ chối hồ sơ (Nhánh 2 của Condition)
-    const rejectEnd = this.createCompactCardNode('end', 700, 270, 'Từ chối cước', {
-      description: 'Hồ sơ khiếu nại cước không thoả mãn điều kiện tiếp nhận',
-      nodeKey: 'END_REJECT'
+    // 6. [Task] Xác minh khiếu nại
+    const xacMinhKhieuNai = this.createCompactCardNode('task', 840, 165, 'Xác minh khiếu nại', {
+      nodeKey: 'TSK_VERIFY_COMPLAINT',
+      description: 'Chuyên viên tiến hành xác minh thông tin khiếu nại của khách hàng'
     });
 
-    // Connect edges
+    // 7. [Action] Cập nhật & đóng PAKN
+    const capNhatDong = this.createCompactCardNode('action', 1060, 165, 'Cập nhật & đóng PAKN', {
+      nodeKey: 'ACT_UPDATE_CLOSE_PAKN',
+      description: 'Cập nhật trạng thái xử lý và đóng phản ánh khiếu nại trên hệ thống'
+    });
+
+    // 8. [End]
+    const end = this.createCompactCardNode('end', 1290, 168, '');
+
+    // Edge 1: trigger -> condition
     this.graph.addEdge({
       source: { cell: trigger, port: 'out' },
-      target: { cell: boTask, port: 'in' },
-      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: null } }
-    });
-
-    this.graph.addEdge({
-      source: { cell: boTask, port: 'out' },
       target: { cell: condition, port: 'in' },
-      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: null } }
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
     });
 
-    // Condition -> Action (Nhánh 1: Hợp lệ)
+    // Edge 2: condition (br-info) -> Trả lời sơ bộ
     this.graph.addEdge({
-      source: { cell: condition, port: 'br-1' },
-      target: { cell: action, port: 'in' },
-      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: null } }
+      source: { cell: condition, port: 'br-info' },
+      target: { cell: traLoiSoBo, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
     });
 
-    // Condition -> Reject (Nhánh 2: Từ chối)
+    // Edge 3: condition (br-default) -> Bổ sung thông tin
     this.graph.addEdge({
-      source: { cell: condition, port: 'br-2' },
-      target: { cell: rejectEnd, port: 'in' },
-      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: null } }
+      source: { cell: condition, port: 'br-default' },
+      target: { cell: boSungThongTin, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
     });
 
-    // Action (Cổng Out 1: Thành công 200) -> End Event
+    // Edge 4: Trả lời sơ bộ -> Tất cả nhánh đến
     this.graph.addEdge({
-      source: { cell: action, port: 'out-success' },
+      source: { cell: traLoiSoBo, port: 'out' },
+      target: { cell: tatCaNhanhDen, port: 'in-merge-0' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+
+    // Edge 5: Bổ sung thông tin -> Tất cả nhánh đến
+    this.graph.addEdge({
+      source: { cell: boSungThongTin, port: 'out' },
+      target: { cell: tatCaNhanhDen, port: 'in-merge-1' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+
+    // Edge 6: Tất cả nhánh đến -> Xác minh khiếu nại
+    this.graph.addEdge({
+      source: { cell: tatCaNhanhDen, port: 'out' },
+      target: { cell: xacMinhKhieuNai, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+
+    // Edge 7: Xác minh khiếu nại -> Cập nhật & đóng PAKN
+    this.graph.addEdge({
+      source: { cell: xacMinhKhieuNai, port: 'out' },
+      target: { cell: capNhatDong, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+
+    // Edge 8: Cập nhật & đóng PAKN -> End
+    this.graph.addEdge({
+      source: { cell: capNhatDong, port: 'out' },
       target: { cell: end, port: 'in' },
-      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: null } }
-    });
-
-    // Action (Cổng Out 2: Thất bại / Ngoại lệ) -> Exception End
-    this.graph.addEdge({
-      source: { cell: action, port: 'out-failure' },
-      target: { cell: errorEnd, port: 'in' },
-      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: null } }
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
     });
 
     this.clearSelection();
     this.updateCounts();
     this.pushHistorySnapshot();
+  }
+
+  public cancelEdit(): void {
+    this.router.navigate(['/process/templates-list']);
+  }
+
+  public setSubTab(tab: 'info' | 'design'): void {
+    this.activeSubTab = tab;
+    if (tab === 'info') {
+      this.openTemplateInfoModal();
+    }
+  }
+
+  public togglePaletteCollapse(): void {
+    this.isPaletteCollapsed = !this.isPaletteCollapsed;
+  }
+
+  public setCanvasMode(mode: 'select' | 'pan'): void {
+    this.canvasMode = mode;
+    if (!this.graph) return;
+    if (mode === 'pan') {
+      this.graph.enablePanning();
+    } else {
+      this.graph.disablePanning();
+    }
   }
 
   private createBlankWorkflowSample(): void {
@@ -1544,6 +1714,359 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectNode(trigger);
     this.updateCounts();
     this.pushHistorySnapshot();
+  }
+
+  // ============================================================================
+  // CÁC MẪU QUY TRÌNH CHUẨN DOANH NGHIỆP TỪ JSON BACKEND SPECIFICATION
+  // ============================================================================
+
+  /**
+   * MẪU 1: LUỒNG CƠ BẢN (LINEAR BASIC FLOW)
+   * Tiếp nhận & Phản hồi Ý kiến CSAT (Trigger -> Task -> Notification -> End)
+   */
+  public loadSampleBasicFlow(): void {
+    if (!this.graph) return;
+    this.graph.clearCells();
+
+    this.currentTemplate = {
+      code: 'PRC_BASIC_CSAT_FEEDBACK',
+      name: 'Quy trình tiếp nhận và ghi nhận ý kiến đóng góp khách hàng (CSAT)',
+      category: 'Khảo sát CSAT',
+      version: 'V1.0',
+      owner_org_id: 'ORG_CSKH_MB',
+      owner_org_name: 'TT CSKH Miền Bắc',
+      sla: '1h SLA',
+      slaStatus: 'normal',
+      status: 'Published',
+      description: 'Tiếp nhận ý kiến phản hồi từ cổng thông tin, tổng đài viên ghi nhận và tự động gửi SMS cảm ơn'
+    };
+
+    // 1. Trigger
+    const trigger = this.createCompactCardNode('trigger', 60, 185, 'Bắt đầu tiếp nhận', {
+      nodeKey: 'TRG_CSAT_01',
+      triggerType: 'Webhook',
+      triggerEvent: 'Portal CSAT Feedback Submitted',
+      triggerFormSchedule: 'Tức thời (Real-time)',
+      description: 'Nhận payload JSON từ Web portal hoặc My Viettel app'
+    });
+
+    // 2. Task
+    const task = this.createCompactCardNode('task', 230, 165, 'Giao việc phân loại', {
+      nodeKey: 'TSK_CSAT_REVIEW',
+      department: 'TT CSKH Miền Bắc',
+      team: 'Nhóm Chăm sóc khách hàng',
+      agent: 'Điện thoại viên (FO/BO)',
+      assignee: 'Điện thoại viên (FO/BO)',
+      sla: '30 phút',
+      slaWarning: true,
+      formTemplate: 'FORM_CSAT_FEEDBACK_V1',
+      formOutput: 'output_csat_classification',
+      description: 'Kiểm tra nội dung góp ý, gắn tag phân loại chủ đề'
+    });
+
+    // 3. Notification
+    const notif = this.createCompactCardNode('notification', 500, 165, 'Gửi SMS cảm ơn', {
+      nodeKey: 'NTF_CSAT_THANKYOU',
+      notificationChannel: 'SMS',
+      channelNotification: true,
+      notificationRecipient: '${flow.variables.customer_phone}',
+      notificationTitle: 'Viettel CSKH - Cảm ơn quý khách',
+      notificationContent: 'Viettel chân thành cảm ơn ý kiến đóng góp của Quý khách. Chúc Quý khách một ngày tốt lành!',
+      description: 'Gửi tin nhắn Brandname VIETTEL đến số thuê bao phản ánh'
+    });
+
+    // 4. End
+    const end = this.createCompactCardNode('end', 770, 185, 'Kết thúc', {
+      nodeKey: 'END_CSAT_01',
+      description: 'Đóng luồng và lưu vết lịch sử instance'
+    });
+
+    // Edges
+    this.graph.addEdge({
+      source: { cell: trigger, port: 'out' },
+      target: { cell: task, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: task, port: 'out' },
+      target: { cell: notif, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: notif, port: 'out' },
+      target: { cell: end, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+
+    this.clearSelection();
+    this.graph.centerContent();
+    this.updateCounts();
+    this.pushHistorySnapshot();
+    this.selectedCellInfo = '✨ Đã tải [Mẫu 1: Luồng cơ bản CSAT]!';
+  }
+
+  /**
+   * MẪU 2: LUỒNG TRUNG BÌNH (EXCLUSIVE GATEWAY + ACTION API)
+   * Xử lý Khiếu nại Cước & Tự động Hoàn cước viễn thông
+   */
+  public loadSampleConditionApiFlow(): void {
+    if (!this.graph) return;
+    this.graph.clearCells();
+
+    this.currentTemplate = {
+      code: 'PRC_BILLING_DISPUTE_REVERSAL',
+      name: 'Quy trình xử lý khiếu nại cước & Tự động hoàn cước viễn thông',
+      category: 'Xử lý khiếu nại',
+      version: 'V2.0',
+      owner_org_id: 'ORG_BILLING',
+      owner_org_name: 'Trung tâm Đối soát & Tính cước',
+      sla: '2h SLA',
+      slaStatus: 'normal',
+      status: 'Published',
+      description: 'Tiếp nhận khiếu nại cước: Dưới 200k tự động hoàn cước qua API Core; Trên 200k chuyển Trưởng ca phê duyệt'
+    };
+
+    // 1. Trigger
+    const trigger = this.createCompactCardNode('trigger', 40, 205, 'Tiếp nhận khiếu nại', {
+      nodeKey: 'TRG_BILLING_01',
+      triggerType: 'Inbound Call',
+      triggerEvent: 'Customer Call via Hotline 18008098'
+    });
+
+    // 2. Task Tra cứu
+    const taskCheck = this.createCompactCardNode('task', 160, 185, 'Tra cứu chi tiết cước', {
+      nodeKey: 'TSK_CHECK_CDR',
+      department: 'Trung tâm Đối soát & Tính cước',
+      team: 'Tổ Xử lý khiếu nại cước',
+      agent: 'Điện thoại viên (FO/BO)',
+      sla: '45 phút',
+      formTemplate: 'FORM_CDR_VERIFY_V2',
+      formOutput: 'output_verified_amount'
+    });
+
+    // 3. Condition (Chọn một nhánh)
+    const condition = this.createCompactCardNode('condition', 400, 160, 'Kiểm tra hạn mức cước', {
+      nodeKey: 'CND_AMOUNT_CHECK',
+      gatewayType: 'exclusive',
+      conditionVariable: 'flow.variables.dispute_amount',
+      branches: [
+        { id: 'br-auto', name: 'Cước <= 200k (Tự động)', value: 'LE_200K', expression: 'flow.variables.dispute_amount <= 200000', isDefault: false },
+        { id: 'br-manual', name: 'Mặc định (> 200k)', value: 'GT_200K', expression: 'default', isDefault: true }
+      ]
+    });
+
+    // 4. Action Hoàn cước API
+    const actRefund = this.createCompactCardNode('action', 670, 95, 'Tác vụ hoàn cước API', {
+      nodeKey: 'ACT_CORE_REFUND',
+      actionSource: 'custom',
+      integratedSystem: 'BILLING_CORE_BSS',
+      selectedApi: 'POST /api/v2/invoices/reverse-charge',
+      actionMethod: 'POST',
+      actionEndpoint: 'https://billing-core.viettel.vn/api/v2/invoices/reverse-charge',
+      timeoutSeconds: 5,
+      retryCount: 3,
+      hasExceptionPort: true
+    });
+
+    // 5. Task Trưởng ca duyệt (Approval)
+    const taskApprove = this.createCompactCardNode('task', 670, 240, 'Trưởng ca duyệt hoàn cước', {
+      nodeKey: 'TSK_LEADER_APPROVE',
+      department: 'TT CSKH Miền Bắc',
+      team: 'Ban Giám đốc / Trưởng ca',
+      agent: 'Trưởng ca trực',
+      isApprovalStep: true,
+      sla: '1h SLA'
+    });
+
+    // 6. Notification SMS
+    const notif = this.createCompactCardNode('notification', 930, 95, 'SMS thông báo kết quả', {
+      nodeKey: 'NTF_REFUND_SUCCESS',
+      notificationChannel: 'SMS',
+      notificationRecipient: '${flow.variables.customer_phone}',
+      notificationTitle: 'Viettel - Kết quả đối soát cước'
+    });
+
+    // 7. End thành công
+    const endSuccess = this.createCompactCardNode('end', 1190, 115, 'Hoàn tất thành công', {
+      nodeKey: 'END_BILLING_SUCCESS'
+    });
+
+    // 8. End lỗi
+    const endError = this.createCompactCardNode('end', 930, 260, 'Kết thúc lỗi ngoại lệ', {
+      nodeKey: 'END_BILLING_ERROR'
+    });
+
+    // Edges
+    this.graph.addEdge({
+      source: { cell: trigger, port: 'out' },
+      target: { cell: taskCheck, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: taskCheck, port: 'out' },
+      target: { cell: condition, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: condition, port: 'br-auto' },
+      target: { cell: actRefund, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: condition, port: 'br-manual' },
+      target: { cell: taskApprove, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: taskApprove, port: 'out-approve' },
+      target: { cell: actRefund, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: taskApprove, port: 'out-reject' },
+      target: { cell: endError, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: actRefund, port: 'out-success' },
+      target: { cell: notif, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: actRefund, port: 'out-fail' },
+      target: { cell: endError, port: 'in' },
+      attrs: { line: { stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: 4, targetMarker: { name: 'block', width: 6, height: 6, fill: '#ef4444' } } }
+    });
+    this.graph.addEdge({
+      source: { cell: notif, port: 'out' },
+      target: { cell: endSuccess, port: 'in' },
+      attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } }
+    });
+
+    this.clearSelection();
+    this.graph.centerContent();
+    this.updateCounts();
+    this.pushHistorySnapshot();
+    this.selectedCellInfo = '✨ Đã tải [Mẫu 2: Luồng điều kiện & API cước]!';
+  }
+
+  /**
+   * MẪU 3: LUỒNG PHỨC TẠP ENTERPRISE (PARALLEL SPLIT/JOIN, SUBPROCESS, MULTI-CHANNEL)
+   * Điều hành xử lý sự cố hạ tầng & Kênh truyền số liệu VIP
+   */
+  public loadSampleComplexEnterpriseFlow(): void {
+    if (!this.graph) return;
+    this.graph.clearCells();
+
+    this.currentTemplate = {
+      code: 'PRC_VIP_ENTERPRISE_INCIDENT',
+      name: 'Quy trình điều hành xử lý sự cố hạ tầng & Kênh truyền số liệu KHDN VIP',
+      category: 'Cảnh báo chỉ số',
+      version: 'V4.0',
+      owner_org_id: 'ORG_KT_BROADBAND',
+      owner_org_name: 'Phòng Kỹ thuật Broadband',
+      sla: '2h SLA',
+      slaStatus: 'warning',
+      status: 'Published',
+      description: 'Xử lý sự cố kênh truyền VIP: Chạy song song luồng kỹ thuật đo kiểm (SubProcess) và CSKH KAM đa kênh SMS/Email, hội tụ đóng ticket tự động'
+    };
+
+    // 1. Trigger
+    const trigger = this.createCompactCardNode('trigger', 40, 195, 'Cảnh báo NMS Kênh truyền', {
+      nodeKey: 'TRG_NMS_ALARM',
+      triggerType: 'Hệ thống giám sát NMS'
+    });
+
+    // 2. Task
+    const taskTriage = this.createCompactCardNode('task', 150, 175, 'Điều phối & Phân loại cấp 1', {
+      nodeKey: 'TSK_INCIDENT_TRIAGE',
+      department: 'Phòng Kỹ thuật Broadband',
+      team: 'Tổ Điều hành mạng NOC',
+      sla: '15 phút'
+    });
+
+    // 3. Parallel Split
+    const split = this.createCompactCardNode('split', 370, 150, 'Chạy song song 2 luồng', {
+      nodeKey: 'SPL_PARALLEL_DISPATCH',
+      gatewayType: 'parallel',
+      branches: [
+        { id: 'br-tech', name: 'Nhánh Kỹ thuật hạ tầng', expression: 'true', isDefault: false },
+        { id: 'br-kam', name: 'Nhánh Chăm sóc KH VIP', expression: 'true', isDefault: true }
+      ]
+    });
+
+    // 4. SubProcess
+    const subProcess = this.createCompactCardNode('sub_process', 610, 95, 'Quy trình con: Kỹ thuật trạm', {
+      nodeKey: 'SUB_NETWORK_DIAGNOSIS',
+      subProcessTemplateId: 'PRC_BTS_SITE_MAINTENANCE',
+      subProcessVersion: 'V2.3',
+      subProcessWaitComplete: true
+    });
+
+    // 5. Task KAM
+    const taskKam = this.createCompactCardNode('task', 610, 245, 'Quản lý KH VIP liên hệ', {
+      nodeKey: 'TSK_KAM_SUPPORT',
+      department: 'Phòng Kinh doanh & Telesales',
+      team: 'Bộ phận Quản lý Khách hàng Lớn (KAM)',
+      sla: '20 phút'
+    });
+
+    // 6. Notification VIP
+    const notifVip = this.createCompactCardNode('notification', 840, 245, 'Gửi SMS & Email cam kết SLA', {
+      nodeKey: 'NTF_VIP_SLA_COMMIT',
+      notificationChannel: 'SMS, Email',
+      channelNotification: true,
+      channelEmail: true
+    });
+
+    // 7. Join Parallel (Sử dụng merge)
+    const joinNode = this.createCompactCardNode('merge', 1080, 175, 'Hội tụ đồng bộ 2 luồng', {
+      nodeKey: 'JON_PARALLEL_SYNC'
+    });
+
+    // 8. Action CRM
+    const actCrm = this.createCompactCardNode('action', 1280, 175, 'Đóng ticket trên CRM BSS', {
+      nodeKey: 'ACT_CLOSE_TICKET_CRM',
+      integratedSystem: 'VIETTEL_CRM_ENTERPRISE',
+      actionMethod: 'PUT'
+    });
+
+    // 9. Notification Handover
+    const notifReport = this.createCompactCardNode('notification', 1500, 175, 'Email biên bản nghiệm thu', {
+      nodeKey: 'NTF_HANDOVER_REPORT',
+      notificationChannel: 'Email',
+      channelEmail: true
+    });
+
+    // 10. End
+    const end = this.createCompactCardNode('end', 1730, 195, 'Hoàn tất sự cố VIP', {
+      nodeKey: 'END_VIP_INCIDENT'
+    });
+
+    // Edges
+    this.graph.addEdge({ source: { cell: trigger, port: 'out' }, target: { cell: taskTriage, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: taskTriage, port: 'out' }, target: { cell: split, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: split, port: 'br-tech' }, target: { cell: subProcess, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: split, port: 'br-kam' }, target: { cell: taskKam, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: taskKam, port: 'out' }, target: { cell: notifVip, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: subProcess, port: 'out' }, target: { cell: joinNode, port: 'in-merge-0' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: notifVip, port: 'out' }, target: { cell: joinNode, port: 'in-merge-1' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: joinNode, port: 'out' }, target: { cell: actCrm, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: actCrm, port: 'out' }, target: { cell: notifReport, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+    this.graph.addEdge({ source: { cell: notifReport, port: 'out' }, target: { cell: end, port: 'in' }, attrs: { line: { stroke: '#94a3b8', strokeWidth: 1.5, targetMarker: { name: 'block', width: 6, height: 6, fill: '#94a3b8' } } } });
+
+    this.clearSelection();
+    this.graph.centerContent();
+    this.updateCounts();
+    this.pushHistorySnapshot();
+    this.selectedCellInfo = '✨ Đã tải [Mẫu 3: Luồng phức tạp Song song/VIP]!';
+  }
+
+  public loadSampleFlow(type: 'basic' | 'medium' | 'complex' | 'default'): void {
+    if (type === 'basic') this.loadSampleBasicFlow();
+    else if (type === 'medium') this.loadSampleConditionApiFlow();
+    else if (type === 'complex') this.loadSampleComplexEnterpriseFlow();
+    else this.createCompactWorkflowSample();
   }
 
   // ============================================================================
@@ -1756,9 +2279,19 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const graphData = this.graph.toJSON();
     this.templateService.saveGraphData(this.currentTemplate.code, graphData);
-    this.selectedCellInfo = `💾 Đã lưu quy trình [${this.currentTemplate.code}]!`;
-    alert(`Đã lưu thành công quy trình [${this.currentTemplate.code}: ${this.currentTemplate.name}]!`);
+    this.selectedCellInfo = `💾 Đã xuất bản quy trình [${this.currentTemplate.code}]!`;
+    alert(`Đã lưu và xuất bản thành công quy trình [${this.currentTemplate.code}: ${this.currentTemplate.name}]!`);
   }
+
+  public saveDraft(): void {
+    if (!this.graph) return;
+    const graphData = this.graph.toJSON();
+    this.templateService.saveGraphData(this.currentTemplate.code, graphData);
+    this.selectedCellInfo = `💾 Đã lưu nháp quy trình [${this.currentTemplate.code}]!`;
+    alert(`Đã lưu nháp thành công quy trình [${this.currentTemplate.name}]!`);
+  }
+
+
 
   public loadGraphData(customJson?: any): void {
     if (!this.graph) return;
@@ -1812,22 +2345,196 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Tạo toàn bộ file Map quy trình chuẩn Backend Specification (cả Metadata, ExecutionGraph, và GraphData)
+   */
+  public generateFullBackendPayload(): any {
+    if (!this.graph) return { message: 'Graph chưa được khởi tạo' };
+
+    const rawGraphJson = this.graph.toJSON();
+    const nodes = this.graph.getNodes() || [];
+    const edges = this.graph.getEdges() || [];
+
+    // 1. Metadata template
+    const now = new Date();
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    const templateMeta = {
+      code: this.currentTemplate?.code || 'PRC_CUSTOM_FLOW',
+      name: this.currentTemplate?.name || 'Quy trình xử lý nghiệp vụ',
+      category: this.currentTemplate?.category || 'Xử lý khiếu nại',
+      version: this.currentTemplate?.version || 'V1.0',
+      owner_org_id: this.currentTemplate?.owner_org_id || 'ORG_CSKH_MB',
+      owner_org_name: this.currentTemplate?.owner_org_name || 'TT CSKH Miền Bắc',
+      sla: this.currentTemplate?.sla || '2h SLA',
+      slaStatus: this.currentTemplate?.slaStatus || 'normal',
+      status: this.currentTemplate?.status || 'Draft',
+      description: this.currentTemplate?.description || '',
+      published_at: this.currentTemplate?.published_at || formattedDate,
+      updatedAt: formattedDate
+    };
+
+    // 2. Nodes map for execution graph
+    const entryNodes: string[] = [];
+    const exitNodes: string[] = [];
+    const executionNodes: any[] = [];
+
+    nodes.forEach((node: any) => {
+      const data = node.getData() || {};
+      const type = data.type || 'task';
+      const nodeKey = data.nodeKey || this.generateNodeKey(type, data.label);
+      const label = data.label || node.attr('nameText/text') || node.attr('label/text') || type;
+
+      if (type === 'trigger') {
+        entryNodes.push(nodeKey);
+      } else if (type === 'end') {
+        exitNodes.push(nodeKey);
+      }
+
+      // Trích xuất cấu hình chi tiết của từng bước (Clean config for BE)
+      const config: any = {
+        description: data.description || ''
+      };
+
+      if (type === 'trigger') {
+        config.triggerType = data.triggerType || 'Webhook';
+        config.triggerEvent = data.triggerEvent || 'Event Received';
+        config.triggerFormSchedule = data.triggerFormSchedule || 'Tức thời (Real-time)';
+        config.sla = data.sla || '5 phút';
+      } else if (type === 'task') {
+        config.department = data.department || '';
+        config.team = data.team || '';
+        config.agent = data.agent || '';
+        config.assignee = data.assignee || 'Điện thoại viên (FO/BO)';
+        config.sla = data.sla || '30 phút';
+        config.slaWarning = !!data.slaWarning;
+        config.isApprovalStep = !!data.isApprovalStep;
+        config.formTemplate = data.formTemplate || '';
+        config.formOutput = data.formOutput || '';
+      } else if (type === 'condition' || type === 'split') {
+        config.gatewayType = data.gatewayType || (type === 'split' ? 'parallel' : 'exclusive');
+        config.conditionVariable = data.conditionVariable || '';
+        config.logicOperator = data.logicOperator || 'AND';
+        config.branches = data.branches || [];
+        config.defaultFlowOutput = data.defaultFlowOutput || '';
+        config.errorFlowOutput = data.errorFlowOutput || '';
+      } else if (type === 'action') {
+        config.actionSource = data.actionSource || 'custom';
+        config.integratedSystem = data.integratedSystem || '';
+        config.selectedApi = data.selectedApi || '';
+        config.actionMethod = data.actionMethod || 'POST';
+        config.actionEndpoint = data.actionEndpoint || '';
+        config.timeoutSeconds = data.timeoutSeconds || 5;
+        config.retryCount = data.retryCount || 3;
+        config.retryInterval = data.retryInterval || '2s';
+        config.circuitBreakerTimeoutMs = data.circuitBreakerTimeoutMs || 5000;
+        config.requestBodyMapping = data.requestBodyMapping || '';
+        config.responseMapping = data.responseMapping || '';
+        config.apiOutput = data.apiOutput || '';
+      } else if (type === 'notification') {
+        config.notificationChannel = data.notificationChannel || 'SMS';
+        config.channelNotification = !!data.channelNotification;
+        config.channelEmail = !!data.channelEmail;
+        config.notificationRecipient = data.notificationRecipient || '';
+        config.notificationTitle = data.notificationTitle || '';
+        config.notificationContent = data.notificationContent || '';
+      } else if (type === 'sub_process') {
+        config.subProcessTemplateId = data.subProcessTemplateId || '';
+        config.subProcessVersion = data.subProcessVersion || 'LATEST';
+        config.subProcessWaitComplete = data.subProcessWaitComplete !== false;
+        config.subProcessInputMapping = data.subProcessInputMapping || '';
+      } else if (type === 'end') {
+        config.endFormTemplate = data.endFormTemplate || '';
+      }
+
+      executionNodes.push({
+        id: node.id,
+        nodeKey,
+        type,
+        gatewayType: data.gatewayType,
+        label,
+        category: (type === 'condition' || type === 'split' || type === 'merge') ? 'condition' : 'general',
+        config
+      });
+    });
+
+    // 3. Transitions map for execution graph
+    const executionTransitions: any[] = [];
+    edges.forEach((edge: any, index: number) => {
+      const sourceCell = edge.getSourceCell();
+      const targetCell = edge.getTargetCell();
+      const sourcePort = edge.getSourcePortId?.() || edge.getSource()?.port;
+      const targetPort = edge.getTargetPortId?.() || edge.getTarget()?.port;
+
+      const sourceData = sourceCell?.getData() || {};
+      const targetData = targetCell?.getData() || {};
+
+      const fromNodeKey = sourceData.nodeKey || sourceCell?.id || 'UNKNOWN';
+      const toNodeKey = targetData.nodeKey || targetCell?.id || 'UNKNOWN';
+
+      let transType = 'sequence';
+      let branchId: string | undefined = undefined;
+      let conditionExpression: string | undefined = undefined;
+
+      if (sourceData.type === 'condition') {
+        transType = 'condition_branch';
+        branchId = sourcePort;
+        const matchedBranch = (sourceData.branches || []).find((b: any) => b.id === sourcePort || (b.isDefault && sourcePort === 'br-default'));
+        if (matchedBranch) {
+          conditionExpression = matchedBranch.expression || matchedBranch.value;
+        }
+      } else if (sourceData.type === 'split') {
+        transType = 'parallel_branch';
+        branchId = sourcePort;
+      } else if (targetData.type === 'merge') {
+        transType = 'parallel_join';
+      } else if (sourcePort === 'out-fail' || sourcePort === 'error') {
+        transType = 'error_flow';
+      }
+
+      executionTransitions.push({
+        id: edge.id || `trans_${index + 1}`,
+        fromNode: fromNodeKey,
+        toNode: toNodeKey,
+        fromPort: sourcePort,
+        toPort: targetPort,
+        type: transType,
+        branchId,
+        conditionExpression
+      });
+    });
+
+    return {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "_comment": "IPCC 2.0 VIETTEL CUSTOMER SERVICE - FULL WORKFLOW BACKEND PAYLOAD",
+      "template": templateMeta,
+      "executionGraph": {
+        "engineVersion": "BPMN_2.0_JSON",
+        "totalNodes": executionNodes.length,
+        "totalTransitions": executionTransitions.length,
+        "entryNodeId": entryNodes[0] || '',
+        "entryNodeIds": entryNodes,
+        "exitNodeIds": exitNodes,
+        "nodes": executionNodes,
+        "transitions": executionTransitions
+      },
+      "graphData": rawGraphJson
+    };
+  }
+
   public openJsonPreviewModal(payload?: any): void {
     try {
-      if (this.graph) {
-        this.lastSavedJson = JSON.stringify(this.graph.toJSON(), null, 2);
-      } else {
-        this.lastSavedJson = JSON.stringify({ message: 'Graph chưa được khởi tạo' }, null, 2);
-      }
+      const fullMap = payload || this.generateFullBackendPayload();
+      this.lastSavedJson = JSON.stringify(fullMap, null, 2);
     } catch (err: any) {
       this.lastSavedJson = JSON.stringify({ error: err?.message || 'Không thể serialize graph' }, null, 2);
     }
 
     this.modalService.create({
-      nzTitle: '🐞 Debug: Graph JSON Payload (AntV X6)',
+      nzTitle: '🐞 Debug: Toàn bộ File Map Quy trình (Backend Payload Specification)',
       nzContent: JsonPreviewModalComponent,
-      nzComponentParams: { jsonPayload: payload || this.lastSavedJson },
-      nzWidth: 720,
+      nzComponentParams: { jsonPayload: this.lastSavedJson },
+      nzWidth: 840,
       nzFooter: null
     });
   }
@@ -1836,9 +2543,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openJsonPreviewModal(payload);
   }
 
-  public toggleMinimap(): void {
-    this.showMinimap = !this.showMinimap;
-  }
+
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {

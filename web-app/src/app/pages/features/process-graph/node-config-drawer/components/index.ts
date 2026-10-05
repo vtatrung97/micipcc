@@ -5,3 +5,5 @@ export * from './trigger-node-config/trigger-node-config.component';
 export * from './split-node-config/split-node-config.component';
 export * from './merge-node-config/merge-node-config.component';
 export * from './end-node-config/end-node-config.component';
+export * from './notification-node-config/notification-node-config.component';
+export * from './sub-process-node-config/sub-process-node-config.component';
