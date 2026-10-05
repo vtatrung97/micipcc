@@ -1,0 +1,6 @@
+# Angular CLI build cache
+/.angular/cache
+
+# Build output & dependencies
+/dist
+/node_modules

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { NodePropertyModel, ActionLibraryItem } from '../graph-editor.component';
+import { NodePropertyModel, ActionLibraryItem } from '../models/node-property.model';
 
 export interface NodeUpdateEvent {
   nodeId: string;

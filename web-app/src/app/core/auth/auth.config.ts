@@ -12,12 +12,19 @@ export function buildAuthConfig(): AuthConfig {
 
   // Chuẩn hóa endpoint nếu cấu hình có kèm /realms/... hoặc /<realm>
   if (endpoint.endsWith(`/realms/${realm}`)) {
-    endpoint = endpoint.substring(0, endpoint.length - `/realms/${realm}`.length).replace(/\/+$/, '');
+    endpoint = endpoint
+      .substring(0, endpoint.length - `/realms/${realm}`.length)
+      .replace(/\/+$/, '');
   } else if (endpoint.endsWith(`/${realm}`)) {
-    endpoint = endpoint.substring(0, endpoint.length - `/${realm}`.length).replace(/\/+$/, '');
+    endpoint = endpoint
+      .substring(0, endpoint.length - `/${realm}`.length)
+      .replace(/\/+$/, '');
   }
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200';
+  const origin =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : 'http://localhost:4200';
 
   return {
     // URL phát hành Token của Keycloak Realm
@@ -41,12 +48,13 @@ export function buildAuthConfig(): AuthConfig {
     // Cấu hình HTTPS và Debug
     showDebugInformation: true,
     requireHttps: KEYCLOAK?.requireHttps ?? false,
-    strictDiscoveryDocumentValidation: KEYCLOAK?.strictDiscoveryDocumentValidation ?? false,
+    strictDiscoveryDocumentValidation:
+      KEYCLOAK?.strictDiscoveryDocumentValidation ?? false,
 
     // Bỏ qua kiểm tra khớp Issuer nếu sử dụng Reverse Proxy / Gateway
     skipIssuerCheck: true,
 
     // Xóa hash trên URL sau khi nhận code / token
-    clearHashAfterLogin: true
+    clearHashAfterLogin: true,
   };
 }

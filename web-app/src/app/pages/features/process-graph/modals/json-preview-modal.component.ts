@@ -1,22 +1,73 @@
-import { Component, Input, Optional } from '@angular/core';
+import { Component, Input, OnInit, Optional } from '@angular/core';
 import { NzModalRef } from 'ng-zorro-antd/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-json-preview-modal',
   templateUrl: './json-preview-modal.component.html',
   styleUrls: ['./json-preview-modal.component.scss']
 })
-export class JsonPreviewModalComponent {
+export class JsonPreviewModalComponent implements OnInit {
   @Input() jsonPayload: string | null = '';
 
-  constructor(@Optional() private modalRef: NzModalRef) {}
+  public activeView: 'full' | 'execution' | 'graph' = 'full';
+  public parsedData: any = null;
+
+  constructor(
+    @Optional() private modalRef: NzModalRef,
+    private translate: TranslateService,
+  ) {}
+
+  ngOnInit(): void {
+    try {
+      if (this.jsonPayload) {
+        this.parsedData = typeof this.jsonPayload === 'string' ? JSON.parse(this.jsonPayload) : this.jsonPayload;
+      }
+    } catch {
+      this.parsedData = null;
+    }
+  }
+
+  get currentDisplayJson(): string {
+    if (!this.parsedData) {
+      return typeof this.jsonPayload === 'string' ? this.jsonPayload : JSON.stringify(this.jsonPayload, null, 2);
+    }
+
+    if (this.activeView === 'execution') {
+      return JSON.stringify(this.parsedData.executionGraph || this.parsedData, null, 2);
+    } else if (this.activeView === 'graph') {
+      return JSON.stringify(this.parsedData.graphData || this.parsedData, null, 2);
+    }
+    return JSON.stringify(this.parsedData, null, 2);
+  }
+
+  setView(view: 'full' | 'execution' | 'graph'): void {
+    this.activeView = view;
+  }
 
   copyJson(): void {
-    if (this.jsonPayload) {
-      navigator.clipboard.writeText(this.jsonPayload).then(() => {
-        alert('Đã sao chép Graph JSON Payload vào Clipboard!');
+    const textToCopy = this.currentDisplayJson;
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        alert(this.translate.instant('PROCESS_GRAPH.MESSAGES.JSON_COPIED'));
       });
     }
+  }
+
+  downloadJson(): void {
+    const textToDownload = this.currentDisplayJson;
+    if (!textToDownload) return;
+
+    const templateCode = this.parsedData?.template?.code || 'WORKFLOW_MAP';
+    const filename = `${templateCode}_${this.activeView}_${Date.now()}.json`;
+
+    const blob = new Blob([textToDownload], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   closeModal(): void {

@@ -1,14 +1,41 @@
 <div class="json-preview-container">
-  <div class="json-preview-body">
-    <pre class="json-code-box"><code>{{ jsonPayload }}</code></pre>
+  <!-- Thanh công cụ chuyển đổi chế độ xem & Thống kê -->
+  <div class="json-preview-toolbar">
+    <div class="view-switch-tabs">
+      <button type="button" class="view-tab-btn" [class.active]="activeView === 'full'" (click)="setView('full')">
+        {{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.VIEW_FULL' | translate }}
+      </button>
+      <button type="button" class="view-tab-btn" [class.active]="activeView === 'execution'" (click)="setView('execution')">
+        {{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.VIEW_EXECUTION' | translate }}
+      </button>
+      <button type="button" class="view-tab-btn" [class.active]="activeView === 'graph'" (click)="setView('graph')">
+        {{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.VIEW_GRAPH' | translate }}
+      </button>
+    </div>
+
+    <div class="toolbar-stats" *ngIf="parsedData?.executionGraph">
+      <span class="stat-badge">{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.NODES' | translate: { count: parsedData.executionGraph.totalNodes || 0 } }}</span>
+      <span class="stat-badge">{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.TRANSITIONS' | translate: { count: parsedData.executionGraph.totalTransitions || 0 } }}</span>
+    </div>
   </div>
+
+  <!-- Vùng hiển thị JSON Code -->
+  <div class="json-preview-body">
+    <pre class="json-code-box"><code>{{ currentDisplayJson }}</code></pre>
+  </div>
+
+  <!-- Nút tương tác chân modal: Tải về, Sao chép, Đóng -->
   <div class="json-preview-footer">
-    <button nz-button nzType="default" (click)="copyJson()">
-      <ant-icon name="copy" [size]="13" style="margin-right: 5px;"></ant-icon>
-      <span>Sao chép JSON</span>
+    <button nz-button nzType="default" (click)="downloadJson()" [title]="'PROCESS_GRAPH.MODALS.JSON_PREVIEW.DOWNLOAD_TITLE' | translate">
+      <span style="margin-right: 5px;">💾</span>
+      <span>{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.DOWNLOAD' | translate }}</span>
+    </button>
+    <button nz-button nzType="default" (click)="copyJson()" [title]="'PROCESS_GRAPH.MODALS.JSON_PREVIEW.COPY_TITLE' | translate">
+      <span style="margin-right: 5px;">📋</span>
+      <span>{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.COPY' | translate }}</span>
     </button>
     <button nz-button nzType="primary" (click)="closeModal()">
-      <span>Đóng</span>
+      <span>{{ 'PROCESS_GRAPH.COMMON.CLOSE' | translate }}</span>
     </button>
   </div>
 </div>

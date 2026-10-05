@@ -1,0 +1,405 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "_comment": "MẪU 3: LUỒNG PHỨC TẠP ENTERPRISE (PARALLEL SPLIT/JOIN, SUBPROCESS, MULTI-CHANNEL, SLA ESCALATION)",
+  "template": {
+    "code": "PRC_VIP_ENTERPRISE_INCIDENT",
+    "name": "Quy trình điều hành xử lý sự cố hạ tầng & Kênh truyền số liệu KHDN VIP",
+    "category": "Cảnh báo chỉ số",
+    "version": "V4.0",
+    "owner_org_id": "ORG_KT_BROADBAND",
+    "owner_org_name": "Phòng Kỹ thuật Broadband",
+    "sla": "2h SLA",
+    "slaStatus": "warning",
+    "status": "Published",
+    "description": "Xử lý sự cố kênh truyền leased-line VIP: Chạy song song luồng kỹ thuật đo kiểm (SubProcess) và luồng CSKH đặc biệt, hội tụ đóng ticket tự động",
+    "published_at": "05/10/2026 16:40",
+    "updatedAt": "05/10/2026 16:40"
+  },
+  "executionGraph": {
+    "engineVersion": "BPMN_2.0_JSON",
+    "totalNodes": 10,
+    "totalTransitions": 11,
+    "entryNodeId": "TRG_NMS_ALARM",
+    "exitNodeIds": ["END_VIP_INCIDENT"],
+    "nodes": [
+      {
+        "id": "node-trg-vip",
+        "nodeKey": "TRG_NMS_ALARM",
+        "type": "trigger",
+        "label": "Cảnh báo NMS Kênh truyền",
+        "category": "general",
+        "config": {
+          "triggerType": "Hệ thống giám sát NMS",
+          "triggerEvent": "Circuit Link Down Alert",
+          "triggerFormSchedule": "Tức thời (Real-time)",
+          "sla": "2 phút",
+          "description": "Nhận event tự động từ NMS Core khi kênh truyền Leased-line VIP bị mất tín hiệu (Optical LOS)"
+        }
+      },
+      {
+        "id": "node-tsk-triage",
+        "nodeKey": "TSK_INCIDENT_TRIAGE",
+        "type": "task",
+        "label": "Điều phối & Phân loại cấp 1",
+        "category": "general",
+        "config": {
+          "department": "Phòng Kỹ thuật Broadband",
+          "team": "Tổ Điều hành mạng NOC",
+          "agent": "Kỹ sư trực NOC",
+          "assignee": "Kỹ sư trực ca NOC",
+          "sla": "15 phút",
+          "timeout": "15 phút",
+          "slaWarning": true,
+          "isApprovalStep": false,
+          "formTemplate": "FORM_NOC_INCIDENT_TRIAGE_V4",
+          "formOutput": "output_incident_context",
+          "description": "Xác nhận mức độ ưu tiên P1/P2, thông tin khách hàng VIP và phân tuyến kỹ thuật"
+        }
+      },
+      {
+        "id": "node-split-parallel",
+        "nodeKey": "SPL_PARALLEL_DISPATCH",
+        "type": "split",
+        "gatewayType": "parallel",
+        "label": "Chạy song song 2 luồng",
+        "category": "condition",
+        "config": {
+          "branches": [
+            {
+              "id": "branch-tech",
+              "name": "Nhánh 1: Xử lý kỹ thuật hạ tầng (BTS/OLT)",
+              "expression": "true",
+              "isDefault": false
+            },
+            {
+              "id": "branch-cskh",
+              "name": "Nhánh 2: Chăm sóc & Trấn an KHDN VIP",
+              "expression": "true",
+              "isDefault": false
+            }
+          ],
+          "description": "Kích hoạt đồng thời 2 tiến trình độc lập không phụ thuộc nhau"
+        }
+      },
+      {
+        "id": "node-sub-tech",
+        "nodeKey": "SUB_NETWORK_DIAGNOSIS",
+        "type": "sub_process",
+        "label": "Quy trình con: Kỹ thuật trạm",
+        "category": "general",
+        "config": {
+          "subProcessTemplateId": "PRC_BTS_SITE_MAINTENANCE",
+          "subProcessVersion": "V2.3",
+          "subProcessWaitComplete": true,
+          "subProcessInputMapping": "{\n  \"circuitId\": \"${flow.variables.circuit_id}\",\n  \"stationCode\": \"${flow.variables.bts_code}\",\n  \"severity\": \"CRITICAL\"\n}",
+          "sla": "1h 30m",
+          "description": "Gọi quy trình con: Điều xe ứng cứu thông tin, đo OTDR quang và hàn nối cáp tại chỗ"
+        }
+      },
+      {
+        "id": "node-tsk-kam",
+        "nodeKey": "TSK_KAM_SUPPORT",
+        "type": "task",
+        "label": "Quản lý KH VIP liên hệ",
+        "category": "general",
+        "config": {
+          "department": "Phòng Kinh doanh & Telesales",
+          "team": "Bộ phận Quản lý Khách hàng Lớn (KAM)",
+          "agent": "Account Manager",
+          "assignee": "Chuyên viên KAM phụ trách",
+          "sla": "20 phút",
+          "slaWarning": true,
+          "isApprovalStep": false,
+          "formTemplate": "FORM_KAM_TOUCHPOINT_LOG",
+          "formOutput": "output_kam_status",
+          "description": "Gọi điện thoại trực tiếp đến Giám đốc IT của doanh nghiệp thông báo và cam kết khắc phục"
+        }
+      },
+      {
+        "id": "node-ntf-vip-sla",
+        "nodeKey": "NTF_VIP_SLA_COMMIT",
+        "type": "notification",
+        "label": "Gửi SMS & Email cam kết SLA",
+        "category": "general",
+        "config": {
+          "notificationChannel": "SMS, Email",
+          "channelNotification": true,
+          "channelEmail": true,
+          "notificationRecipient": "${flow.variables.vip_contact_email}, ${flow.variables.vip_contact_phone}",
+          "notificationTitle": "[VIETTEL ENTERPRISE] Thông báo xử lý sự cố kênh truyền ${flow.variables.circuit_id}",
+          "notificationContent": "Kính gửi Quý Khách hàng VIP ${flow.variables.company_name},\nĐội kỹ thuật Viettel đang xử lý sự cố cáp trên tuyến kênh truyền ${flow.variables.circuit_id}. Cam kết hoàn tất khôi phục trước: ${flow.variables.sla_deadline}.\nHotline khẩn cấp: 18008000.",
+          "description": "Gửi thông báo đa kênh đồng thời SMS và Email theo chuẩn doanh nghiệp"
+        }
+      },
+      {
+        "id": "node-join-parallel",
+        "nodeKey": "JON_PARALLEL_SYNC",
+        "type": "condition",
+        "gatewayType": "parallel",
+        "label": "Hội tụ đồng bộ 2 luồng",
+        "category": "condition",
+        "config": {
+          "description": "Chờ cả 2 nhánh (Kỹ thuật khôi phục & KAM chăm sóc) hoàn tất mới đi tiếp"
+        }
+      },
+      {
+        "id": "node-act-close-crm",
+        "nodeKey": "ACT_CLOSE_TICKET_CRM",
+        "type": "action",
+        "label": "Đóng ticket trên CRM BSS",
+        "category": "general",
+        "config": {
+          "actionSource": "library",
+          "actionLibraryId": "act-crm-ticket-close",
+          "integratedSystem": "VIETTEL_CRM_ENTERPRISE",
+          "selectedApi": "PUT /api/v3/tickets/{id}/complete",
+          "actionMethod": "PUT",
+          "actionEndpoint": "https://crm-enterprise.viettel.vn/api/v3/tickets/${flow.variables.ticket_id}/complete",
+          "timeoutSeconds": 8,
+          "slaSeconds": 8,
+          "retryCount": 3,
+          "retryInterval": "3s",
+          "circuitBreakerTimeoutMs": 8000,
+          "requestBodyMapping": "{\n  \"ticketId\": \"${flow.variables.ticket_id}\",\n  \"resolutionCode\": \"LINK_RESTORED_OK\",\n  \"actualRestoredAt\": \"${flow.variables.restored_time}\",\n  \"otdrLossDb\": ${flow.variables.final_loss_db}\n}",
+          "responseMapping": "flow.variables.crm_sync_status = response.status;\nflow.variables.audit_log_id = response.data.auditLogId;",
+          "description": "Tác vụ hệ thống tự động chốt giờ giải quyết và tính toán chỉ số SLA cam kết trong hợp đồng"
+        }
+      },
+      {
+        "id": "node-ntf-handover",
+        "nodeKey": "NTF_HANDOVER_REPORT",
+        "type": "notification",
+        "label": "Email biên bản nghiệm thu",
+        "category": "general",
+        "config": {
+          "notificationChannel": "Email",
+          "channelNotification": false,
+          "channelEmail": true,
+          "notificationRecipient": "${flow.variables.vip_contact_email}",
+          "notificationTitle": "[VIETTEL] Biên bản điện tử khôi phục kênh truyền ${flow.variables.circuit_id}",
+          "notificationContent": "Kênh truyền đã hoạt động ổn định trở lại lúc ${flow.variables.restored_time}. Chi tiết đo kiểm đính kèm. Trân trọng cảm ơn Quý khách!",
+          "description": "Gửi email kèm biên bản đo kiểm quang điện tử cho đại diện IT của khách hàng"
+        }
+      },
+      {
+        "id": "node-end-vip",
+        "nodeKey": "END_VIP_INCIDENT",
+        "type": "end",
+        "label": "Hoàn tất sự cố VIP",
+        "category": "general",
+        "config": {
+          "endFormTemplate": "FORM_END_VIP_COMPLETED",
+          "description": "Lưu kho lưu trữ dữ liệu giám sát và tính toán chỉ số FCR / MTTR"
+        }
+      }
+    ],
+    "transitions": [
+      {
+        "id": "trans-v-01",
+        "fromNode": "TRG_NMS_ALARM",
+        "toNode": "TSK_INCIDENT_TRIAGE",
+        "type": "sequence"
+      },
+      {
+        "id": "trans-v-02",
+        "fromNode": "TSK_INCIDENT_TRIAGE",
+        "toNode": "SPL_PARALLEL_DISPATCH",
+        "type": "sequence"
+      },
+      {
+        "id": "trans-v-branch-tech",
+        "fromNode": "SPL_PARALLEL_DISPATCH",
+        "toNode": "SUB_NETWORK_DIAGNOSIS",
+        "type": "parallel_branch"
+      },
+      {
+        "id": "trans-v-branch-kam",
+        "fromNode": "SPL_PARALLEL_DISPATCH",
+        "toNode": "TSK_KAM_SUPPORT",
+        "type": "parallel_branch"
+      },
+      {
+        "id": "trans-v-kam-to-ntf",
+        "fromNode": "TSK_KAM_SUPPORT",
+        "toNode": "NTF_VIP_SLA_COMMIT",
+        "type": "sequence"
+      },
+      {
+        "id": "trans-v-tech-to-join",
+        "fromNode": "SUB_NETWORK_DIAGNOSIS",
+        "toNode": "JON_PARALLEL_SYNC",
+        "type": "parallel_join"
+      },
+      {
+        "id": "trans-v-cskh-to-join",
+        "fromNode": "NTF_VIP_SLA_COMMIT",
+        "toNode": "JON_PARALLEL_SYNC",
+        "type": "parallel_join"
+      },
+      {
+        "id": "trans-v-join-to-act",
+        "fromNode": "JON_PARALLEL_SYNC",
+        "toNode": "ACT_CLOSE_TICKET_CRM",
+        "type": "sequence"
+      },
+      {
+        "id": "trans-v-act-to-ntf",
+        "fromNode": "ACT_CLOSE_TICKET_CRM",
+        "toNode": "NTF_HANDOVER_REPORT",
+        "type": "sequence"
+      },
+      {
+        "id": "trans-v-ntf-to-end",
+        "fromNode": "NTF_HANDOVER_REPORT",
+        "toNode": "END_VIP_INCIDENT",
+        "type": "sequence"
+      }
+    ]
+  },
+  "graphData": {
+    "cells": [
+      {
+        "position": { "x": 60, "y": 240 },
+        "size": { "width": 48, "height": 48 },
+        "shape": "circle",
+        "id": "node-trg-vip",
+        "data": {
+          "id": "node-trg-vip",
+          "nodeKey": "TRG_NMS_ALARM",
+          "type": "trigger",
+          "typeTitle": "Bắt đầu",
+          "label": "Cảnh báo NMS Kênh truyền"
+        }
+      },
+      {
+        "position": { "x": 160, "y": 224 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-tsk-triage",
+        "data": {
+          "id": "node-tsk-triage",
+          "nodeKey": "TSK_INCIDENT_TRIAGE",
+          "type": "task",
+          "typeTitle": "Giao việc",
+          "label": "Điều phối & Phân loại cấp 1"
+        }
+      },
+      {
+        "position": { "x": 380, "y": 224 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-split-parallel",
+        "data": {
+          "id": "node-split-parallel",
+          "nodeKey": "SPL_PARALLEL_DISPATCH",
+          "type": "split",
+          "gatewayType": "parallel",
+          "typeTitle": "Chạy song song",
+          "label": "Chạy song song 2 luồng"
+        }
+      },
+      {
+        "position": { "x": 600, "y": 130 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-sub-tech",
+        "data": {
+          "id": "node-sub-tech",
+          "nodeKey": "SUB_NETWORK_DIAGNOSIS",
+          "type": "sub_process",
+          "typeTitle": "Quy trình con",
+          "label": "Quy trình con: Kỹ thuật trạm"
+        }
+      },
+      {
+        "position": { "x": 600, "y": 320 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-tsk-kam",
+        "data": {
+          "id": "node-tsk-kam",
+          "nodeKey": "TSK_KAM_SUPPORT",
+          "type": "task",
+          "typeTitle": "Giao việc",
+          "label": "Quản lý KH VIP liên hệ"
+        }
+      },
+      {
+        "position": { "x": 820, "y": 320 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-ntf-vip-sla",
+        "data": {
+          "id": "node-ntf-vip-sla",
+          "nodeKey": "NTF_VIP_SLA_COMMIT",
+          "type": "notification",
+          "typeTitle": "Gửi thông báo",
+          "label": "Gửi SMS & Email cam kết SLA"
+        }
+      },
+      {
+        "position": { "x": 1040, "y": 224 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-join-parallel",
+        "data": {
+          "id": "node-join-parallel",
+          "nodeKey": "JON_PARALLEL_SYNC",
+          "type": "condition",
+          "gatewayType": "parallel",
+          "typeTitle": "Chạy song song",
+          "label": "Hội tụ đồng bộ 2 luồng"
+        }
+      },
+      {
+        "position": { "x": 1260, "y": 224 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-act-close-crm",
+        "data": {
+          "id": "node-act-close-crm",
+          "nodeKey": "ACT_CLOSE_TICKET_CRM",
+          "type": "action",
+          "typeTitle": "Tác vụ hệ thống",
+          "label": "Đóng ticket trên CRM BSS"
+        }
+      },
+      {
+        "position": { "x": 1480, "y": 224 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-ntf-handover",
+        "data": {
+          "id": "node-ntf-handover",
+          "nodeKey": "NTF_HANDOVER_REPORT",
+          "type": "notification",
+          "typeTitle": "Gửi thông báo",
+          "label": "Email biên bản nghiệm thu"
+        }
+      },
+      {
+        "position": { "x": 1700, "y": 240 },
+        "size": { "width": 48, "height": 48 },
+        "shape": "circle",
+        "id": "node-end-vip",
+        "data": {
+          "id": "node-end-vip",
+          "nodeKey": "END_VIP_INCIDENT",
+          "type": "end",
+          "typeTitle": "Kết thúc",
+          "label": "Hoàn tất sự cố VIP"
+        }
+      },
+      { "shape": "edge", "id": "trans-v-01", "source": "node-trg-vip", "target": "node-tsk-triage" },
+      { "shape": "edge", "id": "trans-v-02", "source": "node-tsk-triage", "target": "node-split-parallel" },
+      { "shape": "edge", "id": "trans-v-branch-tech", "source": "node-split-parallel", "target": "node-sub-tech" },
+      { "shape": "edge", "id": "trans-v-branch-kam", "source": "node-split-parallel", "target": "node-tsk-kam" },
+      { "shape": "edge", "id": "trans-v-kam-to-ntf", "source": "node-tsk-kam", "target": "node-ntf-vip-sla" },
+      { "shape": "edge", "id": "trans-v-tech-to-join", "source": "node-sub-tech", "target": "node-join-parallel" },
+      { "shape": "edge", "id": "trans-v-cskh-to-join", "source": "node-ntf-vip-sla", "target": "node-join-parallel" },
+      { "shape": "edge", "id": "trans-v-join-to-act", "source": "node-join-parallel", "target": "node-act-close-crm" },
+      { "shape": "edge", "id": "trans-v-act-to-ntf", "source": "node-act-close-crm", "target": "node-ntf-handover" },
+      { "shape": "edge", "id": "trans-v-ntf-to-end", "source": "node-ntf-handover", "target": "node-end-vip" }
+    ]
+  }
+}

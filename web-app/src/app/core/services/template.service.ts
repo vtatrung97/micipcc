@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
 import { ApiService } from '@core/http/api.service';
+import { DEFAULT_PRESET_TEMPLATES } from './preset-templates.constant';
 
 /**
  * ============================================================================
@@ -90,7 +91,10 @@ export class TemplateService {
         if (res && Array.isArray((res as any).templates)) {
           return (res as any).templates;
         }
-        return [];
+        return this.templatesSubject.value.length > 0 ? this.templatesSubject.value : [...DEFAULT_PRESET_TEMPLATES];
+      }),
+      catchError(() => {
+        return of(this.templatesSubject.value.length > 0 ? this.templatesSubject.value : [...DEFAULT_PRESET_TEMPLATES]);
       }),
       tap(templates => {
         this.templatesSubject.next(templates);
@@ -110,7 +114,7 @@ export class TemplateService {
         }
       }
     } catch {}
-    this.templatesSubject.next([]);
+    this.templatesSubject.next([...DEFAULT_PRESET_TEMPLATES]);
 
     try {
       const expRaw = localStorage.getItem(this.EXPERIMENT_KEY);

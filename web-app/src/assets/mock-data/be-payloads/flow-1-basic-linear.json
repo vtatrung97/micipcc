@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "_comment": "MẪU 1: LUỒNG CƠ BẢN (LINEAR BASIC FLOW) - Tiếp nhận & Phản hồi Ý kiến CSAT",
+  "template": {
+    "code": "PRC_BASIC_CSAT_FEEDBACK",
+    "name": "Quy trình tiếp nhận và ghi nhận ý kiến đóng góp khách hàng (CSAT)",
+    "category": "Khảo sát CSAT",
+    "version": "V1.0",
+    "owner_org_id": "ORG_CSKH_MB",
+    "owner_org_name": "TT CSKH Miền Bắc",
+    "sla": "1h SLA",
+    "slaStatus": "normal",
+    "status": "Published",
+    "description": "Tiếp nhận ý kiến phản hồi từ cổng thông tin, tổng đài viên ghi nhận và tự động gửi SMS cảm ơn",
+    "published_at": "05/10/2026 16:30",
+    "updatedAt": "05/10/2026 16:30"
+  },
+  "executionGraph": {
+    "engineVersion": "BPMN_2.0_JSON",
+    "totalNodes": 4,
+    "totalTransitions": 3,
+    "entryNodeId": "TRG_CSAT_01",
+    "exitNodeIds": ["END_CSAT_01"],
+    "nodes": [
+      {
+        "id": "node-trg-01",
+        "nodeKey": "TRG_CSAT_01",
+        "type": "trigger",
+        "label": "Bắt đầu tiếp nhận",
+        "category": "general",
+        "config": {
+          "triggerType": "Webhook",
+          "triggerEvent": "Portal CSAT Feedback Submitted",
+          "triggerFormSchedule": "Tức thời (Real-time)",
+          "sla": "5 phút",
+          "description": "Nhận payload JSON từ Web portal hoặc My Viettel app"
+        }
+      },
+      {
+        "id": "node-tsk-01",
+        "nodeKey": "TSK_CSAT_REVIEW",
+        "type": "task",
+        "label": "Giao việc phân loại",
+        "category": "general",
+        "config": {
+          "department": "TT CSKH Miền Bắc",
+          "team": "Nhóm Chăm sóc khách hàng",
+          "agent": "Điện thoại viên (FO/BO)",
+          "assignee": "Điện thoại viên (FO/BO)",
+          "sla": "30 phút",
+          "timeout": "30 phút",
+          "slaWarning": true,
+          "isApprovalStep": false,
+          "formTemplate": "FORM_CSAT_FEEDBACK_V1",
+          "formOutput": "output_csat_classification",
+          "description": "Kiểm tra nội dung góp ý, gắn tag phân loại chủ đề (Cước/Dịch vụ/Thái độ phục vụ)"
+        }
+      },
+      {
+        "id": "node-ntf-01",
+        "nodeKey": "NTF_CSAT_THANKYOU",
+        "type": "notification",
+        "label": "Gửi SMS cảm ơn",
+        "category": "general",
+        "config": {
+          "notificationChannel": "SMS",
+          "channelNotification": true,
+          "channelEmail": false,
+          "notificationRecipient": "${flow.variables.customer_phone}",
+          "notificationTitle": "Viettel CSKH - Cảm ơn quý khách",
+          "notificationContent": "Viettel chân thành cảm ơn ý kiến đóng góp của Quý khách (Mã tiếp nhận: ${flow.variables.ticket_id}). Chúc Quý khách một ngày tốt lành!",
+          "description": "Gửi tin nhắn Brandname VIETTEL đến số thuê bao phản ánh"
+        }
+      },
+      {
+        "id": "node-end-01",
+        "nodeKey": "END_CSAT_01",
+        "type": "end",
+        "label": "Kết thúc",
+        "category": "general",
+        "config": {
+          "endFormTemplate": "FORM_END_LOG_DEFAULT",
+          "description": "Đóng luồng và lưu vết lịch sử instance"
+        }
+      }
+    ],
+    "transitions": [
+      {
+        "id": "trans-01",
+        "fromNode": "TRG_CSAT_01",
+        "toNode": "TSK_CSAT_REVIEW",
+        "fromPort": "right",
+        "toPort": "left",
+        "type": "sequence"
+      },
+      {
+        "id": "trans-02",
+        "fromNode": "TSK_CSAT_REVIEW",
+        "toNode": "NTF_CSAT_THANKYOU",
+        "fromPort": "right",
+        "toPort": "left",
+        "type": "sequence"
+      },
+      {
+        "id": "trans-03",
+        "fromNode": "NTF_CSAT_THANKYOU",
+        "toNode": "END_CSAT_01",
+        "fromPort": "right",
+        "toPort": "left",
+        "type": "sequence"
+      }
+    ]
+  },
+  "graphData": {
+    "cells": [
+      {
+        "position": { "x": 100, "y": 200 },
+        "size": { "width": 48, "height": 48 },
+        "shape": "circle",
+        "id": "node-trg-01",
+        "data": {
+          "id": "node-trg-01",
+          "nodeKey": "TRG_CSAT_01",
+          "type": "trigger",
+          "typeTitle": "Bắt đầu",
+          "label": "Bắt đầu tiếp nhận",
+          "triggerType": "Webhook",
+          "triggerEvent": "Portal CSAT Feedback Submitted",
+          "triggerFormSchedule": "Tức thời (Real-time)"
+        },
+        "ports": {
+          "items": [
+            { "id": "p-trg-out", "group": "right" }
+          ]
+        }
+      },
+      {
+        "position": { "x": 220, "y": 184 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-tsk-01",
+        "data": {
+          "id": "node-tsk-01",
+          "nodeKey": "TSK_CSAT_REVIEW",
+          "type": "task",
+          "typeTitle": "Giao việc",
+          "label": "Giao việc phân loại",
+          "department": "TT CSKH Miền Bắc",
+          "team": "Nhóm Chăm sóc khách hàng",
+          "agent": "Điện thoại viên (FO/BO)",
+          "assignee": "Điện thoại viên (FO/BO)",
+          "sla": "30 phút",
+          "formTemplate": "FORM_CSAT_FEEDBACK_V1",
+          "formOutput": "output_csat_classification"
+        },
+        "ports": {
+          "items": [
+            { "id": "p-tsk-in", "group": "left" },
+            { "id": "p-tsk-out", "group": "right" }
+          ]
+        }
+      },
+      {
+        "position": { "x": 460, "y": 184 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-ntf-01",
+        "data": {
+          "id": "node-ntf-01",
+          "nodeKey": "NTF_CSAT_THANKYOU",
+          "type": "notification",
+          "typeTitle": "Gửi thông báo",
+          "label": "Gửi SMS cảm ơn",
+          "notificationChannel": "SMS",
+          "notificationRecipient": "${flow.variables.customer_phone}"
+        },
+        "ports": {
+          "items": [
+            { "id": "p-ntf-in", "group": "left" },
+            { "id": "p-ntf-out", "group": "right" }
+          ]
+        }
+      },
+      {
+        "position": { "x": 700, "y": 200 },
+        "size": { "width": 48, "height": 48 },
+        "shape": "circle",
+        "id": "node-end-01",
+        "data": {
+          "id": "node-end-01",
+          "nodeKey": "END_CSAT_01",
+          "type": "end",
+          "typeTitle": "Kết thúc",
+          "label": "Kết thúc"
+        },
+        "ports": {
+          "items": [
+            { "id": "p-end-in", "group": "left" }
+          ]
+        }
+      },
+      {
+        "shape": "edge",
+        "id": "trans-01",
+        "source": { "cell": "node-trg-01", "port": "p-trg-out" },
+        "target": { "cell": "node-tsk-01", "port": "p-tsk-in" }
+      },
+      {
+        "shape": "edge",
+        "id": "trans-02",
+        "source": { "cell": "node-tsk-01", "port": "p-tsk-out" },
+        "target": { "cell": "node-ntf-01", "port": "p-ntf-in" }
+      },
+      {
+        "shape": "edge",
+        "id": "trans-03",
+        "source": { "cell": "node-ntf-01", "port": "p-ntf-out" },
+        "target": { "cell": "node-end-01", "port": "p-end-in" }
+      }
+    ]
+  }
+}
