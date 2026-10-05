@@ -1,12 +1,15 @@
 package com.lifesup.ticketflow.auth.util;
 
 import com.lifesup.ticketflow.auth.filter.ApiKeyAuthenticationFilter.ApiKeyAuthenticationToken;
+import org.keycloak.AuthorizationContext;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -72,14 +75,38 @@ public final class SecurityContextUtils {
         if (!isJwtAuthenticationToken() || !StringUtils.hasText(resourceName)) {
             return false;
         }
+        AuthorizationContext authzContext = getAuthorizationContext();
+        if (authzContext != null && authzContext.hasPermission(resourceName, StringUtils.hasText(scope) ? scope : null)) {
+            return true;
+        }
         return permissions().stream().anyMatch(permission -> resourceMatches(permission, resourceName)
                 && (!StringUtils.hasText(scope) || scopes(permission).contains(scope)));
     }
 
     public static boolean checkScopePermission(String scope) {
-        return isJwtAuthenticationToken()
-                && StringUtils.hasText(scope)
-                && permissions().stream().anyMatch(permission -> scopes(permission).contains(scope));
+        if (!isJwtAuthenticationToken() || !StringUtils.hasText(scope)) {
+            return false;
+        }
+        AuthorizationContext authzContext = getAuthorizationContext();
+        if (authzContext != null && authzContext.hasScopePermission(scope)) {
+            return true;
+        }
+        return permissions().stream().anyMatch(permission -> scopes(permission).contains(scope));
+    }
+
+    /**
+     * Keycloak permissions (RPT) granted by PolicyEnforcerFilter for the current request, like
+     * KeycloakSecurityContext#getAuthorizationContext of the legacy adapter. Null outside a request
+     * or on paths the enforcer skipped.
+     */
+    public static AuthorizationContext getAuthorizationContext() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return null;
+        }
+        Object authzContext = attributes.getAttribute(
+                AuthorizationContext.class.getName(), RequestAttributes.SCOPE_REQUEST);
+        return authzContext instanceof AuthorizationContext context ? context : null;
     }
 
     /** Checks the top-level OAuth/OIDC scope claim, not UMA permission scopes. */
