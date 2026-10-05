@@ -1,14 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { 
-  TemplateService, 
-  ProcessTemplateItem, 
-  TemplateVersionItem, 
-  TemplateExperimentConfig 
+import {
+  TemplateService,
+  ProcessTemplateItem,
+  TemplateVersionItem,
+  TemplateExperimentConfig
 } from '@core/services/template.service';
 import { RbacService } from '@core/rbac/services/rbac.service';
 import { UserSession } from '@core/rbac/models/rbac.types';
+import { ScopeService, AuthService, TokenService } from '@core/auth';
+import { KEYCLOAK } from '@environments/environment';
 
 @Component({
   selector: 'app-process-templates-list',
@@ -21,7 +23,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   selectedStatus: string = '';
   selectedCategory: string = '';
   selectedOrg: string = '';
-  
+
   currentUser: UserSession | null = null;
   private sub = new Subscription();
 
@@ -129,10 +131,18 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   constructor(
     private templateService: TemplateService,
     private rbacService: RbacService,
+    private scopeService: ScopeService,
+    private authService: AuthService,
+    private tokenService: TokenService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    // === NẠP UMA AUTHORIZATION PERMISSIONS VÀ KIỂM TRA GET SCOPE ===
+    this.tokenService.initAuthorizationList().finally(() => {
+      this.logScopeDetails();
+    });
+
     this.sub.add(
       this.templateService.templates$.subscribe(list => {
         this.allTemplates = list;
@@ -153,6 +163,48 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
 
     // Gọi API nạp danh sách template từ backend
     this.loadTemplates();
+  }
+
+  /**
+   * Log chi tiết kiểm tra Scopes (Client-level vs Realm-level) từ Access Token
+   */
+  private logScopeDetails(): void {
+    const rawToken = TokenService.getAccessToken();
+    const decoded = TokenService.decodeToken(rawToken);
+    const clientId = KEYCLOAK.clientId || 'agent-web';
+
+    console.group('%c=== [ProcessTemplatesList] KIỂM TRA GET SCOPE: CLIENT vs REALM ===', 'color: #1890ff; font-weight: bold; font-size: 13px;');
+    console.log('%c1. Thông tin cấu hình Keycloak:', 'font-weight: bold; color: #722ed1;', {
+      endpoint: KEYCLOAK.endpoint,
+      realm: KEYCLOAK.realm,
+      clientId: clientId
+    });
+
+    console.log('%c2. Trạng thái Access Token:', 'font-weight: bold; color: #13c2c2;', {
+      hasToken: !!rawToken,
+      tokenPreview: rawToken ? `${rawToken.substring(0, 25)}...` : 'Không tìm thấy Token'
+    });
+
+    console.log('%c3. Payload JWT đã giải mã (Decoded):', 'font-weight: bold; color: #fa8c16;', decoded);
+
+    console.group('%c4. [REALM / TOKEN LEVEL] Scopes & Roles:', 'font-weight: bold; color: #52c41a;');
+    console.log('• OAuth2 standard scope (decoded.scope):', decoded?.scope);
+    console.log('• ScopeService.getScopes():', this.scopeService.getScopes());
+    console.log('• AuthService.getScopes():', this.authService.getScopes());
+    console.log('• Realm Roles (decoded.realm_access.roles):', decoded?.realm_access?.roles);
+    console.groupEnd();
+
+    console.group(`%c5. [CLIENT LEVEL] Scopes & Roles (Client: ${clientId} & Services):`, 'font-weight: bold; color: #eb2f96;');
+    console.log(`• TokenService.getListScopes('${clientId}'):`, TokenService.getListScopes(clientId));
+    console.log(`• TokenService.getListScopes('ticket-flow'):`, TokenService.getListScopes('ticket-flow'));
+    console.log('• UMA User Permissions (this.tokenService._permissions):', this.tokenService._permissions);
+    console.log('• Client Resource Access (decoded.resource_access):', decoded?.resource_access);
+    console.log('• Resource Permissions (Keycloak Authorization):', decoded?.authorization?.permissions);
+    console.log('• ScopeService.getKeycloakPermissions():', this.scopeService.getKeycloakPermissions());
+    console.groupEnd();
+
+    console.log('%c6. Tổng hợp Roles đầy đủ (AuthService.getUserRoles):', 'font-weight: bold; color: #1890ff;', this.authService.getUserRoles());
+    console.groupEnd();
   }
 
   loadTemplates(): void {

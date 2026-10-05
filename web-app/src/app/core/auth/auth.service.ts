@@ -52,8 +52,14 @@ export class AuthService {
       const canConnect = await this.oauthSvc.loadDiscoveryDocumentAndTryLogin();
 
       if (this.oauthSvc.hasValidAccessToken()) {
-        // Bật cơ chế tự động refresh token trong nền khi token sắp hết hạn
-        this.oauthSvc.setupAutomaticSilentRefresh();
+        // Chỉ bật cơ chế refresh token khi có refresh token hợp lệ trong session
+        if (this.oauthSvc.getRefreshToken()) {
+          try {
+            this.oauthSvc.setupAutomaticSilentRefresh();
+          } catch (e) {
+            console.warn('[Keycloak Auth] Bỏ qua silent refresh:', e);
+          }
+        }
         this.updateAuthState();
         console.log('[Keycloak Auth] Đăng nhập thành công với Keycloak. Token hợp lệ.');
         return true;

@@ -6,8 +6,8 @@ import { KEYCLOAK } from '@environments/environment';
  * Tự động nạp giá trị từ window.env (thông qua KEYCLOAK trong environment.ts)
  */
 export function buildAuthConfig(): AuthConfig {
-  let endpoint = (KEYCLOAK?.endpoint || 'http://192.168.10.27:8081').replace(/\/+$/, '');
-  const realm = KEYCLOAK?.realm || 'ticket-flow';
+  let endpoint = (KEYCLOAK?.endpoint).replace(/\/+$/, '');
+  const realm = KEYCLOAK?.realm;
   const clientId = KEYCLOAK?.clientId || 'agent-web';
 
   // Chuẩn hóa endpoint nếu cấu hình có kèm /realms/... hoặc /<realm>
