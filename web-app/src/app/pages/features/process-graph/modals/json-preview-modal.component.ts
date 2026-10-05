@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, Optional } from '@angular/core';
 import { NzModalRef } from 'ng-zorro-antd/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-json-preview-modal',
@@ -12,7 +13,10 @@ export class JsonPreviewModalComponent implements OnInit {
   public activeView: 'full' | 'execution' | 'graph' = 'full';
   public parsedData: any = null;
 
-  constructor(@Optional() private modalRef: NzModalRef) {}
+  constructor(
+    @Optional() private modalRef: NzModalRef,
+    private translate: TranslateService,
+  ) {}
 
   ngOnInit(): void {
     try {
@@ -45,7 +49,7 @@ export class JsonPreviewModalComponent implements OnInit {
     const textToCopy = this.currentDisplayJson;
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy).then(() => {
-        alert('Đã sao chép dữ liệu JSON Map vào Clipboard!');
+        alert(this.translate.instant('PROCESS_GRAPH.MESSAGES.JSON_COPIED'));
       });
     }
   }

@@ -3,19 +3,19 @@
   <div class="json-preview-toolbar">
     <div class="view-switch-tabs">
       <button type="button" class="view-tab-btn" [class.active]="activeView === 'full'" (click)="setView('full')">
-        📁 Toàn bộ file Map (Full Payload)
+        {{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.VIEW_FULL' | translate }}
       </button>
       <button type="button" class="view-tab-btn" [class.active]="activeView === 'execution'" (click)="setView('execution')">
-        ⚡ Đồ thị thực thi (executionGraph)
+        {{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.VIEW_EXECUTION' | translate }}
       </button>
       <button type="button" class="view-tab-btn" [class.active]="activeView === 'graph'" (click)="setView('graph')">
-        🎨 Raw Canvas (graphData)
+        {{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.VIEW_GRAPH' | translate }}
       </button>
     </div>
 
     <div class="toolbar-stats" *ngIf="parsedData?.executionGraph">
-      <span class="stat-badge">🔢 {{ parsedData.executionGraph.totalNodes || 0 }} Nodes</span>
-      <span class="stat-badge">🔗 {{ parsedData.executionGraph.totalTransitions || 0 }} Transitions</span>
+      <span class="stat-badge">{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.NODES' | translate: { count: parsedData.executionGraph.totalNodes || 0 } }}</span>
+      <span class="stat-badge">{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.TRANSITIONS' | translate: { count: parsedData.executionGraph.totalTransitions || 0 } }}</span>
     </div>
   </div>
 
@@ -26,16 +26,16 @@
 
   <!-- Nút tương tác chân modal: Tải về, Sao chép, Đóng -->
   <div class="json-preview-footer">
-    <button nz-button nzType="default" (click)="downloadJson()" title="Tải xuống tệp JSON về máy tính">
+    <button nz-button nzType="default" (click)="downloadJson()" [title]="'PROCESS_GRAPH.MODALS.JSON_PREVIEW.DOWNLOAD_TITLE' | translate">
       <span style="margin-right: 5px;">💾</span>
-      <span>Tải file .json</span>
+      <span>{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.DOWNLOAD' | translate }}</span>
     </button>
-    <button nz-button nzType="default" (click)="copyJson()" title="Sao chép toàn bộ JSON vào bộ nhớ đệm">
+    <button nz-button nzType="default" (click)="copyJson()" [title]="'PROCESS_GRAPH.MODALS.JSON_PREVIEW.COPY_TITLE' | translate">
       <span style="margin-right: 5px;">📋</span>
-      <span>Sao chép JSON</span>
+      <span>{{ 'PROCESS_GRAPH.MODALS.JSON_PREVIEW.COPY' | translate }}</span>
     </button>
     <button nz-button nzType="primary" (click)="closeModal()">
-      <span>Đóng</span>
+      <span>{{ 'PROCESS_GRAPH.COMMON.CLOSE' | translate }}</span>
     </button>
   </div>
 </div>

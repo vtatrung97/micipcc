@@ -1,0 +1,408 @@
+{
+  "PROCESS_GRAPH": {
+    "COMMON": {
+      "SELECT_PLACEHOLDER": "Select",
+      "INPUT_PLACEHOLDER": "Enter here",
+      "NUMBER_PLACEHOLDER": "Enter a number",
+      "CLOSE": "Close",
+      "CANCEL": "Cancel",
+      "SAVE": "Save",
+      "ADD_NEW": "+ Add new",
+      "INPUT": "Input",
+      "OUTPUT": "Output"
+    },
+    "NODE_TYPES": {
+      "START": "Start",
+      "GATEWAY_EXCLUSIVE": "Exclusive branch",
+      "GATEWAY_PARALLEL": "Parallel",
+      "GATEWAY_INCLUSIVE": "Inclusive branches",
+      "JOIN": "Join",
+      "USER_TASK": "Assign task",
+      "SYSTEM_TASK": "System task",
+      "NOTIFICATION": "Notification",
+      "SUB_PROCESS": "Sub-process",
+      "END": "End",
+      "STEP": "Step"
+    },
+    "JOIN_LABELS": {
+      "GATEWAY_EXCLUSIVE": "Any branch arrives",
+      "GATEWAY_PARALLEL": "All branches arrive",
+      "GATEWAY_INCLUSIVE": "Selected branches arrive"
+    },
+    "HEADER": {
+      "BACK_TITLE": "Back to process list",
+      "DEFAULT_NAME": "Multi-department complaint handling",
+      "VERSION_TITLE": "Process version",
+      "VERSION": "Version {{version}}",
+      "DRAFT_TAG": "Draft",
+      "CANCEL": "Cancel",
+      "CANCEL_TITLE": "Discard changes",
+      "SAVE_DRAFT": "Save draft",
+      "SAVE_DRAFT_TITLE": "Save process draft",
+      "PUBLISH": "Publish",
+      "PUBLISH_TITLE": "Publish process"
+    },
+    "TABS": {
+      "GENERAL": "General info",
+      "DESIGN": "Process design"
+    },
+    "SAMPLES": {
+      "BUTTON": "Process samples",
+      "BUTTON_TITLE": "Select and load a standard process sample",
+      "BASIC": {
+        "BADGE": "Basic",
+        "TITLE": "Sample 1: Linear CSAT",
+        "SUB": "Start ➔ Assign task ➔ Send SMS ➔ End"
+      },
+      "MEDIUM": {
+        "BADGE": "Medium",
+        "TITLE": "Sample 2: Branching & API refund",
+        "SUB": "CDR lookup ➔ Exclusive Gateway ➔ Core API / Approval"
+      },
+      "COMPLEX": {
+        "BADGE": "Complex",
+        "TITLE": "Sample 3: Parallel & VIP leased line",
+        "SUB": "Parallel Split ➔ BTS sub-process + multi-channel KAM ➔ Join"
+      },
+      "DEFAULT": {
+        "BADGE": "Viettel CS",
+        "TITLE": "Default sample: Multi-department",
+        "SUB": "Matches the standard Figma design 100%"
+      }
+    },
+    "PALETTE": {
+      "TITLE": "Step library",
+      "TOGGLE_TITLE": "Collapse / Expand step library",
+      "OPEN_TITLE": "Open step library",
+      "SUBTITLE": "Drag a step onto the canvas, or click to add it after the selected step.",
+      "SEARCH": "Search steps",
+      "CONDITION_GROUP": "Conditions",
+      "ITEMS": {
+        "GATEWAY_EXCLUSIVE": { "TITLE": "Exclusive branch", "TOOLTIP": "Take exactly one branch whose condition matches" },
+        "GATEWAY_PARALLEL": { "TITLE": "Parallel", "TOOLTIP": "Run all branches in parallel" },
+        "GATEWAY_INCLUSIVE": { "TITLE": "Inclusive branches", "TOOLTIP": "Take every branch whose condition matches" },
+        "USER_TASK": { "TITLE": "Assign task", "TOOLTIP": "Assign work to an agent / specialist" },
+        "SYSTEM_TASK": { "TITLE": "System task", "TOOLTIP": "Automated task / call a system API" },
+        "NOTIFICATION": { "TITLE": "Send notification", "TOOLTIP": "Send SMS / Email / Webhook / OTT notification" },
+        "SUB_PROCESS": { "TITLE": "Sub-process", "TOOLTIP": "Run another process as a sub-process" },
+        "END": { "TITLE": "End", "TOOLTIP": "End the process" }
+      }
+    },
+    "TOOLBAR": {
+      "ARIA": "Canvas control toolbar",
+      "UNDO_TITLE": "Undo",
+      "REDO_TITLE": "Redo",
+      "DEBUG": "Debug",
+      "DEBUG_TITLE": "Inspect JSON payload (Debug)",
+      "VALIDATE": "Validate",
+      "VALIDATE_TITLE": "Validate process (BPMN validation)",
+      "CLEAR_TITLE": "Clear canvas",
+      "ZOOM_OUT_TITLE": "Zoom out",
+      "ZOOM_RESET_TITLE": "Reset zoom to 100%",
+      "ZOOM_IN_TITLE": "Zoom in",
+      "AUTO": "Auto",
+      "AUTO_TITLE": "Auto layout",
+      "DELETE": "Delete",
+      "DELETE_TITLE": "Delete selected step",
+      "REVERT": "Revert",
+      "REVERT_TITLE": "Discard changes",
+      "SAVE": "Save",
+      "SAVE_TITLE": "Save process configuration"
+    },
+    "FOOTER": {
+      "COPYRIGHT": "Copyright 2026 Viettel Customer Service, Inc"
+    },
+    "CANVAS": {
+      "ROUTING": "Routing",
+      "DEFAULT_BRANCH": "Default",
+      "BRANCH_N": "Branch {{index}}",
+      "DEFAULT_CASE_NAME": "Information complete",
+      "SUCCESS": "Success",
+      "FAILURE": "Failure",
+      "APPROVE": "Approve",
+      "REJECT": "Reject",
+      "PORTS": {
+        "IN": "Input (In)",
+        "OUT": "Output (Out)",
+        "START_OUT": "Start flow (Trigger Out)",
+        "COMPLETE": "Complete",
+        "APPROVE": "Approve",
+        "REJECT": "Reject",
+        "SUCCESS": "Success (200 OK)",
+        "FAILURE": "Exception / Error path",
+        "DEFAULT_BRANCH": "Default branch",
+        "MERGE_IN_N": "Parallel flow {{index}}",
+        "CONTINUE": "Continue",
+        "END_IN": "End point",
+        "NOTIFY_DONE": "Sent",
+        "SUB_PROCESS_DONE": "Sub-process completed"
+      }
+    },
+    "STATUS": {
+      "READY": "Ready",
+      "NODE_ADDED": "✨ Added [{{type}}]",
+      "REVERTED": "Restored to the original state.",
+      "EDGE_SELECTED": "[Connection] ID: {{id}}...",
+      "UNDO": "↶ Undone",
+      "REDO": "↷ Redone",
+      "AUTO_LAYOUT": "✨ Diagram auto-arranged!",
+      "NODE_DELETED": "🗑️ Deleted step [{{name}}]",
+      "EDGE_DELETED": "🗑️ Deleted connection",
+      "CANVAS_CLEARED": "🧹 Canvas cleared!",
+      "CANNOT_SAVE": "⚠️ Cannot save: {{count}} BPMN rule violation(s)",
+      "PUBLISHED": "💾 Published process [{{code}}]!",
+      "DRAFT_SAVED": "💾 Saved draft of process [{{code}}] (rowVersion {{rowVersion}})",
+      "DRAFT_OPENED": "📂 Opened draft [{{code}}] (rowVersion {{rowVersion}})"
+    },
+    "MESSAGES": {
+      "REVERT_CONFIRM": "Restore the original process diagram? All unsaved changes will be lost.",
+      "PUBLISH_SUCCESS": "Process [{{code}}: {{name}}] saved and published successfully!",
+      "SAVE_DRAFT_FAILED": "Failed to save draft: {{error}}",
+      "DEFAULT_BRANCH_LOCKED": "The Default branch is fixed on a condition node and cannot be removed.",
+      "JOIN_DELETE_BLOCKED": "This Join belongs to a condition node. Delete the condition node to remove it.",
+      "CLEAR_CONFIRM": "Are you sure you want to clear the whole canvas?",
+      "DELETE_NODE_CONFIRM": "Are you sure you want to delete step [{{name}}]?",
+      "TEST_CONNECTION_OK": "Connection test: successfully connected to the integrated API system!",
+      "JSON_COPIED": "JSON copied to clipboard!"
+    },
+    "MODALS": {
+      "VALIDATION_TITLE": "🛡️ Graph validation (BPMN 2.0)",
+      "TEMPLATE_INFO_TITLE": "📋 Process general info",
+      "NOTIFY_CONFIG_TITLE": "🔔 Process notification settings",
+      "SAVE_CONFIG": "Save settings",
+      "JSON_SAVE_DRAFT_TITLE": "💾 Save draft – payload sent to BE (flowJson shown as an object, sent as a JSON string)",
+      "JSON_DEBUG_TITLE": "🐞 Debug: Save draft payload (flowJson shown as an object, sent as a JSON string)",
+      "SERIALIZE_ERROR": "Cannot serialize the graph",
+      "JSON_PREVIEW": {
+        "VIEW_FULL": "📁 Full payload",
+        "VIEW_EXECUTION": "⚡ Execution graph (executionGraph)",
+        "VIEW_GRAPH": "🎨 Raw canvas (graphData)",
+        "NODES": "🔢 {{count}} Nodes",
+        "TRANSITIONS": "🔗 {{count}} Transitions",
+        "DOWNLOAD": "Download .json",
+        "DOWNLOAD_TITLE": "Download the JSON file",
+        "COPY": "Copy JSON",
+        "COPY_TITLE": "Copy the whole JSON to the clipboard"
+      },
+      "NOTIFY_CONFIG": {
+        "DESC": "Set alert channels for when the process is about to expire or exceeds the SLA:",
+        "WEB": "Web notification in IPCC 2.0",
+        "SMS": "SMS reminder to the shift lead when SLA exceeds 50%",
+        "EMAIL": "Daily email report on ticket progress"
+      },
+      "TEMPLATE_INFO": {
+        "CODE": "Process code:",
+        "NAME": "Process name:",
+        "VERSION": "Version:",
+        "SLA": "Standard SLA:",
+        "DESCRIPTION": "Process description:",
+        "NO_DESCRIPTION": "No description"
+      },
+      "VALIDATION": {
+        "VALID_DESC": "Every step satisfies the BPMN 2.0 In/Out port rules; no flow is broken or isolated.",
+        "INVALID_DESC": "Please review the violations below and fix the connections before saving or publishing.",
+        "ERRORS_HEADING": "Configuration violations ({{count}})",
+        "STEP_CODE": "Step code: {{key}}",
+        "GO_TO_STEP": "Go to step →",
+        "WARNINGS_HEADING": "Warnings ({{count}})",
+        "RULES_TITLE": "Connection rules:",
+        "RULES": {
+          "START": "In = 0 | Out = 1",
+          "USER_TASK": "In = 1 | Out = 1 (Out = 2 for an approval step)",
+          "SYSTEM_TASK": "In = 1 | Out = 1 (Out = 2 with the error port: Success + Error)",
+          "GATEWAY": "In = 1 | Out >= 2 (one port per case)",
+          "JOIN": "In >= 2 | Out = 1 (merge branches before continuing)",
+          "END": "In >= 1 | Out = 0 (end of process)"
+        },
+        "REVALIDATE": "Validate again"
+      }
+    },
+    "DRAWER": {
+      "ARIA": "Process step properties",
+      "CLOSE_TITLE": "Close properties panel",
+      "DEFAULT_TITLE": "Step properties",
+      "GATEWAY_TITLE": "Condition ({{type}})",
+      "TRIGGER_TYPE": "Trigger type",
+      "TRIGGER_FORM": "Selected form / schedule",
+      "END_FORM": "End form",
+      "SECTIONS": {
+        "GENERAL": "General info",
+        "ACTOR": "Assignee",
+        "SLA": "SLA",
+        "FORM_OUTPUT": "Form output",
+        "NOTIFICATION": "Notification",
+        "SUB_PROCESS": "Sub-process",
+        "MAPPING_INPUT": "Input mapping",
+        "OUTPUT": "Output",
+        "INTEGRATION": "Integrated system",
+        "EXECUTION": "Execution settings",
+        "OUTPUT_API": "API output",
+        "CASES": "Cases",
+        "DEFAULT_FLOW": "Default flow",
+        "ERROR_FLOW": "Error flow"
+      },
+      "FIELDS": {
+        "STEP_NAME": "Step name",
+        "STEP_CODE": "Step code",
+        "DESCRIPTION": "Description",
+        "DEPARTMENT": "Department",
+        "GROUP": "Group",
+        "AGENT": "Agent",
+        "SLA_DURATION": "Processing deadline",
+        "SLA_WARNING": "Warn before the deadline",
+        "FORM": "Form",
+        "FORM_OUTPUT": "Form output",
+        "RECIPIENT": "Recipient",
+        "CONTENT": "Notification content",
+        "CHANNEL": "Notification channel",
+        "CHANNEL_NOTIFICATION": "Notification",
+        "CHANNEL_EMAIL": "Email",
+        "SUB_PROCESS": "Select sub-process",
+        "INTEGRATION_SYSTEM": "Integrated system",
+        "API": "API",
+        "TEST_CONNECTION": "Test connection",
+        "TIMEOUT": "Timeout",
+        "SECONDS": "sec",
+        "RETRY": "Retry",
+        "CASE_NAME_PLACEHOLDER": "Case name",
+        "REMOVE_CASE": "Remove case",
+        "CONDITION_COUNT": "Conditions ({{count}})",
+        "ADD_CONDITION": "+ Add condition",
+        "ADD_CASE": "+ Add case",
+        "DEFAULT_FLOW_HINT": "Any case not listed above follows this flow.",
+        "ERROR_FLOW_HINT": "Used when the API cannot be called, times out or fails.",
+        "SELECT_OUTPUT": "Select output"
+      },
+      "UNITS": {
+        "HOUR": "Hours",
+        "DAY": "Days",
+        "WEEK": "Weeks"
+      },
+      "NEW_PARAM": "New parameter",
+      "NEW_CASE": "Case {{index}}",
+      "DEFAULT_MAPPING_1": "Complaint category level 1",
+      "DEFAULT_MAPPING_2": "Complaint category level 2"
+    },
+    "CONDITION_MODAL": {
+      "TITLE": "Conditions",
+      "PARAM": "Parameter",
+      "OPERATOR": "Comparison",
+      "VALUE": "Value",
+      "PARAM_PLACEHOLDER": "Select parameter",
+      "OPERATOR_PLACEHOLDER": "Comparison",
+      "REMOVE": "Remove condition",
+      "GROUP_TRIGGER_EVENT": "Trigger event",
+      "GROUP_CASE": "Case",
+      "OPERATORS": {
+        "EQ": "Equals (=)",
+        "NEQ": "Not equal (!=)",
+        "GT": "Greater than (>)",
+        "LT": "Less than (<)",
+        "CONTAINS": "Contains"
+      },
+      "PARAMS": {
+        "PRIORITY": ".priority (Priority)",
+        "PAKN_ID": "paknID (Complaint ID)",
+        "COMPLAINT_TYPE": "complaintType (Complaint type)",
+        "CODE": "code (Case code)",
+        "STARTED_AT": "startedAt (Start time)"
+      }
+    },
+    "OPTIONS": {
+      "END_FORMS": {
+        "DEFAULT": "Default end form",
+        "CLOSE_PAKN": "Complaint closing form",
+        "CSAT": "CSAT survey form"
+      },
+      "DEPARTMENTS": {
+        "CSKH": "Customer Care Center",
+        "KT": "Engineering & Infrastructure Dept.",
+        "CUOC": "Billing & Reconciliation Dept."
+      },
+      "TEAMS": {
+        "BO": "BO Complaint Handling Team",
+        "VIP": "VIP Customer Intake Team",
+        "FTTH": "FTTH Engineering Team"
+      },
+      "AGENTS": {
+        "AUTO": "Auto rotation",
+        "LEAD": "Assigned by team lead"
+      },
+      "FORMS": {
+        "XM": "Complaint verification form",
+        "BS": "Additional information form"
+      },
+      "FORM_OUTPUTS": {
+        "RESULT": "Verification result (result_status)",
+        "SOLUTION": "Resolution plan (solution_code)"
+      },
+      "RECIPIENTS": {
+        "CUSTOMER": "Complaining customer",
+        "CREATOR": "Agent who created the ticket",
+        "MANAGER": "Shift lead on duty"
+      },
+      "SUB_PROCESSES": {
+        "CUOC": "Billing check & calculation process",
+        "KT": "FTTH line measurement process",
+        "CSAT": "CSAT satisfaction survey process"
+      },
+      "MAPPING_TARGETS": {
+        "MA_KHIEU_NAI": "Complaint code",
+        "SO_THUE_BAO": "Subscriber number",
+        "KET_QUA": "Processing result",
+        "MA_LOI": "Error code",
+        "PHAN_LOAI_1": "Complaint category level 1",
+        "PHAN_LOAI_2": "Complaint category level 2"
+      },
+      "SYSTEMS": {
+        "CRM": "Viettel CRM",
+        "IPCC": "IPCC customer care contact center",
+        "BILLING": "Billing & CDR reconciliation system",
+        "FTTH": "FTTH network infrastructure"
+      },
+      "API_OUTPUTS": {
+        "STATUS": "Response status code (response_status)",
+        "TICKET_ID": "Ticket ID (ticket_id)",
+        "BODY": "Full JSON response body"
+      },
+      "DEFAULT_FLOW_OUTPUTS": {
+        "DEFAULT": "Default",
+        "CONTINUE": "Continue main flow"
+      },
+      "ERROR_FLOW_OUTPUTS": {
+        "ERROR_END": "End with incident error",
+        "RETRY": "Retry previous step"
+      }
+    },
+    "VALIDATION": {
+      "SUMMARY_VALID": "✅ The process diagram is fully valid (BPMN 2.0)!",
+      "SUMMARY_INVALID": "❌ Found {{count}} BPMN configuration violation(s).",
+      "GRAPH_NULL": "The graph has not been initialized",
+      "GRAPH_EMPTY": "The diagram is empty, please add process steps",
+      "GRAPH_EMPTY_SUMMARY": "The canvas is empty",
+      "TRIGGER_MISSING": "The process has no Start point (at least 1 is required)",
+      "TRIGGER_MULTIPLE": "The process has {{count}} Start points",
+      "TRIGGER_IN_INVALID": "Start [{{label}}] must not have incoming flows (In = 0, currently {{count}})",
+      "TRIGGER_OUT_ZERO": "Start [{{label}}] is not connected to a next step (Out = 1)",
+      "TRIGGER_OUT_EXCESS": "Start [{{label}}] must have exactly 1 outgoing flow (Out = 1, currently {{count}})",
+      "END_MISSING": "The process has no End point",
+      "END_IN_ZERO": "End [{{label}}] has no incoming flow (In >= 1)",
+      "END_OUT_INVALID": "End [{{label}}] must not have outgoing flows (Out = 0, currently {{count}})",
+      "ACTION_IN_ZERO": "System task [{{label}}] has no incoming flow (In = 1)",
+      "ACTION_SUCCESS_OUT_MISSING": "System task [{{label}}] must connect its Success port",
+      "ACTION_EXCEPTION_OUT_MISSING": "System task [{{label}}] must connect its Error port",
+      "CONDITION_IN_ZERO": "Condition [{{label}}] has no incoming flow (In = 1)",
+      "CONDITION_BRANCH_LESS_THAN_2": "Condition [{{label}}] needs at least 2 branches (Out >= 2, currently {{count}})",
+      "CONDITION_DEFAULT_UNCONNECTED": "Default branch [{{branch}}] of condition [{{label}}] is not connected (optional fallback)",
+      "CONDITION_BRANCH_UNCONNECTED": "Branch [{{branch}}] of condition [{{label}}] is not connected (Out >= 2)",
+      "TASK_IN_ZERO": "Task [{{label}}] has no incoming flow (In = 1)",
+      "TASK_APPROVAL_OUT_MISSING": "Approval step [{{label}}] must connect both Approve and Reject ports",
+      "TASK_OUT_ZERO": "Task [{{label}}] is not connected to a next step (Out = 1)",
+      "TASK_OUT_EXCESS": "Task [{{label}}] must have exactly 1 outgoing flow (Out = 1)",
+      "MERGE_IN_LESS_THAN_2": "Join [{{label}}] must merge at least 2 flows (In >= 2, currently {{count}})",
+      "MERGE_OUT_ZERO": "Join [{{label}}] has no outgoing flow (Out = 1)",
+      "MERGE_OUT_EXCESS": "Join [{{label}}] must have exactly 1 outgoing flow (Out = 1, currently {{count}})",
+      "NODE_ISOLATED": "Step [{{label}}] is isolated (no connections)"
+    }
+  }
+}

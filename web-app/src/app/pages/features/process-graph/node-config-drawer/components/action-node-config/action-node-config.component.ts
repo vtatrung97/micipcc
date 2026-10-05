@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NodePropertyModel, ActionLibraryItem } from '../../../graph-editor.component';
+import { NodePropertyModel, ActionLibraryItem } from '../../../models/node-property.model';
 import { GraphBridgeService } from '../../../services/graph-bridge.service';
 import { DEFAULT_ACTION_LIBRARIES } from './action-node-config.constants';
 

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { NodePropertyModel } from '../../../graph-editor.component';
+import { NodePropertyModel } from '../../../models/node-property.model';
 import { GraphBridgeService } from '../../../services/graph-bridge.service';
 import { TemplateService, ProcessTemplateItem } from '@core/services/template.service';
 
