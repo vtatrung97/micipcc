@@ -6,4 +6,4 @@ Giao diện web của Ticket Flow: thiết kế quy trình (canvas), quản lý 
 
 > Trạng thái: chưa khởi tạo code.
 
-designer_user/123456789
+chaubau/chaubau
