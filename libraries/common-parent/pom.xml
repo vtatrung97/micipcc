@@ -24,6 +24,8 @@
         <lombok.version>1.18.38</lombok.version>
         <springdoc.version>2.8.17</springdoc.version>
         <keycloak.version>26.0.12</keycloak.version>
+        <wildfly-elytron.version>2.6.5.Final</wildfly-elytron.version>
+        <minio.version>8.5.17</minio.version>
         <flowable.version>7.2.0</flowable.version>
         <hypersistence-utils.version>3.10.3</hypersistence-utils.version>
     </properties>
@@ -64,6 +66,22 @@
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-admin-client</artifactId>
                 <version>${keycloak.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-policy-enforcer</artifactId>
+                <version>${keycloak.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+            </dependency>
+            <!-- Optional dependency of keycloak-policy-enforcer, required by ServletPolicyEnforcerFilter -->
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-http-oidc</artifactId>
+                <version>${wildfly-elytron.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>

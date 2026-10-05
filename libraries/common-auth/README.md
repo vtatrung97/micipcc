@@ -1,20 +1,21 @@
 # Common Auth
 
-Shared authentication building blocks for Ticket Flow services:
+Shared authentication building blocks for Ticket Flow services, following the IPCC Keycloak setup:
 
-- Spring Boot auto-configuration for stateless OAuth2 Resource Server security
-- Keycloak access-token/RPT JWT validation through Spring Security
-- Keycloak realm/client-role conversion
-- Security-context utilities
-- API-key support for legacy service-to-service callers
-- Resource/scope authorization building blocks
+- `PathBasedConfigResolver`: loads the Keycloak adapter config (realm, resource, credentials, policy-enforcer paths)
+  from MinIO, `keycloak-adapter-config-os/<spring.application.name>.json`, once, and caches it.
+- `KeycloakAuthenticationManagerResolver`: validates the bearer JWT against the realm of that config (JWKS + issuer).
+- `PolicyEnforcerFilter`: Keycloak policy enforcer (`keycloak-policy-enforcer`) for resource/scope permissions.
+- `PermissionAspect`: `@CheckPermission` / `@CheckScopePermission` against the RPT of the policy enforcer.
+- Security-context utilities, API-key support.
 
-Add `common-auth` to a service and configure the standard Spring Resource Server issuer, JWK set and audience
-properties. The library then creates the stateless filter chain and exposes the validated JWT/RPT through
-`SecurityContextHolder` and `SecurityContextUtils`.
+Configuration:
 
-The removed Keycloak Spring and Spring Boot adapters are intentionally not used. RPT validation does not require
-`keycloak-admin-client`; that dependency is retained temporarily for the existing login client and will be separated
-from request authentication.
-
-Login endpoints and service-specific authorization rules remain in the owning service.
+```properties
+keycloak.config.resolver=path
+keycloak.config.auth-server-url=${KEYCLOAK_AUTH_SERVER_URL:}   # overrides auth-server-url of the file
+minio.baseUrl=${MINIO_BASE_URL:}
+minio.accessKey=${MINIO_ACCESS_KEY:}
+minio.secretKey=${MINIO_SECRET_KEY:}
+ticket-flow.auth.public-paths=/api/v1/health-check,...
+```
