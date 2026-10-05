@@ -1,0 +1,54 @@
+<div class="notification-config-container" *ngIf="nodeProps">
+  <div class="drawer-section-heading mt-4">
+    <ant-icon name="bell" [size]="14" style="margin-right: 6px;"></ant-icon>
+    <span>CẤU HÌNH THÔNG BÁO TỰ ĐỘNG</span>
+  </div>
+
+  <!-- Kênh thông báo -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Kênh thông báo</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="nodeProps.notificationChannel" (ngModelChange)="onPropChange('notificationChannel')"
+        name="notificationChannel">
+        <nz-option *ngFor="let ch of channelOptions" [nzValue]="ch.value" [nzLabel]="ch.label"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Đối tượng nhận thông báo -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Người nhận</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="nodeProps.notificationRecipient" (ngModelChange)="onPropChange('notificationRecipient')"
+        name="notificationRecipient">
+        <nz-option *ngFor="let rec of recipientOptions" [nzValue]="rec.value" [nzLabel]="rec.label"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Tiêu đề thông báo -->
+  <nz-form-item>
+    <nz-form-label>Tiêu đề thông báo</nz-form-label>
+    <nz-form-control>
+      <input nz-input [(ngModel)]="nodeProps.notificationTitle" (ngModelChange)="onPropChange('notificationTitle')"
+        name="notificationTitle" placeholder="VD: Thông báo cập nhật tiến độ giải quyết cước..." />
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Nội dung thông báo -->
+  <nz-form-item>
+    <div class="template-header-wrap">
+      <nz-form-label nzRequired>Nội dung thông báo</nz-form-label>
+      <div class="variable-chips-row">
+        <button type="button" class="chip-btn" (click)="insertVariable('customer_name')">+ Tên KH</button>
+        <button type="button" class="chip-btn" (click)="insertVariable('ticket_code')">+ Mã phiếu</button>
+        <button type="button" class="chip-btn" (click)="insertVariable('sla_time')">+ Hạn SLA</button>
+      </div>
+    </div>
+    <nz-form-control>
+      <textarea nz-input rows="4" [(ngModel)]="nodeProps.notificationContent"
+        (ngModelChange)="onPropChange('notificationContent')" name="notificationContent"
+        placeholder="Nhập nội dung tin nhắn. Bạn có thể chèn các tham số như {customer_name}, {ticket_code}..."></textarea>
+    </nz-form-control>
+  </nz-form-item>
+</div>

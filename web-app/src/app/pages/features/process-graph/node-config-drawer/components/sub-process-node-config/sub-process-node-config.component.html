@@ -1,0 +1,52 @@
+<div class="subprocess-config-container" *ngIf="nodeProps">
+  <div class="drawer-section-heading mt-4">
+    <ant-icon name="sync" [size]="14" style="margin-right: 6px;"></ant-icon>
+    <span>CẤU HÌNH QUY TRÌNH CON (SUB-PROCESS)</span>
+  </div>
+
+  <!-- Chọn quy trình con -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Chọn Quy trình con</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="nodeProps.subProcessTemplateId" (ngModelChange)="onPropChange('subProcessTemplateId')"
+        name="subProcessTemplateId" nzPlaceHolder="Chọn quy trình con cần gọi..." nzShowSearch>
+        <nz-option *ngFor="let t of availableTemplates" [nzValue]="t.code" [nzLabel]="t.name + ' (' + t.code + ')'">
+        </nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Phiên bản quy trình -->
+  <nz-form-item>
+    <nz-form-label>Phiên bản áp dụng</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="nodeProps.subProcessVersion" (ngModelChange)="onPropChange('subProcessVersion')"
+        name="subProcessVersion">
+        <nz-option nzValue="LATEST" nzLabel="Luôn dùng bản mới nhất (LATEST)"></nz-option>
+        <nz-option nzValue="v1.0" nzLabel="Phiên bản v1.0"></nz-option>
+        <nz-option nzValue="v2.0" nzLabel="Phiên bản v2.0"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Chờ quy trình con hoàn tất -->
+  <div class="wait-toggle-box mb-3">
+    <div class="wait-toggle-content">
+      <span class="wait-toggle-title">Chờ quy trình con hoàn tất</span>
+      <span class="wait-toggle-desc">Tạm dừng luồng chính cho đến khi quy trình con kết thúc</span>
+    </div>
+    <nz-switch [(ngModel)]="nodeProps.subProcessWaitComplete" (ngModelChange)="onPropChange('subProcessWaitComplete')"
+      name="subProcessWaitComplete">
+    </nz-switch>
+  </div>
+
+  <!-- Tham số truyền vào -->
+  <nz-form-item>
+    <nz-form-label>Tham số đầu vào (Input Mapping)</nz-form-label>
+    <nz-form-control>
+      <textarea nz-input rows="3" class="font-mono text-xs" [(ngModel)]="nodeProps.subProcessInputMapping"
+        (ngModelChange)="onPropChange('subProcessInputMapping')" name="subProcessInputMapping"
+        placeholder='{ "ticket_id": "${flow.variables.ticket_id}" }'></textarea>
+    </nz-form-control>
+  </nz-form-item>
+</div>
