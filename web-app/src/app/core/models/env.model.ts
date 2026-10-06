@@ -31,5 +31,6 @@ export interface EnvModel {
   SERVICES?: ServiceCategory;
   WEB_DOMAIN_URL?: string;
   DEFAULT_TIMEZONE?: string;
+  AUTH_ENABLED?: boolean;
   [key: string]: any;
 }

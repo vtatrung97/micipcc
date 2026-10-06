@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { buildAuthConfig } from './auth.config';
 import { TokenService } from './token.service';
+import { AUTH_ENABLED } from '@environments/environment';
 
 export interface KeycloakUserProfile {
   sub?: string;
@@ -44,6 +45,11 @@ export class AuthService {
    * Khởi tạo cấu hình và nạp OIDC Discovery Document từ Keycloak Server
    */
   public async initAuth(): Promise<boolean> {
+    if (!AUTH_ENABLED) {
+      console.warn('[Keycloak Auth] AUTH_ENABLED = false: bỏ qua đăng nhập Keycloak.');
+      return false;
+    }
+
     try {
       const config = buildAuthConfig();
       this.oauthSvc.configure(config);

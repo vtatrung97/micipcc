@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NodePropertyModel } from '../../../graph-editor.component';
+import { NodePropertyModel } from '../../../models/node-property.model';
 import { GraphBridgeService } from '../../../services/graph-bridge.service';
 
 @Component({

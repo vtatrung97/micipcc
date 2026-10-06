@@ -1,7 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { GraphBridgeService } from '../services/graph-bridge.service';
-import { NodePropertyModel, ActionLibraryItem, ConditionBranch, ConditionRuleItem } from '../graph-editor.component';
+import { NodePropertyModel, ActionLibraryItem, ConditionBranch, ConditionRuleItem } from '../models/node-property.model';
+import { isGatewayType } from '../models/node-type';
 
 @Component({
   selector: 'app-node-config-drawer',
@@ -31,23 +33,6 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     errorFlow: true
   };
 
-  // SubProcess Mappings
-  public subProcessInputRows: Array<{ source: string; target: string }> = [
-    { source: 'Phân loại phản ánh cấp 1', target: 'Phân loại phản ánh cấp 1' },
-    { source: 'Phân loại phản ánh cấp 2', target: 'Phân loại phản ánh cấp 2' }
-  ];
-
-  public subProcessOutputRows: Array<{ source: string; target: string }> = [
-    { source: 'Phân loại phản ánh cấp 1', target: 'Phân loại phản ánh cấp 1' },
-    { source: 'Phân loại phản ánh cấp 2', target: 'Phân loại phản ánh cấp 2' }
-  ];
-
-  // Action Input Mappings
-  public actionInputRows: Array<{ source: string; target: string }> = [
-    { source: 'Phân loại phản ánh cấp 1', target: 'Chọn tại đây' },
-    { source: 'Phân loại phản ánh cấp 2', target: 'Chọn tại đây' }
-  ];
-
   // Condition Modal (Image 4)
   public isConditionModalVisible: boolean = false;
   public editingBranch: ConditionBranch | null = null;
@@ -56,7 +41,15 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(public bridgeService: GraphBridgeService) {}
+  constructor(
+    public bridgeService: GraphBridgeService,
+    private translate: TranslateService,
+  ) {}
+
+  /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
+  private t(key: string, params?: Record<string, any>): string {
+    return this.translate.instant('PROCESS_GRAPH.' + key, params);
+  }
 
   ngOnInit(): void {
     this.sub.add(
@@ -74,11 +67,14 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.bridgeService.selectedNodeProps$.subscribe(props => {
         this.nodeProps = props ? { ...props } : null;
-        if (this.nodeProps && (this.nodeProps.type === 'condition' || this.nodeProps.type === 'split')) {
+        if (this.nodeProps && this.ensureMappingRows(this.nodeProps)) {
+          this.onPropChange('all');
+        }
+        if (this.nodeProps && isGatewayType(this.nodeProps.type)) {
           if (!this.nodeProps.branches || this.nodeProps.branches.length === 0) {
             this.nodeProps.branches = [
-              { id: 'br-1', name: 'Đủ thông tin', value: 'valid', expression: '.priority == "Cao"', rules: [{ param: '.priority', operator: 'Bằng (=)', value: 'Cao' }] },
-              { id: 'br-default', name: 'Mặc định', value: 'default', expression: 'default', isDefault: true, rules: [] }
+              { id: 'br-1', name: this.t('CANVAS.DEFAULT_CASE_NAME'), value: 'valid', expression: '.priority == "Cao"', rules: [{ param: '.priority', operator: 'EQ', value: 'Cao' }] },
+              { id: 'br-default', name: this.t('CANVAS.DEFAULT_BRANCH'), value: 'default', expression: 'default', isDefault: true, rules: [] }
             ];
           }
         }
@@ -105,56 +101,75 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     this.accordions[key] = !this.accordions[key];
   }
 
-  public getDrawerTitle(): string {
-    if (!this.nodeProps) return 'Thuộc tính bước';
-    if (this.nodeProps.type === 'condition' || this.nodeProps.type === 'split' || this.nodeProps.type === 'merge') {
-      if (this.nodeProps.gatewayType === 'parallel' || this.nodeProps.type === 'split') {
-        return 'Điều kiện (Chạy song song)';
-      } else if (this.nodeProps.gatewayType === 'inclusive') {
-        return 'Điều kiện (Chọn nhiều nhánh)';
-      } else {
-        return 'Điều kiện (Chọn 1 nhánh)';
-      }
-    }
-    switch (this.nodeProps.type) {
-      case 'trigger': return 'Bắt đầu';
-      case 'end': return 'Kết thúc';
-      case 'task': return 'Giao việc';
-      case 'notification': return 'Thông báo';
-      case 'sub_process': return 'Quy trình con';
-      case 'action': return 'Tác vụ hệ thống';
-      default: return this.nodeProps.typeTitle || 'Thuộc tính bước';
-    }
+  public isGateway(type: string | undefined): boolean {
+    return isGatewayType(type);
   }
 
-  // SubProcess helpers
+  public getDrawerTitle(): string {
+    if (!this.nodeProps) return this.t('DRAWER.DEFAULT_TITLE');
+    if (isGatewayType(this.nodeProps.type)) {
+      return this.t('DRAWER.GATEWAY_TITLE', { type: this.t(`NODE_TYPES.${this.nodeProps.type}`) });
+    }
+    return this.t(`NODE_TYPES.${this.nodeProps.type}`);
+  }
+
+  /** Bảng mapping mặc định khi node chưa có dữ liệu. Trả true nếu vừa thêm mặc định (cần lưu vào node). */
+  private ensureMappingRows(props: NodePropertyModel): boolean {
+    const defaults = () => [
+      { source: this.t('DRAWER.DEFAULT_MAPPING_1'), target: '' },
+      { source: this.t('DRAWER.DEFAULT_MAPPING_2'), target: '' }
+    ];
+    let changed = false;
+    if (props.type === 'SYSTEM_TASK' && !props.actionInputMappings?.length) {
+      props.actionInputMappings = defaults();
+      changed = true;
+    }
+    if (props.type === 'SUB_PROCESS') {
+      if (!props.subProcessInputMappings?.length) {
+        props.subProcessInputMappings = defaults();
+        changed = true;
+      }
+      if (!props.subProcessOutputMappings?.length) {
+        props.subProcessOutputMappings = defaults();
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  // Mapping helpers (lưu vào nodeProps để gửi lên khi Lưu nháp)
   public addInputMapping(): void {
-    this.subProcessInputRows.push({ source: 'Tham số mới', target: 'Chọn tại đây' });
+    this.nodeProps?.subProcessInputMappings?.push({ source: this.t('DRAWER.NEW_PARAM'), target: '' });
+    this.onPropChange('subProcessInputMappings');
   }
 
   public addOutputMapping(): void {
-    this.subProcessOutputRows.push({ source: 'Tham số mới', target: 'Chọn tại đây' });
+    this.nodeProps?.subProcessOutputMappings?.push({ source: this.t('DRAWER.NEW_PARAM'), target: '' });
+    this.onPropChange('subProcessOutputMappings');
   }
 
   public removeInputMapping(index: number): void {
-    this.subProcessInputRows.splice(index, 1);
+    this.nodeProps?.subProcessInputMappings?.splice(index, 1);
+    this.onPropChange('subProcessInputMappings');
   }
 
   public removeOutputMapping(index: number): void {
-    this.subProcessOutputRows.splice(index, 1);
+    this.nodeProps?.subProcessOutputMappings?.splice(index, 1);
+    this.onPropChange('subProcessOutputMappings');
   }
 
-  // Action helpers
   public addActionMapping(): void {
-    this.actionInputRows.push({ source: 'Tham số mới', target: 'Chọn tại đây' });
+    this.nodeProps?.actionInputMappings?.push({ source: this.t('DRAWER.NEW_PARAM'), target: '' });
+    this.onPropChange('actionInputMappings');
   }
 
   public removeActionMapping(index: number): void {
-    this.actionInputRows.splice(index, 1);
+    this.nodeProps?.actionInputMappings?.splice(index, 1);
+    this.onPropChange('actionInputMappings');
   }
 
   public testConnection(): void {
-    alert('Kiểm tra kết nối: Đã kết nối thành công tới hệ thống API tích hợp!');
+    alert(this.t('MESSAGES.TEST_CONNECTION_OK'));
   }
 
   // Condition cases helpers
@@ -164,11 +179,11 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     const count = this.nodeProps.branches.filter(b => !b.isDefault).length + 1;
     const newBranch: ConditionBranch = {
       id: `br-${Date.now()}`,
-      name: `Trường hợp ${count}`,
+      name: this.t('DRAWER.NEW_CASE', { index: count }),
       value: `case_${count}`,
       expression: '',
       isDefault: false,
-      rules: [{ param: '.priority', operator: 'Bằng (=)', value: 'Cao' }],
+      rules: [{ param: '.priority', operator: 'EQ', value: 'Cao' }],
       logicOperator: 'AND'
     };
 
@@ -191,7 +206,7 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     this.editingBranch = branch;
     this.editingRules = branch.rules && branch.rules.length > 0
       ? JSON.parse(JSON.stringify(branch.rules))
-      : [{ param: '.priority', operator: 'Bằng (=)', value: 'Cao' }];
+      : [{ param: '.priority', operator: 'EQ', value: 'Cao' }];
     this.editingLogicOperator = branch.logicOperator || 'AND';
     this.isConditionModalVisible = true;
   }
@@ -212,7 +227,7 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
   }
 
   public addRule(): void {
-    this.editingRules.push({ param: '.priority', operator: 'Bằng (=)', value: '' });
+    this.editingRules.push({ param: '.priority', operator: 'EQ', value: '' });
   }
 
   public removeRule(index: number): void {
@@ -221,7 +236,7 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
 
   public deleteNode(): void {
     if (!this.nodeProps) return;
-    if (confirm(`Bạn có chắc chắn muốn xoá bước [${this.nodeProps.label || this.nodeProps.typeTitle}]?`)) {
+    if (confirm(this.t('MESSAGES.DELETE_NODE_CONFIRM', { name: this.nodeProps.label || this.nodeProps.typeTitle }))) {
       this.bridgeService.requestDeleteNode(this.nodeProps.id);
     }
   }

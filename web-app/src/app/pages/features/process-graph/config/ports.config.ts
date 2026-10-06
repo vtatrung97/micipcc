@@ -11,7 +11,13 @@
  * 7. End: In >= 1 | Out = 0 (kết thúc tiến trình)
  */
 
-export type NodeType = 'trigger' | 'task' | 'action' | 'condition' | 'split' | 'merge' | 'end' | 'notification' | 'sub_process';
+import { NodeType, isGatewayType } from '../models/node-type';
+export type { NodeType } from '../models/node-type';
+
+/** Hàm dịch (TranslateService.instant) truyền từ service vào các hàm thuần trong file này */
+export type TranslateFn = (key: string, params?: Record<string, any>) => string;
+const V = 'PROCESS_GRAPH.VALIDATION.';
+const P = 'PROCESS_GRAPH.CANVAS.PORTS.';
 
 export interface BpmnNodePortRule {
   type: NodeType;
@@ -24,8 +30,8 @@ export interface BpmnNodePortRule {
 }
 
 export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
-  trigger: {
-    type: 'trigger',
+  START: {
+    type: 'START',
     title: 'Trigger',
     minIn: 0,
     maxIn: 0,
@@ -33,8 +39,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 1,
     description: 'Trigger: Khởi tạo tiến trình. In = 0 | Out = 1'
   },
-  task: {
-    type: 'task',
+  USER_TASK: {
+    type: 'USER_TASK',
     title: 'User Task',
     minIn: 1,
     maxIn: 1,
@@ -42,8 +48,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 2, // 1 cổng cho tác vụ thường, 2 cổng nếu là Approval Step
     description: 'User Task: In = 1 | Out = 1 (hoặc Out = 2 nếu là Approval Step: Duyệt / Từ chối)'
   },
-  action: {
-    type: 'action',
+  SYSTEM_TASK: {
+    type: 'SYSTEM_TASK',
     title: 'Action (Service Task)',
     minIn: 1,
     maxIn: 1,
@@ -51,8 +57,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 2,
     description: 'Action: Gọi API ngầm. In = 1 | Out = 2 cố định (Out chính: Thành công 200; Out phụ: Ngoại lệ/Lỗi - US-22, BR-INT-05)'
   },
-  condition: {
-    type: 'condition',
+  GATEWAY_EXCLUSIVE: {
+    type: 'GATEWAY_EXCLUSIVE',
     title: 'Condition (Exclusive Gateway)',
     minIn: 1,
     maxIn: 1,
@@ -60,8 +66,17 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 99,
     description: 'Condition: Exclusive Gateway. In = 1 | Out >= 2 (sinh cổng động theo danh sách nhánh rẽ)'
   },
-  split: {
-    type: 'split',
+  GATEWAY_INCLUSIVE: {
+    type: 'GATEWAY_INCLUSIVE',
+    title: 'Chọn nhiều nhánh (Inclusive Gateway)',
+    minIn: 1,
+    maxIn: 1,
+    minOut: 2,
+    maxOut: 99,
+    description: 'Chọn nhiều nhánh: In = 1 | Out >= 2 (đi mọi nhánh có điều kiện thoả mãn)'
+  },
+  GATEWAY_PARALLEL: {
+    type: 'GATEWAY_PARALLEL',
     title: 'Split (Parallel Gateway)',
     minIn: 1,
     maxIn: 1,
@@ -69,8 +84,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 99,
     description: 'Split: Parallel Gateway. In = 1 | Out >= 2 (phân tách luồng chạy song song đồng thời)'
   },
-  merge: {
-    type: 'merge',
+  JOIN: {
+    type: 'JOIN',
     title: 'Merge (Parallel Gateway)',
     minIn: 2,
     maxIn: 99,
@@ -78,8 +93,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 1,
     description: 'Merge: Parallel Gateway. In >= 2 | Out = 1 (gom và đồng bộ các luồng song song trước khi đi tiếp)'
   },
-  end: {
-    type: 'end',
+  END: {
+    type: 'END',
     title: 'End',
     minIn: 1,
     maxIn: 99,
@@ -87,8 +102,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 0,
     description: 'End: Kết thúc tiến trình. In >= 1 | Out = 0'
   },
-  notification: {
-    type: 'notification',
+  NOTIFICATION: {
+    type: 'NOTIFICATION',
     title: 'Thông báo',
     minIn: 1,
     maxIn: 1,
@@ -96,8 +111,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxOut: 1,
     description: 'Thông báo: Gửi tin nhắn SMS / Email / Webhook. In = 1 | Out = 1'
   },
-  sub_process: {
-    type: 'sub_process',
+  SUB_PROCESS: {
+    type: 'SUB_PROCESS',
     title: 'Quy trình con',
     minIn: 1,
     maxIn: 1,
@@ -286,87 +301,90 @@ export const BPMN_PORT_GROUPS = {
 /**
  * Standard Port Configuration Generator for all 7 BPMN Node types
  */
-export function getNodePortItems(type: NodeType, customData?: any, cardWidth: number = 168): any[] {
+export function getNodePortItems(type: NodeType, customData: any, cardWidth: number, t: TranslateFn): any[] {
   switch (type) {
-    case 'trigger':
+    case 'START':
       // Trigger: In = 0 | Out = 1
       return [
         {
           id: 'out',
           group: 'out',
-          attrs: { portTitle: { text: 'Khởi tạo luồng (Trigger Out)' } }
+          attrs: { portTitle: { text: t(P + 'START_OUT') } }
         }
       ];
 
-    case 'task':
+    case 'USER_TASK':
       // User Task: In = 1 | Out = 1 (hoặc Out = 2 nếu là Approval Step)
       if (customData?.isApprovalStep) {
         return [
-          { id: 'in', group: 'inHeader', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
+          { id: 'in', group: 'inHeader', attrs: { portTitle: { text: t(P + 'IN') } } },
           {
             id: 'out-approve',
             group: 'outApprove',
             args: { x: cardWidth, y: 60 },
-            attrs: { portTitle: { text: 'Đồng ý (Approve)' } }
+            attrs: { portTitle: { text: t(P + 'APPROVE') } }
           },
           {
             id: 'out-reject',
             group: 'outReject',
             args: { x: cardWidth, y: 82 },
-            attrs: { portTitle: { text: 'Từ chối (Reject)' } }
+            attrs: { portTitle: { text: t(P + 'REJECT') } }
           }
         ];
       }
       return [
-        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Hoàn tất (Complete)' } } }
+        { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'COMPLETE') } } }
       ];
 
-    case 'action':
+    case 'SYSTEM_TASK':
       // Action: 1 cổng ra chuẩn (hoặc 2 cổng nếu bật hasExceptionPort)
       if (customData?.hasExceptionPort) {
         return [
-          { id: 'in', group: 'inHeader', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
+          { id: 'in', group: 'inHeader', attrs: { portTitle: { text: t(P + 'IN') } } },
           {
             id: 'out-success',
             group: 'outSuccess',
             args: { x: cardWidth, y: 60 },
-            attrs: { portTitle: { text: 'Thành công (200 OK)' } }
+            attrs: { portTitle: { text: t(P + 'SUCCESS') } }
           },
           {
             id: 'out-failure',
             group: 'outException',
             args: { x: cardWidth, y: 82 },
-            attrs: { portTitle: { text: 'Ngoại lệ / Lỗi (Exception Path - BR-INT-05)' } }
+            attrs: { portTitle: { text: t(P + 'FAILURE') } }
           }
         ];
       }
       return [
-        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Cổng ra (Output)' } } }
+        { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'OUT') } } }
       ];
 
-    case 'condition': {
+    case 'GATEWAY_EXCLUSIVE':
+    case 'GATEWAY_PARALLEL':
+    case 'GATEWAY_INCLUSIVE': {
+      // 3 loại điều kiện dùng chung cổng ra theo danh sách trường hợp (+ Mặc định)
       // Condition (Exclusive Gateway): In = 1 | Out >= 2
       let branches: any[] = customData?.branches ? [...customData.branches] : [];
       if (!branches || branches.length === 0) {
         branches = [
-          { id: 'br-1', name: 'Đủ thông tin', value: 'valid', expression: 'true', isDefault: false, defaultLabel: 'Đủ thông tin' },
-          { id: 'br-default', name: 'Mặc định', value: 'default', expression: 'default', isDefault: true, defaultLabel: 'Mặc định' }
+          { id: 'br-1', name: t('PROCESS_GRAPH.CANVAS.DEFAULT_CASE_NAME'), value: 'valid', expression: 'true', isDefault: false },
+          { id: 'br-default', name: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'), value: 'default', expression: 'default', isDefault: true }
         ];
       }
 
       // Ensure default branch is always present and placed at the END (dưới cùng)
       const defaultIdx = branches.findIndex((b: any) => b.isDefault);
       if (defaultIdx === -1) {
-        branches.push({ id: 'br-default', name: 'Mặc định', value: 'default', expression: 'default', isDefault: true, defaultLabel: 'Mặc định' });
+        branches.push({ id: 'br-default', name: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'), value: 'default', expression: 'default', isDefault: true });
       } else if (defaultIdx !== branches.length - 1) {
         const [defBr] = branches.splice(defaultIdx, 1);
         branches.push(defBr);
       }
 
       return [
-        { id: 'in', group: 'inHeader', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
+        { id: 'in', group: 'inHeader', attrs: { portTitle: { text: t(P + 'IN') } } },
         ...branches.map((b: any, idx: number) => ({
           id: b.id || (b.isDefault ? 'out-default' : `out-branch-${idx}`),
           group: 'outCondition',
@@ -379,44 +397,36 @@ export function getNodePortItems(type: NodeType, customData?: any, cardWidth: nu
               stroke: '#ffffff',
               strokeWidth: 1.5
             },
-            portTitle: { text: b.name || (b.isDefault ? 'Nhánh Mặc định' : (b.defaultLabel || `Nhánh ${idx + 1}`)) }
+            portTitle: { text: b.isDefault ? t(P + 'DEFAULT_BRANCH') : (b.name || b.defaultLabel || t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 })) }
           }
         }))
       ];
     }
 
-    case 'split':
-      // Split (Parallel Gateway): In = 1 | Out >= 2
-      return [
-        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
-        { id: 'out-split-0', group: 'outSplit', attrs: { portTitle: { text: 'Nhánh song song 1' } } },
-        { id: 'out-split-1', group: 'outSplit', attrs: { portTitle: { text: 'Nhánh song song 2' } } }
-      ];
-
-    case 'merge':
+    case 'JOIN':
       // Merge (Parallel Gateway): In >= 2 | Out = 1
       return [
-        { id: 'in-merge-0', group: 'inMerge', attrs: { portTitle: { text: 'Luồng song song 1' } } },
-        { id: 'in-merge-1', group: 'inMerge', attrs: { portTitle: { text: 'Luồng song song 2' } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Tiếp tục luồng' } } }
+        { id: 'in-merge-0', group: 'inMerge', attrs: { portTitle: { text: t(P + 'MERGE_IN_N', { index: 1 }) } } },
+        { id: 'in-merge-1', group: 'inMerge', attrs: { portTitle: { text: t(P + 'MERGE_IN_N', { index: 2 }) } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'CONTINUE') } } }
       ];
 
-    case 'end':
+    case 'END':
       // End: In >= 1 | Out = 0
       return [
-        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Điểm kết thúc (End)' } } }
+        { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'END_IN') } } }
       ];
 
-    case 'notification':
+    case 'NOTIFICATION':
       return [
-        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Hoàn tất gửi' } } }
+        { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'NOTIFY_DONE') } } }
       ];
 
-    case 'sub_process':
+    case 'SUB_PROCESS':
       return [
-        { id: 'in', group: 'in', attrs: { portTitle: { text: 'Cổng vào (In)' } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: 'Hoàn tất quy trình con' } } }
+        { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
+        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'SUB_PROCESS_DONE') } } }
       ];
 
     default:
@@ -448,16 +458,16 @@ export function validateBpmnConnection(params: {
 
   const sourceData = sourceCell.getData() || {};
   const targetData = targetCell.getData() || {};
-  const sourceType = (sourceData.type || 'task') as NodeType;
-  const targetType = (targetData.type || 'task') as NodeType;
+  const sourceType = (sourceData.type || 'USER_TASK') as NodeType;
+  const targetType = (targetData.type || 'USER_TASK') as NodeType;
 
   // 2. BPMN BOUNDARY:
   // - Trigger không có cổng vào (In = 0): Cấm mọi đường nối VÀO Trigger
-  if (targetType === 'trigger') {
+  if (targetType === 'START') {
     return false;
   }
   // - End không có cổng ra (Out = 0): Cấm mọi đường nối TỪ End đi ra
-  if (sourceType === 'end') {
+  if (sourceType === 'END') {
     return false;
   }
 
@@ -492,8 +502,8 @@ export function validateBpmnConnection(params: {
     if (isDuplicate) return false;
 
     // 5. IN-DEGREE CHECK:
-    // Ngoại trừ 'merge' (gom luồng) và 'end' (kết thúc), các Node khác (Task, Action, Condition, Split) chỉ nhận tối đa 1 dây vào (In = 1)
-    if (targetType !== 'merge' && targetType !== 'end') {
+    // Ngoại trừ JOIN (gom luồng) và END (kết thúc), các node khác chỉ nhận tối đa 1 dây vào (In = 1)
+    if (targetType !== 'JOIN' && targetType !== 'END') {
       const incomingEdges = currentGraph.getIncomingEdges(targetCell) || [];
       const incomingOtherEdges = incomingEdges.filter((e: any) => !edge || e.id !== edge.id);
       if (incomingOtherEdges.length >= 1) {
@@ -540,16 +550,16 @@ export interface GraphValidationResult {
  * BPMN 2.0 Comprehensive Graph Validation Function
  * Checks all 7 BPMN node connectivity rules and returns detailed diagnostics.
  */
-export function validateBpmnGraph(graph: any): GraphValidationResult {
+export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationResult {
   const errors: GraphValidationError[] = [];
   const warnings: GraphValidationError[] = [];
 
   if (!graph) {
     return {
       isValid: false,
-      errors: [{ type: 'trigger', code: 'GRAPH_NULL', message: 'Đồ thị chưa được khởi tạo', severity: 'error' }],
+      errors: [{ type: 'START', code: 'GRAPH_NULL', message: t(V + 'GRAPH_NULL'), severity: 'error' }],
       warnings: [],
-      summary: 'Đồ thị chưa được khởi tạo'
+      summary: t(V + 'GRAPH_NULL')
     };
   }
 
@@ -559,33 +569,33 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
   if (nodes.length === 0) {
     return {
       isValid: false,
-      errors: [{ type: 'trigger', code: 'GRAPH_EMPTY', message: 'Sơ đồ trống, vui lòng thêm các bước quy trình', severity: 'error' }],
+      errors: [{ type: 'START', code: 'GRAPH_EMPTY', message: t(V + 'GRAPH_EMPTY'), severity: 'error' }],
       warnings: [],
-      summary: 'Bản vẽ đang trống'
+      summary: t(V + 'GRAPH_EMPTY_SUMMARY')
     };
   }
 
   // 1. KIỂM TRA TRIGGER (In = 0 | Out = 1)
-  const triggers = nodes.filter((n: any) => (n.getData()?.type || '') === 'trigger');
+  const triggers = nodes.filter((n: any) => (n.getData()?.type || '') === 'START');
   if (triggers.length === 0) {
     errors.push({
-      type: 'trigger',
+      type: 'START',
       code: 'TRIGGER_MISSING',
-      message: 'Quy trình thiếu điểm khởi tạo Trigger (bắt buộc có ít nhất 1 Trigger)',
+      message: t(V + 'TRIGGER_MISSING'),
       severity: 'error'
     });
   } else if (triggers.length > 1) {
     warnings.push({
-      type: 'trigger',
+      type: 'START',
       code: 'TRIGGER_MULTIPLE',
-      message: `Quy trình đang có ${triggers.length} điểm khởi tạo Trigger`,
+      message: t(V + 'TRIGGER_MULTIPLE', { count: triggers.length }),
       severity: 'warning'
     });
   }
 
   triggers.forEach((trgNode: any) => {
     const data = trgNode.getData() || {};
-    const label = data.label || 'Trigger';
+    const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.START');
     const inEdges = graph.getIncomingEdges(trgNode) || [];
     const outEdges = graph.getOutgoingEdges(trgNode) || [];
 
@@ -595,9 +605,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: trgNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'trigger',
+        type: 'START',
         code: 'TRIGGER_IN_INVALID',
-        message: `Trigger [${label}] không được phép có luồng vào (In = 0, hiện có ${inEdges.length})`,
+        message: t(V + 'TRIGGER_IN_INVALID', { label, count: inEdges.length }),
         severity: 'error'
       });
     }
@@ -608,9 +618,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: trgNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'trigger',
+        type: 'START',
         code: 'TRIGGER_OUT_ZERO',
-        message: `Trigger [${label}] chưa kết nối với bước tiếp theo (Out = 1)`,
+        message: t(V + 'TRIGGER_OUT_ZERO', { label }),
         severity: 'error'
       });
     } else if (outEdges.length > 1) {
@@ -618,28 +628,28 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: trgNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'trigger',
+        type: 'START',
         code: 'TRIGGER_OUT_EXCESS',
-        message: `Trigger [${label}] chỉ được phép có đúng 1 luồng ra (Out = 1, hiện có ${outEdges.length})`,
+        message: t(V + 'TRIGGER_OUT_EXCESS', { label, count: outEdges.length }),
         severity: 'error'
       });
     }
   });
 
   // 2. KIỂM TRA END EVENT (In >= 1 | Out = 0)
-  const endNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'end');
+  const endNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'END');
   if (endNodes.length === 0) {
     errors.push({
-      type: 'end',
+      type: 'END',
       code: 'END_MISSING',
-      message: 'Quy trình thiếu điểm kết thúc (End Event)',
+      message: t(V + 'END_MISSING'),
       severity: 'error'
     });
   }
 
   endNodes.forEach((endNode: any) => {
     const data = endNode.getData() || {};
-    const label = data.label || 'End';
+    const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.END');
     const inEdges = graph.getIncomingEdges(endNode) || [];
     const outEdges = graph.getOutgoingEdges(endNode) || [];
 
@@ -649,9 +659,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: endNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'end',
+        type: 'END',
         code: 'END_IN_ZERO',
-        message: `Điểm kết thúc [${label}] chưa nhận bất kỳ luồng nào (In >= 1)`,
+        message: t(V + 'END_IN_ZERO', { label }),
         severity: 'error'
       });
     }
@@ -662,19 +672,19 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: endNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'end',
+        type: 'END',
         code: 'END_OUT_INVALID',
-        message: `Điểm kết thúc [${label}] không được phép có luồng ra (Out = 0, hiện có ${outEdges.length})`,
+        message: t(V + 'END_OUT_INVALID', { label, count: outEdges.length }),
         severity: 'error'
       });
     }
   });
 
   // 3. KIỂM TRA ACTION (Service Task: In = 1 | Out = 2 cố định - US-22, BR-INT-05)
-  const actionNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'action');
+  const actionNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'SYSTEM_TASK');
   actionNodes.forEach((actNode: any) => {
     const data = actNode.getData() || {};
-    const label = data.label || 'Action';
+    const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.SYSTEM_TASK');
     const inEdges = graph.getIncomingEdges(actNode) || [];
     const outEdges = graph.getOutgoingEdges(actNode) || [];
 
@@ -684,25 +694,26 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: actNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'action',
+        type: 'SYSTEM_TASK',
         code: 'ACTION_IN_ZERO',
-        message: `Action [${label}] chưa có luồng kích hoạt từ bước trước (In = 1)`,
+        message: t(V + 'ACTION_IN_ZERO', { label }),
         severity: 'error'
       });
     }
 
-    // Action: Out = 2 cố định (Success + Exception Path)
-    const hasSuccessOut = outEdges.some((e: any) => (e.getSourcePortId?.() || e.getSource()?.port) === 'out-success');
-    const hasFailureOut = outEdges.some((e: any) => (e.getSourcePortId?.() || e.getSource()?.port) === 'out-failure');
+    // Action: cổng Thành công ('out', hoặc 'out-success' khi bật cổng lỗi) + cổng Lỗi ('out-failure', chỉ khi bật hasExceptionPort)
+    const outPortIds = outEdges.map((e: any) => e.getSourcePortId?.() || e.getSource()?.port);
+    const hasSuccessOut = outPortIds.includes('out') || outPortIds.includes('out-success');
+    const hasFailureOut = !data.hasExceptionPort || outPortIds.includes('out-failure');
 
     if (!hasSuccessOut) {
       errors.push({
         nodeId: actNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'action',
+        type: 'SYSTEM_TASK',
         code: 'ACTION_SUCCESS_OUT_MISSING',
-        message: `Action [${label}] bắt buộc phải nối dây cổng Thành công (200 OK)`,
+        message: t(V + 'ACTION_SUCCESS_OUT_MISSING', { label }),
         severity: 'error'
       });
     }
@@ -712,19 +723,19 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: actNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'action',
+        type: 'SYSTEM_TASK',
         code: 'ACTION_EXCEPTION_OUT_MISSING',
-        message: `Action [${label}] bắt buộc phải nối dây cổng Ngoại lệ/Lỗi màu đỏ (Exception Path theo US-22, BR-INT-05)`,
+        message: t(V + 'ACTION_EXCEPTION_OUT_MISSING', { label }),
         severity: 'error'
       });
     }
   });
 
   // 4. KIỂM TRA CONDITION (Exclusive Gateway: In = 1 | Out >= 2)
-  const conditionNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'condition');
+  const conditionNodes = nodes.filter((n: any) => isGatewayType(n.getData()?.type));
   conditionNodes.forEach((condNode: any) => {
     const data = condNode.getData() || {};
-    const label = data.label || 'Condition';
+    const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.GATEWAY_EXCLUSIVE');
     const branches = data.branches || [];
     const inEdges = graph.getIncomingEdges(condNode) || [];
     const outEdges = graph.getOutgoingEdges(condNode) || [];
@@ -735,9 +746,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: condNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'condition',
+        type: data.type,
         code: 'CONDITION_IN_ZERO',
-        message: `Condition [${label}] chưa nhận luồng từ bước trước (In = 1)`,
+        message: t(V + 'CONDITION_IN_ZERO', { label }),
         severity: 'error'
       });
     }
@@ -748,9 +759,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: condNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'condition',
+        type: data.type,
         code: 'CONDITION_BRANCH_LESS_THAN_2',
-        message: `Condition [${label}] cần cấu hình tối thiểu 2 nhánh rẽ (Out >= 2, hiện có ${branches.length})`,
+        message: t(V + 'CONDITION_BRANCH_LESS_THAN_2', { label, count: branches.length }),
         severity: 'error'
       });
     }
@@ -768,9 +779,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
             nodeId: condNode.id,
             nodeKey: data.nodeKey,
             nodeLabel: label,
-            type: 'condition',
+            type: data.type,
             code: 'CONDITION_DEFAULT_UNCONNECTED',
-            message: `Nhánh mặc định [${br.name || 'Định tuyến'}] của Condition [${label}] chưa được nối dây (tuỳ chọn dự phòng)`,
+            message: t(V + 'CONDITION_DEFAULT_UNCONNECTED', { branch: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'), label }),
             severity: 'warning'
           });
         } else {
@@ -778,9 +789,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
             nodeId: condNode.id,
             nodeKey: data.nodeKey,
             nodeLabel: label,
-            type: 'condition',
+            type: data.type,
             code: 'CONDITION_BRANCH_UNCONNECTED',
-            message: `Nhánh [${br.name || `Nhánh ${idx + 1}`}] của Condition [${label}] chưa được nối dây (Out >= 2)`,
+            message: t(V + 'CONDITION_BRANCH_UNCONNECTED', { branch: br.name || t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 }), label }),
             severity: 'error'
           });
         }
@@ -789,10 +800,10 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
   });
 
   // 5. KIỂM TRA USER TASK (In = 1 | Out = 1 hoặc Out = 2 nếu là Approval Step)
-  const taskNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'task');
+  const taskNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'USER_TASK');
   taskNodes.forEach((taskNode: any) => {
     const data = taskNode.getData() || {};
-    const label = data.label || 'User Task';
+    const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.USER_TASK');
     const isApproval = !!data.isApprovalStep;
     const inEdges = graph.getIncomingEdges(taskNode) || [];
     const outEdges = graph.getOutgoingEdges(taskNode) || [];
@@ -803,9 +814,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: taskNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'task',
+        type: 'USER_TASK',
         code: 'TASK_IN_ZERO',
-        message: `User Task [${label}] chưa nhận luồng từ bước trước (In = 1)`,
+        message: t(V + 'TASK_IN_ZERO', { label }),
         severity: 'error'
       });
     }
@@ -819,9 +830,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
           nodeId: taskNode.id,
           nodeKey: data.nodeKey,
           nodeLabel: label,
-          type: 'task',
+          type: 'USER_TASK',
           code: 'TASK_APPROVAL_OUT_MISSING',
-          message: `Bước duyệt [${label}] là Approval Step (Out = 2): Bắt buộc nối cả 2 cổng Duyệt và Từ chối`,
+          message: t(V + 'TASK_APPROVAL_OUT_MISSING', { label }),
           severity: 'error'
         });
       }
@@ -831,9 +842,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
           nodeId: taskNode.id,
           nodeKey: data.nodeKey,
           nodeLabel: label,
-          type: 'task',
+          type: 'USER_TASK',
           code: 'TASK_OUT_ZERO',
-          message: `User Task [${label}] chưa kết nối luồng ra bước tiếp theo (Out = 1)`,
+          message: t(V + 'TASK_OUT_ZERO', { label }),
           severity: 'error'
         });
       } else if (outEdges.length > 1) {
@@ -841,55 +852,20 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
           nodeId: taskNode.id,
           nodeKey: data.nodeKey,
           nodeLabel: label,
-          type: 'task',
+          type: 'USER_TASK',
           code: 'TASK_OUT_EXCESS',
-          message: `User Task [${label}] chỉ được có đúng 1 luồng ra (Out = 1, nếu muốn 2 nhánh duyệt/từ chối hãy bật Approval Step)`,
+          message: t(V + 'TASK_OUT_EXCESS', { label }),
           severity: 'error'
         });
       }
     }
   });
 
-  // 6. KIỂM TRA SPLIT (Parallel Gateway: In = 1 | Out >= 2)
-  const splitNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'split');
-  splitNodes.forEach((sNode: any) => {
-    const data = sNode.getData() || {};
-    const label = data.label || 'Split Gateway';
-    const inEdges = graph.getIncomingEdges(sNode) || [];
-    const outEdges = graph.getOutgoingEdges(sNode) || [];
-
-    // Split: In = 1
-    if (inEdges.length === 0) {
-      errors.push({
-        nodeId: sNode.id,
-        nodeKey: data.nodeKey,
-        nodeLabel: label,
-        type: 'split',
-        code: 'SPLIT_IN_ZERO',
-        message: `Split Parallel Gateway [${label}] chưa có luồng vào (In = 1)`,
-        severity: 'error'
-      });
-    }
-
-    // Split: Out >= 2
-    if (outEdges.length < 2) {
-      errors.push({
-        nodeId: sNode.id,
-        nodeKey: data.nodeKey,
-        nodeLabel: label,
-        type: 'split',
-        code: 'SPLIT_OUT_LESS_THAN_2',
-        message: `Split Parallel Gateway [${label}] phải phân tách tối thiểu 2 luồng song song (Out >= 2, hiện có ${outEdges.length})`,
-        severity: 'error'
-      });
-    }
-  });
-
-  // 7. KIỂM TRA MERGE (Parallel Gateway: In >= 2 | Out = 1)
-  const mergeNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'merge');
+  // 6. KIỂM TRA JOIN – Gộp nhánh (In >= 2 | Out = 1)
+  const mergeNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'JOIN');
   mergeNodes.forEach((mNode: any) => {
     const data = mNode.getData() || {};
-    const label = data.label || 'Merge Gateway';
+    const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.JOIN');
     const inEdges = graph.getIncomingEdges(mNode) || [];
     const outEdges = graph.getOutgoingEdges(mNode) || [];
 
@@ -899,9 +875,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: mNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'merge',
+        type: 'JOIN',
         code: 'MERGE_IN_LESS_THAN_2',
-        message: `Merge Parallel Gateway [${label}] phải gom tối thiểu 2 luồng song song trước khi đi tiếp (In >= 2, hiện có ${inEdges.length})`,
+        message: t(V + 'MERGE_IN_LESS_THAN_2', { label, count: inEdges.length }),
         severity: 'error'
       });
     }
@@ -912,9 +888,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: mNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'merge',
+        type: 'JOIN',
         code: 'MERGE_OUT_ZERO',
-        message: `Merge Parallel Gateway [${label}] chưa có luồng ra sau khi đồng bộ (Out = 1)`,
+        message: t(V + 'MERGE_OUT_ZERO', { label }),
         severity: 'error'
       });
     } else if (outEdges.length > 1) {
@@ -922,9 +898,9 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
         nodeId: mNode.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: 'merge',
+        type: 'JOIN',
         code: 'MERGE_OUT_EXCESS',
-        message: `Merge Parallel Gateway [${label}] chỉ được có đúng 1 luồng ra (Out = 1, hiện có ${outEdges.length})`,
+        message: t(V + 'MERGE_OUT_EXCESS', { label, count: outEdges.length }),
         severity: 'error'
       });
     }
@@ -935,16 +911,16 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
     const inEdges = graph.getIncomingEdges(node) || [];
     const outEdges = graph.getOutgoingEdges(node) || [];
     const data = node.getData() || {};
-    const label = data.label || data.typeTitle || 'Node';
+    const label = data.label || data.typeTitle || t('PROCESS_GRAPH.NODE_TYPES.STEP');
 
     if (inEdges.length === 0 && outEdges.length === 0) {
       errors.push({
         nodeId: node.id,
         nodeKey: data.nodeKey,
         nodeLabel: label,
-        type: data.type || 'task',
+        type: data.type || 'USER_TASK',
         code: 'NODE_ISOLATED',
-        message: `Bước [${label}] đang đứng cô lập (chưa có dây nối nào)`,
+        message: t(V + 'NODE_ISOLATED', { label }),
         severity: 'error'
       });
     }
@@ -952,8 +928,8 @@ export function validateBpmnGraph(graph: any): GraphValidationResult {
 
   const isValid = errors.length === 0;
   const summary = isValid
-    ? '✅ Sơ đồ quy trình hoàn toàn hợp lệ theo chuẩn BPMN 2.0!'
-    : `❌ Phát hiện ${errors.length} lỗi vi phạm quy tắc cấu hình BPMN.`;
+    ? t(V + 'SUMMARY_VALID')
+    : t(V + 'SUMMARY_INVALID', { count: errors.length });
 
   return {
     isValid,

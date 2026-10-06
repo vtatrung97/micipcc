@@ -1,4 +1,6 @@
 import { NgModule } from '@angular/core';
+import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
+import { ProcessGraphTranslateLoader, PG_DEFAULT_LANG, getInitialProcessGraphLang } from './i18n/process-graph-i18n';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GraphEditorComponent } from './graph-editor.component';
@@ -71,12 +73,24 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
     NzToolTipModule,
     NzCheckboxModule,
     NzDropDownModule,
-    NzMenuModule
+    NzMenuModule,
+    // i18n riêng cho Canvas Builder: bản dịch nằm ở ./i18n (vi, en)
+    TranslateModule.forChild({
+      loader: { provide: TranslateLoader, useClass: ProcessGraphTranslateLoader },
+      defaultLanguage: PG_DEFAULT_LANG,
+      isolate: true
+    })
   ],
+  // forChild không tự provide TranslateStore (chỉ forRoot có) → khai báo ở đây khi app chưa dùng TranslateModule.forRoot
+  providers: [TranslateStore],
   exports: [
     GraphEditorComponent
   ]
 })
-export class GraphEditorModule { }
+export class GraphEditorModule {
+  constructor(translate: TranslateService) {
+    translate.use(getInitialProcessGraphLang());
+  }
+}
 
 
