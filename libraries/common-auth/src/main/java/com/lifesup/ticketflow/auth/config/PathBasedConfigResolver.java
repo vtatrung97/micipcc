@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class PathBasedConfigResolver {
 
-    private static final String MINIO_BUCKET = "keycloak-adapter-config-os";
+    private static final String MINIO_BUCKET = "keycloak-adapter-config";
 
     private final MinioClient minioClient;
     private final String clientObject;
