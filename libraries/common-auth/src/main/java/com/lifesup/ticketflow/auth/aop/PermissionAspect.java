@@ -11,7 +11,10 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 
-/** Checks @CheckPermission / @CheckScopePermission against the Keycloak permissions of the request. Registered by CommonAuthAutoConfiguration. */
+/**
+ * Checks @CheckPermission / @CheckScopePermission against the Keycloak permissions of the request.
+ * Internal service calls (X-API-Key) are trusted and skip the check. Registered by CommonAuthAutoConfiguration.
+ */
 @Slf4j
 @Aspect
 public class PermissionAspect {
@@ -25,7 +28,7 @@ public class PermissionAspect {
         String resourceName = checkPermission.resourceName();
         String scope = checkPermission.scope();
 
-        if (StringUtils.hasText(resourceName)
+        if (StringUtils.hasText(resourceName) && !SecurityContextUtils.isApiKeyAuthenticationToken()
                 && !SecurityContextUtils.checkPermission(resourceName, scope)) {
             log.warn("Permission denied: resource {}, scope {} on {}", resourceName, scope, method.getName());
             throw new AccessDeniedException("Permission denied");
@@ -41,7 +44,7 @@ public class PermissionAspect {
                 method.getAnnotation(CheckScopePermission.class);
         String scope = checkScopePermission.scope();
 
-        if (StringUtils.hasText(scope)
+        if (StringUtils.hasText(scope) && !SecurityContextUtils.isApiKeyAuthenticationToken()
                 && !SecurityContextUtils.checkScopePermission(scope)) {
             log.warn("Permission denied: scope {} on {}", scope, method.getName());
             throw new AccessDeniedException("Permission denied");

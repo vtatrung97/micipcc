@@ -2,6 +2,7 @@ package com.lifesup.ticketflow.auth.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lifesup.ticketflow.auth.aop.PermissionAspect;
+import com.lifesup.ticketflow.auth.filter.ApiKeyAuthenticationFilter;
 import com.lifesup.ticketflow.auth.filter.PolicyEnforcerFilter;
 import com.lifesup.ticketflow.common.api.ApiResponse;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
@@ -52,6 +53,13 @@ public class CommonAuthAutoConfiguration {
         return new PermissionAspect();
     }
 
+    /** Shared internal API keys: inject to get the X-API-Key of a target service. */
+    @Bean
+    @ConditionalOnMissingBean
+    InternalApiKeys internalApiKeys(@Value("${app.api-key.keys:}") String keys) {
+        return new InternalApiKeys(keys);
+    }
+
     /** Same as IPCC: the Keycloak adapter config of each realm is loaded from MinIO. */
     @Bean
     @ConditionalOnMissingBean(PathBasedConfigResolver.class)
@@ -71,7 +79,10 @@ public class CommonAuthAutoConfiguration {
             CommonAuthProperties properties,
             ObjectMapper objectMapper,
             LocaleResolver localeResolver,
-            ObjectProvider<PathBasedConfigResolver> configResolverProvider) throws Exception {
+            ObjectProvider<PathBasedConfigResolver> configResolverProvider,
+            InternalApiKeys internalApiKeys,
+            @Value("${app.api-key.header-name:X-API-Key}") String apiKeyHeader,
+            @Value("${spring.application.name}") String applicationName) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> {})
@@ -115,6 +126,14 @@ public class CommonAuthAutoConfiguration {
                                 writeError(request, response, ErrorCode.UNAUTHENTICATED, objectMapper, localeResolver))
                         .accessDeniedHandler((request, response, exception) ->
                                 writeError(request, response, ErrorCode.ACCESS_DENIED, objectMapper, localeResolver)))
+                .addFilterBefore(new ApiKeyAuthenticationFilter(
+                                apiKeyHeader,
+                                internalApiKeys,
+                                applicationName,
+                                (request, response, errorCode) ->
+                                        writeError(request, response, errorCode, objectMapper, localeResolver),
+                                publicEndpoints),
+                        BearerTokenAuthenticationFilter.class)
                 .addFilterAfter(new PolicyEnforcerFilter(
                                 configResolver,
                                 (request, response, errorCode) ->
