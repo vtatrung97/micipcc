@@ -37,12 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Locale;
 
-/**
- * Auto-configures stateless Keycloak authentication for Ticket Flow services, following the IPCC setup:
- * every Keycloak setting (realm, client, credentials, policy-enforcer paths) comes from the file on MinIO
- * ({@code keycloak-adapter-config-os/<application>.json}); only the auth-server-url can be overridden by
- * {@code KEYCLOAK_AUTH_SERVER_URL}.
- */
+
 @Slf4j
 @AutoConfiguration
 @EnableMethodSecurity

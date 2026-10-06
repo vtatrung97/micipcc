@@ -3,7 +3,8 @@
 Shared authentication building blocks for Ticket Flow services, following the IPCC Keycloak setup:
 
 - `PathBasedConfigResolver`: loads the Keycloak adapter config (realm, resource, credentials, policy-enforcer paths)
-  from MinIO, `keycloak-adapter-config-os/<spring.application.name>.json`, once, and caches it.
+  from MinIO, `keycloak-adapter-config/<realm>/<spring.application.name>.json`, once per realm, and caches it.
+  The realm comes from the `x-ipcc2-realm` header, or else from the first label of the request host.
 - `KeycloakAuthenticationManagerResolver`: validates the bearer JWT against the realm of that config (JWKS + issuer).
 - `PolicyEnforcerFilter`: Keycloak policy enforcer (`keycloak-policy-enforcer`) for resource/scope permissions.
 - `PermissionAspect`: `@CheckPermission` / `@CheckScopePermission` against the RPT of the policy enforcer.

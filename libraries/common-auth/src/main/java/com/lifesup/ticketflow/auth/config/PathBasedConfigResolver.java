@@ -16,8 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Resolves the Keycloak config (realm, client, credentials, policy-enforcer paths), like the IPCC
- * PathBasedConfigResolver: loads {@code <spring.application.name>.json} from the MinIO bucket {@value #MINIO_BUCKET}
- * once and caches it.
+ * PathBasedConfigResolver: loads {@code <realm>/<spring.application.name>.json} from the MinIO bucket
+ * {@value #MINIO_BUCKET} once per realm and caches it.
+ *
+ * <p>The realm comes from the {@value #REALM_HEADER} header, or else from the first label of the request host
+ * (e.g. {@code realm1.example.com} -> {@code realm1}).
  *
  * <p>{@code keycloak.config.auth-server-url}, when set, overrides the auth-server-url of the file.
  * The returned instance is cached: PolicyEnforcerFilter and KeycloakAuthenticationManagerResolver key
@@ -27,23 +30,41 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PathBasedConfigResolver {
 
     private static final String MINIO_BUCKET = "keycloak-adapter-config";
+    private static final String REALM_HEADER = "x-ipcc2-realm";
 
     private final MinioClient minioClient;
-    private final String clientObject;
+    private final String applicationName;
     private final String authServerUrl;
     private final ConcurrentHashMap<String, PolicyEnforcerConfig> cache = new ConcurrentHashMap<>();
 
     public PathBasedConfigResolver(MinioClient minioClient, String applicationName, String authServerUrl) {
         this.minioClient = minioClient;
-        this.clientObject = String.format("%s.json", applicationName);
+        this.applicationName = applicationName;
         this.authServerUrl = authServerUrl;
     }
 
     public PolicyEnforcerConfig resolve(HttpServletRequest request) {
-        return cache.computeIfAbsent(clientObject, this::load);
+        return cache.computeIfAbsent(getRealmFromRequest(request), this::load);
     }
 
-    private PolicyEnforcerConfig load(String clientObject) {
+    private String getRealmFromRequest(HttpServletRequest request) {
+        String realm = request.getHeader(REALM_HEADER);
+        if (StringUtils.hasText(realm)) {
+            return realm.trim();
+        }
+
+        String host = request.getServerName();
+        if (host != null && host.startsWith("www.")) {
+            host = host.substring(4);
+        }
+        if (host == null || !host.contains(".")) {
+            throw new IllegalStateException("Unable to resolve realm from the request headers or request host");
+        }
+        return host.substring(0, host.indexOf('.'));
+    }
+
+    private PolicyEnforcerConfig load(String realm) {
+        String clientObject = String.format("%s/%s.json", realm, applicationName);
         log.info("Cache miss, load keycloak adapter config from minio/{}/{}", MINIO_BUCKET, clientObject);
 
         PolicyEnforcerConfig config;
