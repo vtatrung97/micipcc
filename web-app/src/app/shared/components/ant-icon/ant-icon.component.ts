@@ -34,6 +34,7 @@ import {
   ExclamationCircleFill,
   ExclamationCircleOutline,
   ExperimentFill,
+  FilterOutline,
   ExperimentOutline,
   EyeOutline,
   FileAddOutline,
@@ -145,7 +146,8 @@ const ICON_REGISTRY: Record<string, any> = {
   'info-circle-fill': InfoCircleFill,
   'exclamation-circle-fill': ExclamationCircleFill,
   'thunderbolt-fill': ThunderboltFill,
-  'experiment-fill': ExperimentFill
+  'experiment-fill': ExperimentFill,
+  'filter': FilterOutline
 };
 
 @Component({

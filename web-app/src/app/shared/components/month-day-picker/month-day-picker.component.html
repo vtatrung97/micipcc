@@ -1,0 +1,34 @@
+<div class="mdp"
+     [class.mdp-sm]="size === 'small'"
+     [class.mdp-lg]="size === 'large'" [class.mdp-open]="isOpen" [class.mdp-disabled]="disabled"
+     [class.mdp-status-error]="status === 'error'" [class.mdp-status-warning]="status === 'warning'">
+  <div class="mdp-field" role="button" tabindex="0"
+       [attr.aria-expanded]="isOpen"
+       [attr.aria-disabled]="disabled"
+       (click)="togglePicker()"
+       (keydown.enter)="togglePicker()"
+       (keydown.space)="$event.preventDefault(); togglePicker()">
+    <span class="mdp-value" *ngIf="hasValue">{{ displayValue }}</span>
+    <span class="mdp-placeholder" *ngIf="!hasValue">{{ placeholder }}</span>
+
+    <span class="mdp-clear" *ngIf="allowClear && hasValue && !disabled"
+          (click)="clearValue($event)" title="Xoá ngày đã chọn">
+      <ant-icon name="close-circle-fill" [size]="14"></ant-icon>
+    </span>
+    <span class="mdp-suffix">
+      <ant-icon name="calendar" [size]="18"></ant-icon>
+    </span>
+  </div>
+
+  <div class="mdp-dropdown" *ngIf="isOpen" [class.mdp-dropdown-left]="placement === 'bottomLeft'"
+       role="listbox" [attr.aria-multiselectable]="multiple">
+    <button type="button" class="mdp-day" *ngFor="let day of days"
+            role="option"
+            [attr.aria-selected]="isSelected(day)"
+            [class.mdp-day-selected]="isSelected(day)"
+            [disabled]="isDayDisabled(day)"
+            (click)="toggleDay(day)">
+      {{ day }}
+    </button>
+  </div>
+</div>

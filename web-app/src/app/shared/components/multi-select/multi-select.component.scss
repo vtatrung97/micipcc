@@ -1,0 +1,302 @@
+@use '../../styles/processx-tokens' as px;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ms {
+  position: relative;
+  width: 100%;
+}
+
+// ===== Ô hiển thị =====
+.ms-trigger {
+  @include px.field-box;
+  @include px.body-md-regular;
+  display: flex;
+  align-items: center;
+  gap: px.$space-8;
+  width: 100%;
+  // Figma tính viền 1px nằm trong khung 48px → chốt height (border-box), không dùng padding 12 + viền = 50px
+  @include px.field-size(middle);
+  cursor: pointer;
+  outline: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: px.$neutral-800;
+  }
+}
+
+// Có tag: lề trái 6px như design (tag cao 36 nằm giữa khung 48)
+.ms-has-value .ms-trigger {
+  padding: 0 px.$space-12 0 px.$space-6;
+}
+
+.ms-open .ms-trigger {
+  border-color: px.$neutral-800;
+}
+
+.ms-status-error .ms-trigger {
+  border-color: px.$primary-600;
+}
+
+.ms-status-warning .ms-trigger {
+  border-color: px.$warning;
+}
+
+.ms-disabled .ms-trigger {
+  background: px.$neutral-100;
+  border-color: px.$neutral-300;
+  cursor: not-allowed;
+}
+
+.ms-placeholder {
+  flex: 1;
+  min-width: 0;
+  color: px.$neutral-500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ms-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+// ===== Tag =====
+.ms-tags {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: px.$space-8;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ms-tag {
+  @include px.body-sm-regular;
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-8;
+  max-width: 180px;
+  flex-shrink: 0;
+  padding: px.$space-8 px.$space-8 px.$space-8 px.$space-12;
+  background: px.$neutral-200;
+  border-radius: px.$radius-sm;
+  color: px.$neutral-900;
+}
+
+.ms-tag-more {
+  padding: px.$space-8 px.$space-12;
+}
+
+.ms-tag-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ms-tag-close {
+  display: flex;
+  flex-shrink: 0;
+  padding: px.$space-4;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-300;
+  }
+}
+
+// ===== Dropdown panel =====
+.ms-panel {
+  position: absolute;
+  top: calc(100% + #{px.$space-8});
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  max-height: 370px;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+  box-shadow: px.$shadow-menu;
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.ms-search {
+  flex-shrink: 0;
+  padding: px.$space-8 px.$space-8 0;
+}
+
+.ms-search-box {
+  display: flex;
+  align-items: center;
+  gap: px.$space-8;
+  height: 40px;
+  padding: px.$space-8 px.$space-12;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-md;
+  cursor: text;
+
+  &:focus-within {
+    border-color: px.$neutral-800;
+  }
+
+  img {
+    flex-shrink: 0;
+  }
+}
+
+.ms-search-input {
+  @include px.body-sm-regular;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: px.$neutral-900;
+
+  &::placeholder {
+    color: px.$neutral-500;
+  }
+}
+
+.ms-menu {
+  flex: 1;
+  min-height: 0;
+  padding: px.$space-4 0;
+  overflow-y: auto;
+
+  // Thanh cuộn mảnh theo design (_Scroll bar: 8px, Neutral/300, bo 8)
+  scrollbar-width: thin;
+  scrollbar-color: px.$neutral-300 transparent;
+
+  &::-webkit-scrollbar {
+    width: 16px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: px.$neutral-300;
+    border: 4px solid px.$white;
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.ms-item {
+  padding: px.$space-2 px.$space-6;
+  cursor: pointer;
+
+  &:hover .ms-item-content {
+    background: px.$neutral-100;
+  }
+
+  &.ms-item-disabled {
+    cursor: not-allowed;
+
+    .ms-item-label {
+      color: px.$neutral-500;
+    }
+
+    &:hover .ms-item-content {
+      background: transparent;
+    }
+  }
+}
+
+.ms-item-content {
+  display: flex;
+  align-items: center;
+  gap: px.$space-8;
+  padding: 10px;
+  border-radius: px.$radius-sm;
+}
+
+.ms-item-label {
+  @include px.body-md-regular;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: px.$neutral-900;
+}
+
+.ms-empty {
+  @include px.body-sm-regular;
+  padding: px.$space-16;
+  text-align: center;
+  color: px.$neutral-500;
+}
+
+// ===== Checkbox (Checkbox / Base) =====
+.ms-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-sm;
+  box-sizing: border-box;
+
+  &.ms-checkbox-checked {
+    background: px.$primary-600;
+    border-color: px.$primary-200;
+  }
+
+  &.ms-checkbox-indeterminate {
+    border-color: px.$primary-600;
+  }
+}
+
+/* Sizes: small 40 · middle 48 (mặc định) · large 56 — xem $field-sizes */
+.ms-sm {
+  .ms-trigger {
+    @include px.field-size(small);
+  }
+
+  // Tag nhỏ cao 28 nằm giữa khung 40
+  .ms-tag {
+    padding: px.$space-4 px.$space-4 px.$space-4 px.$space-8;
+  }
+
+  .ms-tag-more {
+    padding: px.$space-4 px.$space-8;
+  }
+
+  .ms-item-label {
+    @include px.body-sm-regular;
+  }
+
+  .ms-item-content {
+    padding: px.$space-8;
+  }
+}
+
+.ms-sm.ms-has-value .ms-trigger {
+  padding: 0 px.$space-12 0 px.$space-6;
+}
+
+.ms-lg .ms-trigger {
+  @include px.field-size(large);
+}
+
+// Tag cao 36 nằm giữa khung 56 → lề trái 10 cho đều
+.ms-lg.ms-has-value .ms-trigger {
+  padding: 0 px.$space-16 0 10px;
+}

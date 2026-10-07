@@ -11,6 +11,11 @@ import { SlaBadgeModule } from './components/sla-badge/sla-badge.module';
 import { AntInputModule } from './components/ant-input/ant-input.module';
 import { AntSelectModule } from './components/ant-select/ant-select.module';
 import { DatePickerModule } from './components/date-picker/date-picker.module';
+import { MonthDayPickerModule } from './components/month-day-picker/month-day-picker.module';
+import { AntTextareaModule } from './components/ant-textarea/ant-textarea.module';
+import { MultiSelectModule } from './components/multi-select/multi-select.module';
+import { QuickFilterModule } from './components/quick-filter/quick-filter.module';
+import { DrawerModule } from './components/drawer/drawer.module';
 import { AntCheckboxModule } from './components/ant-checkbox/ant-checkbox.module';
 import { FormFieldModule } from './components/form-field/form-field.module';
 
@@ -34,13 +39,18 @@ const SHARED_MODULES = [
   FormsModule,
   ReactiveFormsModule,
   
-  // 14 Shared Component Modules
+  // 19 Shared Component Modules
   AntIconModule,
   BreadcrumbsModule,
   SlaBadgeModule,
   AntInputModule,
   AntSelectModule,
   DatePickerModule,
+  MonthDayPickerModule,
+  AntTextareaModule,
+  MultiSelectModule,
+  QuickFilterModule,
+  DrawerModule,
   AntCheckboxModule,
   FormFieldModule,
   DataTableModule,

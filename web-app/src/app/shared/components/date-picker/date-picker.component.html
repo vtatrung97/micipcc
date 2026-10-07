@@ -1,76 +1,81 @@
-<div class="ant-picker-wrapper" [class.ant-picker-disabled]="disabled">
-  <div class="ant-picker" (click)="togglePicker($event)">
-    <span class="ant-picker-prefix">
-      <ant-icon name="calendar" [size]="14"></ant-icon>
-    </span>
+<div class="dp"
+     [class.dp-sm]="size === 'small'"
+     [class.dp-lg]="size === 'large'"
+     [class.dp-open]="isOpen"
+     [class.dp-disabled]="disabled"
+     [class.dp-has-value]="hasValue"
+     [class.dp-status-error]="status === 'error'"
+     [class.dp-status-warning]="status === 'warning'">
 
+  <!-- Ô hiển thị (Date pickers input) -->
+  <div class="dp-field" role="button" tabindex="0"
+       [attr.aria-expanded]="isOpen"
+       [attr.aria-disabled]="disabled"
+       (click)="togglePicker()"
+       (keydown.enter)="togglePicker()">
     <ng-container *ngIf="!isRange">
-      <input 
-        type="text" 
-        class="ant-picker-input" 
-        [placeholder]="placeholder || 'DD/MM/YYYY'" 
-        [value]="displaySingle" 
-        readonly />
+      <span class="dp-value" *ngIf="displaySingle; else singlePlaceholder">{{ displaySingle }}</span>
+      <ng-template #singlePlaceholder>
+        <span class="dp-placeholder">{{ placeholder || 'DD/MM/YYYY' }}</span>
+      </ng-template>
     </ng-container>
 
     <ng-container *ngIf="isRange">
-      <input 
-        type="text" 
-        class="ant-picker-input" 
-        [placeholder]="startPlaceholder || 'Từ ngày'" 
-        [value]="displayStart" 
-        readonly />
-      <span class="ant-picker-separator">~</span>
-      <input 
-        type="text" 
-        class="ant-picker-input" 
-        [placeholder]="endPlaceholder || 'Đến ngày'" 
-        [value]="displayEnd" 
-        readonly />
+      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayStart">{{ displayStart || startPlaceholder || 'Từ ngày' }}</span>
+      <span class="dp-separator">–</span>
+      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayEnd">{{ displayEnd || endPlaceholder || 'Đến ngày' }}</span>
     </ng-container>
 
-    <span 
-      class="ant-picker-clear" 
-      *ngIf="allowClear && hasValue && !disabled" 
-      (click)="clearValue($event)"
-      title="Xóa ngày">
-      <ant-icon name="close-circle-fill" [size]="12"></ant-icon>
+    <span class="dp-clear" *ngIf="allowClear && hasValue && !disabled"
+          (click)="clearValue($event)" title="Xoá ngày">
+      <ant-icon name="close-circle-fill" [size]="14"></ant-icon>
     </span>
-
-    <span class="ant-picker-suffix" *ngIf="!allowClear || !hasValue">
-      <ant-icon name="calendar" [size]="14"></ant-icon>
-    </span>
+    <img class="dp-suffix" [src]="icons.calendar" width="24" height="24" alt="" />
   </div>
 
-  <!-- Popup Dropdown for Quick Presets / Selection -->
-  <div class="ant-picker-dropdown" *ngIf="isOpen" (click)="$event.stopPropagation()">
-    <div class="picker-presets" *ngIf="isRange">
-      <button type="button" class="preset-btn" (click)="selectPreset('today')">Hôm nay</button>
-      <button type="button" class="preset-btn" (click)="selectPreset('7days')">7 ngày qua</button>
-      <button type="button" class="preset-btn" (click)="selectPreset('30days')">30 ngày qua</button>
-      <button type="button" class="preset-btn" (click)="selectPreset('thisMonth')">Tháng này</button>
+  <!-- Popup lịch (Date pickers / Date single) -->
+  <div class="dp-panel" *ngIf="isOpen" (click)="$event.stopPropagation()">
+    <div class="dp-header">
+      <button type="button" class="dp-nav" (click)="shiftMonth(-1)" aria-label="Tháng trước">
+        <img [src]="icons.prev" width="20" height="20" alt="" />
+      </button>
+      <span class="dp-title">{{ monthTitle }}</span>
+      <button type="button" class="dp-nav" (click)="shiftMonth(1)" aria-label="Tháng sau">
+        <img [src]="icons.next" width="20" height="20" alt="" />
+      </button>
     </div>
 
-    <div class="picker-date-inputs">
-      <div class="date-field">
-        <label>{{ isRange ? 'Từ ngày:' : 'Chọn ngày:' }}</label>
-        <input 
-          type="date" 
-          [value]="rawStart" 
-          (change)="onDateChange($event, 'start')" />
-      </div>
-      <div class="date-field" *ngIf="isRange">
-        <label>Đến ngày:</label>
-        <input 
-          type="date" 
-          [value]="rawEnd" 
-          (change)="onDateChange($event, 'end')" />
-      </div>
+    <div class="dp-toolbar">
+      <input type="text" class="dp-input"
+             [placeholder]="isRange ? 'DD/MM/YYYY - DD/MM/YYYY' : 'DD/MM/YYYY'"
+             [readonly]="isRange"
+             [(ngModel)]="typedDate"
+             (keydown.enter)="commitTypedDate()"
+             (blur)="!isRange && commitTypedDate()" />
+      <button type="button" class="dp-today" (click)="selectToday()">Hôm nay</button>
     </div>
 
-    <div class="picker-actions">
-      <button type="button" class="picker-btn picker-btn-clear" (click)="clearValue($event)">Xóa</button>
-      <button type="button" class="picker-btn picker-btn-apply" (click)="applySelection()">Áp dụng</button>
+    <div class="dp-presets" *ngIf="isRange">
+      <button type="button" class="dp-preset" *ngFor="let p of presets.slice(1)" (click)="selectPreset(p.key)">
+        {{ p.label }}
+      </button>
+    </div>
+
+    <div class="dp-calendar">
+      <div class="dp-weekdays">
+        <span class="dp-weekday" *ngFor="let w of weekdays">{{ w }}</span>
+      </div>
+      <div class="dp-grid">
+        <button type="button" class="dp-cell" *ngFor="let cell of cells"
+                [class.dp-cell-outside]="!cell.inMonth"
+                [class.dp-cell-selected]="isSelected(cell)"
+                [class.dp-cell-in-range]="isInRange(cell)"
+                [attr.aria-pressed]="isSelected(cell)"
+                (click)="selectCell(cell)">
+          {{ cell.day }}
+          <img class="dp-dot" *ngIf="cell.isToday && !isSelected(cell)" src="assets/icons/processx/dot.svg" width="5" height="5" alt="" />
+        </button>
+      </div>
     </div>
   </div>
 </div>

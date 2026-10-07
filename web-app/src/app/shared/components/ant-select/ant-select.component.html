@@ -1,27 +1,27 @@
 <div 
   #container
-  class="ant-select" 
-  [class.ant-select-open]="isOpen"
-  [class.ant-select-disabled]="disabled"
-  [class.ant-select-focused]="isOpen"
-  [class.ant-select-allow-clear]="allowClear"
-  [class.ant-select-sm]="size === 'small'"
-  [class.ant-select-lg]="size === 'large'"
+  class="px-select" 
+  [class.px-select-open]="isOpen"
+  [class.px-select-disabled]="disabled"
+  [class.px-select-focused]="isOpen"
+  [class.px-select-allow-clear]="allowClear"
+  [class.px-select-sm]="size === 'small'"
+  [class.px-select-lg]="size === 'large'"
   [class.has-prefix]="!!prefixIcon">
   
   <!-- Selection trigger box -->
-  <div class="ant-select-selector" (click)="toggleDropdown($event)">
+  <div class="px-select-selector" (click)="toggleDropdown($event)">
     <!-- Prefix Icon if provided -->
-    <span class="ant-select-prefix" *ngIf="prefixIcon">
+    <span class="px-select-prefix" *ngIf="prefixIcon">
       <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
     </span>
 
     <!-- Search input when showSearch is active and dropdown is open -->
-    <span class="ant-select-selection-search" *ngIf="showSearch && isOpen">
+    <span class="px-select-selection-search" *ngIf="showSearch && isOpen">
       <input 
         #searchInput
         type="text" 
-        class="ant-select-selection-search-input"
+        class="px-select-selection-search-input"
         [(ngModel)]="searchQuery" 
         (click)="$event.stopPropagation()"
         (keydown)="onKeyDown($event)"
@@ -29,7 +29,7 @@
     </span>
 
     <!-- Selected item text display -->
-    <span class="ant-select-selection-item" *ngIf="selectedOption && (!showSearch || !isOpen)">
+    <span class="px-select-selection-item" *ngIf="selectedOption && (!showSearch || !isOpen)">
       <span 
         class="option-dot" 
         *ngIf="selectedOption.dotColor" 
@@ -48,39 +48,39 @@
     </span>
 
     <!-- Placeholder when nothing selected -->
-    <span class="ant-select-selection-placeholder" *ngIf="!selectedOption && (!showSearch || !isOpen || !searchQuery)">
+    <span class="px-select-selection-placeholder" *ngIf="!selectedOption && (!showSearch || !isOpen || !searchQuery)">
       {{ placeholder }}
     </span>
 
     <!-- Clear Button -->
     <span 
-      class="ant-select-clear" 
+      class="px-select-clear" 
       *ngIf="allowClear && selectedOption && !disabled" 
       (click)="clearSelection($event)"
       title="Xóa lựa chọn">
-      <ant-icon name="close-circle-fill" [size]="12"></ant-icon>
+      <ant-icon name="close-circle-fill" [size]="14"></ant-icon>
     </span>
 
     <!-- Dropdown Arrow -->
-    <span class="ant-select-arrow" [class.ant-select-arrow-loading]="loading">
-      <ant-icon *ngIf="!loading" name="down" [size]="11" [rotate]="isOpen ? 180 : 0"></ant-icon>
-      <ant-icon *ngIf="loading" name="sync" [size]="12" [spin]="true"></ant-icon>
+    <span class="px-select-arrow" [class.px-select-arrow-loading]="loading">
+      <img *ngIf="!loading" [src]="isOpen ? 'assets/icons/processx/chevron-up-active.svg' : 'assets/icons/processx/chevron-down.svg'" width="24" height="24" alt="" />
+      <ant-icon *ngIf="loading" name="sync" [size]="18" [spin]="true"></ant-icon>
     </span>
   </div>
 
   <!-- Dropdown Popup Menu -->
   <div 
-    class="ant-select-dropdown" 
+    class="px-select-dropdown" 
     *ngIf="isOpen" 
     (click)="$event.stopPropagation()">
     
     <div class="dropdown-options-list" *ngIf="filteredOptions.length > 0">
       <div 
         *ngFor="let opt of filteredOptions; let i = index"
-        class="ant-select-item ant-select-item-option"
-        [class.ant-select-item-option-selected]="isSelected(opt)"
-        [class.ant-select-item-option-disabled]="opt.disabled"
-        [class.ant-select-item-option-active]="i === activeHoverIndex"
+        class="px-select-item px-select-item-option"
+        [class.px-select-item-option-selected]="isSelected(opt)"
+        [class.px-select-item-option-disabled]="opt.disabled"
+        [class.px-select-item-option-active]="i === activeHoverIndex"
         (click)="selectOption(opt, $event)"
         (mouseenter)="activeHoverIndex = i">
         
@@ -104,13 +104,13 @@
         </div>
 
         <span class="option-check" *ngIf="isSelected(opt)">
-          <ant-icon name="check" [size]="12"></ant-icon>
+          <img src="assets/icons/processx/check-primary.svg" width="20" height="20" alt="" />
         </span>
       </div>
     </div>
 
     <!-- Empty state -->
-    <div class="ant-select-empty" *ngIf="filteredOptions.length === 0">
+    <div class="px-select-empty" *ngIf="filteredOptions.length === 0">
       <ant-icon name="inbox" [size]="28" color="#d9d9d9"></ant-icon>
       <span class="empty-text">Không có dữ liệu</span>
     </div>

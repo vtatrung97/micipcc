@@ -146,6 +146,13 @@
             [allowClear]="true">
           </ant-select>
         </div>
+
+        <!-- Mở drawer "Bộ lọc nâng cao" (Buttons / Link Primary) -->
+        <button type="button" class="btn-advanced-filter" (click)="showAdvancedFilter = true">
+          <ant-icon name="filter" [size]="20"></ant-icon>
+          <span>Bộ lọc nâng cao</span>
+          <span class="advanced-filter-count" *ngIf="advancedFilterCount > 0">{{ advancedFilterCount }}</span>
+        </button>
       </div>
 
       <div class="toolbar-right" *ngIf="hasActiveFilter">
@@ -813,3 +820,12 @@
     </div>
   </div>
 </div>
+
+<!-- Drawer "Bộ lọc nâng cao" (Figma 71:11833) -->
+<app-advanced-filter-drawer
+  [visible]="showAdvancedFilter"
+  [value]="advancedFilter"
+  [versionOptions]="versionOptions"
+  (apply)="applyAdvancedFilter($event)"
+  (closed)="showAdvancedFilter = false">
+</app-advanced-filter-drawer>

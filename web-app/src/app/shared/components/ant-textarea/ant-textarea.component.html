@@ -1,0 +1,25 @@
+<div class="px-textarea"
+     [class.px-textarea-sm]="size === 'small'"
+     [class.px-textarea-lg]="size === 'large'"
+     [class.px-textarea-focused]="isFocused"
+     [class.px-textarea-disabled]="disabled"
+     [class.px-textarea-readonly]="readonly"
+     [class.px-textarea-status-error]="status === 'error'"
+     [class.px-textarea-status-warning]="status === 'warning'">
+  <textarea
+    class="px-textarea-input"
+    [style.height.px]="height"
+    [style.resize]="resizable ? 'vertical' : 'none'"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    [readonly]="readonly"
+    [attr.maxlength]="maxLength || null"
+    [value]="value"
+    (input)="onInput($event)"
+    (focus)="isFocused = true"
+    (blur)="onBlur()"></textarea>
+
+  <span class="px-textarea-count" *ngIf="showCount && maxLength">
+    {{ value.length }} / {{ maxLength }}
+  </span>
+</div>

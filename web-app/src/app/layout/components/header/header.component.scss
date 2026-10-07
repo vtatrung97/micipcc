@@ -200,4 +200,15 @@
       font-size: 14px;
     }
   }
+
+  .ui-kit-btn {
+    text-decoration: none;
+
+    &.is-active {
+      background: #fff1f3;
+      border-color: #ffc0cd;
+      color: #ed0231;
+      font-weight: 600;
+    }
+  }
 }

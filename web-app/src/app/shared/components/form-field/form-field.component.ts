@@ -11,4 +11,6 @@ export class FormFieldComponent {
   @Input() colon: boolean = false;
   @Input() hint?: string;
   @Input() error?: string;
+  /** Khoảng cách dưới field (px). Đặt 0 khi container cha đã tự chia gap (vd: drawer) */
+  @Input() spacing: number = 16;
 }

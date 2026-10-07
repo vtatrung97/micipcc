@@ -1,184 +1,301 @@
+@use '../../styles/processx-tokens' as px;
+
+// Theo Figma ProcessX "Date pickers input" + "Date pickers / Date single" (node 71:10555).
+
 :host {
   display: inline-block;
   width: 100%;
 }
 
-.ant-picker-wrapper {
+.dp {
   position: relative;
   width: 100%;
 }
 
-.ant-picker {
+// ===== Ô hiển thị: cao 48, radius 12, icon lịch 24 =====
+.dp-field {
+  @include px.field-box;
+  @include px.body-md-regular;
   display: flex;
   align-items: center;
+  gap: px.$space-8;
   width: 100%;
-  padding: 4px 11px;
-  background-color: #ffffff;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  font-size: 13px;
+  @include px.field-size(middle);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-  box-sizing: border-box;
+  outline: none;
 
-  &:hover:not(.ant-picker-disabled) {
-    border-color: #4096ff;
+  &:hover,
+  &:focus-visible {
+    border-color: px.$neutral-800;
   }
 }
 
-.ant-picker-disabled .ant-picker {
-  background-color: #f5f5f5;
-  color: #00000040;
+.dp-open .dp-field {
+  border-color: px.$neutral-800;
+}
+
+.dp-status-error .dp-field {
+  border-color: px.$primary-600;
+}
+
+.dp-status-warning .dp-field {
+  border-color: px.$warning;
+}
+
+.dp-disabled .dp-field {
+  background: px.$neutral-100;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
   cursor: not-allowed;
-  border-color: #d9d9d9;
-
-  .ant-picker-input {
-    cursor: not-allowed;
-  }
 }
 
-.ant-picker-prefix, .ant-picker-suffix {
-  color: #8c8c8c;
-  display: flex;
-  align-items: center;
-}
-
-.ant-picker-prefix {
-  margin-right: 8px;
-}
-
-.ant-picker-suffix {
-  margin-left: auto;
-}
-
-.ant-picker-input {
+.dp-value {
   flex: 1;
   min-width: 0;
-  border: none;
-  outline: none;
-  font-size: 13px;
-  color: #1f2937;
-  background: transparent;
-  cursor: pointer;
-
-  &::placeholder {
-    color: #94a3b8;
-  }
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: px.$neutral-900;
 }
 
-.ant-picker-separator {
-  padding: 0 8px;
-  color: #8c8c8c;
+.dp-placeholder {
+  flex: 1;
+  min-width: 0;
+  color: px.$neutral-500;
 }
 
-.ant-picker-clear {
-  margin-left: auto;
-  color: #bfbfbf;
-  display: flex;
+.dp-range-part {
+  flex: 0 1 auto;
+}
+
+.dp-separator {
+  color: px.$neutral-500;
+}
+
+.dp-clear {
+  display: none;
   align-items: center;
+  margin-left: auto;
+  color: px.$neutral-400;
   cursor: pointer;
 
   &:hover {
-    color: #595959;
+    color: px.$neutral-600;
   }
 }
 
-.ant-picker-dropdown {
+.dp-suffix {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+// Hover vào ô có giá trị: hiện nút xoá thay cho icon lịch
+.dp-has-value:not(.dp-disabled) .dp-field:hover {
+  .dp-clear {
+    display: inline-flex;
+  }
+
+  .dp-suffix {
+    display: none;
+  }
+}
+
+// ===== Popup: rộng 312, padding 16, radius 16, Effect menu =====
+.dp-panel {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + #{px.$space-8});
   left: 0;
-  min-width: 260px;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12);
-  border: 1px solid #f0f0f0;
-  padding: 12px;
   z-index: 1050;
-  animation: pickerSlide 0.18s ease;
-}
-
-.picker-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-
-  .preset-btn {
-    padding: 3px 8px;
-    font-size: 12px;
-    color: #4b5563;
-    background: #f3f4f6;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background: #e6f4ff;
-      color: #1677ff;
-    }
-  }
-}
-
-.picker-date-inputs {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
-
-  .date-field {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-
-    label {
-      font-size: 12px;
-      color: #6b7280;
-      white-space: nowrap;
-    }
-
-    input {
-      padding: 4px 8px;
-      font-size: 12px;
-      border: 1px solid #d9d9d9;
-      border-radius: 4px;
-      outline: none;
-
-      &:focus {
-        border-color: #1677ff;
-      }
-    }
-  }
+  gap: px.$space-8;
+  width: 312px;
+  padding: px.$space-16;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$space-16;
+  box-shadow: px.$shadow-menu;
+  backdrop-filter: blur(16px);
+  box-sizing: border-box;
+  animation: dpSlide 0.18s ease;
 }
 
-.picker-actions {
+.dp-header {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  .picker-btn {
-    padding: 4px 10px;
-    font-size: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    border: 1px solid transparent;
+.dp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8;
+  border: none;
+  border-radius: px.$radius-md;
+  background: transparent;
+  cursor: pointer;
 
-    &.picker-btn-clear {
-      background: #f3f4f6;
-      color: #4b5563;
-    }
-    &.picker-btn-apply {
-      background: #1677ff;
-      color: #ffffff;
+  &:hover {
+    background: px.$neutral-100;
+  }
+}
+
+.dp-title {
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-900;
+}
+
+.dp-toolbar {
+  display: flex;
+  gap: px.$space-8;
+}
+
+.dp-input {
+  @include px.body-sm-regular;
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: px.$space-8 px.$space-12;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-md;
+  outline: none;
+  color: px.$neutral-900;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: px.$neutral-500;
+  }
+
+  &:focus {
+    border-color: px.$neutral-800;
+  }
+}
+
+.dp-today,
+.dp-preset {
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  padding: px.$space-8 px.$space-16;
+  border: 1px solid px.$primary-400;
+  border-radius: px.$radius-md;
+  background: px.$white;
+  color: px.$primary-600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-100;
+  }
+}
+
+.dp-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: px.$space-8;
+
+  .dp-preset {
+    padding: px.$space-4 px.$space-12;
+    border-color: px.$neutral-300;
+    color: px.$neutral-800;
+
+    &:hover {
+      border-color: px.$neutral-800;
+      background: px.$white;
     }
   }
 }
 
-@keyframes pickerSlide {
+// ===== Lưới lịch: 7 cột x 40px, hàng cách 4px =====
+.dp-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-4;
+  width: 280px;
+}
+
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+}
+
+.dp-weekday {
+  padding: 10px;
+  font-family: px.$font-family;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: px.$neutral-900;
+}
+
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  row-gap: px.$space-4;
+}
+
+.dp-cell {
+  @include px.body-sm-regular;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  color: px.$neutral-900;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover:not(.dp-cell-selected) {
+    background: px.$neutral-100;
+  }
+
+  &.dp-cell-outside {
+    color: px.$neutral-500;
+  }
+
+  &.dp-cell-in-range {
+    background: px.$neutral-200;
+  }
+
+  &.dp-cell-selected {
+    background: px.$primary-500;
+    color: px.$white;
+  }
+}
+
+// Chấm đỏ đánh dấu hôm nay
+.dp-dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateX(-50%);
+}
+
+@keyframes dpSlide {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sizes: small 40 · middle 48 (mặc định) · large 56 — xem $field-sizes */
+.dp-sm .dp-field {
+  @include px.field-size(small);
+
+  .dp-suffix {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.dp-lg .dp-field {
+  @include px.field-size(large);
 }
