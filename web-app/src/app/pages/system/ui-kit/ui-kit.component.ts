@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
+import { ActionMenuItem } from '@shared/components/action-menu/action-menu.component';
+import { TableSelection } from '@shared/utils/table-selection';
 
 /** Mô tả một @Input/@Output của component để hiển thị bảng API */
 interface ApiRow {
@@ -107,6 +109,66 @@ export class UiKitComponent {
   monthDaysEmpty: number[] = [];
   monthDaySingle: number | null = null;
   monthDaysLimited: number[] = [];
+
+  // ===== Data table: chọn nhiều hàng =====
+  /** Demo dùng chung 3 hàng cho mọi trang → khoá gồm cả số trang để thấy việc giữ lựa chọn khi chuyển trang */
+  readonly tableSelection = new TableSelection<{ code: string }>(row => `${this.tablePage}:${row.code}`);
+
+  /** Hàng đang hiển thị (trang hiện tại) — phạm vi của checkbox "chọn tất cả" */
+  get visibleTableRows(): { code: string }[] {
+    return this.tableEmpty ? [] : this.tableRows;
+  }
+
+  // ===== Data table: menu hành động "⋮" (Figma 197:25236 + 364:25166) =====
+  lastRowAction: string = '';
+  /** Cache theo trạng thái để không tạo mảng mới mỗi vòng change detection */
+  private readonly rowMenuCache: Record<string, ActionMenuItem[]> = {};
+
+  rowMenuItems(row: { status: string }): ActionMenuItem[] {
+    const isPublished = row.status === 'published';
+    const key = isPublished ? 'published' : 'other';
+    return this.rowMenuCache[key] ??= [
+      { key: 'clone', label: 'Nhân bản' },
+      { key: 'unpublish', label: 'Dừng ban hành', disabled: !isPublished },
+      { key: 'delete', label: 'Xóa', danger: true }
+    ];
+  }
+
+  onRowAction(key: string, row: { code: string }): void {
+    const labels: Record<string, string> = { clone: 'Nhân bản', unpublish: 'Dừng ban hành', delete: 'Xóa' };
+    this.lastRowAction = `${labels[key] || key} · ${row.code}`;
+  }
+
+  // ===== Radio =====
+  triggerType: string = 'schedule';
+  triggerOptions: SelectOption[] = [
+    { value: 'manual', label: 'Kích hoạt thủ công' },
+    { value: 'auto', label: 'Kích hoạt tự động' },
+    { value: 'schedule', label: 'Lặp lịch' },
+    { value: 'hybrid', label: 'Hybrid' },
+    { value: 'webhook', label: 'Webhook (disabled)', disabled: true }
+  ];
+  scheduleMode: string = 'once';
+  scheduleModeOptions: SelectOption[] = [
+    { value: 'once', label: 'Chạy một lần' },
+    { value: 'repeat', label: 'Lặp lại' }
+  ];
+  scheduleDate: string = '';
+  scheduleHour: string = '';
+  scheduleMinute: string = '';
+  radioSingle: boolean = false;
+  // Hybrid: chọn API + biểu mẫu dữ liệu đầu vào (Figma 264:16237)
+  hybridApi: string | null = null;
+  hybridForm: string | null = null;
+  hybridApiOptions: SelectOption[] = [
+    { value: 'crm-ticket-create', label: 'CRM · Tạo ticket' },
+    { value: 'crm-customer-sync', label: 'CRM · Đồng bộ khách hàng' },
+    { value: 'billing-webhook', label: 'Billing · Webhook cước' }
+  ];
+  hybridFormOptions: SelectOption[] = [
+    { value: 'form-complaint', label: 'Biểu mẫu khiếu nại' },
+    { value: 'form-survey', label: 'Biểu mẫu khảo sát' }
+  ];
 
   // ===== Checkbox =====
   checkboxStates = [
@@ -290,6 +352,20 @@ export class UiKitComponent {
       ]
     },
     {
+      id: 'radio', title: 'Radio', selector: 'app-radio-group · app-radio',
+      description: 'Theo Figma ProcessX (237:11006): ô tròn 20px, chọn → nền đỏ + ✓ trắng; nhóm dọc cách 8 / ngang cách 32; nội dung mở rộng lùi 28px trong khung nền xám.',
+      api: [
+        { name: 'ngModel (group)', type: 'any (value của option)', defaultValue: 'null' },
+        { name: 'options (group)', type: 'SelectOption[]', defaultValue: '[]' },
+        { name: 'direction (group)', type: "'vertical' | 'horizontal'", defaultValue: "'vertical'" },
+        { name: 'extraBoxed (group)', type: 'boolean', defaultValue: 'true' },
+        { name: 'ng-template appRadioExtra (group)', type: 'let-option, let-checked', defaultValue: '—' },
+        { name: 'disabled', type: 'boolean', defaultValue: 'false' },
+        { name: 'checked / label / description (radio lẻ)', type: 'boolean / string', defaultValue: '—' },
+        { name: '(valueChange) / (selected)', type: 'EventEmitter', defaultValue: '—' }
+      ]
+    },
+    {
       id: 'ant-checkbox', title: 'Checkbox', selector: 'ant-checkbox',
       description: 'Theo Figma ProcessX Design System (90:3095): 3 dạng Base / Label (+ mô tả) / Drag; trạng thái Default, Hover, Focused, Disabled, Read only; chưa chọn / đã chọn / nửa chọn.',
       api: [
@@ -315,7 +391,7 @@ export class UiKitComponent {
     },
     {
       id: 'data-table', title: 'Bảng dữ liệu', selector: 'app-data-table',
-      description: 'Khung bảng: chiếu <table> qua ng-content, tự hiển thị loading, empty state và pagination.',
+      description: 'Khung bảng ProcessX (card bo 16, header 52, hàng 60 xen kẽ trắng/#F7F7F7, cột cuối cố định khi cuộn ngang). Chiếu <table> qua ng-content, tự hiển thị loading, empty state và pagination. Class trong cell: px-cell-check (checkbox + STT), px-cell-stack + px-cell-sub (2 dòng), px-cell-actions + px-cell-action-btn (nút icon 36×36).',
       api: [
         { name: 'loading', type: 'boolean', defaultValue: 'false' },
         { name: 'loadingType', type: "'spinner' | 'dots' | 'skeleton'", defaultValue: "'spinner'" },
@@ -323,13 +399,38 @@ export class UiKitComponent {
         { name: 'total / page / pageSize', type: 'number', defaultValue: '0 / 1 / 10' },
         { name: 'pageSizeOptions', type: 'number[]', defaultValue: '[10, 20, 50, 100]' },
         { name: 'showPagination', type: 'boolean', defaultValue: 'true' },
+        { name: 'fixedLastColumn', type: 'boolean', defaultValue: 'true' },
+        { name: 'striped', type: 'boolean', defaultValue: 'true' },
         { name: 'emptyTitle / emptyDescription', type: 'string', defaultValue: '—' },
-        { name: '(onPageChange) / (onPageSizeChange)', type: 'EventEmitter<number>', defaultValue: '—' }
+        { name: '(onPageChange) / (onPageSizeChange)', type: 'EventEmitter<number>', defaultValue: '—' },
+        { name: 'Cột Hành động', type: 'button.px-cell-action-btn (Sửa, Xem) + <app-action-menu> (⋮)', defaultValue: '—' }
+      ]
+    },
+    {
+      id: 'tooltip', title: 'Tooltip', selector: '[appTooltip] · app-help-tooltip',
+      description: 'Bong bóng nền đen chữ trắng có mũi tên (Figma 107:17046) + icon "?" 16px (316:69663). Gắn vào <body> nên không bị overflow cắt; thiếu chỗ thì tự lật cạnh.',
+      api: [
+        { name: 'appTooltip', type: 'string (\\n để xuống dòng)', defaultValue: "''" },
+        { name: 'tooltipPlacement', type: "'top' | 'bottom' | 'left' | 'right'", defaultValue: "'top'" },
+        { name: 'tooltipMaxWidth', type: 'number (px)', defaultValue: '320' },
+        { name: 'tooltipDelay', type: 'number (ms)', defaultValue: '100' },
+        { name: 'tooltipDisabled', type: 'boolean', defaultValue: 'false' },
+        { name: 'app-help-tooltip: text / placement / maxWidth', type: 'string / placement / number', defaultValue: '—' }
+      ]
+    },
+    {
+      id: 'action-menu', title: 'Menu hành động (⋮)', selector: 'app-action-menu',
+      description: 'Nút ⋮ trong cột Hành động, mở menu Nhân bản / Dừng ban hành / Xóa (Figma 197:25236 + 364:25166). Menu position: fixed nên không bị bảng cuộn ngang cắt; căn phải theo nút, thiếu chỗ thì mở lên trên.',
+      api: [
+        { name: 'items', type: 'ActionMenuItem[] { key, label, danger?, disabled? }', defaultValue: '[]' },
+        { name: 'disabled', type: 'boolean', defaultValue: 'false' },
+        { name: 'title', type: 'string', defaultValue: "'Thêm hành động'" },
+        { name: '(action)', type: 'EventEmitter<string> (key)', defaultValue: '—' }
       ]
     },
     {
       id: 'pagination', title: 'Phân trang', selector: 'app-pagination',
-      description: 'Phân trang độc lập, có chọn số dòng và tổng số bản ghi.',
+      description: 'Phân trang ProcessX: "Số dòng hiển thị" + dropdown, "1 - 10 / N kết quả", dãy trang 1 2 3 … n-2 n-1 n với trang đang chọn viền đỏ.',
       api: [
         { name: 'total / page / pageSize', type: 'number', defaultValue: '0 / 1 / 10' },
         { name: 'pageSizeOptions', type: 'number[]', defaultValue: '[10, 20, 50, 100]' },

@@ -14,6 +14,21 @@ import { NodeType } from './node-type';
 export interface SaveFlowDraftPayload {
   name: string;
   description: string;
+  /** Tab "Thông tin chung" (FLOW_SCHEMA mục 1.1) */
+  code?: string;
+  category?: string | null;
+  triggerType?: 'MANUAL' | 'AUTO' | 'SCHEDULE' | 'HYBRID' | null;
+  triggerConfig?: {
+    manual?: { inputFormId: string | null };
+    auto?: {
+      apiId: string | null;
+      conditions: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
+    };
+    schedule?: { mode: 'ONCE' | 'REPEAT'; runDate: string; runTime: string };
+    hybrid?: { apiId: string | null; inputFormId: string | null };
+  } | null;
+  slaValue?: number | null;
+  slaUnit?: string;
   versionName?: string;
   rowVersion?: number;
   /** JSON.stringify(FlowDefinition) */

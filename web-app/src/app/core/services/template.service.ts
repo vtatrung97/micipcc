@@ -57,6 +57,19 @@ export interface ProcessTemplateItem {
   published_at?: string; // DD/MM/YYYY HH:mm
   updatedAt?: string;
   active_instances_count?: number; // Dành cho FR-09: Kiểm tra chặn xóa nếu còn instance chạy dở
+  // Tab "Thông tin chung" của Canvas Builder (process-graph/models/process-info.model.ts)
+  triggerType?: 'MANUAL' | 'AUTO' | 'SCHEDULE' | 'HYBRID' | null;
+  triggerConfig?: {
+    manual?: { inputFormId: string | null };
+    auto?: {
+      apiId: string | null;
+      conditions: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
+    };
+    schedule?: { mode: 'ONCE' | 'REPEAT'; runDate: string; runTime: string };
+    hybrid?: { apiId: string | null; inputFormId: string | null };
+  } | null;
+  slaValue?: number | null;
+  slaUnit?: string;
   versions?: TemplateVersionItem[];
   graphData?: any;
 }

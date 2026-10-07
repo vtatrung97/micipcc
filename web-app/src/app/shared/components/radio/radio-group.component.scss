@@ -1,0 +1,33 @@
+@use '../../styles/processx-tokens' as px;
+
+:host {
+  display: block;
+}
+
+// Dọc: cách 8 · Ngang: cách 32
+.px-radio-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: px.$space-8;
+
+  &.px-radio-group-horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: px.$space-8 px.$space-32;
+  }
+}
+
+// Lùi 28px = ô radio 20 + gap 8 → thẳng hàng với chữ
+.px-radio-extra {
+  width: 100%;
+  padding-left: 28px;
+  box-sizing: border-box;
+}
+
+// Khung nội dung: nền Neutral/100, padding 16, radius 12
+.px-radio-extra-box {
+  padding: px.$space-16;
+  border-radius: px.$radius-lg;
+  background: px.$neutral-100;
+}

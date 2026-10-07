@@ -1,6 +1,6 @@
 @use '../../styles/processx-tokens' as px;
 
-// Theo Figma ProcessX "Date pickers input" + "Date pickers / Date single" (node 71:10555).
+// Theo Figma ProcessX "Date pickers input" + "Date pickers / Date single" (71:10555) + "_Date pickers" range (293:66499).
 
 :host {
   display: inline-block;
@@ -100,7 +100,7 @@
   }
 }
 
-// ===== Popup: rộng 312, padding 16, radius 16, Effect menu =====
+// ===== Popup: padding 16, radius 16, Effect menu (single rộng 312) =====
 .dp-panel {
   position: absolute;
   top: calc(100% + #{px.$space-8});
@@ -118,6 +118,32 @@
   backdrop-filter: blur(16px);
   box-sizing: border-box;
   animation: dpSlide 0.18s ease;
+}
+
+// Phía dưới không đủ chỗ → mở lên trên ô
+.dp-panel-up {
+  top: auto;
+  bottom: calc(100% + #{px.$space-8});
+  animation-name: dpSlideUp;
+}
+
+@keyframes dpSlideUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Bên phải không đủ chỗ → căn theo mép phải ô
+.dp-panel-right {
+  left: auto;
+  right: 0;
+}
+
+// Một lịch tháng: header · ô nhập · lưới, cách nhau 8
+.dp-pane {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+  width: 280px;
 }
 
 .dp-header {
@@ -154,6 +180,7 @@
   gap: px.$space-8;
 }
 
+// Text field trong popup: padding 8/12, radius 8, 14/20
 .dp-input {
   @include px.body-sm-regular;
   flex: 1;
@@ -175,8 +202,7 @@
   }
 }
 
-.dp-today,
-.dp-preset {
+.dp-today {
   font-family: px.$font-family;
   font-size: 14px;
   line-height: 20px;
@@ -194,20 +220,100 @@
   }
 }
 
-.dp-presets {
+// ===== Khoảng ngày (_Date pickers range): 2 lịch cách 24 → popup rộng 616 =====
+.dp-panel-range {
+  width: auto;
+  // Các hàng (nhãn · 2 lịch · thanh hành động) xếp sát nhau, không gap
+  gap: 0;
+
+  .dp-input {
+    height: 36px;
+  }
+}
+
+// Hàng "Ngày bắt đầu" / "Ngày kết thúc": canh giữa trên lịch của nó, cao 36 như hàng nút
+.dp-range-labels {
+  display: grid;
+  grid-template-columns: 280px 280px;
+  column-gap: px.$space-24;
+
+  span {
+    font-family: px.$font-family;
+    font-size: 14px;
+    line-height: 36px;
+    font-weight: 500;
+    text-align: center;
+    color: px.$neutral-900;
+  }
+}
+
+.dp-range-panes {
   display: flex;
-  flex-wrap: wrap;
-  gap: px.$space-8;
+  align-items: flex-start;
+  gap: px.$space-24;
+}
 
-  .dp-preset {
-    padding: px.$space-4 px.$space-12;
-    border-color: px.$neutral-300;
-    color: px.$neutral-800;
+// Bar action: tóm tắt khoảng ngày + Đặt lại / Chọn
+.dp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: px.$space-24;
+}
 
-    &:hover {
-      border-color: px.$neutral-800;
-      background: px.$white;
-    }
+.dp-summary {
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-800;
+  white-space: nowrap;
+}
+
+.dp-actions-buttons {
+  display: flex;
+  gap: px.$space-12;
+}
+
+// Buttons md: cao 48 (viền nằm trong), padding 12/24, radius 12, SemiBold 16/24
+.dp-btn {
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  height: 48px;
+  padding: 0 px.$space-24;
+  border: 1px solid transparent;
+  border-radius: px.$radius-lg;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.dp-btn-default {
+  background: px.$white;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &:hover:not(:disabled) {
+    border-color: px.$neutral-800;
+  }
+}
+
+.dp-btn-primary {
+  background: px.$primary-600;
+  border-color: px.$primary-600;
+  color: px.$white;
+
+  &:hover:not(:disabled) {
+    background: px.$primary-500;
+    border-color: px.$primary-500;
   }
 }
 
@@ -253,7 +359,7 @@
   cursor: pointer;
   transition: background-color 0.15s ease;
 
-  &:hover:not(.dp-cell-selected) {
+  &:hover:not(.dp-cell-selected):not(:disabled) {
     background: px.$neutral-100;
   }
 
@@ -261,8 +367,11 @@
     color: px.$neutral-500;
   }
 
-  &.dp-cell-in-range {
-    background: px.$neutral-200;
+  // Range: ngày nằm ngoài khoảng hợp lệ (Calendar cell / Disabled)
+  &:disabled {
+    color: px.$neutral-500;
+    background: transparent;
+    cursor: not-allowed;
   }
 
   &.dp-cell-selected {

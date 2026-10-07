@@ -16,6 +16,9 @@ import { AntTextareaModule } from './components/ant-textarea/ant-textarea.module
 import { MultiSelectModule } from './components/multi-select/multi-select.module';
 import { QuickFilterModule } from './components/quick-filter/quick-filter.module';
 import { DrawerModule } from './components/drawer/drawer.module';
+import { RadioModule } from './components/radio/radio.module';
+import { ActionMenuModule } from './components/action-menu/action-menu.module';
+import { TooltipModule } from './components/tooltip/tooltip.module';
 import { AntCheckboxModule } from './components/ant-checkbox/ant-checkbox.module';
 import { FormFieldModule } from './components/form-field/form-field.module';
 
@@ -39,7 +42,7 @@ const SHARED_MODULES = [
   FormsModule,
   ReactiveFormsModule,
   
-  // 19 Shared Component Modules
+  // 22 Shared Component Modules
   AntIconModule,
   BreadcrumbsModule,
   SlaBadgeModule,
@@ -51,6 +54,9 @@ const SHARED_MODULES = [
   MultiSelectModule,
   QuickFilterModule,
   DrawerModule,
+  RadioModule,
+  ActionMenuModule,
+  TooltipModule,
   AntCheckboxModule,
   FormFieldModule,
   DataTableModule,

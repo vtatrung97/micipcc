@@ -1,0 +1,23 @@
+<button #trigger type="button" class="px-action-trigger"
+        [class.is-open]="isOpen"
+        [disabled]="disabled"
+        [attr.title]="title"
+        [attr.aria-label]="title"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="isOpen"
+        (click)="toggle($event)">
+  <img [src]="dotsIcon" width="20" height="20" alt="" />
+</button>
+
+<div #panel class="px-action-panel" role="menu" *ngIf="isOpen"
+     [style.top.px]="panelTop"
+     [style.left.px]="panelLeft"
+     [style.visibility]="measured ? 'visible' : 'hidden'"
+     (click)="$event.stopPropagation()">
+  <button type="button" class="px-action-item" role="menuitem" *ngFor="let item of items"
+          [class.px-action-item-danger]="item.danger"
+          [disabled]="item.disabled"
+          (click)="choose(item, $event)">
+    <span class="px-action-item-label">{{ item.label }}</span>
+  </button>
+</div>

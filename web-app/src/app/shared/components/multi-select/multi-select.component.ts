@@ -5,10 +5,12 @@ import {
   forwardRef,
   HostListener,
   Input,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectOption } from '../ant-select/ant-select.component';
+import { shouldDropUp } from '../../utils/dropdown-placement';
 
 const ICON_BASE = 'assets/icons/processx';
 
@@ -56,6 +58,12 @@ export class MultiSelectComponent implements ControlValueAccessor {
   };
 
   isOpen: boolean = false;
+  /** Dropdown mở lên trên khi phía dưới không đủ chỗ */
+  dropUp: boolean = false;
+  /** Đang đo kích thước dropdown (ẩn tạm) */
+  measuring: boolean = false;
+
+  @ViewChild('panel') panelRef?: ElementRef<HTMLDivElement>;
   keyword: string = '';
   selectedValues: any[] = [];
 
@@ -121,7 +129,7 @@ export class MultiSelectComponent implements ControlValueAccessor {
   // ===== Tương tác =====
   togglePanel(): void {
     if (this.disabled) return;
-    this.isOpen ? this.close() : (this.isOpen = true);
+    this.isOpen ? this.close() : this.open();
   }
 
   toggleOption(option: SelectOption): void {
@@ -156,6 +164,17 @@ export class MultiSelectComponent implements ControlValueAccessor {
   @HostListener('keydown.escape')
   onEscape(): void {
     if (this.isOpen) this.close();
+  }
+
+  private open(): void {
+    this.isOpen = true;
+    this.dropUp = false;
+    this.measuring = true;
+    setTimeout(() => {
+      if (!this.isOpen) return;
+      this.dropUp = shouldDropUp(this.elRef.nativeElement, this.panelRef?.nativeElement.offsetHeight || 0);
+      this.measuring = false;
+    });
   }
 
   private close(): void {

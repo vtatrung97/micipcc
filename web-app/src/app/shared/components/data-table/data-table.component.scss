@@ -1,109 +1,188 @@
+@use '../../styles/processx-tokens' as px;
+
 :host {
   display: block;
   width: 100%;
 }
 
-.ant-table-wrapper {
+// Card bảng: viền #E3E3E3, bo 16, nền trắng
+.px-table {
   position: relative;
   width: 100%;
-  background: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-xl;
+  // Không overflow: hidden ở card: dropdown "Số dòng hiển thị" của pagination phải tràn ra ngoài được.
+  // Bo góc trên do .px-table-scroll tự cắt.
+  font-family: px.$font-family;
 
-  &.ant-table-loading {
+  &.px-table-loading {
     min-height: 240px;
-  }
-
-  /* Loading Overlay che phần body nhưng giữ nguyên header */
-  .ant-table-spin-overlay {
-    position: absolute;
-    top: 48px; /* Giữ Thead hiển thị phía trên */
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.88);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 180px;
-    backdrop-filter: blur(1.5px);
-
-    app-loading-spinner {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
   }
 }
 
-.ant-table-container {
+// Loading phủ thân bảng, chừa header 52px
+.px-table-spin {
+  position: absolute;
+  top: 52px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(1.5px);
+  border-radius: 0 0 px.$radius-xl px.$radius-xl;
+}
+
+.px-table-scroll {
   position: relative;
   width: 100%;
   overflow-x: auto;
-
-  &.is-loading-container {
-    min-height: 240px;
-  }
+  border-radius: px.$radius-xl px.$radius-xl 0 0;
 }
 
-.ant-table-content {
+.px-table-content {
   width: 100%;
   transition: opacity 0.2s ease, filter 0.2s ease;
 
-  &.ant-table-blur {
+  &.px-table-blur {
     opacity: 0.35;
     pointer-events: none;
     user-select: none;
     filter: blur(0.5px);
   }
+}
 
-  ::ng-deep table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+.px-table-empty {
+  padding: 36px px.$space-16;
+  text-align: center;
+  background: px.$white;
+  border-top: 1px solid px.$neutral-300;
+}
+
+// ============================================================================
+// <table> do feature chiếu vào
+// ============================================================================
+:host ::ng-deep .px-table-content > table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+
+  // _Cell header: h52, padding 16/24, 14/20 Bold
+  > thead > tr > th {
+    height: 52px;
+    padding: px.$space-16 px.$space-24;
+    background: px.$white;
+    border-bottom: 1px solid px.$neutral-300;
+    font-family: px.$font-family;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 700;
+    color: px.$neutral-900;
     text-align: left;
-    font-size: 13px;
+    vertical-align: middle;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
 
-    thead > tr > th {
-      position: relative;
-      color: #1f2937;
-      font-weight: 600;
-      text-align: left;
-      background: #fafafa;
-      border-bottom: 1px solid #f0f0f0;
-      padding: 12px 14px;
-      transition: background 0.2s ease;
-      white-space: nowrap;
-    }
+  // _Cell table: h60, padding 20/24, 14/20 Medium (nội dung cao hơn tự co padding dọc)
+  > tbody > tr > td {
+    height: 60px;
+    padding: px.$space-8 px.$space-24;
+    background: px.$white;
+    border-bottom: 1px solid px.$neutral-300;
+    font-family: px.$font-family;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    color: px.$neutral-900;
+    vertical-align: middle;
+    white-space: nowrap; // nội dung 1 dòng, bảng rộng hơn khung thì cuộn ngang
+    box-sizing: border-box;
+  }
 
-    tbody > tr > td {
-      position: relative;
-      padding: 12px 14px;
-      color: #374151;
-      border-bottom: 1px solid #f0f0f0;
-      transition: background 0.2s ease;
-      vertical-align: middle;
-    }
+  > tbody > tr:last-child > td {
+    border-bottom: none;
+  }
 
-    tbody > tr:hover > td {
-      background: #fafafa;
-    }
+  // ---- Class tiện ích trong cell ----
+  .px-cell-check {
+    display: flex;
+    align-items: center;
+    gap: px.$space-12;
+  }
 
-    tbody > tr:last-child > td {
-      border-bottom: none;
+  .px-cell-stack {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: px.$space-2;
+    white-space: nowrap;
+  }
+
+  .px-cell-sub {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 500;
+    color: px.$neutral-600;
+  }
+
+  .px-cell-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: px.$space-4;
+  }
+
+  .px-cell-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: px.$space-8;
+    border: none;
+    border-radius: px.$radius-md;
+    background: transparent;
+    color: px.$neutral-800;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: px.$neutral-200;
     }
   }
 }
 
-.ant-table-empty-wrap {
-  padding: 36px 16px;
-  text-align: center;
-  background: #ffffff;
+// Hàng xen kẽ: hàng lẻ #F7F7F7 (Color/Background/Table)
+:host ::ng-deep .px-table-striped .px-table-content > table > tbody > tr:nth-child(odd) > td {
+  background: px.$bg-table;
 }
 
-.ant-table-pagination-wrapper {
-  padding: 4px 16px;
-  border-top: 1px solid #f0f0f0;
+// Cột hành động cố định bên phải khi cuộn ngang
+:host ::ng-deep .px-table-fixed-last .px-table-content > table {
+  > thead > tr > th:last-child,
+  > tbody > tr > td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+  }
+}
+
+:host ::ng-deep .px-table-fixed-shadow .px-table-content > table {
+  > thead > tr > th:last-child,
+  > tbody > tr > td:last-child {
+    box-shadow: inset 1px 0 0 px.$neutral-300, -8px 0 12px -10px rgba(0, 0, 0, 0.18);
+  }
+}
+
+// Card không còn overflow: hidden → các khối nền trắng ở đáy tự bo góc dưới theo card
+:host ::ng-deep app-pagination .px-pagination,
+.px-table-empty:last-child {
+  border-radius: 0 0 px.$radius-xl px.$radius-xl;
 }

@@ -231,6 +231,24 @@
   }
 }
 
+// Mở lên trên khi phía dưới không đủ chỗ
+.px-select-dropdown-up {
+  top: auto;
+  bottom: calc(100% + #{px.$space-8});
+  animation-name: antSelectSlideUp;
+}
+
+@keyframes antSelectSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes antSelectSlideDown {
   from {
     opacity: 0;

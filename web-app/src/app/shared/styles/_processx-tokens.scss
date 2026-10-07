@@ -21,6 +21,7 @@ $neutral-300: #e3e3e3;
 $neutral-200: #f2f2f2;
 $neutral-100: #f5f5f5;
 $warning: #faad14;
+$bg-table: #f7f7f7;    // Color/Background/Table: hàng bảng xen kẽ
 
 // Space/*
 $space-2: 2px;
@@ -29,12 +30,15 @@ $space-6: 6px;
 $space-8: 8px;
 $space-12: 12px;
 $space-16: 16px;
+$space-20: 20px;
 $space-24: 24px;
+$space-32: 32px;
 
 // Radius
 $radius-sm: 6px;   // checkbox, menu item
 $radius-md: 8px;   // field size xs / ô tìm kiếm trong dropdown
 $radius-lg: 12px;  // field size sm (mặc định), dropdown panel
+$radius-xl: 16px;  // card bảng (Table_view)
 
 // Typography (Inter)
 $font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

@@ -355,6 +355,17 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   // ============================================================================
   // 1. TẠO MỚI QUY TRÌNH (FR-01, US-01)
   // ============================================================================
+  /**
+   * "Tạo mới quy trình": mở thẳng Canvas Builder ở tab "Thông tin chung" để nhập thông tin
+   * (Figma 264:42051). Bản ghi chỉ được tạo khi bấm Lưu nháp / Ban hành và form hợp lệ.
+   */
+  openCreateProcess(): void {
+    this.router.navigate(['/process/graph'], {
+      queryParams: { mode: 'create', initType: 'blank' }
+    });
+  }
+
+  /** Modal tạo nhanh cũ (giữ lại, hiện không còn nút nào mở) */
   openCreateModal(): void {
     const nextNum = this.allTemplates.length + 1;
     this.newTemplateCode = `PRC_FLOW_${String(nextNum).padStart(3, '0')}`;

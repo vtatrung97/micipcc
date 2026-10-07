@@ -46,6 +46,53 @@
       "GENERAL": "Thông tin chung",
       "DESIGN": "Thiết kế quy trình"
     },
+    "INFO": {
+      "NEW_PROCESS": "Quy trình mới",
+      "BASIC_TITLE": "Thông tin cơ bản",
+      "CONFIG_TITLE": "Cấu hình quy trình",
+      "NAME": "Tên quy trình",
+      "CODE": "Mã quy trình",
+      "CATEGORY": "Phân loại nhóm quy trình",
+      "DESCRIPTION": "Mô tả",
+      "PLACEHOLDER_INPUT": "Nhập tại đây",
+      "PLACEHOLDER_SELECT": "Chọn tại đây",
+      "PLACEHOLDER_NUMBER": "Nhập số",
+      "TRIGGER": "Loại kích hoạt",
+      "TRIGGERS": {
+        "MANUAL": "Kích hoạt thủ công",
+        "AUTO": "Kích hoạt tự động",
+        "SCHEDULE": "Lặp lịch",
+        "HYBRID": "Hybrid"
+      },
+      "SCHEDULE_MODES": {
+        "ONCE": "Chạy một lần",
+        "REPEAT": "Lặp lại"
+      },
+      "RUN_DATE": "Ngày chạy",
+      "RUN_TIME": "Giờ chạy",
+      "HOUR_PLACEHOLDER": "hh",
+      "MINUTE_PLACEHOLDER": "mm",
+      "API": "API",
+      "INPUT_FORM": "Biểu mẫu dữ liệu đầu vào",
+      "TRIGGER_CONDITION": "Điều kiện kích hoạt",
+      "TRIGGER_CONDITION_PLACEHOLDER": "Cài đặt điều kiện",
+      "TRIGGER_CONDITION_COUNT": "Đã cài {{count}} điều kiện",
+      "SLA": "Thời hạn xử lý (SLA)",
+      "SLA_UNITS": {
+        "DAY": "Ngày",
+        "HOUR": "Giờ",
+        "MINUTE": "Phút"
+      },
+      "ERRORS": {
+        "REQUIRED": "Vui lòng nhập thông tin này",
+        "CODE_FORMAT": "Chỉ gồm chữ không dấu, số, dấu _ hoặc -",
+        "CODE_EXISTS": "Mã quy trình đã tồn tại",
+        "TIME_FORMAT": "Giờ chạy không hợp lệ (hh:mm)",
+        "SLA_POSITIVE": "Nhập số lớn hơn 0"
+      },
+      "STATUS_INVALID": "⚠️ Thông tin chung còn {{count}} trường chưa hợp lệ",
+      "STATUS_CREATED": "✨ Đã tạo quy trình [{{code}}]"
+    },
     "SAMPLES": {
       "BUTTON": "Mẫu quy trình",
       "BUTTON_TITLE": "Chọn và nạp mẫu quy trình chuẩn",
@@ -78,14 +125,38 @@
       "SEARCH": "Tìm bước",
       "CONDITION_GROUP": "Điều kiện",
       "ITEMS": {
-        "GATEWAY_EXCLUSIVE": { "TITLE": "Chọn một nhánh", "TOOLTIP": "Rẽ 1 nhánh duy nhất theo điều kiện thoả mãn" },
-        "GATEWAY_PARALLEL": { "TITLE": "Chạy song song", "TOOLTIP": "Chia luồng chạy song song các nhánh" },
-        "GATEWAY_INCLUSIVE": { "TITLE": "Chọn nhiều nhánh", "TOOLTIP": "Rẽ tất cả nhánh có điều kiện thoả mãn" },
-        "USER_TASK": { "TITLE": "Giao việc", "TOOLTIP": "Giao việc cho nhân viên / chuyên viên" },
-        "SYSTEM_TASK": { "TITLE": "Tác vụ hệ thống", "TOOLTIP": "Tác vụ tự động / Gọi API dịch vụ hệ thống" },
-        "NOTIFICATION": { "TITLE": "Gửi thông báo", "TOOLTIP": "Gửi SMS / Email / Webhook / Thông báo OTT" },
-        "SUB_PROCESS": { "TITLE": "Quy trình con", "TOOLTIP": "Gọi thực thi một quy trình con khác" },
-        "END": { "TITLE": "Kết thúc", "TOOLTIP": "Kết thúc quy trình" }
+        "GATEWAY_EXCLUSIVE": {
+          "TITLE": "Chọn một nhánh",
+          "TOOLTIP": "Rẽ 1 nhánh duy nhất theo điều kiện thoả mãn"
+        },
+        "GATEWAY_PARALLEL": {
+          "TITLE": "Chạy song song",
+          "TOOLTIP": "Chia luồng chạy song song các nhánh"
+        },
+        "GATEWAY_INCLUSIVE": {
+          "TITLE": "Chọn nhiều nhánh",
+          "TOOLTIP": "Rẽ tất cả nhánh có điều kiện thoả mãn"
+        },
+        "USER_TASK": {
+          "TITLE": "Giao việc",
+          "TOOLTIP": "Giao việc cho nhân viên / chuyên viên"
+        },
+        "SYSTEM_TASK": {
+          "TITLE": "Tác vụ hệ thống",
+          "TOOLTIP": "Tác vụ tự động / Gọi API dịch vụ hệ thống"
+        },
+        "NOTIFICATION": {
+          "TITLE": "Gửi thông báo",
+          "TOOLTIP": "Gửi SMS / Email / Webhook / Thông báo OTT"
+        },
+        "SUB_PROCESS": {
+          "TITLE": "Quy trình con",
+          "TOOLTIP": "Gọi thực thi một quy trình con khác"
+        },
+        "END": {
+          "TITLE": "Kết thúc",
+          "TOOLTIP": "Kết thúc quy trình"
+        }
       }
     },
     "TOOLBAR": {

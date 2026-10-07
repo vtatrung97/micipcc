@@ -70,7 +70,10 @@
 
   <!-- Dropdown Popup Menu -->
   <div 
-    class="px-select-dropdown" 
+    #dropdown
+    class="px-select-dropdown"
+    [class.px-select-dropdown-up]="dropUp"
+    [style.visibility]="measuring ? 'hidden' : null" 
     *ngIf="isOpen" 
     (click)="$event.stopPropagation()">
     
