@@ -26,6 +26,17 @@
   </div>
 
   <div class="topbar-right" *ngIf="currentUser">
+    <!-- Lối tắt tới trang dev UI Kit (danh mục component dùng chung) -->
+    <a class="pin-default-btn ui-kit-btn"
+       routerLink="/ui-kit"
+       routerLinkActive="is-active"
+       title="Xem danh mục component dùng chung (UI Kit)">
+      <span class="pin-icon">
+        <ant-icon name="appstore" [size]="14"></ant-icon>
+      </span>
+      <span class="pin-text">UI Kit</span>
+    </a>
+
     <!-- Nút Đặt làm trang mặc định (US-08, US-09) -->
     <button class="pin-default-btn" 
             [class.is-default]="isCurrentPageDefault"

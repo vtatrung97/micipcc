@@ -23,6 +23,11 @@ const routes: Routes = [
         path: 'pages',
         loadChildren: () => import('@pages/pages.module').then(m => m.PagesModule)
       },
+      // Trang dev: danh mục component dùng chung (không qua RBAC)
+      {
+        path: 'ui-kit',
+        loadChildren: () => import('@pages/system/ui-kit/ui-kit.module').then(m => m.UiKitModule)
+      },
       // Direct alias paths for convenience
       {
         path: '',

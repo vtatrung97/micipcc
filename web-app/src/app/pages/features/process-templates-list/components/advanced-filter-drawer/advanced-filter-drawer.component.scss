@@ -1,0 +1,64 @@
+@use '../../../../../shared/styles/processx-tokens' as px;
+
+// _Modal Actions: "Đặt lại" bên trái, nhóm "Hủy" + "Áp dụng" bên phải (cách 12)
+.filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-actions-right {
+  display: flex;
+  align-items: center;
+  gap: px.$space-12;
+}
+
+// Buttons size md: cao 40 (viền nằm trong), padding 8/16, radius 8, Inter SemiBold 16/24
+.px-btn {
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 px.$space-16;
+  border: 1px solid transparent;
+  border-radius: px.$radius-md;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.px-btn-primary {
+  background: px.$primary-600;
+  border-color: px.$primary-600;
+  color: px.$white;
+
+  &:hover {
+    background: px.$primary-500;
+    border-color: px.$primary-500;
+  }
+}
+
+.px-btn-default {
+  background: px.$white;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &:hover {
+    border-color: px.$neutral-800;
+  }
+}
+
+.px-btn-outline-primary {
+  background: px.$white;
+  border-color: px.$primary-400;
+  color: px.$primary-600;
+
+  &:hover {
+    border-color: px.$primary-600;
+  }
+}

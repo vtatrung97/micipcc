@@ -11,6 +11,12 @@ import { RbacService } from '@core/rbac/services/rbac.service';
 import { UserSession } from '@core/rbac/models/rbac.types';
 import { ScopeService, AuthService, TokenService } from '@core/auth';
 import { KEYCLOAK } from '@environments/environment';
+import { SelectOption } from '@shared/components/ant-select/ant-select.component';
+import {
+  ProcessAdvancedFilter,
+  EMPTY_ADVANCED_FILTER,
+  countAdvancedFilter
+} from './components/advanced-filter-drawer/advanced-filter-drawer.component';
 
 @Component({
   selector: 'app-process-templates-list',
@@ -23,6 +29,10 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   selectedStatus: string = '';
   selectedCategory: string = '';
   selectedOrg: string = '';
+
+  // Bộ lọc nâng cao (drawer "Bộ lọc nâng cao")
+  showAdvancedFilter: boolean = false;
+  advancedFilter: ProcessAdvancedFilter = { ...EMPTY_ADVANCED_FILTER };
 
   currentUser: UserSession | null = null;
   private sub = new Subscription();
@@ -257,7 +267,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
       const matchCategory = !this.selectedCategory || item.category === this.selectedCategory;
       const matchOrg = !this.selectedOrg || item.owner_org_id === this.selectedOrg;
 
-      return matchKeyword && matchStatus && matchCategory && matchOrg;
+      return matchKeyword && matchStatus && matchCategory && matchOrg && this.matchAdvanced(item);
     });
   }
 
@@ -267,7 +277,8 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   }
 
   get hasActiveFilter(): boolean {
-    return !!(this.searchKeyword || this.selectedStatus || this.selectedCategory || this.selectedOrg);
+    return !!(this.searchKeyword || this.selectedStatus || this.selectedCategory || this.selectedOrg) ||
+      this.advancedFilterCount > 0;
   }
 
   resetFilters(): void {
@@ -275,7 +286,51 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     this.selectedStatus = '';
     this.selectedCategory = '';
     this.selectedOrg = '';
+    this.advancedFilter = { ...EMPTY_ADVANCED_FILTER };
     this.page = 1;
+  }
+
+  // ===== Bộ lọc nâng cao =====
+  get advancedFilterCount(): number {
+    return countAdvancedFilter(this.advancedFilter);
+  }
+
+  /** Phiên bản hiệu lực đang tồn tại thực tế trong danh sách */
+  get versionOptions(): SelectOption[] {
+    const versions = Array.from(new Set(this.allTemplates.map(t => t.version).filter(Boolean)));
+    return versions
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+      .map(v => ({ value: v, label: v }));
+  }
+
+  applyAdvancedFilter(filter: ProcessAdvancedFilter): void {
+    this.advancedFilter = filter;
+    this.showAdvancedFilter = false;
+    this.page = 1;
+  }
+
+  private matchAdvanced(item: ProcessTemplateItem): boolean {
+    const f = this.advancedFilter;
+    const includes = (text: string | undefined, kw: string) =>
+      !kw || (text || '').toLowerCase().includes(kw.toLowerCase());
+
+    const hasDraft = item.status === 'Draft' || (item.versions || []).some(v => v.status === 'Draft');
+    const hasIssue = item.slaStatus === 'overdue' || item.slaStatus === 'danger';
+
+    return includes(item.name, f.name)
+      && includes(item.code, f.code)
+      && (!f.version || item.version === f.version)
+      && (!f.status || item.status === f.status)
+      && (!f.draft || (f.draft === 'yes') === hasDraft)
+      && (!f.operation || hasIssue)
+      && (!f.updatedDate || this.toIsoDate(item.updatedAt) === f.updatedDate)
+      && (!f.publishedDate || this.toIsoDate(item.published_at) === f.publishedDate);
+  }
+
+  /** 'DD/MM/YYYY HH:mm' → 'YYYY-MM-DD' */
+  private toIsoDate(value?: string): string {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(value || '');
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
   }
 
   countByStatus(status: 'Published' | 'Draft' | 'Inactive'): number {

@@ -1022,3 +1022,36 @@
     cursor: pointer;
   }
 }
+
+/* Nút mở drawer "Bộ lọc nâng cao" — Figma Buttons / Link Primary (16/24, icon 20, gap 4) */
+.btn-advanced-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: #ed0231;
+  cursor: pointer;
+
+  &:hover {
+    color: #fa0f3e;
+  }
+
+  .advanced-filter-count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: #ed0231;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}

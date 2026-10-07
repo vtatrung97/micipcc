@@ -1,0 +1,80 @@
+@use '../../styles/processx-tokens' as px;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.px-textarea {
+  @include px.field-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &:hover:not(.px-textarea-disabled):not(.px-textarea-readonly),
+  &.px-textarea-focused {
+    border-color: px.$neutral-800;
+  }
+
+  &.px-textarea-disabled,
+  &.px-textarea-readonly {
+    background: px.$neutral-100;
+    color: px.$neutral-800;
+  }
+
+  &.px-textarea-disabled .px-textarea-input {
+    cursor: not-allowed;
+  }
+
+  &.px-textarea-status-error,
+  &.px-textarea-status-error:hover {
+    border-color: px.$primary-600;
+  }
+
+  &.px-textarea-status-warning,
+  &.px-textarea-status-warning:hover {
+    border-color: px.$warning;
+  }
+}
+
+.px-textarea-input {
+  @include px.body-md-regular;
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: px.$space-8 px.$space-12;
+  border: none;
+  border-radius: px.$radius-lg;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: px.$neutral-500;
+  }
+}
+
+.px-textarea-count {
+  @include px.body-sm-regular;
+  align-self: flex-end;
+  padding: 0 px.$space-12 px.$space-8;
+  color: px.$neutral-500;
+  user-select: none;
+}
+
+/* Sizes: small (14/20, radius 8) · middle (mặc định) · large (padding 12/16) — chiều cao theo input `height` */
+.px-textarea-sm {
+  border-radius: px.$radius-md;
+
+  .px-textarea-input {
+    @include px.body-sm-regular;
+    padding: px.$space-6 px.$space-12;
+    border-radius: px.$radius-md;
+  }
+}
+
+.px-textarea-lg .px-textarea-input {
+  padding: px.$space-12 px.$space-16;
+}

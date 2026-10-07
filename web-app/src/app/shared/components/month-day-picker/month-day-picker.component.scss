@@ -1,0 +1,165 @@
+@use '../../styles/processx-tokens' as px;
+
+// Token theo Figma ProcessX (Color/*, Space/*)
+$primary-600: #ed0231;
+$primary-200: #ffc0cd;
+$neutral-900: #292929;
+$neutral-800: #404040;
+$neutral-500: #a1a1a1;
+$neutral-400: #d4d4d4;
+$neutral-300: #e3e3e3;
+$neutral-100: #f5f5f5;
+$warning: #faad14;
+
+:host {
+  display: inline-block;
+  width: 100%;
+}
+
+.mdp {
+  position: relative;
+  width: 100%;
+}
+
+// ===== Ô hiển thị =====
+.mdp-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid $neutral-300;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  outline: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $neutral-800;
+  }
+}
+
+.mdp-open .mdp-field {
+  border-color: $neutral-800;
+}
+
+.mdp-status-error .mdp-field {
+  border-color: $primary-600;
+}
+
+.mdp-status-warning .mdp-field {
+  border-color: $warning;
+}
+
+.mdp-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 400;
+  color: $neutral-900;
+}
+
+.mdp-placeholder {
+  flex: 1;
+  min-width: 0;
+  font-weight: 400;
+  color: $neutral-500;
+}
+
+.mdp-clear {
+  display: flex;
+  color: $neutral-500;
+
+  &:hover {
+    color: $neutral-900;
+  }
+}
+
+.mdp-suffix {
+  display: flex;
+  margin-left: auto;
+  color: $primary-600;
+}
+
+.mdp-disabled .mdp-field {
+  background: $neutral-100;
+  cursor: not-allowed;
+
+  .mdp-value,
+  .mdp-suffix {
+    color: $neutral-500;
+  }
+}
+
+// ===== Popup lưới ngày =====
+.mdp-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 1050;
+  display: grid;
+  grid-template-columns: repeat(5, 32px);
+  gap: 4px;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+
+  &.mdp-dropdown-left {
+    right: auto;
+    left: 0;
+  }
+}
+
+.mdp-day {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: $neutral-900;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover:not(:disabled):not(.mdp-day-selected) {
+    background: $neutral-100;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-200;
+    outline-offset: 1px;
+  }
+
+  &.mdp-day-selected {
+    background: $primary-600;
+    color: #ffffff;
+  }
+
+  &:disabled {
+    color: $neutral-400;
+    cursor: not-allowed;
+  }
+}
+
+/* Sizes: small 40 · middle 48 (mặc định) · large 56 — xem $field-sizes */
+.mdp-sm .mdp-field {
+  @include px.field-size(small);
+}
+
+.mdp-lg .mdp-field {
+  @include px.field-size(large);
+}

@@ -1,0 +1,712 @@
+<div class="ui-kit">
+  <!-- Mục lục -->
+  <aside class="ui-kit-toc">
+    <div class="toc-title">UI Kit</div>
+    <div class="toc-sub">{{ sections.length }} mục trong <code>shared/</code></div>
+    <a *ngFor="let s of sections" class="toc-item" (click)="scrollTo(s.id)">
+      {{ s.title }}
+      <span class="toc-selector">{{ s.selector }}</span>
+    </a>
+  </aside>
+
+  <main class="ui-kit-content">
+    <header class="page-head">
+      <h1>Danh mục component dùng chung</h1>
+      <p>Trang dev để xem UI hiện tại của các component trong <code>src/app/shared</code>. Mỗi mục gồm demo các trạng thái và bảng API (&#64;Input / &#64;Output).</p>
+    </header>
+
+    <!-- Header + bảng API dùng lại cho mọi section -->
+    <ng-template #sectionHead let-s>
+      <div class="section-head">
+        <h2>{{ s.title }}</h2>
+        <code class="selector">&lt;{{ s.selector }}&gt;</code>
+      </div>
+      <p class="section-desc">{{ s.description }}</p>
+    </ng-template>
+
+    <ng-template #apiTable let-s>
+      <details class="api" *ngIf="s.api.length">
+        <summary>API ({{ s.api.length }})</summary>
+        <table>
+          <thead><tr><th>Thuộc tính</th><th>Kiểu</th><th>Mặc định</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of s.api">
+              <td><code>{{ row.name }}</code></td>
+              <td><code>{{ row.type }}</code></td>
+              <td>{{ row.defaultValue }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
+    </ng-template>
+
+    <!-- ================= ANT INPUT ================= -->
+    <section class="kit-section" id="ant-input">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('ant-input') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo">
+          <span class="demo-label">Mặc định</span>
+          <ant-input [(ngModel)]="inputBasic" placeholder="Nhập tên quy trình"></ant-input>
+          <span class="demo-value">ngModel: "{{ inputBasic }}"</span>
+        </div>
+        <div class="demo">
+          <span class="demo-label">prefixIcon + Enter</span>
+          <ant-input [(ngModel)]="inputPrefix" prefixIcon="search" placeholder="Tìm theo tên hoặc mã" (onEnter)="lastEnterValue = $event"></ant-input>
+          <span class="demo-value">onEnter: "{{ lastEnterValue }}"</span>
+        </div>
+        <div class="demo">
+          <span class="demo-label">allowClear</span>
+          <ant-input [(ngModel)]="inputClear" [allowClear]="true"></ant-input>
+        </div>
+        <div class="demo">
+          <span class="demo-label">showCount + maxLength=50</span>
+          <ant-input [(ngModel)]="inputCount" [showCount]="true" [maxLength]="50" placeholder="Tối đa 50 ký tự"></ant-input>
+        </div>
+        <div class="demo">
+          <span class="demo-label">type="password"</span>
+          <ant-input [(ngModel)]="inputPassword" type="password" placeholder="Mật khẩu"></ant-input>
+        </div>
+        <div class="demo">
+          <span class="demo-label">suffixIcon</span>
+          <ant-input suffixIcon="calendar" placeholder="Có icon phía sau"></ant-input>
+        </div>
+        <div class="demo">
+          <span class="demo-label">status="error"</span>
+          <ant-input [(ngModel)]="inputError" status="error"></ant-input>
+        </div>
+        <div class="demo">
+          <span class="demo-label">status="warning"</span>
+          <ant-input [(ngModel)]="inputWarning" status="warning"></ant-input>
+        </div>
+        <div class="demo">
+          <span class="demo-label">disabled</span>
+          <ant-input [(ngModel)]="inputDisabled" [disabled]="true"></ant-input>
+        </div>
+        <div class="demo">
+          <span class="demo-label">readonly</span>
+          <ant-input [(ngModel)]="inputReadonly" [readonly]="true"></ant-input>
+        </div>
+      </div>
+
+      <div class="demo-row">
+        <span class="demo-label">Kích thước</span>
+        <ant-input size="small" placeholder="small"></ant-input>
+        <ant-input size="middle" placeholder="middle"></ant-input>
+        <ant-input size="large" placeholder="large"></ant-input>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('ant-input') }"></ng-container>
+    </section>
+
+    <!-- ================= ANT TEXTAREA ================= -->
+    <section class="kit-section" id="ant-textarea">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('ant-textarea') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo">
+          <span class="demo-label">Mặc định (140px)</span>
+          <ant-textarea [(ngModel)]="textareaValue" placeholder="Nhập tại đây"></ant-textarea>
+          <span class="demo-value">ngModel: {{ toJson(textareaValue) }}</span>
+        </div>
+        <div class="demo">
+          <span class="demo-label">showCount + maxLength=200</span>
+          <ant-textarea [(ngModel)]="textareaCount" [showCount]="true" [maxLength]="200"></ant-textarea>
+        </div>
+        <div class="demo">
+          <span class="demo-label">height=80, không kéo giãn</span>
+          <ant-textarea [height]="80" [resizable]="false" placeholder="Ghi chú ngắn"></ant-textarea>
+        </div>
+        <div class="demo">
+          <span class="demo-label">status="error"</span>
+          <ant-textarea status="error" placeholder="Nội dung không hợp lệ"></ant-textarea>
+        </div>
+        <div class="demo">
+          <span class="demo-label">readonly</span>
+          <ant-textarea [ngModel]="'Nội dung chỉ đọc, không cho sửa.'" [readonly]="true"></ant-textarea>
+        </div>
+        <div class="demo">
+          <span class="demo-label">disabled</span>
+          <ant-textarea [disabled]="true" placeholder="Không cho nhập"></ant-textarea>
+        </div>
+      </div>
+
+      
+      <div class="demo-row size-row">
+        <span class="demo-label">Kích thước</span>
+        <ant-textarea size="small" [height]="80" placeholder="small"></ant-textarea>
+        <ant-textarea size="middle" [height]="80" placeholder="middle"></ant-textarea>
+        <ant-textarea size="large" [height]="80" placeholder="large"></ant-textarea>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('ant-textarea') }"></ng-container>
+    </section>
+
+    <!-- ================= MULTI SELECT (FIELD AGENT) ================= -->
+    <section class="kit-section" id="multi-select">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('multi-select') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo">
+          <app-form-field label="Agent">
+            <app-multi-select [(ngModel)]="agentValue" [options]="agentOptions"></app-multi-select>
+          </app-form-field>
+          <span class="demo-value">ngModel: {{ toJson(agentValue) }}</span>
+        </div>
+        <div class="demo">
+          <app-form-field label="Output từ biểu mẫu">
+            <app-multi-select [(ngModel)]="outputValue" [options]="outputOptions"></app-multi-select>
+          </app-form-field>
+          <span class="demo-value">ngModel: {{ toJson(outputValue) }}</span>
+        </div>
+        <div class="demo">
+          <app-form-field label="Nhiều giá trị (maxTagCount = 2)">
+            <app-multi-select [(ngModel)]="agentPrefilled" [options]="agentOptions" [maxTagCount]="2"></app-multi-select>
+          </app-form-field>
+        </div>
+        <div class="demo">
+          <app-form-field label="Không tìm kiếm, không chọn tất cả">
+            <app-multi-select [options]="outputOptions" [showSearch]="false" [showSelectAll]="false"></app-multi-select>
+          </app-form-field>
+        </div>
+        <div class="demo">
+          <app-form-field label="Agent" [required]="true" error="Vui lòng chọn ít nhất 1 agent">
+            <app-multi-select [ngModel]="[]" [options]="agentOptions" status="error"></app-multi-select>
+          </app-form-field>
+        </div>
+        <div class="demo">
+          <app-form-field label="disabled">
+            <app-multi-select [ngModel]="['output_1']" [options]="outputOptions" [disabled]="true"></app-multi-select>
+          </app-form-field>
+        </div>
+      </div>
+
+      
+      <div class="demo-row size-row">
+        <span class="demo-label">Kích thước</span>
+        <app-multi-select size="small" [(ngModel)]="outputValue" [options]="outputOptions" [maxTagCount]="1"></app-multi-select>
+        <app-multi-select size="middle" [(ngModel)]="outputValue" [options]="outputOptions" [maxTagCount]="1"></app-multi-select>
+        <app-multi-select size="large" [(ngModel)]="outputValue" [options]="outputOptions" [maxTagCount]="1"></app-multi-select>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('multi-select') }"></ng-container>
+    </section>
+
+    <!-- ================= QUICK FILTER ================= -->
+    <section class="kit-section" id="quick-filter">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('quick-filter') }"></ng-container>
+
+      <app-form-field label="Trạng thái">
+        <app-quick-filter [(ngModel)]="quickStatus" [options]="quickStatusOptions"></app-quick-filter>
+      </app-form-field>
+      <span class="demo-value">ngModel: {{ toJson(quickStatus) }}</span>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('quick-filter') }"></ng-container>
+    </section>
+
+    <!-- ================= DRAWER ================= -->
+    <section class="kit-section" id="drawer">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('drawer') }"></ng-container>
+
+      <div class="demo-row">
+        <button class="kit-btn danger" (click)="drawerVisible = true">Mở drawer mẫu</button>
+      </div>
+
+      <app-drawer [visible]="drawerVisible" title="Drawer mẫu" (closed)="drawerVisible = false">
+        <app-form-field label="Tên quy trình" [spacing]="0">
+          <ant-input placeholder="Nhập tại đây"></ant-input>
+        </app-form-field>
+        <app-form-field label="Phiên bản hiệu lực" [spacing]="0">
+          <ant-select [options]="simpleOptions" placeholder="Chọn tại đây"></ant-select>
+        </app-form-field>
+        <app-form-field label="Trạng thái" [spacing]="0">
+          <app-quick-filter [(ngModel)]="quickStatus" [options]="quickStatusOptions"></app-quick-filter>
+        </app-form-field>
+        <app-form-field label="Ngày ban hành" [spacing]="0">
+          <app-date-picker></app-date-picker>
+        </app-form-field>
+
+        <div drawer-footer class="demo-row" style="justify-content: flex-end;">
+          <button class="kit-btn" (click)="drawerVisible = false">Hủy</button>
+          <button class="kit-btn danger" (click)="drawerVisible = false">Áp dụng</button>
+        </div>
+      </app-drawer>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('drawer') }"></ng-container>
+    </section>
+
+    <!-- ================= DRAWER GIAO VIỆC (FIELD AGENT TRONG NGỮ CẢNH) ================= -->
+    <section class="kit-section" id="field-agent">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('field-agent') }"></ng-container>
+
+      <div class="drawer-preview">
+        <div class="drawer-group">
+          <div class="drawer-group-title">Thông tin chung</div>
+          <app-form-field label="Tên bước" [required]="true">
+            <ant-input [(ngModel)]="stepName" placeholder="Nhập tại đây"></ant-input>
+          </app-form-field>
+          <app-form-field label="Mã bước" [required]="true">
+            <ant-input [(ngModel)]="stepCode" [readonly]="true"></ant-input>
+          </app-form-field>
+          <app-form-field label="Mô tả">
+            <ant-textarea [(ngModel)]="stepDescription" placeholder="Nhập tại đây"></ant-textarea>
+          </app-form-field>
+        </div>
+
+        <div class="drawer-group">
+          <div class="drawer-group-title">Người thực hiện</div>
+          <app-form-field label="Agent">
+            <app-multi-select [(ngModel)]="drawerAgents" [options]="agentOptions"></app-multi-select>
+          </app-form-field>
+        </div>
+
+        <div class="drawer-group">
+          <div class="drawer-group-title">Output từ biểu mẫu</div>
+          <app-form-field label="Output từ biểu mẫu">
+            <app-multi-select [(ngModel)]="drawerOutputs" [options]="outputOptions"></app-multi-select>
+          </app-form-field>
+        </div>
+      </div>
+      <div class="demo-value">agent: {{ toJson(drawerAgents) }} · output: {{ toJson(drawerOutputs) }}</div>
+    </section>
+
+    <!-- ================= ANT SELECT ================= -->
+    <section class="kit-section" id="ant-select">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('ant-select') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo">
+          <span class="demo-label">options: string[]</span>
+          <ant-select [(ngModel)]="selectSimple" [options]="simpleOptions" [allowClear]="true"></ant-select>
+          <span class="demo-value">ngModel: {{ toJson(selectSimple) }}</span>
+        </div>
+        <div class="demo">
+          <span class="demo-label">SelectOption (dot / icon / badge / disabled)</span>
+          <ant-select [(ngModel)]="selectRich" [options]="richOptions"></ant-select>
+          <span class="demo-value">ngModel: {{ toJson(selectRich) }}</span>
+        </div>
+        <div class="demo">
+          <span class="demo-label">showSearch + prefixIcon</span>
+          <ant-select [(ngModel)]="selectSearch" [options]="searchOptions" [showSearch]="true" prefixIcon="search" placeholder="Tìm quy trình"></ant-select>
+        </div>
+        <div class="demo">
+          <span class="demo-label">loading</span>
+          <ant-select [options]="simpleOptions" [loading]="true"></ant-select>
+        </div>
+        <div class="demo">
+          <span class="demo-label">disabled</span>
+          <ant-select [options]="simpleOptions" [disabled]="true"></ant-select>
+        </div>
+      </div>
+
+      <div class="demo-row">
+        <span class="demo-label">Kích thước</span>
+        <ant-select size="small" [options]="simpleOptions" placeholder="small"></ant-select>
+        <ant-select size="middle" [options]="simpleOptions" placeholder="middle"></ant-select>
+        <ant-select size="large" [options]="simpleOptions" placeholder="large"></ant-select>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('ant-select') }"></ng-container>
+    </section>
+
+    <!-- ================= DATE PICKER ================= -->
+    <section class="kit-section" id="date-picker">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('date-picker') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo">
+          <span class="demo-label">Một ngày</span>
+          <app-date-picker [(ngModel)]="dateSingle" placeholder="Chọn ngày" (dateChange)="lastDateChange = $event"></app-date-picker>
+          <span class="demo-value">ngModel: {{ toJson(dateSingle) }}</span>
+        </div>
+        <div class="demo">
+          <span class="demo-label">Có giá trị sẵn</span>
+          <app-date-picker [(ngModel)]="datePrefilled"></app-date-picker>
+        </div>
+        <div class="demo">
+          <span class="demo-label">isRange</span>
+          <app-date-picker [(ngModel)]="dateRange" [isRange]="true" startPlaceholder="Từ ngày" endPlaceholder="Đến ngày" (dateChange)="lastDateChange = $event"></app-date-picker>
+          <span class="demo-value">ngModel: {{ toJson(dateRange) }}</span>
+        </div>
+        <div class="demo">
+          <span class="demo-label">isRange có giá trị sẵn</span>
+          <app-date-picker [(ngModel)]="dateRangePrefilled" [isRange]="true"></app-date-picker>
+        </div>
+        <div class="demo">
+          <span class="demo-label">allowClear = false</span>
+          <app-date-picker [allowClear]="false" placeholder="Không cho xoá"></app-date-picker>
+        </div>
+        <div class="demo">
+          <span class="demo-label">disabled</span>
+          <app-date-picker [disabled]="true" placeholder="Không cho chọn"></app-date-picker>
+        </div>
+      </div>
+      <div class="demo-value">dateChange gần nhất: {{ toJson(lastDateChange) }}</div>
+
+      
+      <div class="demo-row size-row">
+        <span class="demo-label">Kích thước</span>
+        <app-date-picker size="small" placeholder="small"></app-date-picker>
+        <app-date-picker size="middle" placeholder="middle"></app-date-picker>
+        <app-date-picker size="large" placeholder="large"></app-date-picker>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('date-picker') }"></ng-container>
+    </section>
+
+    <!-- ================= MONTH DAY PICKER ================= -->
+    <section class="kit-section" id="month-day-picker">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('month-day-picker') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo">
+          <app-form-field label="Ngày trong tháng" [required]="true">
+            <app-month-day-picker [(ngModel)]="monthDays"></app-month-day-picker>
+          </app-form-field>
+          <span class="demo-value">ngModel: {{ toJson(monthDays) }}</span>
+        </div>
+        <div class="demo">
+          <app-form-field label="Rỗng + popup mở sang phải" [required]="true">
+            <app-month-day-picker [(ngModel)]="monthDaysEmpty" placement="bottomLeft"></app-month-day-picker>
+          </app-form-field>
+          <span class="demo-value">ngModel: {{ toJson(monthDaysEmpty) }}</span>
+        </div>
+        <div class="demo">
+          <app-form-field label="Chọn một ngày (multiple = false)">
+            <app-month-day-picker [(ngModel)]="monthDaySingle" [multiple]="false" placement="bottomLeft"></app-month-day-picker>
+          </app-form-field>
+          <span class="demo-value">ngModel: {{ toJson(monthDaySingle) }}</span>
+        </div>
+        <div class="demo">
+          <app-form-field label="Khoá ngày 29, 30, 31">
+            <app-month-day-picker [(ngModel)]="monthDaysLimited" [disabledDays]="[29, 30, 31]" placement="bottomLeft"></app-month-day-picker>
+          </app-form-field>
+        </div>
+        <div class="demo">
+          <app-form-field label="status=&quot;error&quot;" error="Vui lòng chọn ít nhất 1 ngày">
+            <app-month-day-picker [ngModel]="[]" status="error" placement="bottomLeft"></app-month-day-picker>
+          </app-form-field>
+        </div>
+        <div class="demo">
+          <app-form-field label="disabled">
+            <app-month-day-picker [ngModel]="[1, 15]" [disabled]="true"></app-month-day-picker>
+          </app-form-field>
+        </div>
+      </div>
+
+      
+      <div class="demo-row size-row">
+        <span class="demo-label">Kích thước</span>
+        <app-month-day-picker size="small" [(ngModel)]="monthDays" placement="bottomLeft"></app-month-day-picker>
+        <app-month-day-picker size="middle" [(ngModel)]="monthDays" placement="bottomLeft"></app-month-day-picker>
+        <app-month-day-picker size="large" [(ngModel)]="monthDays" placement="bottomLeft"></app-month-day-picker>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('month-day-picker') }"></ng-container>
+    </section>
+
+    <!-- ================= CHECKBOX ================= -->
+    <section class="kit-section" id="ant-checkbox">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('ant-checkbox') }"></ng-container>
+
+      <!-- Ma trận trạng thái: cột = chưa chọn / đã chọn / nửa chọn -->
+      <table class="cb-matrix">
+        <thead>
+          <tr><th></th><th>Base</th><th>Label + mô tả</th><th>Drag</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let st of checkboxStates">
+            <th>{{ st.label }}</th>
+            <td>
+              <div class="cb-cell">
+                <ant-checkbox *ngFor="let v of checkboxValues" [ngModel]="v.checked" [indeterminate]="v.indeterminate"
+                              [disabled]="st.disabled" [readonly]="st.readonly"></ant-checkbox>
+              </div>
+            </td>
+            <td>
+              <div class="cb-cell">
+                <ant-checkbox *ngFor="let v of checkboxValues" [ngModel]="v.checked" [indeterminate]="v.indeterminate"
+                              [disabled]="st.disabled" [readonly]="st.readonly"
+                              label="Remember me" description="Save my login details for next time."></ant-checkbox>
+              </div>
+            </td>
+            <td>
+              <div class="cb-cell">
+                <ant-checkbox *ngFor="let v of checkboxValues" type="drag" [ngModel]="v.checked" [indeterminate]="v.indeterminate"
+                              [disabled]="st.disabled" [readonly]="st.readonly" label="Remember me"></ant-checkbox>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <span class="demo-value">Hover và Focused (Tab bằng bàn phím) xem trực tiếp trên dòng Default.</span>
+
+      <div class="demo-row">
+        <span class="demo-label">Tương tác</span>
+        <ant-checkbox [(ngModel)]="checkA" label="Đã chọn"></ant-checkbox>
+        <ant-checkbox [(ngModel)]="checkB" label="Chưa chọn" description="Có dòng mô tả bên dưới"></ant-checkbox>
+        <ant-checkbox [(ngModel)]="checkB" type="drag" label="Kiểu drag"></ant-checkbox>
+      </div>
+
+      <div class="demo">
+        <span class="demo-label">Chọn tất cả (indeterminate thực tế)</span>
+        <ant-checkbox [ngModel]="allChecked" [indeterminate]="someChecked" label="Tất cả kênh" (checkedChange)="toggleAll($event)"></ant-checkbox>
+        <div class="demo-row indent">
+          <ant-checkbox *ngFor="let item of checkAllItems" [(ngModel)]="item.checked" [label]="item.label"></ant-checkbox>
+        </div>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('ant-checkbox') }"></ng-container>
+    </section>
+
+    <!-- ================= FORM FIELD ================= -->
+    <section class="kit-section" id="form-field">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('form-field') }"></ng-container>
+
+      <div class="demo-grid">
+        <app-form-field label="Tên quy trình" [required]="true" [error]="formNameError">
+          <ant-input [(ngModel)]="formName" placeholder="Bỏ trống để thấy lỗi"></ant-input>
+        </app-form-field>
+        <app-form-field label="Mã quy trình" [colon]="true" hint="Viết hoa, không dấu, ví dụ PAKN-2026">
+          <ant-input [(ngModel)]="formCode"></ant-input>
+        </app-form-field>
+        <app-form-field label="Trạng thái" [required]="true">
+          <ant-select [options]="simpleOptions"></ant-select>
+        </app-form-field>
+        <app-form-field label="Ngày hiệu lực" hint="Khoảng ngày áp dụng">
+          <app-date-picker [isRange]="true"></app-date-picker>
+        </app-form-field>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('form-field') }"></ng-container>
+    </section>
+
+    <!-- ================= DATA TABLE ================= -->
+    <section class="kit-section" id="data-table">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('data-table') }"></ng-container>
+
+      <div class="demo-row controls">
+        <button class="kit-btn" (click)="simulateTableLoading()">Giả lập loading 1.5s</button>
+        <ant-select [(ngModel)]="tableLoadingType" [options]="spinnerTypes" size="small"></ant-select>
+        <ant-checkbox [(ngModel)]="tableEmpty" label="Dữ liệu rỗng (total = 0)"></ant-checkbox>
+      </div>
+
+      <app-data-table
+        [loading]="tableLoading"
+        [loadingType]="tableLoadingType"
+        [total]="tableTotal"
+        [page]="tablePage"
+        [pageSize]="tablePageSize"
+        emptyTitle="Không có quy trình nào"
+        emptyDescription="Bỏ chọn 'Dữ liệu rỗng' để thấy lại dữ liệu."
+        (onPageChange)="tablePage = $event"
+        (onPageSizeChange)="tablePageSize = $event">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 60px; text-align: center;">STT</th>
+              <th>Tên quy trình</th>
+              <th style="width: 140px;">Mã</th>
+              <th style="width: 130px;">Phiên bản</th>
+              <th style="width: 150px;">Trạng thái</th>
+              <th style="width: 170px;">Ngày tạo</th>
+              <th style="width: 110px; text-align: center;">Hành động</th>
+            </tr>
+          </thead>
+          <tbody *ngIf="!tableEmpty">
+            <tr *ngFor="let row of tableRows; let i = index">
+              <td style="text-align: center;">{{ (tablePage - 1) * tablePageSize + i + 1 }}</td>
+              <td>{{ row.name }}</td>
+              <td>{{ row.code }}</td>
+              <td>{{ row.version }}</td>
+              <td><app-status-tag [status]="row.status" size="small"></app-status-tag></td>
+              <td>{{ row.createdAt | dateFormat }}</td>
+              <td style="text-align: center;" class="row-actions">
+                <ant-icon name="edit" [size]="16"></ant-icon>
+                <ant-icon name="eye" [size]="16"></ant-icon>
+                <ant-icon name="delete" [size]="16" color="#ed0231"></ant-icon>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </app-data-table>
+      <div class="demo-value">page = {{ tablePage }}, pageSize = {{ tablePageSize }}</div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('data-table') }"></ng-container>
+    </section>
+
+    <!-- ================= PAGINATION ================= -->
+    <section class="kit-section" id="pagination">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('pagination') }"></ng-container>
+
+      <div class="demo">
+        <span class="demo-label">Đầy đủ</span>
+        <app-pagination [total]="1080" [page]="pagerPage" [pageSize]="pagerPageSize" (pageChange)="pagerPage = $event" (pageSizeChange)="pagerPageSize = $event"></app-pagination>
+        <span class="demo-value">page = {{ pagerPage }}, pageSize = {{ pagerPageSize }}</span>
+      </div>
+      <div class="demo">
+        <span class="demo-label">showSizeChanger = false, showTotal = false</span>
+        <app-pagination [total]="45" [showSizeChanger]="false" [showTotal]="false"></app-pagination>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('pagination') }"></ng-container>
+    </section>
+
+    <!-- ================= STATUS TAG ================= -->
+    <section class="kit-section" id="status-tag">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('status-tag') }"></ng-container>
+
+      <div class="demo-row wrap">
+        <app-status-tag *ngFor="let st of statusList" [status]="st"></app-status-tag>
+      </div>
+      <div class="demo-row wrap">
+        <span class="demo-label">size="small", dot=false</span>
+        <app-status-tag *ngFor="let st of statusList" [status]="st" size="small" [dot]="false"></app-status-tag>
+      </div>
+      <div class="demo-row">
+        <span class="demo-label">text tuỳ chỉnh</span>
+        <app-status-tag status="running" text="Đang xử lý bước 3/5"></app-status-tag>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('status-tag') }"></ng-container>
+    </section>
+
+    <!-- ================= SLA BADGE ================= -->
+    <section class="kit-section" id="sla-badge">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('sla-badge') }"></ng-container>
+
+      <div class="demo-row wrap">
+        <app-sla-badge *ngFor="let st of slaStatuses" [status]="st" [text]="st"></app-sla-badge>
+      </div>
+      <div class="demo-row wrap">
+        <span class="demo-label">count + isPulse</span>
+        <app-sla-badge status="danger" [count]="5" text="Sắp trễ" [isPulse]="true"></app-sla-badge>
+        <app-sla-badge status="overdue" [count]="12" text="Quá hạn" [isPulse]="true"></app-sla-badge>
+        <app-sla-badge status="success" text="Không dot" [showDot]="false"></app-sla-badge>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('sla-badge') }"></ng-container>
+    </section>
+
+    <!-- ================= ICON ================= -->
+    <section class="kit-section" id="ant-icon">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('ant-icon') }"></ng-container>
+
+      <div class="icon-grid">
+        <div class="icon-cell" *ngFor="let ic of iconNames">
+          <ant-icon [name]="ic" [size]="20"></ant-icon>
+          <span>{{ ic }}</span>
+        </div>
+      </div>
+      <div class="demo-row">
+        <span class="demo-label">size / color / spin / rotate</span>
+        <ant-icon name="star" [size]="28" color="#fa8c16"></ant-icon>
+        <ant-icon name="star" theme="fill" [size]="28" color="#fa8c16"></ant-icon>
+        <ant-icon name="sync" [size]="24" [spin]="true"></ant-icon>
+        <ant-icon name="down" [size]="24" [rotate]="180"></ant-icon>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('ant-icon') }"></ng-container>
+    </section>
+
+    <!-- ================= BREADCRUMBS ================= -->
+    <section class="kit-section" id="breadcrumbs">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('breadcrumbs') }"></ng-container>
+
+      <app-breadcrumbs [items]="['Quản lý quy trình', 'Danh sách quy trình']"></app-breadcrumbs>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('breadcrumbs') }"></ng-container>
+    </section>
+
+    <!-- ================= LOADING SPINNER ================= -->
+    <section class="kit-section" id="loading-spinner">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('loading-spinner') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo spinner-box" *ngFor="let t of spinnerTypes">
+          <span class="demo-label">type="{{ t }}"</span>
+          <app-loading-spinner [type]="t" [tip]="'Đang tải (' + t + ')...'"></app-loading-spinner>
+        </div>
+        <div class="demo spinner-box">
+          <span class="demo-label">skeleton + avatar</span>
+          <app-loading-spinner type="skeleton" [showSkeletonAvatar]="true" [skeletonRows]="2"></app-loading-spinner>
+        </div>
+      </div>
+      <div class="demo-row">
+        <span class="demo-label">size</span>
+        <app-loading-spinner *ngFor="let sz of spinnerSizes" [size]="sz" [showTip]="false"></app-loading-spinner>
+        <app-loading-spinner [showTip]="false" color="#ed0231"></app-loading-spinner>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('loading-spinner') }"></ng-container>
+    </section>
+
+    <!-- ================= EMPTY STATE ================= -->
+    <section class="kit-section" id="empty-state">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('empty-state') }"></ng-container>
+
+      <div class="demo-grid">
+        <div class="demo"><app-empty-state></app-empty-state></div>
+        <div class="demo">
+          <app-empty-state icon="file-add" title="Chưa có quy trình" description="Bắt đầu bằng cách tạo quy trình đầu tiên." actionText="Tạo quy trình" (onAction)="confirmResult = 'Bấm nút empty-state'"></app-empty-state>
+        </div>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('empty-state') }"></ng-container>
+    </section>
+
+    <!-- ================= CONFIRM DIALOG ================= -->
+    <section class="kit-section" id="confirm-dialog">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('confirm-dialog') }"></ng-container>
+
+      <div class="demo-row">
+        <button class="kit-btn danger" (click)="openConfirm('danger')">Mở danger</button>
+        <button class="kit-btn warning" (click)="openConfirm('warning')">Mở warning</button>
+        <button class="kit-btn" (click)="openConfirm('info')">Mở info</button>
+        <span class="demo-value">{{ confirmResult }}</span>
+      </div>
+
+      <app-confirm-dialog
+        [visible]="confirmVisible"
+        [type]="confirmType"
+        title="Xác nhận dừng ban hành quy trình"
+        content="Quy trình PAKN-2026 sẽ ngừng nhận ticket mới. Bạn có chắc chắn?"
+        confirmText="Xác nhận"
+        cancelText="Huỷ"
+        [loading]="confirmLoading"
+        (onConfirm)="onConfirm()"
+        (onCancel)="onCancelConfirm()">
+      </app-confirm-dialog>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('confirm-dialog') }"></ng-container>
+    </section>
+
+    <!-- ================= PIPES ================= -->
+    <section class="kit-section" id="pipes">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('pipes') }"></ng-container>
+
+      <table class="pipe-table">
+        <tbody>
+          <tr>
+            <td><code>new Date() | dateFormat</code></td>
+            <td>{{ pipeDate | dateFormat }}</td>
+          </tr>
+          <tr>
+            <td><code>null | dateFormat</code></td>
+            <td>{{ null | dateFormat }}</td>
+          </tr>
+          <tr *ngFor="let m of slaMinutes">
+            <td><code>{{ m }} | slaStatus</code></td>
+            <td>{{ m | slaStatus }}</td>
+          </tr>
+          <tr>
+            <td><code>[innerHTML]="html | safeHtml"</code></td>
+            <td [innerHTML]="safeHtmlSample | safeHtml"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('pipes') }"></ng-container>
+    </section>
+  </main>
+</div>

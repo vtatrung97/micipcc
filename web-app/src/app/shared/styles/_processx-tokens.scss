@@ -1,0 +1,117 @@
+// ============================================================================
+// Token thiết kế ProcessX (Figma: "ProcessX - Design System")
+// Dùng: @use '<đường dẫn tương đối>/shared/styles/processx-tokens' as px;
+// ============================================================================
+
+// Color/*
+$white: #ffffff;
+$primary-700: #d7002b;
+$primary-600: #ed0231;
+$primary-500: #fa0f3e;
+$primary-400: #ff5779;
+$primary-300: #ff94a9;
+$primary-200: #ffc0cd;
+$primary-50: #fff0f3;
+$neutral-900: #292929;
+$neutral-800: #404040;
+$neutral-600: #707070;
+$neutral-500: #a1a1a1;
+$neutral-400: #d4d4d4;
+$neutral-300: #e3e3e3;
+$neutral-200: #f2f2f2;
+$neutral-100: #f5f5f5;
+$warning: #faad14;
+
+// Space/*
+$space-2: 2px;
+$space-4: 4px;
+$space-6: 6px;
+$space-8: 8px;
+$space-12: 12px;
+$space-16: 16px;
+$space-24: 24px;
+
+// Radius
+$radius-sm: 6px;   // checkbox, menu item
+$radius-md: 8px;   // field size xs / ô tìm kiếm trong dropdown
+$radius-lg: 12px;  // field size sm (mặc định), dropdown panel
+
+// Typography (Inter)
+$font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+// Weight mặc định cho nội dung bên trong các control (input, select, textarea, picker): 400
+$font-weight-control: 400;
+
+@mixin body-md-regular {
+  font-family: $font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: $font-weight-control;
+}
+
+@mixin body-sm-regular {
+  font-family: $font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: $font-weight-control;
+}
+
+@mixin body-md-medium {
+  font-family: $font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+@mixin body-sm-medium {
+  font-family: $font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+@mixin body-sm-semibold {
+  font-family: $font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+// Effect "Effect menu": bóng của dropdown panel
+$shadow-menu: 0 0 14px -4px rgba(0, 0, 0, 0.05), 0 32px 48px -8px rgba(0, 0, 0, 0.1);
+
+// ============================================================================
+// Kích thước control dùng chung: small | middle (mặc định, = Figma "sm") | large
+// Chiều cao tính cả viền (border-box), như Figma vẽ viền nằm trong khung.
+// ============================================================================
+$field-sizes: (
+  small:  (height: 40px, radius: $radius-md, padding-x: $space-12, font-size: 14px, line-height: 20px),
+  middle: (height: 48px, radius: $radius-lg, padding-x: $space-12, font-size: 16px, line-height: 24px),
+  large:  (height: 56px, radius: $radius-lg, padding-x: $space-16, font-size: 16px, line-height: 24px)
+);
+
+@function field-size($size, $key) {
+  @return map-get(map-get($field-sizes, $size), $key);
+}
+
+/// Áp chiều cao + radius + padding ngang + cỡ chữ của một size lên khung ô
+@mixin field-size($size, $with-height: true) {
+  @if $with-height {
+    height: field-size($size, height);
+  }
+  border-radius: field-size($size, radius);
+  padding-left: field-size($size, padding-x);
+  padding-right: field-size($size, padding-x);
+  font-size: field-size($size, font-size);
+  line-height: field-size($size, line-height);
+}
+
+// Khung ô nhập dùng chung (input, textarea, trigger của select)
+@mixin field-box {
+  background: $white;
+  border: 1px solid $neutral-300;
+  border-radius: $radius-lg;
+  color: $neutral-900;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}

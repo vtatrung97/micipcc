@@ -1,20 +1,21 @@
 <div 
-  class="ant-input-affix-wrapper"
-  [class.ant-input-affix-wrapper-focused]="isFocused"
-  [class.ant-input-affix-wrapper-disabled]="disabled"
-  [class.ant-input-affix-wrapper-status-error]="status === 'error'"
-  [class.ant-input-affix-wrapper-status-warning]="status === 'warning'"
-  [class.ant-input-affix-wrapper-sm]="size === 'small'"
-  [class.ant-input-affix-wrapper-lg]="size === 'large'">
+  class="px-input-affix-wrapper"
+  [class.px-input-affix-wrapper-focused]="isFocused"
+  [class.px-input-affix-wrapper-disabled]="disabled"
+  [class.px-input-affix-wrapper-readonly]="readonly"
+  [class.px-input-affix-wrapper-status-error]="status === 'error'"
+  [class.px-input-affix-wrapper-status-warning]="status === 'warning'"
+  [class.px-input-affix-wrapper-sm]="size === 'small'"
+  [class.px-input-affix-wrapper-lg]="size === 'large'">
   
-  <span class="ant-input-prefix" *ngIf="prefixIcon">
+  <span class="px-input-prefix" *ngIf="prefixIcon">
     <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
   </span>
 
   <input
     #inputElement
     [type]="type"
-    class="ant-input"
+    class="px-input"
     [placeholder]="placeholder"
     [disabled]="disabled"
     [readonly]="readonly"
@@ -26,18 +27,18 @@
     (keydown.enter)="onEnter.emit(value)" />
 
   <span 
-    class="ant-input-clear-icon" 
+    class="px-input-clear-icon" 
     *ngIf="allowClear && value && !disabled && !readonly"
     (click)="clearValue($event)"
     title="Xóa nội dung">
     <ant-icon name="close-circle-fill" [size]="12"></ant-icon>
   </span>
 
-  <span class="ant-input-suffix" *ngIf="suffixIcon && (!allowClear || !value)">
+  <span class="px-input-suffix" *ngIf="suffixIcon && (!allowClear || !value)">
     <ant-icon [name]="suffixIcon" [size]="14"></ant-icon>
   </span>
 
-  <span class="ant-input-show-count" *ngIf="showCount && maxLength">
+  <span class="px-input-show-count" *ngIf="showCount && maxLength">
     {{ (value || '').length }} / {{ maxLength }}
   </span>
 </div>

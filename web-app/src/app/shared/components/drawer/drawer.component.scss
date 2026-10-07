@@ -1,0 +1,92 @@
+@use '../../styles/processx-tokens' as px;
+
+.drawer-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.25);
+  animation: drawerFade 0.2s ease;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  max-width: 100vw;
+  background: px.$white;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  animation: drawerSlide 0.24s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+// _Header modal: padding 16/24, viền dưới Neutral/300
+.drawer-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: px.$space-16 px.$space-24;
+  border-bottom: 1px solid px.$neutral-300;
+}
+
+.drawer-title {
+  display: flex;
+  align-items: center;
+  gap: px.$space-12;
+  font-family: px.$font-family;
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 700;
+  color: px.$neutral-900;
+}
+
+// Close X modal: nút tròn 40px nền Neutral/100
+.drawer-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8;
+  border: none;
+  border-radius: 112px;
+  background: px.$neutral-100;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-300;
+  }
+}
+
+// Body: padding 24, các field cách nhau 24
+.drawer-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: px.$space-24;
+  min-height: 0;
+  padding: px.$space-24;
+  overflow-y: auto;
+}
+
+// _Modal Actions: padding 24, viền trên Neutral/300
+.drawer-footer {
+  flex-shrink: 0;
+  padding: px.$space-24;
+  border-top: 1px solid px.$neutral-300;
+
+  &:empty {
+    display: none;
+  }
+}
+
+@keyframes drawerSlide {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes drawerFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

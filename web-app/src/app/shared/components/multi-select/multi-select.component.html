@@ -1,0 +1,79 @@
+<div class="ms"
+     [class.ms-sm]="size === 'small'"
+     [class.ms-lg]="size === 'large'"
+     [class.ms-open]="isOpen"
+     [class.ms-disabled]="disabled"
+     [class.ms-has-value]="selectedOptions.length > 0"
+     [class.ms-status-error]="status === 'error'"
+     [class.ms-status-warning]="status === 'warning'">
+
+  <!-- Ô hiển thị (_Text field dropdown) -->
+  <div class="ms-trigger" role="combobox" tabindex="0"
+       [attr.aria-expanded]="isOpen"
+       [attr.aria-disabled]="disabled"
+       (click)="togglePanel()"
+       (keydown.enter)="togglePanel()"
+       (keydown.space)="$event.preventDefault(); togglePanel()">
+    <div class="ms-tags" *ngIf="selectedOptions.length > 0; else placeholderTpl">
+      <span class="ms-tag" *ngFor="let opt of visibleTags" [title]="opt.label">
+        <span class="ms-tag-label">{{ opt.label }}</span>
+        <button type="button" class="ms-tag-close" *ngIf="!disabled"
+                [attr.aria-label]="'Bỏ chọn ' + opt.label"
+                (click)="removeTag(opt, $event)">
+          <img [src]="icons.close" width="12" height="12" alt="" />
+        </button>
+      </span>
+      <span class="ms-tag ms-tag-more" *ngIf="hiddenTagCount > 0">+{{ hiddenTagCount }}</span>
+    </div>
+    <ng-template #placeholderTpl>
+      <span class="ms-placeholder">{{ placeholder }}</span>
+    </ng-template>
+
+    <img class="ms-chevron" [src]="isOpen ? icons.chevronActive : icons.chevron" width="24" height="24" alt="" />
+  </div>
+
+  <!-- Dropdown (_Text field search dropdown) -->
+  <div class="ms-panel" *ngIf="isOpen" (click)="$event.stopPropagation()">
+    <div class="ms-search" *ngIf="showSearch">
+      <label class="ms-search-box">
+        <img [src]="icons.search" width="24" height="24" alt="" />
+        <input type="text" class="ms-search-input"
+               [placeholder]="searchPlaceholder"
+               [value]="keyword"
+               (input)="keyword = $any($event.target).value" />
+      </label>
+    </div>
+
+    <div class="ms-menu" role="listbox" aria-multiselectable="true">
+      <div class="ms-item" *ngIf="showSelectAll && filteredOptions.length > 0"
+           role="option" [attr.aria-selected]="allChecked"
+           (click)="toggleAll()">
+        <div class="ms-item-content">
+          <span class="ms-checkbox"
+                [class.ms-checkbox-checked]="allChecked"
+                [class.ms-checkbox-indeterminate]="someChecked">
+            <img *ngIf="allChecked" [src]="icons.check" width="14" height="14" alt="" />
+            <img *ngIf="someChecked" [src]="icons.minus" width="14" height="14" alt="" />
+          </span>
+          <span class="ms-item-label">{{ selectAllLabel }}</span>
+        </div>
+      </div>
+
+      <div class="ms-item" *ngFor="let opt of filteredOptions"
+           role="option"
+           [class.ms-item-disabled]="opt.disabled"
+           [attr.aria-selected]="isSelected(opt)"
+           [attr.aria-disabled]="opt.disabled || null"
+           (click)="toggleOption(opt)">
+        <div class="ms-item-content">
+          <span class="ms-checkbox" [class.ms-checkbox-checked]="isSelected(opt)">
+            <img *ngIf="isSelected(opt)" [src]="icons.check" width="14" height="14" alt="" />
+          </span>
+          <span class="ms-item-label" [title]="opt.label">{{ opt.label }}</span>
+        </div>
+      </div>
+
+      <div class="ms-empty" *ngIf="filteredOptions.length === 0">{{ emptyText }}</div>
+    </div>
+  </div>
+</div>

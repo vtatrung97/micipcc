@@ -1,0 +1,23 @@
+<ng-container *ngIf="visible">
+  <div class="drawer-mask" (click)="onMaskClick()"></div>
+
+  <aside class="drawer" role="dialog" aria-modal="true" [attr.aria-label]="title" [style.width.px]="width">
+    <header class="drawer-header">
+      <div class="drawer-title">
+        <ng-content select="[drawer-icon]"></ng-content>
+        <span>{{ title }}</span>
+      </div>
+      <button type="button" class="drawer-close" (click)="close()" aria-label="Đóng">
+        <img src="assets/icons/processx/close-modal.svg" width="24" height="24" alt="" />
+      </button>
+    </header>
+
+    <div class="drawer-body">
+      <ng-content></ng-content>
+    </div>
+
+    <footer class="drawer-footer">
+      <ng-content select="[drawer-footer]"></ng-content>
+    </footer>
+  </aside>
+</ng-container>

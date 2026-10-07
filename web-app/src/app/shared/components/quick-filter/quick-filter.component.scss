@@ -1,0 +1,47 @@
+@use '../../styles/processx-tokens' as px;
+
+:host {
+  display: block;
+}
+
+.qf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: px.$space-8;
+}
+
+// Chip cao 44 (viền nằm trong), padding 12/20, radius 112
+.qf-chip {
+  @include px.body-sm-semibold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid px.$neutral-300;
+  border-radius: 112px;
+  background: px.$white;
+  color: px.$neutral-800;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled):not(.qf-chip-active) {
+    border-color: px.$neutral-800;
+  }
+
+  &.qf-chip-active {
+    background: px.$primary-600;
+    border-color: px.$primary-600;
+    color: px.$white;
+    cursor: default;
+  }
+
+  &:disabled:not(.qf-chip-active) {
+    background: px.$neutral-100;
+    color: px.$neutral-500;
+    cursor: not-allowed;
+  }
+}
