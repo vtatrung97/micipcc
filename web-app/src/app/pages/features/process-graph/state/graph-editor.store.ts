@@ -3,6 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ProcessTemplateItem } from '@core/services/template.service';
 import { NodePropertyModel } from '../models/node-property.model';
 import { GraphValidationResult } from '../config/ports.config';
+import { ProcessInfo, ProcessInfoErrors, processInfoFromTemplate } from '../models/process-info.model';
 
 /**
  * Trạng thái dùng chung của màn Canvas Builder (1 instance / 1 lần mở màn hình,
@@ -64,6 +65,13 @@ export class GraphEditorStore {
     published_at: '05/10/2026 14:30',
     active_instances_count: 5,
   };
+
+  /** Dữ liệu tab "Thông tin chung" (dựng lại mỗi khi đổi currentTemplate) */
+  public processInfo: ProcessInfo = processInfoFromTemplate(this.currentTemplate);
+  /** Lỗi validate tab "Thông tin chung" (hiện sau khi bấm Lưu nháp / Ban hành) */
+  public processInfoErrors: ProcessInfoErrors = {};
+  /** Đang tạo mới (vào từ "Tạo mới quy trình", chưa có bản ghi) */
+  public isCreateMode = false;
 
   public readonly STORAGE_KEY = 'x6_workflow_graph_data';
 

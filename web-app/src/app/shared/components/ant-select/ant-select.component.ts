@@ -12,6 +12,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { shouldDropUp } from '../../utils/dropdown-placement';
 
 export interface SelectOption<T = any> {
   value: T;
@@ -51,6 +52,12 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges {
   @ViewChild('container') container?: ElementRef<HTMLDivElement>;
 
   isOpen: boolean = false;
+  /** Dropdown mở lên trên khi phía dưới không đủ chỗ (vd: "Số dòng hiển thị" ở đáy trang) */
+  dropUp: boolean = false;
+  /** Đang đo kích thước dropdown (ẩn tạm để không nhảy vị trí) */
+  measuring: boolean = false;
+
+  @ViewChild('dropdown') dropdownRef?: ElementRef<HTMLDivElement>;
   searchQuery: string = '';
   activeHoverIndex: number = -1;
 
@@ -108,6 +115,9 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges {
 
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
+      this.dropUp = false;
+      this.measuring = true;
+      setTimeout(() => this.updateVerticalPlacement());
       this.searchQuery = '';
       this.activeHoverIndex = this.normalizedOptions.findIndex(o => o.value === this.innerValue);
       setTimeout(() => {
@@ -118,6 +128,15 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges {
     } else {
       this.onTouched();
     }
+    this.cdr.markForCheck();
+  }
+
+  /** Đo chiều cao thật của dropdown → thiếu chỗ phía dưới thì mở lên trên */
+  private updateVerticalPlacement(): void {
+    if (!this.isOpen) return;
+    const height = this.dropdownRef?.nativeElement.offsetHeight || 0;
+    this.dropUp = shouldDropUp(this.elRef.nativeElement, height);
+    this.measuring = false;
     this.cdr.markForCheck();
   }
 

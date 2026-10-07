@@ -5,9 +5,11 @@ import {
   forwardRef,
   HostListener,
   Input,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { shouldDropUp } from '../../utils/dropdown-placement';
 
 /**
  * Chọn NGÀY TRONG THÁNG (1 → 31), không gắn với tháng/năm cụ thể.
@@ -44,6 +46,12 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
   readonly days: number[] = Array.from({ length: 31 }, (_, i) => i + 1);
 
   isOpen: boolean = false;
+  /** Popup mở lên trên khi phía dưới không đủ chỗ */
+  dropUp: boolean = false;
+  /** Đang đo kích thước popup (ẩn tạm) */
+  measuring: boolean = false;
+
+  @ViewChild('panel') panelRef?: ElementRef<HTMLDivElement>;
   selected: number[] = [];
 
   private onChange: (val: number[] | number | null) => void = () => {};
@@ -92,7 +100,7 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
 
   togglePicker(): void {
     if (this.disabled) return;
-    this.isOpen ? this.close() : (this.isOpen = true);
+    this.isOpen ? this.close() : this.open();
   }
 
   toggleDay(day: number): void {
@@ -125,6 +133,17 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
   @HostListener('keydown.escape')
   onEscape(): void {
     if (this.isOpen) this.close();
+  }
+
+  private open(): void {
+    this.isOpen = true;
+    this.dropUp = false;
+    this.measuring = true;
+    setTimeout(() => {
+      if (!this.isOpen) return;
+      this.dropUp = shouldDropUp(this.elRef.nativeElement, this.panelRef?.nativeElement.offsetHeight || 0, 4);
+      this.measuring = false;
+    });
   }
 
   private close(): void {

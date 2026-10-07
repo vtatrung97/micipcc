@@ -20,7 +20,9 @@
     </span>
   </div>
 
-  <div class="mdp-dropdown" *ngIf="isOpen" [class.mdp-dropdown-left]="placement === 'bottomLeft'"
+  <div #panel class="mdp-dropdown" *ngIf="isOpen" [class.mdp-dropdown-left]="placement === 'bottomLeft'"
+       [class.mdp-dropdown-up]="dropUp"
+       [style.visibility]="measuring ? 'hidden' : null"
        role="listbox" [attr.aria-multiselectable]="multiple">
     <button type="button" class="mdp-day" *ngFor="let day of days"
             role="option"

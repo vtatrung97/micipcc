@@ -1,0 +1,160 @@
+@use '../../../../shared/styles/processx-tokens' as px;
+
+// Builder body (Figma 264:42075): nền Neutral/100, padding 24/48, các card cách 16, căn giữa
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  background: px.$neutral-100;
+}
+
+.info-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: px.$space-16;
+  padding: px.$space-24 48px;
+}
+
+// Card form: rộng 800, padding 24, radius 16, viền Neutral/300, các khối cách 16
+.info-card {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-16;
+  width: 100%;
+  max-width: 800px;
+  padding: px.$space-24;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-xl;
+  box-sizing: border-box;
+}
+
+// Body/lg/SemiBold 18/28
+.info-card-title {
+  margin: 0;
+  font-family: px.$font-family;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+  color: px.$neutral-900;
+}
+
+// Mã quy trình + Phân loại nhóm: 2 cột bằng nhau, cách 16
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: px.$space-16;
+
+  > app-form-field {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+// Khung mở rộng dưới radio đang chọn (khung nền xám do app-radio-group vẽ)
+.trigger-extra {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-16;
+}
+
+// Hybrid: 2 ô chọn cách 10
+.trigger-extra-compact {
+  gap: 10px;
+}
+
+// Ô "Điều kiện kích hoạt": trông như ô nhập 48px, chữ placeholder + chevron phải, bấm để mở cài đặt
+.condition-field {
+  @include px.field-box;
+  @include px.body-md-regular;
+  @include px.field-size(middle);
+  display: flex;
+  align-items: center;
+  gap: px.$space-8;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: px.$neutral-800;
+    outline: none;
+  }
+
+  img {
+    flex-shrink: 0;
+  }
+}
+
+.condition-field-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: px.$neutral-900;
+
+  &.is-empty {
+    color: px.$neutral-500;
+  }
+}
+
+.trigger-divider {
+  height: 1px;
+  background: px.$neutral-300;
+}
+
+// Ngày chạy giãn hết; Giờ chạy rộng vừa 2 ô hh : mm
+.schedule-fields {
+  display: flex;
+  align-items: flex-start;
+  gap: px.$space-12;
+
+  .schedule-date {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .schedule-time {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+
+.time-input {
+  display: flex;
+  align-items: center;
+  gap: px.$space-4;
+
+  ant-input {
+    width: 80px;
+  }
+
+  ::ng-deep .px-input {
+    text-align: center;
+  }
+}
+
+.time-separator {
+  @include px.body-md-regular;
+  color: px.$neutral-900;
+}
+
+// SLA: ô số giãn + ô đơn vị rộng 200, cách 8
+.sla-row {
+  display: flex;
+  align-items: flex-start;
+  gap: px.$space-8;
+
+  .sla-value {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .sla-unit {
+    flex: 0 0 200px;
+    width: 200px;
+  }
+}

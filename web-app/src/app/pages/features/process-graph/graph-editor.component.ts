@@ -28,6 +28,14 @@ import { GraphLayoutService } from './services/graph-layout.service';
 import { SampleFlowService } from './services/sample-flow.service';
 import { FlowPersistenceService } from './services/flow-persistence.service';
 import { GraphDialogService } from './services/graph-dialog.service';
+import {
+  ProcessInfo,
+  ProcessInfoErrors,
+  createEmptyProcessInfo,
+  processInfoFromTemplate,
+  validateProcessInfo,
+  toProcessInfoPayload,
+} from './models/process-info.model';
 
 // Giữ đường import cũ cho drawer / component con: `import { NodePropertyModel } from '../graph-editor.component'`
 export * from './models/node-property.model';
@@ -65,6 +73,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   public activeSubTab: 'info' | 'design' = 'design';
   public searchQuery: string = '';
   public isPaletteCollapsed: boolean = false;
+  /** Đã bấm Lưu nháp / Ban hành ít nhất 1 lần → bắt đầu hiện lỗi tab Thông tin chung */
+  private infoSubmitted = false;
   private routeSub = new Subscription();
 
   constructor(
@@ -95,6 +105,22 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   // ---------------------------------------------------------------------------
   public get currentTemplate(): ProcessTemplateItem {
     return this.store.currentTemplate;
+  }
+  /** Dữ liệu tab "Thông tin chung" */
+  public get processInfo(): ProcessInfo {
+    return this.store.processInfo;
+  }
+  public get isCreateMode(): boolean {
+    return this.store.isCreateMode;
+  }
+  /** Tên trên header: theo ô "Tên quy trình" đang nhập */
+  public get headerTitle(): string {
+    return this.store.processInfo.name.trim()
+      || this.t(this.store.isCreateMode ? 'INFO.NEW_PROCESS' : 'HEADER.DEFAULT_NAME');
+  }
+  /** Lỗi tab Thông tin chung — chỉ hiện sau lần bấm Lưu nháp / Ban hành đầu tiên, sau đó cập nhật theo từng lần gõ */
+  public get processInfoErrors(): ProcessInfoErrors {
+    return this.infoSubmitted ? this.collectInfoErrors() : {};
   }
   public get canUndo(): boolean {
     return this.store.canUndo;
@@ -161,9 +187,11 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.samples.loadSampleFlow(type);
   }
   public saveDraft(): void {
+    if (!this.commitProcessInfo()) return;
     this.persistence.saveDraft();
   }
   public saveProcessTemplate(): void {
+    if (!this.commitProcessInfo()) return;
     this.persistence.saveProcessTemplate();
   }
   public onValidateGraphClick(): void {
@@ -248,7 +276,24 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.routeSub.add(
       this.route.queryParams.subscribe((params) => {
         const templateCode = params['id'];
+        // Vào từ "Tạo mới quy trình": chưa có bản ghi → form trống, mở sẵn tab Thông tin chung
+        if (!templateCode && params['mode'] === 'create') {
+          this.store.isCreateMode = true;
+          this.store.currentTemplate = {
+            code: '',
+            name: '',
+            version: '1',
+            sla: '',
+            slaStatus: 'normal',
+            status: 'Draft',
+            description: '',
+          };
+          this.store.processInfo = createEmptyProcessInfo();
+          this.activeSubTab = 'info';
+          return;
+        }
         if (templateCode) {
+          this.store.isCreateMode = false;
           const found = this.templateService.getTemplateByCode(templateCode);
           if (found) {
             this.store.currentTemplate = found;
@@ -263,6 +308,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
               description: 'Quy trình khởi tạo từ danh sách Template',
             };
           }
+          this.store.processInfo = processInfoFromTemplate(this.store.currentTemplate);
+          if (params['mode'] === 'create') this.activeSubTab = 'info';
 
           if (this.store.graph && this.store.currentTemplate.graphData) {
             this.persistence.loadGraphData(
@@ -308,9 +355,73 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public setSubTab(tab: 'info' | 'design'): void {
     this.activeSubTab = tab;
-    if (tab === 'info') {
-      this.dialogs.openTemplateInfoModal();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tab "Thông tin chung"
+  // ---------------------------------------------------------------------------
+
+  /** Validate form + (tạo mới) kiểm tra trùng mã */
+  private collectInfoErrors(): ProcessInfoErrors {
+    const errors = validateProcessInfo(this.store.processInfo);
+    const code = this.store.processInfo.code.trim().toUpperCase();
+    if (!errors.code && this.store.isCreateMode && this.templateService.getTemplateByCode(code)) {
+      errors.code = 'CODE_EXISTS';
     }
+    return errors;
+  }
+
+  /**
+   * Trước khi Lưu nháp / Ban hành: kiểm tra tab Thông tin chung.
+   * Lỗi → chuyển sang tab Thông tin chung và dừng. Hợp lệ → tạo mới / cập nhật bản ghi quy trình.
+   */
+  private commitProcessInfo(): boolean {
+    this.infoSubmitted = true;
+    const errors = this.collectInfoErrors();
+    const count = Object.keys(errors).length;
+    if (count > 0) {
+      this.activeSubTab = 'info';
+      this.store.selectedCellInfo = this.t('INFO.STATUS_INVALID', { count });
+      return false;
+    }
+
+    const info = this.store.processInfo;
+    const extra = toProcessInfoPayload(info);
+    const updates: Partial<ProcessTemplateItem> = {
+      name: info.name.trim(),
+      description: info.description,
+      category: info.category || undefined,
+      triggerType: extra.triggerType,
+      triggerConfig: extra.triggerConfig,
+      slaValue: extra.slaValue,
+      slaUnit: extra.slaUnit,
+      sla: `${extra.slaValue} ${extra.slaUnit}`,
+    };
+
+    if (this.store.isCreateMode) {
+      const created = this.templateService.createTemplate({
+        ...this.store.currentTemplate,
+        ...updates,
+        code: extra.code.toUpperCase(),
+        status: 'Draft',
+      });
+      // createTemplate() chỉ giữ các field cũ → ghi thêm loại kích hoạt / SLA tách số + đơn vị
+      this.templateService.updateTemplate(created.code, updates);
+      this.store.currentTemplate = { ...created, ...updates };
+      this.store.isCreateMode = false;
+      this.store.selectedCellInfo = this.t('INFO.STATUS_CREATED', { code: created.code });
+      // Gắn ?id= để F5 / mở lại vẫn đúng bản ghi (không rời màn hình)
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { id: created.code, mode: null, initType: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    } else {
+      this.templateService.updateTemplate(this.store.currentTemplate.code, updates);
+      this.store.currentTemplate = { ...this.store.currentTemplate, ...updates };
+    }
+    return true;
   }
 
   public togglePaletteCollapse(): void {

@@ -1,0 +1,18 @@
+@use '../../styles/processx-tokens' as px;
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+// Icon "?" 16px, Neutral/500 (màu nằm sẵn trong SVG)
+.px-help-tooltip {
+  display: inline-flex;
+  border-radius: 50%;
+  cursor: help;
+  outline: none;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px px.$primary-200;
+  }
+}

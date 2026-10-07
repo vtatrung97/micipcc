@@ -46,6 +46,53 @@
       "GENERAL": "General info",
       "DESIGN": "Process design"
     },
+    "INFO": {
+      "NEW_PROCESS": "New process",
+      "BASIC_TITLE": "Basic information",
+      "CONFIG_TITLE": "Process configuration",
+      "NAME": "Process name",
+      "CODE": "Process code",
+      "CATEGORY": "Process group",
+      "DESCRIPTION": "Description",
+      "PLACEHOLDER_INPUT": "Enter here",
+      "PLACEHOLDER_SELECT": "Select",
+      "PLACEHOLDER_NUMBER": "Enter a number",
+      "TRIGGER": "Trigger type",
+      "TRIGGERS": {
+        "MANUAL": "Manual trigger",
+        "AUTO": "Automatic trigger",
+        "SCHEDULE": "Scheduled",
+        "HYBRID": "Hybrid"
+      },
+      "SCHEDULE_MODES": {
+        "ONCE": "Run once",
+        "REPEAT": "Repeat"
+      },
+      "RUN_DATE": "Run date",
+      "RUN_TIME": "Run time",
+      "HOUR_PLACEHOLDER": "hh",
+      "MINUTE_PLACEHOLDER": "mm",
+      "API": "API",
+      "INPUT_FORM": "Input data form",
+      "TRIGGER_CONDITION": "Trigger condition",
+      "TRIGGER_CONDITION_PLACEHOLDER": "Set up conditions",
+      "TRIGGER_CONDITION_COUNT": "{{count}} condition(s) set",
+      "SLA": "Processing deadline (SLA)",
+      "SLA_UNITS": {
+        "DAY": "Days",
+        "HOUR": "Hours",
+        "MINUTE": "Minutes"
+      },
+      "ERRORS": {
+        "REQUIRED": "This field is required",
+        "CODE_FORMAT": "Only letters without accents, digits, _ or -",
+        "CODE_EXISTS": "Process code already exists",
+        "TIME_FORMAT": "Invalid run time (hh:mm)",
+        "SLA_POSITIVE": "Enter a number greater than 0"
+      },
+      "STATUS_INVALID": "⚠️ General info has {{count}} invalid field(s)",
+      "STATUS_CREATED": "✨ Created process [{{code}}]"
+    },
     "SAMPLES": {
       "BUTTON": "Process samples",
       "BUTTON_TITLE": "Select and load a standard process sample",
@@ -78,14 +125,38 @@
       "SEARCH": "Search steps",
       "CONDITION_GROUP": "Conditions",
       "ITEMS": {
-        "GATEWAY_EXCLUSIVE": { "TITLE": "Exclusive branch", "TOOLTIP": "Take exactly one branch whose condition matches" },
-        "GATEWAY_PARALLEL": { "TITLE": "Parallel", "TOOLTIP": "Run all branches in parallel" },
-        "GATEWAY_INCLUSIVE": { "TITLE": "Inclusive branches", "TOOLTIP": "Take every branch whose condition matches" },
-        "USER_TASK": { "TITLE": "Assign task", "TOOLTIP": "Assign work to an agent / specialist" },
-        "SYSTEM_TASK": { "TITLE": "System task", "TOOLTIP": "Automated task / call a system API" },
-        "NOTIFICATION": { "TITLE": "Send notification", "TOOLTIP": "Send SMS / Email / Webhook / OTT notification" },
-        "SUB_PROCESS": { "TITLE": "Sub-process", "TOOLTIP": "Run another process as a sub-process" },
-        "END": { "TITLE": "End", "TOOLTIP": "End the process" }
+        "GATEWAY_EXCLUSIVE": {
+          "TITLE": "Exclusive branch",
+          "TOOLTIP": "Take exactly one branch whose condition matches"
+        },
+        "GATEWAY_PARALLEL": {
+          "TITLE": "Parallel",
+          "TOOLTIP": "Run all branches in parallel"
+        },
+        "GATEWAY_INCLUSIVE": {
+          "TITLE": "Inclusive branches",
+          "TOOLTIP": "Take every branch whose condition matches"
+        },
+        "USER_TASK": {
+          "TITLE": "Assign task",
+          "TOOLTIP": "Assign work to an agent / specialist"
+        },
+        "SYSTEM_TASK": {
+          "TITLE": "System task",
+          "TOOLTIP": "Automated task / call a system API"
+        },
+        "NOTIFICATION": {
+          "TITLE": "Send notification",
+          "TOOLTIP": "Send SMS / Email / Webhook / OTT notification"
+        },
+        "SUB_PROCESS": {
+          "TITLE": "Sub-process",
+          "TOOLTIP": "Run another process as a sub-process"
+        },
+        "END": {
+          "TITLE": "End",
+          "TOOLTIP": "End the process"
+        }
       }
     },
     "TOOLBAR": {

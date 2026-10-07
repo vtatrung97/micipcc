@@ -33,7 +33,10 @@
   </div>
 
   <!-- Dropdown (_Text field search dropdown) -->
-  <div class="ms-panel" *ngIf="isOpen" (click)="$event.stopPropagation()">
+  <div #panel class="ms-panel" *ngIf="isOpen"
+       [class.ms-panel-up]="dropUp"
+       [style.visibility]="measuring ? 'hidden' : null"
+       (click)="$event.stopPropagation()">
     <div class="ms-search" *ngIf="showSearch">
       <label class="ms-search-box">
         <img [src]="icons.search" width="24" height="24" alt="" />

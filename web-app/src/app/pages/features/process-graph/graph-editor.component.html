@@ -15,7 +15,7 @@
       <div class="topbar-divider-vertical"></div>
 
       <div class="process-title-group">
-        <h1 class="process-title-text" [title]="currentTemplate.name">{{ currentTemplate.name || ('PROCESS_GRAPH.HEADER.DEFAULT_NAME' | translate) }}</h1>
+        <h1 class="process-title-text" [title]="headerTitle">{{ headerTitle }}</h1>
 
         <!-- Version selector dropdown badge: Phiên bản 4 [Nháp v] -->
         <div class="version-dropdown-badge" [title]="'PROCESS_GRAPH.HEADER.VERSION_TITLE' | translate">
@@ -367,5 +367,14 @@
 
     <!-- RIGHT SIDE CONFIG DRAWER -->
     <app-node-config-drawer></app-node-config-drawer>
+
+    <!-- TAB "THÔNG TIN CHUNG" (Figma 264:42051): phủ lên canvas, canvas vẫn giữ nguyên trong DOM -->
+    <app-process-info-form
+      *ngIf="activeSubTab === 'info'"
+      class="info-tab-panel"
+      [info]="processInfo"
+      [errors]="processInfoErrors"
+      [codeEditable]="isCreateMode">
+    </app-process-info-form>
   </div>
 </div>

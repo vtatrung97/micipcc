@@ -405,6 +405,56 @@
       <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('month-day-picker') }"></ng-container>
     </section>
 
+    <!-- ================= RADIO ================= -->
+    <section class="kit-section" id="radio">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('radio') }"></ng-container>
+
+      <!-- Dựng lại đúng frame Figma 237:11006 -->
+      <div class="radio-demo">
+        <app-radio-group [(ngModel)]="triggerType" [options]="triggerOptions">
+          <ng-template appRadioExtra let-option>
+            <div *ngIf="option.value === 'schedule'" class="schedule-box">
+              <app-radio-group direction="horizontal" [(ngModel)]="scheduleMode" [options]="scheduleModeOptions"></app-radio-group>
+              <div class="schedule-divider"></div>
+              <div class="schedule-fields">
+                <app-form-field label="Ngày chạy" [required]="true" [spacing]="0" class="schedule-date">
+                  <app-date-picker [(ngModel)]="scheduleDate"></app-date-picker>
+                </app-form-field>
+                <app-form-field label="Giờ chạy" [required]="true" [spacing]="0" class="schedule-time">
+                  <div class="time-input">
+                    <ant-input [(ngModel)]="scheduleHour" placeholder="hh" [maxLength]="2"></ant-input>
+                    <span>:</span>
+                    <ant-input [(ngModel)]="scheduleMinute" placeholder="mm" [maxLength]="2"></ant-input>
+                  </div>
+                </app-form-field>
+              </div>
+            </div>
+
+            <!-- Hybrid: chọn API + biểu mẫu dữ liệu đầu vào (Figma 264:16237) -->
+            <div *ngIf="option.value === 'hybrid'" class="hybrid-box">
+              <app-form-field label="API" [required]="true" [spacing]="0">
+                <ant-select [(ngModel)]="hybridApi" [options]="hybridApiOptions" placeholder="Chọn tại đây"></ant-select>
+              </app-form-field>
+              <app-form-field label="Biểu mẫu dữ liệu đầu vào" [required]="true" [spacing]="0">
+                <ant-select [(ngModel)]="hybridForm" [options]="hybridFormOptions" placeholder="Chọn tại đây"></ant-select>
+              </app-form-field>
+            </div>
+          </ng-template>
+        </app-radio-group>
+      </div>
+      <span class="demo-value">ngModel: {{ toJson(triggerType) }} · scheduleMode: {{ toJson(scheduleMode) }}</span>
+
+      <div class="demo-row">
+        <span class="demo-label">Radio lẻ</span>
+        <app-radio [checked]="radioSingle" label="Chọn tôi" (selected)="radioSingle = true"></app-radio>
+        <app-radio [checked]="true" label="Disabled (đã chọn)" [disabled]="true"></app-radio>
+        <app-radio label="Disabled" [disabled]="true"></app-radio>
+        <app-radio label="Có mô tả" description="Dòng mô tả phụ bên dưới"></app-radio>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('radio') }"></ng-container>
+    </section>
+
     <!-- ================= CHECKBOX ================= -->
     <section class="kit-section" id="ant-checkbox">
       <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('ant-checkbox') }"></ng-container>
@@ -491,6 +541,12 @@
         <ant-checkbox [(ngModel)]="tableEmpty" label="Dữ liệu rỗng (total = 0)"></ant-checkbox>
       </div>
 
+      <!-- Thanh chọn nhiều: hiện khi có hàng được chọn -->
+      <div class="table-selection-bar" *ngIf="tableSelection.hasSelection">
+        <span>Đã chọn <b>{{ tableSelection.count }}</b></span>
+        <button type="button" class="table-selection-clear" (click)="tableSelection.clear()">Bỏ chọn</button>
+      </div>
+
       <app-data-table
         [loading]="tableLoading"
         [loadingType]="tableLoadingType"
@@ -504,35 +560,97 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 60px; text-align: center;">STT</th>
+              <th style="width: 120px;">
+                <div class="px-cell-check">
+                  <ant-checkbox
+                    [ngModel]="tableSelection.isAllSelected(visibleTableRows)"
+                    [indeterminate]="tableSelection.isSomeSelected(visibleTableRows)"
+                    [disabled]="visibleTableRows.length === 0"
+                    (checkedChange)="tableSelection.toggleAll(visibleTableRows, $event)"></ant-checkbox>STT
+                </div>
+              </th>
               <th>Tên quy trình</th>
               <th style="width: 140px;">Mã</th>
               <th style="width: 130px;">Phiên bản</th>
               <th style="width: 150px;">Trạng thái</th>
               <th style="width: 170px;">Ngày tạo</th>
-              <th style="width: 110px; text-align: center;">Hành động</th>
+              <th style="width: 140px; text-align: center;">Hành động</th>
             </tr>
           </thead>
           <tbody *ngIf="!tableEmpty">
-            <tr *ngFor="let row of tableRows; let i = index">
-              <td style="text-align: center;">{{ (tablePage - 1) * tablePageSize + i + 1 }}</td>
+            <tr *ngFor="let row of tableRows; let i = index" [class.is-selected]="tableSelection.isSelected(row)">
+              <td>
+                <div class="px-cell-check">
+                  <ant-checkbox
+                    [ngModel]="tableSelection.isSelected(row)"
+                    (checkedChange)="tableSelection.toggle(row, $event)"></ant-checkbox>{{ (tablePage - 1) * tablePageSize + i + 1 }}
+                </div>
+              </td>
               <td>{{ row.name }}</td>
               <td>{{ row.code }}</td>
               <td>{{ row.version }}</td>
               <td><app-status-tag [status]="row.status" size="small"></app-status-tag></td>
-              <td>{{ row.createdAt | dateFormat }}</td>
-              <td style="text-align: center;" class="row-actions">
-                <ant-icon name="edit" [size]="16"></ant-icon>
-                <ant-icon name="eye" [size]="16"></ant-icon>
-                <ant-icon name="delete" [size]="16" color="#ed0231"></ant-icon>
+              <td>
+                <div class="px-cell-stack">
+                  <span>{{ row.createdAt | dateFormat }}</span>
+                  <span class="px-cell-sub">Tạo bởi Trần Văn Bình</span>
+                </div>
+              </td>
+              <td>
+                <div class="px-cell-actions">
+                  <button type="button" class="px-cell-action-btn" title="Sửa" (click)="lastRowAction = 'Sửa · ' + row.code"><img src="assets/icons/processx/edit.svg" width="20" height="20" alt="" /></button>
+                  <button type="button" class="px-cell-action-btn" title="Xem" (click)="lastRowAction = 'Xem · ' + row.code"><img src="assets/icons/processx/eye.svg" width="20" height="20" alt="" /></button>
+                  <app-action-menu [items]="rowMenuItems(row)" (action)="onRowAction($event, row)"></app-action-menu>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </app-data-table>
-      <div class="demo-value">page = {{ tablePage }}, pageSize = {{ tablePageSize }}</div>
+      <div class="demo-value">page = {{ tablePage }}, pageSize = {{ tablePageSize }} · hành động gần nhất: {{ lastRowAction || '—' }}</div>
 
       <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('data-table') }"></ng-container>
+    </section>
+
+    <!-- ================= TOOLTIP ================= -->
+    <section class="kit-section" id="tooltip">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('tooltip') }"></ng-container>
+
+      <div class="demo-row">
+        <span class="demo-label">Icon "?" cạnh label</span>
+        <span class="tooltip-label">
+          Luồng mặc định
+          <app-help-tooltip text="Các trường hợp còn lại chưa được liệt kê&#10;sẽ đi theo luồng này."></app-help-tooltip>
+        </span>
+      </div>
+
+      <div class="demo-row">
+        <span class="demo-label">Directive trên nút, 4 hướng</span>
+        <button class="kit-btn" appTooltip="Tooltip phía trên">top</button>
+        <button class="kit-btn" appTooltip="Tooltip phía dưới" tooltipPlacement="bottom">bottom</button>
+        <button class="kit-btn" appTooltip="Tooltip bên trái" tooltipPlacement="left">left</button>
+        <button class="kit-btn" appTooltip="Tooltip bên phải" tooltipPlacement="right">right</button>
+        <button class="kit-btn" [appTooltip]="'Câu dài tự xuống dòng khi vượt quá chiều rộng tối đa 240px được truyền qua tooltipMaxWidth.'" [tooltipMaxWidth]="240">text dài</button>
+      </div>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('tooltip') }"></ng-container>
+    </section>
+
+    <!-- ================= ACTION MENU (⋮) ================= -->
+    <section class="kit-section" id="action-menu">
+      <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('action-menu') }"></ng-container>
+
+      <div class="demo-row">
+        <span class="demo-label">Đang ban hành</span>
+        <app-action-menu [items]="rowMenuItems({ status: 'published' })" (action)="onRowAction($event, { code: 'DEMO-PUBLISHED' })"></app-action-menu>
+        <span class="demo-label">Bản nháp (Dừng ban hành bị khoá)</span>
+        <app-action-menu [items]="rowMenuItems({ status: 'draft' })" (action)="onRowAction($event, { code: 'DEMO-DRAFT' })"></app-action-menu>
+        <span class="demo-label">disabled</span>
+        <app-action-menu [items]="rowMenuItems({ status: 'published' })" [disabled]="true"></app-action-menu>
+      </div>
+      <span class="demo-value">hành động gần nhất: {{ lastRowAction || '—' }}</span>
+
+      <ng-container *ngTemplateOutlet="apiTable; context: { $implicit: section('action-menu') }"></ng-container>
     </section>
 
     <!-- ================= PAGINATION ================= -->
