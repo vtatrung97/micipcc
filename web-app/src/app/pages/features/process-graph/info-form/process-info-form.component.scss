@@ -40,6 +40,11 @@
   color: px.$neutral-900;
 }
 
+// Nhãn radio "Loại kích hoạt": Body/sm/Medium (radio dùng chung mặc định 400)
+:host ::ng-deep .info-card .px-radio-label {
+  font-weight: 500;
+}
+
 // Mã quy trình + Phân loại nhóm: 2 cột bằng nhau, cách 16
 .info-row {
   display: flex;
@@ -64,39 +69,74 @@
   gap: 10px;
 }
 
-// Ô "Điều kiện kích hoạt": trông như ô nhập 48px, chữ placeholder + chevron phải, bấm để mở cài đặt
-.condition-field {
-  @include px.field-box;
-  @include px.body-md-regular;
-  @include px.field-size(middle);
+// Điều kiện kích hoạt (Figma 364:24387): khung trắng radius 12, padding 16; danh sách + nút thêm cách 12
+.condition-box {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: px.$space-12;
+  padding: px.$space-16;
+  background: px.$white;
+  border-radius: px.$radius-lg;
+}
+
+.condition-list {
+  display: flex;
+  flex-direction: column;
   gap: px.$space-8;
   width: 100%;
-  text-align: left;
+}
+
+// 3 cột bằng nhau + cột 40 cho nút xoá (dòng đầu để trống), cách 8
+.condition-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: px.$space-8;
+}
+
+// Header cột: Body/md/Medium Neutral/900
+.condition-head {
+  @include px.body-md-medium;
+  color: px.$neutral-900;
+}
+
+// Ô chọn trống khi đang báo lỗi → viền đỏ như ant-input status="error"
+:host ::ng-deep .condition-grid ant-select.is-invalid .px-select-selector {
+  border-color: px.$primary-600;
+}
+
+.condition-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: px.$radius-md;
+  background: transparent;
   cursor: pointer;
 
-  &:hover,
-  &:focus-visible {
-    border-color: px.$neutral-800;
-    outline: none;
-  }
-
-  img {
-    flex-shrink: 0;
+  &:hover {
+    background: px.$neutral-100;
   }
 }
 
-.condition-field-text {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: px.$neutral-900;
+// Buttons Link: icon + chữ Actions/Blue/300, Body/md/Medium, gap 4
+.condition-add {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-4;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  @include px.body-md-medium;
+  color: px.$blue-300;
 
-  &.is-empty {
-    color: px.$neutral-500;
+  &:hover {
+    opacity: 0.85;
   }
 }
 
@@ -121,6 +161,11 @@
     flex: 0 0 auto;
     width: auto;
   }
+}
+
+// Lặp lại hàng tháng: Ngày trong tháng + Giờ chạy cách 16
+.schedule-fields-repeat {
+  gap: px.$space-16;
 }
 
 .time-input {

@@ -16,20 +16,12 @@
     <app-quick-filter [(ngModel)]="draft.status" [options]="statusOptions"></app-quick-filter>
   </app-form-field>
 
-  <app-form-field label="Bản nháp" [spacing]="0">
-    <app-quick-filter [(ngModel)]="draft.draft" [options]="draftOptions"></app-quick-filter>
-  </app-form-field>
-
-  <app-form-field label="Tình trạng vận hành" [spacing]="0">
-    <app-quick-filter [(ngModel)]="draft.operation" [options]="operationOptions"></app-quick-filter>
-  </app-form-field>
-
   <app-form-field label="Cập nhật lần cuối" [spacing]="0">
-    <app-date-picker [(ngModel)]="draft.updatedDate"></app-date-picker>
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.updatedRange"></app-date-picker>
   </app-form-field>
 
   <app-form-field label="Ngày ban hành" [spacing]="0">
-    <app-date-picker [(ngModel)]="draft.publishedDate"></app-date-picker>
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.publishedRange"></app-date-picker>
   </app-form-field>
 
   <div drawer-footer class="filter-actions">

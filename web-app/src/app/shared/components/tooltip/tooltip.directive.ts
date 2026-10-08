@@ -36,6 +36,12 @@ export class TooltipDirective implements OnDestroy {
   /** Trễ trước khi hiện (ms) */
   @Input() tooltipDelay: number = 100;
   @Input() tooltipDisabled: boolean = false;
+  /**
+   * Chỉ hiện khi chữ trong phần tử đang bị cắt (text-overflow: ellipsis / tràn khung).
+   * Dùng cho nhãn có thể dài trong ô chọn, menu, tag…:
+   *   <span class="label" [appTooltip]="label" [tooltipOnlyTruncated]="true">{{ label }}</span>
+   */
+  @Input() tooltipOnlyTruncated: boolean = false;
 
   private ref: ComponentRef<TooltipComponent> | null = null;
   private showTimer: ReturnType<typeof setTimeout> | null = null;
@@ -50,6 +56,7 @@ export class TooltipDirective implements OnDestroy {
   @HostListener('focusin')
   onEnter(): void {
     if (this.tooltipDisabled || !this.text) return;
+    if (this.tooltipOnlyTruncated && !this.isTruncated()) return;
     this.clearTimer();
     this.showTimer = setTimeout(() => this.show(), this.tooltipDelay);
   }
@@ -99,6 +106,12 @@ export class TooltipDirective implements OnDestroy {
   }
 
   private onScroll = (): void => this.hide();
+
+  /** Nội dung rộng/cao hơn khung hiển thị → đang bị cắt */
+  private isTruncated(): boolean {
+    const el = this.host.nativeElement;
+    return el.scrollWidth - el.clientWidth > 1 || el.scrollHeight - el.clientHeight > 1;
+  }
 
   private clearTimer(): void {
     if (this.showTimer) {

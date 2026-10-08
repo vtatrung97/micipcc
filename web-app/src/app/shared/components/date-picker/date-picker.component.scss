@@ -138,6 +138,13 @@
   right: 0;
 }
 
+// fixedPanel: toạ độ màn hình đặt qua style top/left (component tính), bỏ right/bottom của up/right
+.dp-panel.dp-panel-fixed {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+}
+
 // Một lịch tháng: header · ô nhập · lưới, cách nhau 8
 .dp-pane {
   display: flex;

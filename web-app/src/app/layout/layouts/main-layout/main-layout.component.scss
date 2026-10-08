@@ -20,14 +20,5 @@
   overflow-y: auto;
   padding: 0px 0px;
   position: relative;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #bfbfbf;
-    border-radius: 3px;
-  }
+  // Thanh cuộn dùng style chung trong src/styles.scss (#E3E3E3, không mũi tên)
 }

@@ -55,6 +55,9 @@ export interface ProcessTemplateItem {
   status: 'Published' | 'Draft' | 'Inactive';
   description: string;
   published_at?: string; // DD/MM/YYYY HH:mm
+  published_by?: string;
+  created_at?: string; // DD/MM/YYYY HH:mm
+  created_by?: string;
   updatedAt?: string;
   active_instances_count?: number; // Dành cho FR-09: Kiểm tra chặn xóa nếu còn instance chạy dở
   // Tab "Thông tin chung" của Canvas Builder (process-graph/models/process-info.model.ts)
@@ -65,7 +68,7 @@ export interface ProcessTemplateItem {
       apiId: string | null;
       conditions: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
     };
-    schedule?: { mode: 'ONCE' | 'REPEAT'; runDate: string; runTime: string };
+    schedule?: { mode: 'ONCE' | 'REPEAT'; runDate: string; runTime: string; repeat?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | null; weekDays?: number[]; monthDays?: number[] };
     hybrid?: { apiId: string | null; inputFormId: string | null };
   } | null;
   slaValue?: number | null;
@@ -79,7 +82,8 @@ export interface ProcessTemplateItem {
 })
 export class TemplateService {
   private readonly endpoint = '/templates';
-  private readonly STORAGE_KEY = 'ipcc_process_templates_store';
+  // v2: thêm dữ liệu giả "Đang ban hành" / "Dừng ban hành" vào preset → đổi key để bỏ cache cũ
+  private readonly STORAGE_KEY = 'ipcc_process_templates_store_v2';
   private readonly EXPERIMENT_KEY = 'ipcc_template_experiments_store';
   
   private templatesSubject = new BehaviorSubject<ProcessTemplateItem[]>([]);

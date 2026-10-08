@@ -62,7 +62,8 @@ export class DataTableComponent implements AfterViewInit, OnDestroy {
       this.resizeObserver.observe(el);
       if (el.firstElementChild) this.resizeObserver.observe(el.firstElementChild);
     }
-    this.updateFixedShadow();
+    // Đo sau vòng change detection hiện tại, tránh NG0100 (ExpressionChangedAfterItHasBeenChecked) ở dev mode
+    Promise.resolve().then(() => this.updateFixedShadow());
   }
 
   public updateFixedShadow(): void {

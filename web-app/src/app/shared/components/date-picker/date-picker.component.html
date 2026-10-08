@@ -14,16 +14,16 @@
        (click)="togglePicker()"
        (keydown.enter)="togglePicker()">
     <ng-container *ngIf="!isRange">
-      <span class="dp-value" *ngIf="displaySingle; else singlePlaceholder">{{ displaySingle }}</span>
+      <span class="dp-value" [appTooltip]="displaySingle" [tooltipOnlyTruncated]="true" *ngIf="displaySingle; else singlePlaceholder">{{ displaySingle }}</span>
       <ng-template #singlePlaceholder>
         <span class="dp-placeholder">{{ placeholder || 'DD/MM/YYYY' }}</span>
       </ng-template>
     </ng-container>
 
     <ng-container *ngIf="isRange">
-      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayStart">{{ displayStart || startPlaceholder || 'Từ ngày' }}</span>
+      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayStart" [appTooltip]="displayStart || startPlaceholder || 'Từ ngày'" [tooltipOnlyTruncated]="true">{{ displayStart || startPlaceholder || 'Từ ngày' }}</span>
       <span class="dp-separator">→</span>
-      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayEnd">{{ displayEnd || endPlaceholder || 'Đến ngày' }}</span>
+      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayEnd" [appTooltip]="displayEnd || endPlaceholder || 'Đến ngày'" [tooltipOnlyTruncated]="true">{{ displayEnd || endPlaceholder || 'Đến ngày' }}</span>
     </ng-container>
 
     <span class="dp-clear" *ngIf="allowClear && hasValue && !disabled"
@@ -79,6 +79,9 @@
        [class.dp-panel-range]="isRange"
        [class.dp-panel-right]="alignRight"
        [class.dp-panel-up]="dropUp"
+       [class.dp-panel-fixed]="fixedPanel"
+       [style.top.px]="fixedPanel ? panelTop : null"
+       [style.left.px]="fixedPanel ? panelLeft : null"
        [style.visibility]="measuring ? 'hidden' : null"
        (click)="$event.stopPropagation()">
 

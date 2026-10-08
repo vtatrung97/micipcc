@@ -123,5 +123,39 @@ export const DEFAULT_PRESET_TEMPLATES: ProcessTemplateItem[] = [
         is_active: true
       }
     ]
-  }
+  },
+
+  // ==========================================================================
+  // DỮ LIỆU GIẢ CHO MÀN DANH SÁCH: đủ nhãn "Đang ban hành" / "Dừng ban hành"
+  // ==========================================================================
+  ...[
+    { code: 'ALT-2026', name: 'Giám sát và cảnh báo chỉ số', category: 'Cảnh báo chỉ số', version: 'V3.0', status: 'Published', triggerType: 'AUTO', slaValue: 4, slaUnit: 'Giờ', created_at: '10/03/2026 09:15', created_by: 'Lê Thị Hương', published_at: '12/03/2026 10:00', published_by: 'Lê Văn Hùng' },
+    { code: 'SUR-2026', name: 'Khảo sát sau tương tác', category: 'Khảo sát CSAT', version: 'V2.0', status: 'Inactive', triggerType: 'SCHEDULE', slaValue: 1, slaUnit: 'Ngày', created_at: '10/04/2026 08:30', created_by: 'Phạm Minh Tuấn', published_at: '13/04/2026 14:20', published_by: 'Phạm Minh Tuấn' },
+    { code: 'HPC-2026', name: 'Happy Call khách hàng mới hòa mạng', category: 'Happy Call / Telesales', version: 'V1.2', status: 'Published', triggerType: 'MANUAL', slaValue: 2, slaUnit: 'Ngày', created_at: '02/05/2026 13:45', created_by: 'Nguyễn Thị Lệ', published_at: '05/05/2026 09:00', published_by: 'Trần Văn Bình' },
+    { code: 'FUP-2026', name: 'Chăm sóc lại khách hàng sau khiếu nại', category: 'Chăm sóc sau tương tác', version: 'V1.0', status: 'Inactive', triggerType: 'HYBRID', slaValue: 48, slaUnit: 'Giờ', created_at: '18/05/2026 16:10', created_by: 'Trần Văn Bình', published_at: '20/05/2026 08:45', published_by: 'Lê Văn Hùng' },
+    { code: 'NET-2026', name: 'Xử lý sự cố mất kết nối Internet cáp quang', category: 'Xử lý khiếu nại', version: 'V5.1', status: 'Published', triggerType: 'AUTO', slaValue: 30, slaUnit: 'Phút', created_at: '01/06/2026 07:50', created_by: 'Lê Văn Hùng', published_at: '03/06/2026 11:30', published_by: 'Nguyễn Thị Lệ' },
+    { code: 'TLS-2026', name: 'Telesales gói cước data tháng', category: 'Happy Call / Telesales', version: 'V2.3', status: 'Inactive', triggerType: 'SCHEDULE', slaValue: 3, slaUnit: 'Ngày', created_at: '15/06/2026 10:05', created_by: 'Lê Thị Hương', published_at: '17/06/2026 15:40', published_by: 'Phạm Minh Tuấn' }
+  ].map((m): ProcessTemplateItem => ({
+    ...m,
+    status: m.status as ProcessTemplateItem['status'],
+    triggerType: m.triggerType as ProcessTemplateItem['triggerType'],
+    owner_org_id: 'ORG_CSKH_MB',
+    owner_org_name: 'TT CSKH Miền Bắc',
+    sla: `${m.slaValue} ${m.slaUnit}`,
+    slaStatus: 'normal',
+    description: `Dữ liệu giả: ${m.name}`,
+    updatedAt: m.published_at,
+    active_instances_count: 0,
+    versions: [
+      {
+        version_id: `ver-${m.code.toLowerCase()}`,
+        version_no: m.version,
+        status: m.status as ProcessTemplateItem['status'],
+        published_at: m.published_at,
+        created_by: m.published_by,
+        changelog: 'Dữ liệu giả cho màn danh sách',
+        is_active: true
+      }
+    ]
+  }))
 ];

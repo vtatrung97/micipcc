@@ -3,8 +3,10 @@
 // Theo Figma ProcessX Design System "Checkbox" (node 90:3095).
 // Ô 20x20 radius 6; label Inter 16/24 + mô tả 14/20 Neutral/600; Type=Drag: padding 8/12, radius 12, hover nền Neutral/100.
 
+// inline-flex (không dùng inline-block): label nằm trên line box của host thì chiều cao host phụ thuộc
+// baseline của ô vuông — khi hiện icon check baseline đổi → host cao 27px ↔ 24px, hàng bảng bị giật.
 :host {
-  display: inline-block;
+  display: inline-flex;
   vertical-align: middle;
 }
 

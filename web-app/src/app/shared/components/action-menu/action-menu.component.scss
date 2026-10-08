@@ -52,13 +52,14 @@
   animation: pxActionMenuIn 0.15s ease;
 }
 
-// Item: khung ngoài 2/6, nội dung 10 10 10 8, radius 6, 16/24
+// Item (Figma 435:38658): khung ngoài 2/6, nội dung 10, radius 6, Body/md/Medium 16/24, icon 20 cách chữ 8
 .px-action-item {
-  @include px.body-md-regular;
+  @include px.body-md-medium;
   display: flex;
   align-items: center;
+  gap: px.$space-8;
   margin: px.$space-2 px.$space-6;
-  padding: 10px 10px 10px px.$space-8;
+  padding: 10px;
   border: none;
   border-radius: px.$radius-sm;
   background: transparent;
@@ -79,10 +80,16 @@
     cursor: not-allowed;
   }
 
-  // Mục nguy hiểm (Xóa): chữ Primary/600
+  // Mục nguy hiểm (Xóa): chữ Actions/Red/400
   &.px-action-item-danger:not(:disabled) {
-    color: px.$primary-600;
+    color: px.$red-400;
   }
+}
+
+.px-action-item-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
 
 .px-action-item-label {

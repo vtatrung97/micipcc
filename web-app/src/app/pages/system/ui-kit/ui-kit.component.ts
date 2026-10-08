@@ -415,6 +415,7 @@ export class UiKitComponent {
         { name: 'tooltipMaxWidth', type: 'number (px)', defaultValue: '320' },
         { name: 'tooltipDelay', type: 'number (ms)', defaultValue: '100' },
         { name: 'tooltipDisabled', type: 'boolean', defaultValue: 'false' },
+        { name: 'tooltipOnlyTruncated', type: 'boolean', defaultValue: 'false' },
         { name: 'app-help-tooltip: text / placement / maxWidth', type: 'string / placement / number', defaultValue: '—' }
       ]
     },
@@ -422,7 +423,7 @@ export class UiKitComponent {
       id: 'action-menu', title: 'Menu hành động (⋮)', selector: 'app-action-menu',
       description: 'Nút ⋮ trong cột Hành động, mở menu Nhân bản / Dừng ban hành / Xóa (Figma 197:25236 + 364:25166). Menu position: fixed nên không bị bảng cuộn ngang cắt; căn phải theo nút, thiếu chỗ thì mở lên trên.',
       api: [
-        { name: 'items', type: 'ActionMenuItem[] { key, label, danger?, disabled? }', defaultValue: '[]' },
+        { name: 'items', type: 'ActionMenuItem[] { key, label, icon?, danger?, disabled? }', defaultValue: '[]' },
         { name: 'disabled', type: 'boolean', defaultValue: 'false' },
         { name: 'title', type: 'string', defaultValue: "'Thêm hành động'" },
         { name: '(action)', type: 'EventEmitter<string> (key)', defaultValue: '—' }

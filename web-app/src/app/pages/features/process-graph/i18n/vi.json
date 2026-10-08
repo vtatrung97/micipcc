@@ -35,6 +35,8 @@
       "VERSION_TITLE": "Phiên bản quy trình",
       "VERSION": "Phiên bản {{version}}",
       "DRAFT_TAG": "Nháp",
+      "PUBLISHED_TAG": "Đang ban hành",
+      "INACTIVE_TAG": "Dừng ban hành",
       "CANCEL": "Hủy",
       "CANCEL_TITLE": "Hủy bỏ thay đổi",
       "SAVE_DRAFT": "Lưu nháp",
@@ -44,7 +46,8 @@
     },
     "TABS": {
       "GENERAL": "Thông tin chung",
-      "DESIGN": "Thiết kế quy trình"
+      "DESIGN": "Thiết kế quy trình",
+      "NEXT": "Tiếp theo"
     },
     "INFO": {
       "NEW_PROCESS": "Quy trình mới",
@@ -68,6 +71,25 @@
         "ONCE": "Chạy một lần",
         "REPEAT": "Lặp lại"
       },
+      "REPEAT": "Lặp lại",
+      "MONTH_DAYS": "Ngày trong tháng",
+      "WEEK_DAYS_LABEL": "Thứ trong tuần",
+      "WEEK_DAYS": {
+        "1": "Thứ 2",
+        "2": "Thứ 3",
+        "3": "Thứ 4",
+        "4": "Thứ 5",
+        "5": "Thứ 6",
+        "6": "Thứ 7",
+        "7": "Chủ Nhật"
+      },
+      "SEARCH_PLACEHOLDER": "Tìm kiếm",
+      "SELECT_ALL": "Chọn tất cả",
+      "REPEAT_OPTIONS": {
+        "DAILY": "Hàng ngày",
+        "WEEKLY": "Hàng tuần",
+        "MONTHLY": "Hàng tháng"
+      },
       "RUN_DATE": "Ngày chạy",
       "RUN_TIME": "Giờ chạy",
       "HOUR_PLACEHOLDER": "hh",
@@ -77,6 +99,7 @@
       "TRIGGER_CONDITION": "Điều kiện kích hoạt",
       "TRIGGER_CONDITION_PLACEHOLDER": "Cài đặt điều kiện",
       "TRIGGER_CONDITION_COUNT": "Đã cài {{count}} điều kiện",
+      "ADD_CONDITION": "Thêm điều kiện",
       "SLA": "Thời hạn xử lý (SLA)",
       "SLA_UNITS": {
         "DAY": "Ngày",
@@ -369,6 +392,8 @@
         "NEQ": "Khác (!=)",
         "GT": "Lớn hơn (>)",
         "LT": "Nhỏ hơn (<)",
+        "GTE": "Lớn hơn hoặc bằng (>=)",
+        "LTE": "Nhỏ hơn hoặc bằng (<=)",
         "CONTAINS": "Chứa (contains)"
       },
       "PARAMS": {

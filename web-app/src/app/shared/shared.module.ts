@@ -16,6 +16,7 @@ import { AntTextareaModule } from './components/ant-textarea/ant-textarea.module
 import { MultiSelectModule } from './components/multi-select/multi-select.module';
 import { QuickFilterModule } from './components/quick-filter/quick-filter.module';
 import { DrawerModule } from './components/drawer/drawer.module';
+import { ModalModule } from './components/modal/modal.module';
 import { RadioModule } from './components/radio/radio.module';
 import { ActionMenuModule } from './components/action-menu/action-menu.module';
 import { TooltipModule } from './components/tooltip/tooltip.module';
@@ -54,6 +55,7 @@ const SHARED_MODULES = [
   MultiSelectModule,
   QuickFilterModule,
   DrawerModule,
+  ModalModule,
   RadioModule,
   ActionMenuModule,
   TooltipModule,

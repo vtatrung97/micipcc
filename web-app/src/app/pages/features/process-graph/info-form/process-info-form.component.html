@@ -26,6 +26,16 @@
       <ant-textarea [(ngModel)]="info.description" [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_INPUT' | translate"
                     [maxLength]="1000"></ant-textarea>
     </app-form-field>
+
+    <!-- Thời hạn xử lý (SLA): số + đơn vị (rộng 200) — cuối card "Thông tin cơ bản" (Figma 264:42075) -->
+    <app-form-field [label]="'PROCESS_GRAPH.INFO.SLA' | translate" [required]="true" [error]="error('sla')" [spacing]="0">
+      <div class="sla-row">
+        <ant-input class="sla-value" [(ngModel)]="slaText" [maxLength]="4"
+                   [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_NUMBER' | translate"
+                   [status]="error('sla') ? 'error' : ''"></ant-input>
+        <ant-select class="sla-unit" [(ngModel)]="info.slaUnit" [options]="slaUnitOptions"></ant-select>
+      </div>
+    </app-form-field>
   </section>
 
   <!-- ================= Cấu hình quy trình ================= -->
@@ -50,15 +60,41 @@
               <ant-select [(ngModel)]="info.auto.apiId" [options]="apiOptions"
                           [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
             </app-form-field>
-            <app-form-field [label]="'PROCESS_GRAPH.INFO.TRIGGER_CONDITION' | translate" [required]="true" [spacing]="0">
-              <button type="button" class="condition-field" (click)="openTriggerConditions()">
-                <span class="condition-field-text" [class.is-empty]="!info.auto.conditions.rules.length">
-                  {{ info.auto.conditions.rules.length
-                      ? ('PROCESS_GRAPH.INFO.TRIGGER_CONDITION_COUNT' | translate: { count: info.auto.conditions.rules.length })
-                      : ('PROCESS_GRAPH.INFO.TRIGGER_CONDITION_PLACEHOLDER' | translate) }}
-                </span>
-                <img src="assets/icons/processx/arrow-right-disabled.svg" width="20" height="20" alt="" />
-              </button>
+            <!-- Điều kiện kích hoạt (Figma 364:24387): bảng Tham số · Kiểu so sánh · Giá trị so sánh;
+                 từ dòng thứ 2 có nút xoá ở cuối, luôn còn ít nhất 1 dòng -->
+            <app-form-field [label]="'PROCESS_GRAPH.INFO.TRIGGER_CONDITION' | translate" [required]="true"
+                            [error]="error('autoConditions')" [spacing]="0">
+              <div class="condition-box">
+                <div class="condition-list">
+                  <div class="condition-grid condition-head">
+                    <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.PARAM' | translate }}</span>
+                    <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.OPERATOR' | translate }}</span>
+                    <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.VALUE' | translate }}</span>
+                    <span></span>
+                  </div>
+
+                  <div class="condition-grid" *ngFor="let rule of info.auto.conditions.rules; let i = index">
+                    <ant-select [(ngModel)]="rule.param" [options]="conditionParamOptions"
+                                [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
+                                [class.is-invalid]="isRuleFieldInvalid(rule, 'param')"></ant-select>
+                    <ant-select [(ngModel)]="rule.operator" [options]="conditionOperatorOptions"
+                                [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
+                                [class.is-invalid]="isRuleFieldInvalid(rule, 'operator')"></ant-select>
+                    <ant-input [(ngModel)]="rule.value" [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_INPUT' | translate"
+                               [status]="isRuleFieldInvalid(rule, 'value') ? 'error' : ''"></ant-input>
+                    <button *ngIf="i > 0" type="button" class="condition-remove"
+                            [title]="'PROCESS_GRAPH.CONDITION_MODAL.REMOVE' | translate"
+                            (click)="removeConditionRule(i)">
+                      <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+                    </button>
+                  </div>
+                </div>
+
+                <button type="button" class="condition-add" (click)="addConditionRule()">
+                  <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+                  <span>{{ 'PROCESS_GRAPH.INFO.ADD_CONDITION' | translate }}</span>
+                </button>
+              </div>
             </app-form-field>
           </div>
 
@@ -66,11 +102,52 @@
           <div *ngIf="isTrigger(option, 'SCHEDULE')" class="trigger-extra">
             <app-radio-group direction="horizontal" [(ngModel)]="info.schedule.mode" [options]="scheduleModeOptions"></app-radio-group>
             <div class="trigger-divider"></div>
-            <div class="schedule-fields">
+
+            <!-- Lặp lại (Figma 243:12389): chọn chu kỳ → chọn xong hiện Giờ chạy (Figma 248:13116) -->
+            <ng-container *ngIf="info.schedule.mode === 'REPEAT'">
+              <app-form-field [label]="'PROCESS_GRAPH.INFO.REPEAT' | translate" [required]="true"
+                              [error]="error('repeat')" [spacing]="0">
+                <ant-select [(ngModel)]="info.schedule.repeat" [options]="repeatOptions"
+                            [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
+              </app-form-field>
+              <!-- Hàng tháng (Figma 264:13710): Ngày trong tháng (lưới 1–31, mở sẵn) + Giờ chạy -->
+              <div class="schedule-fields schedule-fields-repeat" *ngIf="info.schedule.repeat === 'MONTHLY'">
+                <app-form-field class="schedule-date" [label]="'PROCESS_GRAPH.INFO.MONTH_DAYS' | translate" [required]="true"
+                                [error]="error('monthDays')" [spacing]="0">
+                  <app-month-day-picker [(ngModel)]="info.schedule.monthDays" [autoOpen]="true" placement="bottomLeft"
+                                        [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
+                                        [status]="error('monthDays') ? 'error' : ''"></app-month-day-picker>
+                </app-form-field>
+                <ng-container *ngTemplateOutlet="runTimeField"></ng-container>
+              </div>
+              <!-- Hàng tuần (Figma 264:15184): Ngày trong tuần (dropdown checkbox, mở sẵn) + Giờ chạy -->
+              <div class="schedule-fields schedule-fields-repeat" *ngIf="info.schedule.repeat === 'WEEKLY'">
+                <app-form-field class="schedule-date" [label]="'PROCESS_GRAPH.INFO.WEEK_DAYS_LABEL' | translate" [required]="true"
+                                [error]="error('weekDays')" [spacing]="0">
+                  <app-multi-select [(ngModel)]="info.schedule.weekDays" [options]="weekDayOptions" [autoOpen]="true"
+                                    [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
+                                    [searchPlaceholder]="'PROCESS_GRAPH.INFO.SEARCH_PLACEHOLDER' | translate"
+                                    [selectAllLabel]="'PROCESS_GRAPH.INFO.SELECT_ALL' | translate"
+                                    [status]="error('weekDays') ? 'error' : ''"></app-multi-select>
+                </app-form-field>
+                <ng-container *ngTemplateOutlet="runTimeField"></ng-container>
+              </div>
+              <ng-container *ngIf="info.schedule.repeat === 'DAILY'">
+                <ng-container *ngTemplateOutlet="runTimeField"></ng-container>
+              </ng-container>
+            </ng-container>
+
+            <!-- Chạy một lần: ngày + giờ chạy -->
+            <div class="schedule-fields" *ngIf="info.schedule.mode !== 'REPEAT'">
               <app-form-field class="schedule-date" [label]="'PROCESS_GRAPH.INFO.RUN_DATE' | translate" [required]="true"
                               [error]="error('runDate')" [spacing]="0">
                 <app-date-picker [(ngModel)]="info.schedule.runDate" [status]="error('runDate') ? 'error' : ''"></app-date-picker>
               </app-form-field>
+              <ng-container *ngTemplateOutlet="runTimeField"></ng-container>
+            </div>
+
+            <!-- Giờ chạy: hh : mm (mỗi ô rộng 80, cách 4) -->
+            <ng-template #runTimeField>
               <app-form-field class="schedule-time" [label]="'PROCESS_GRAPH.INFO.RUN_TIME' | translate" [required]="true"
                               [error]="error('runTime')" [spacing]="0">
                 <div class="time-input">
@@ -83,7 +160,7 @@
                              [status]="error('runTime') ? 'error' : ''"></ant-input>
                 </div>
               </app-form-field>
-            </div>
+            </ng-template>
           </div>
 
           <!-- Hybrid (Figma 264:16237) -->
@@ -99,16 +176,6 @@
           </div>
         </ng-template>
       </app-radio-group>
-    </app-form-field>
-
-    <!-- Thời hạn xử lý (SLA): số + đơn vị (rộng 200) -->
-    <app-form-field [label]="'PROCESS_GRAPH.INFO.SLA' | translate" [required]="true" [error]="error('sla')" [spacing]="0">
-      <div class="sla-row">
-        <ant-input class="sla-value" [(ngModel)]="slaText" [maxLength]="4"
-                   [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_NUMBER' | translate"
-                   [status]="error('sla') ? 'error' : ''"></ant-input>
-        <ant-select class="sla-unit" [(ngModel)]="info.slaUnit" [options]="slaUnitOptions"></ant-select>
-      </div>
     </app-form-field>
   </section>
 </div>

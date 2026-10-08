@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
@@ -31,7 +32,7 @@ const ICON_BASE = 'assets/icons/processx';
     }
   ]
 })
-export class MultiSelectComponent implements ControlValueAccessor {
+export class MultiSelectComponent implements ControlValueAccessor, AfterViewInit {
   @Input() options: SelectOption[] = [];
   @Input() placeholder: string = 'Chọn tại đây';
   @Input() searchPlaceholder: string = 'Tìm kiếm';
@@ -45,6 +46,8 @@ export class MultiSelectComponent implements ControlValueAccessor {
   @Input() status: 'error' | 'warning' | '' = '';
   /** Kích thước: small 40 · middle 48 (mặc định) · large 56 */
   @Input() size: 'small' | 'middle' | 'large' = 'middle';
+  /** Mở sẵn danh sách ngay khi ô được hiển thị (vd: vừa chọn "Hàng tuần") */
+  @Input() autoOpen: boolean = false;
 
   @Output() valueChange = new EventEmitter<any[]>();
 
@@ -71,6 +74,11 @@ export class MultiSelectComponent implements ControlValueAccessor {
   private onTouched: () => void = () => {};
 
   constructor(private elRef: ElementRef) {}
+
+  ngAfterViewInit(): void {
+    // Đợi vòng click hiện tại (vd: chọn option ở ô khác) kết thúc để document:click không đóng ngay
+    if (this.autoOpen) setTimeout(() => !this.isOpen && !this.disabled && this.open());
+  }
 
   // ===== Hiển thị =====
   get selectedOptions(): SelectOption[] {
