@@ -44,11 +44,11 @@
         style="margin-right: 5px;">
       </ant-icon>
 
-      <span class="selection-item-text">{{ selectedOption.label }}</span>
+      <span class="selection-item-text" [appTooltip]="selectedOption.label" [tooltipOnlyTruncated]="true">{{ selectedOption.label }}</span>
     </span>
 
     <!-- Placeholder when nothing selected -->
-    <span class="px-select-selection-placeholder" *ngIf="!selectedOption && (!showSearch || !isOpen || !searchQuery)">
+    <span class="px-select-selection-placeholder" [appTooltip]="placeholder" [tooltipOnlyTruncated]="true" *ngIf="!selectedOption && (!showSearch || !isOpen || !searchQuery)">
       {{ placeholder }}
     </span>
 
@@ -79,7 +79,7 @@
     
     <div class="dropdown-options-list" *ngIf="filteredOptions.length > 0">
       <div 
-        *ngFor="let opt of filteredOptions; let i = index"
+        *ngFor="let opt of filteredOptions; let i = index; trackBy: trackByValue"
         class="px-select-item px-select-item-option"
         [class.px-select-item-option-selected]="isSelected(opt)"
         [class.px-select-item-option-disabled]="opt.disabled"
@@ -102,7 +102,7 @@
             style="margin-right: 6px;">
           </ant-icon>
 
-          <span class="option-label-text">{{ opt.label }}</span>
+          <span class="option-label-text" [appTooltip]="opt.label" [tooltipOnlyTruncated]="true" tooltipPlacement="right">{{ opt.label }}</span>
           <span class="option-badge" *ngIf="opt.badge">{{ opt.badge }}</span>
         </div>
 

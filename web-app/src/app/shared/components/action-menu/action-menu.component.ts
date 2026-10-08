@@ -13,7 +13,9 @@ import {
 export interface ActionMenuItem {
   key: string;
   label: string;
-  /** Mục nguy hiểm (vd: Xóa) → chữ đỏ Primary/600 */
+  /** Đường dẫn icon 20px đặt trước nhãn (vd: 'assets/icons/processx/copy.svg') */
+  icon?: string;
+  /** Mục nguy hiểm (vd: Xóa) → chữ đỏ Actions/Red/400 */
   danger?: boolean;
   disabled?: boolean;
 }
@@ -113,6 +115,12 @@ export class ActionMenuComponent implements OnDestroy {
 
   private position(): void {
     if (!this.trigger || !this.panel) return;
+    // Đưa panel ra <body>: ô chứa nút (vd: cột Hành động `position: sticky; z-index: 1` của app-data-table)
+    // tạo stacking context riêng nên z-index của panel không vượt được các hàng phía dưới.
+    // Angular gỡ node theo parentNode thực tế nên *ngIf vẫn xóa panel bình thường khi đóng.
+    const panelEl = this.panel.nativeElement;
+    if (panelEl.parentNode !== document.body) document.body.appendChild(panelEl);
+
     const btn = this.trigger.nativeElement.getBoundingClientRect();
     const panel = this.panel.nativeElement.getBoundingClientRect();
 

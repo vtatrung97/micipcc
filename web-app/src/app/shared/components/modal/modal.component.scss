@@ -1,0 +1,103 @@
+@use '../../styles/processx-tokens' as px;
+
+// Trên drawer (z 1000/1001) để mở được modal từ trong drawer
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.25);
+  animation: modalFade 0.2s ease;
+}
+
+.modal-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-24;
+  overflow-y: auto;
+}
+
+// Modal: nền trắng, radius 16, các phần cách nhau 8
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+  max-width: 100%;
+  max-height: 100%;
+  background: px.$white;
+  border-radius: px.$radius-xl;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  animation: modalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// Title: padding 16/24, Body/xl/Bold 20/30
+.modal-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: px.$space-12;
+  padding: px.$space-16 px.$space-24;
+}
+
+.modal-title {
+  font-family: px.$font-family;
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 700;
+  color: px.$neutral-900;
+}
+
+// Close X modal: nút tròn 40px nền Neutral/100
+.modal-close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8;
+  border: none;
+  border-radius: 112px;
+  background: px.$neutral-100;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-300;
+  }
+}
+
+// Nội dung: padding ngang 24, cuộn khi cao quá màn hình
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-16;
+  min-height: 0;
+  padding: 0 px.$space-24;
+  overflow-y: auto;
+}
+
+// _Modal Actions: padding 24, nút căn phải cách nhau 12
+.modal-footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: px.$space-12;
+  padding: px.$space-24;
+
+  &:empty {
+    display: none;
+  }
+}
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}

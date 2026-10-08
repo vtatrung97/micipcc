@@ -35,6 +35,8 @@
       "VERSION_TITLE": "Process version",
       "VERSION": "Version {{version}}",
       "DRAFT_TAG": "Draft",
+      "PUBLISHED_TAG": "Published",
+      "INACTIVE_TAG": "Unpublished",
       "CANCEL": "Cancel",
       "CANCEL_TITLE": "Discard changes",
       "SAVE_DRAFT": "Save draft",
@@ -44,7 +46,8 @@
     },
     "TABS": {
       "GENERAL": "General info",
-      "DESIGN": "Process design"
+      "DESIGN": "Process design",
+      "NEXT": "Next"
     },
     "INFO": {
       "NEW_PROCESS": "New process",
@@ -68,6 +71,25 @@
         "ONCE": "Run once",
         "REPEAT": "Repeat"
       },
+      "REPEAT": "Repeat",
+      "MONTH_DAYS": "Day of month",
+      "WEEK_DAYS_LABEL": "Day of week",
+      "WEEK_DAYS": {
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday",
+        "7": "Sunday"
+      },
+      "SEARCH_PLACEHOLDER": "Search",
+      "SELECT_ALL": "Select all",
+      "REPEAT_OPTIONS": {
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MONTHLY": "Monthly"
+      },
       "RUN_DATE": "Run date",
       "RUN_TIME": "Run time",
       "HOUR_PLACEHOLDER": "hh",
@@ -77,6 +99,7 @@
       "TRIGGER_CONDITION": "Trigger condition",
       "TRIGGER_CONDITION_PLACEHOLDER": "Set up conditions",
       "TRIGGER_CONDITION_COUNT": "{{count}} condition(s) set",
+      "ADD_CONDITION": "Add condition",
       "SLA": "Processing deadline (SLA)",
       "SLA_UNITS": {
         "DAY": "Days",
@@ -369,6 +392,8 @@
         "NEQ": "Not equal (!=)",
         "GT": "Greater than (>)",
         "LT": "Less than (<)",
+        "GTE": "Greater than or equal (>=)",
+        "LTE": "Less than or equal (<=)",
         "CONTAINS": "Contains"
       },
       "PARAMS": {

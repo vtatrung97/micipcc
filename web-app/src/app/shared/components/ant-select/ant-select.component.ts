@@ -103,6 +103,11 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges {
     return this.normalizedOptions.find(o => o.value === this.innerValue);
   }
 
+  /** Giữ nguyên DOM option khi mảng `options` được truyền lại (tránh mất click giữa mousedown/mouseup) */
+  trackByValue(_: number, option: SelectOption): any {
+    return option.value;
+  }
+
   isSelected(option: SelectOption): boolean {
     return option.value === this.innerValue;
   }

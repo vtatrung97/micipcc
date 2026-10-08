@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
@@ -28,7 +29,7 @@ import { shouldDropUp } from '../../utils/dropdown-placement';
     }
   ]
 })
-export class MonthDayPickerComponent implements ControlValueAccessor {
+export class MonthDayPickerComponent implements ControlValueAccessor, AfterViewInit {
   @Input() placeholder: string = 'Chọn ngày';
   @Input() multiple: boolean = true;
   @Input() disabled: boolean = false;
@@ -40,6 +41,8 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
   @Input() disabledDays: number[] = [];
   /** Vị trí popup so với ô nhập */
   @Input() placement: 'bottomLeft' | 'bottomRight' = 'bottomRight';
+  /** Mở sẵn lưới ngày ngay khi ô được hiển thị (vd: vừa chọn "Hàng tháng") */
+  @Input() autoOpen: boolean = false;
 
   @Output() valueChange = new EventEmitter<number[] | number | null>();
 
@@ -58,6 +61,11 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
   private onTouched: () => void = () => {};
 
   constructor(private elRef: ElementRef) {}
+
+  ngAfterViewInit(): void {
+    // Đợi vòng click hiện tại (vd: chọn option ở ô khác) kết thúc để document:click không đóng ngay
+    if (this.autoOpen) setTimeout(() => !this.isOpen && !this.disabled && this.open());
+  }
 
   get hasValue(): boolean {
     return this.selected.length > 0;

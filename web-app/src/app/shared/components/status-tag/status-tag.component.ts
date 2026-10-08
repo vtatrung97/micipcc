@@ -10,6 +10,11 @@ export class StatusTagComponent {
   @Input() text?: string;
   @Input() dot: boolean = true;
   @Input() size: 'small' | 'middle' = 'middle';
+  /**
+   * `outline`: tag viền + chấm (mặc định).
+   * `fill`: Badge Fill theo Figma ProcessX (h26, radius 4, 12/18 SemiBold, nền đặc, không chấm).
+   */
+  @Input() appearance: 'outline' | 'fill' = 'outline';
 
   get normalizedStatus(): string {
     return (this.status || 'active').toLowerCase().trim();

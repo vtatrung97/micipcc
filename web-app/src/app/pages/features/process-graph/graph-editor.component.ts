@@ -118,6 +118,14 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.store.processInfo.name.trim()
       || this.t(this.store.isCreateMode ? 'INFO.NEW_PROCESS' : 'HEADER.DEFAULT_NAME');
   }
+  /** Số phiên bản trên header: 'V2.1' / '4' / 'V1.0-draft' → '2.1' / '4' / '1.0'; quy trình mới → '1' */
+  public get headerVersion(): string {
+    return (this.store.currentTemplate?.version || '').replace(/^v/i, '').replace(/-draft$/i, '') || '1';
+  }
+  /** Trạng thái phiên bản trên header; quy trình mới coi như Nháp */
+  public get headerStatus(): 'Draft' | 'Published' | 'Inactive' {
+    return this.store.isCreateMode ? 'Draft' : (this.store.currentTemplate?.status || 'Draft');
+  }
   /** Lỗi tab Thông tin chung — chỉ hiện sau lần bấm Lưu nháp / Ban hành đầu tiên, sau đó cập nhật theo từng lần gõ */
   public get processInfoErrors(): ProcessInfoErrors {
     return this.infoSubmitted ? this.collectInfoErrors() : {};
@@ -353,7 +361,22 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/process/templates-list']);
   }
 
+  /**
+   * Chuyển bước trên stepper. Sang bước 2 (Thiết kế quy trình) phải hợp lệ toàn bộ trường bắt buộc
+   * của bước 1 — chưa hợp lệ thì ở lại, bật hiển thị lỗi dưới từng trường và báo số lỗi trên status bar.
+   */
   public setSubTab(tab: 'info' | 'design'): void {
+    if (tab === 'design' && this.activeSubTab === 'info') {
+      this.infoSubmitted = true;
+      const count = Object.keys(this.collectInfoErrors()).length;
+      if (count > 0) {
+        this.store.selectedCellInfo = this.t('INFO.STATUS_INVALID', { count });
+        // Đợi lỗi render rồi cuộn tới trường lỗi đầu tiên
+        setTimeout(() => document.querySelector('app-process-info-form .has-error')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        return;
+      }
+    }
     this.activeSubTab = tab;
   }
 

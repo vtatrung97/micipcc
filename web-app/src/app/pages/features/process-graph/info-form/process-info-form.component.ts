@@ -7,7 +7,8 @@ import {
   PROCESS_HYBRID_API_OPTIONS,
   PROCESS_INPUT_FORM_OPTIONS
 } from '../config/process-info.config';
-import { ProcessInfo, ProcessInfoErrors, ProcessTriggerType } from '../models/process-info.model';
+import { ProcessInfo, ProcessInfoErrors, ProcessTriggerType, createEmptyConditionRule } from '../models/process-info.model';
+import { ConditionRuleItem } from '../models/node-property.model';
 
 /**
  * Tab "Thông tin chung" của Canvas Builder (Figma 264:42051):
@@ -31,7 +32,14 @@ export class ProcessInfoFormComponent implements OnDestroy {
 
   triggerOptions: SelectOption[] = [];
   scheduleModeOptions: SelectOption[] = [];
+  /** Chu kỳ của "Lặp lại" */
+  repeatOptions: SelectOption[] = [];
+  /** Thứ trong tuần cho "Hàng tuần": 1 = Thứ 2 … 7 = Chủ Nhật */
+  weekDayOptions: SelectOption[] = [];
   slaUnitOptions: SelectOption[] = [];
+  /** Tham số + kiểu so sánh của điều kiện kích hoạt (dùng chung bộ với popup Điều kiện của gateway) */
+  conditionParamOptions: SelectOption[] = [];
+  conditionOperatorOptions: SelectOption[] = [];
 
   private langSub: Subscription;
 
@@ -82,13 +90,21 @@ export class ProcessInfoFormComponent implements OnDestroy {
     this.info.code = (value || '').toUpperCase().replace(/\s+/g, '_');
   }
 
-  /**
-   * Ô "Điều kiện kích hoạt" (Kích hoạt tự động).
-   * ⚠ Chưa có design popup cài điều kiện → tạm thời chưa mở gì. Khi có design: mở popup,
-   * ghi kết quả vào info.auto.conditions (logicOperator + rules param/operator/value).
-   */
-  openTriggerConditions(): void {
-    // TODO: mở popup cài điều kiện kích hoạt khi có design
+  // ===== Điều kiện kích hoạt (Kích hoạt tự động, Figma 364:24387) =====
+  /** Thêm một dòng điều kiện trống */
+  addConditionRule(): void {
+    this.info.auto.conditions.rules.push(createEmptyConditionRule());
+  }
+
+  /** Xoá dòng điều kiện — luôn giữ lại ít nhất 1 dòng (dòng đầu không có nút xoá) */
+  removeConditionRule(index: number): void {
+    const rules = this.info.auto.conditions.rules;
+    if (rules.length > 1) rules.splice(index, 1);
+  }
+
+  /** Ô trống của một dòng → viền đỏ khi form đang báo lỗi điều kiện */
+  isRuleFieldInvalid(rule: ConditionRuleItem, field: keyof ConditionRuleItem): boolean {
+    return !!this.errors.autoConditions && !String(rule[field] ?? '').trim();
   }
 
   isTrigger(option: SelectOption, type: ProcessTriggerType): boolean {
@@ -109,6 +125,20 @@ export class ProcessInfoFormComponent implements OnDestroy {
       { value: 'ONCE', label: t('SCHEDULE_MODES.ONCE') },
       { value: 'REPEAT', label: t('SCHEDULE_MODES.REPEAT') }
     ];
+    this.repeatOptions = (['DAILY', 'WEEKLY', 'MONTHLY'] as const)
+      .map(v => ({ value: v, label: t('REPEAT_OPTIONS.' + v) }));
+    this.weekDayOptions = [1, 2, 3, 4, 5, 6, 7].map(v => ({ value: v, label: t('WEEK_DAYS.' + v) }));
+    const c = (key: string) => this.translate.instant('PROCESS_GRAPH.CONDITION_MODAL.' + key);
+    this.conditionParamOptions = [
+      { value: '.priority', label: c('PARAMS.PRIORITY') },
+      { value: 'paknID', label: c('PARAMS.PAKN_ID') },
+      { value: 'complaintType', label: c('PARAMS.COMPLAINT_TYPE') },
+      { value: 'code', label: c('PARAMS.CODE') },
+      { value: 'startedAt', label: c('PARAMS.STARTED_AT') }
+    ];
+    // Toán tử của điều kiện kích hoạt: =, >=, <=, >, <, !=
+    this.conditionOperatorOptions = ['EQ', 'GTE', 'LTE', 'GT', 'LT', 'NEQ']
+      .map(v => ({ value: v, label: c('OPERATORS.' + v) }));
     // Giá trị giữ nguyên chuỗi tiếng Việt như slaUnit của node USER_TASK (FLOW_SCHEMA mục 4)
     this.slaUnitOptions = [
       { value: 'Ngày', label: t('SLA_UNITS.DAY') },

@@ -6,6 +6,7 @@ import {
   forwardRef,
   HostListener,
   ElementRef,
+  OnDestroy,
   ViewChild
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -52,7 +53,7 @@ const SINGLE_PANEL_WIDTH = 312;
     }
   ]
 })
-export class DatePickerComponent implements ControlValueAccessor {
+export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   @Input() isRange: boolean = false;
   @Input() placeholder?: string;
   @Input() startPlaceholder?: string;
@@ -62,6 +63,12 @@ export class DatePickerComponent implements ControlValueAccessor {
   @Input() status: 'error' | 'warning' | '' = '';
   /** Kích thước: small 40 · middle 48 (mặc định) · large 56 */
   @Input() size: 'small' | 'middle' | 'large' = 'middle';
+  /**
+   * Popup dùng position: fixed theo toạ độ màn hình thay vì absolute theo ô.
+   * Bật khi ô nằm trong vùng cuộn hẹp (vd: drawer) để popup khoảng ngày 616px không bị cắt.
+   * Cuộn bất kỳ vùng nào khi đang mở sẽ đóng popup.
+   */
+  @Input() fixedPanel: boolean = false;
 
   @Output() dateChange = new EventEmitter<any>();
 
@@ -81,6 +88,9 @@ export class DatePickerComponent implements ControlValueAccessor {
   dropUp: boolean = false;
   /** Đang đo kích thước popup (ẩn tạm để không nhảy vị trí) */
   measuring: boolean = false;
+  /** Toạ độ popup khi `fixedPanel` */
+  panelTop: number | null = null;
+  panelLeft: number | null = null;
 
   @ViewChild('panel') panelRef?: ElementRef<HTMLDivElement>;
 
@@ -216,7 +226,34 @@ export class DatePickerComponent implements ControlValueAccessor {
   private updateVerticalPlacement(): void {
     if (!this.isOpen) return;
     this.dropUp = shouldDropUp(this.elRef.nativeElement, this.panelRef?.nativeElement.offsetHeight || 0);
+    if (this.fixedPanel) this.placeFixedPanel();
     this.measuring = false;
+  }
+
+  /** Đặt popup fixed: dưới/trên ô cách 8px, căn trái theo ô (hoặc mép phải), luôn nằm trong màn hình */
+  private placeFixedPanel(): void {
+    const panel = this.panelRef?.nativeElement;
+    if (!panel) return;
+    const rect = this.elRef.nativeElement.getBoundingClientRect();
+    const width = panel.offsetWidth;
+    const height = panel.offsetHeight;
+    const margin = 8;
+
+    const left = this.alignRight ? rect.right - width : rect.left;
+    this.panelLeft = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+    this.panelTop = this.dropUp ? Math.max(margin, rect.top - height - margin) : rect.bottom + margin;
+
+    document.addEventListener('scroll', this.onAnyScroll, true);
+  }
+
+  private onAnyScroll = (event: Event): void => {
+    if (this.panelRef?.nativeElement.contains(event.target as Node)) return;
+    document.removeEventListener('scroll', this.onAnyScroll, true);
+    if (this.isOpen) this.close();
+  };
+
+  ngOnDestroy(): void {
+    document.removeEventListener('scroll', this.onAnyScroll, true);
   }
 
   // ===== Điều hướng tháng =====

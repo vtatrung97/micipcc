@@ -49,3 +49,39 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-primary);
 }
+
+/* ==========================================================================
+   Thanh cuộn chung (dọc + ngang): thumb Neutral/300 #E3E3E3, nền trong suốt,
+   ẩn nút mũi tên hai đầu. Component nào tự khai báo ::-webkit-scrollbar sẽ ghi đè.
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e3e3e3;
+  border: 3px solid transparent;   /* chừa lề để thumb hiển thị mảnh 6px */
+  border-radius: 8px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Firefox không hỗ trợ ::-webkit-scrollbar: dùng thuộc tính chuẩn (Chrome bỏ qua nhánh này
+   vì đặt scrollbar-color trên Chrome ≥121 sẽ vô hiệu ::-webkit-scrollbar và hiện lại mũi tên) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #e3e3e3 transparent;
+  }
+}

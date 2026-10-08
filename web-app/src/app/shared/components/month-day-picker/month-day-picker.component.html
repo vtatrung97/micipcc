@@ -8,7 +8,7 @@
        (click)="togglePicker()"
        (keydown.enter)="togglePicker()"
        (keydown.space)="$event.preventDefault(); togglePicker()">
-    <span class="mdp-value" *ngIf="hasValue">{{ displayValue }}</span>
+    <span class="mdp-value" [appTooltip]="displayValue" [tooltipOnlyTruncated]="true" *ngIf="hasValue">{{ displayValue }}</span>
     <span class="mdp-placeholder" *ngIf="!hasValue">{{ placeholder }}</span>
 
     <span class="mdp-clear" *ngIf="allowClear && hasValue && !disabled"
@@ -16,7 +16,7 @@
       <ant-icon name="close-circle-fill" [size]="14"></ant-icon>
     </span>
     <span class="mdp-suffix">
-      <ant-icon name="calendar" [size]="18"></ant-icon>
+      <img [src]="isOpen ? 'assets/icons/processx/calendar-active.svg' : 'assets/icons/processx/calendar.svg'" width="24" height="24" alt="" />
     </span>
   </div>
 

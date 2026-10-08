@@ -18,13 +18,22 @@ export interface ProcessAutoConfig {
   conditions: { logicOperator: 'AND' | 'OR'; rules: ConditionRuleItem[] };
 }
 
-/** Lặp lịch: Chạy một lần / Lặp lại + ngày giờ chạy */
+/** Chu kỳ lặp khi mode = REPEAT (ô "Lặp lại", Figma 243:12389) */
+export type ProcessScheduleRepeat = 'DAILY' | 'WEEKLY' | 'MONTHLY';
+
+/** Lặp lịch: Chạy một lần (ngày + giờ chạy) / Lặp lại (chu kỳ) */
 export interface ProcessScheduleConfig {
   mode: 'ONCE' | 'REPEAT';
   /** YYYY-MM-DD */
   runDate: string;
   /** HH:mm */
   runTime: string;
+  /** Chỉ dùng khi mode = REPEAT */
+  repeat: ProcessScheduleRepeat | null;
+  /** Ngày trong tuần khi repeat = WEEKLY (Figma 264:15184): 1 = Thứ 2 … 7 = Chủ Nhật (ISO) */
+  weekDays: number[];
+  /** Ngày trong tháng (1–31) khi repeat = MONTHLY (Figma 264:13710) */
+  monthDays: number[];
 }
 
 /** Hybrid: API + biểu mẫu dữ liệu đầu vào */
@@ -58,7 +67,7 @@ export interface ProcessInfo {
 
 /** Field bắt buộc → key lỗi i18n (PROCESS_GRAPH.INFO.ERRORS.*) */
 export type ProcessInfoErrors = Partial<Record<
-  'name' | 'code' | 'category' | 'triggerType' | 'manualFormId' | 'autoApiId' | 'runDate' | 'runTime' | 'apiId' | 'inputFormId' | 'sla',
+  'name' | 'code' | 'category' | 'triggerType' | 'manualFormId' | 'autoApiId' | 'autoConditions' | 'runDate' | 'runTime' | 'repeat' | 'weekDays' | 'monthDays' | 'apiId' | 'inputFormId' | 'sla',
   string
 >>;
 
@@ -70,8 +79,8 @@ export function createEmptyProcessInfo(): ProcessInfo {
     description: '',
     triggerType: null,
     manual: { inputFormId: null },
-    auto: { apiId: null, conditions: { logicOperator: 'AND', rules: [] } },
-    schedule: { mode: 'ONCE', runDate: '', runTime: '' },
+    auto: { apiId: null, conditions: { logicOperator: 'AND', rules: [createEmptyConditionRule()] } },
+    schedule: { mode: 'ONCE', runDate: '', runTime: '', repeat: null, weekDays: [], monthDays: [] },
     hybrid: { apiId: null, inputFormId: null },
     slaValue: null,
     slaUnit: 'Ngày'
@@ -94,11 +103,16 @@ export function processInfoFromTemplate(t: ProcessTemplateItem | null | undefine
       apiId: t.triggerConfig.auto.apiId ?? null,
       conditions: {
         logicOperator: t.triggerConfig.auto.conditions?.logicOperator || 'AND',
-        rules: [...(t.triggerConfig.auto.conditions?.rules || [])]
+        // Luôn có ít nhất 1 điều kiện (Figma 364:24387)
+        rules: t.triggerConfig.auto.conditions?.rules?.length
+          ? t.triggerConfig.auto.conditions.rules.map(r => ({ ...r }))
+          : [createEmptyConditionRule()]
       }
     };
   }
-  if (t.triggerConfig?.schedule) info.schedule = { ...info.schedule, ...t.triggerConfig.schedule };
+  if (t.triggerConfig?.schedule) {
+    info.schedule = { ...info.schedule, ...t.triggerConfig.schedule, repeat: t.triggerConfig.schedule.repeat ?? null, weekDays: [...(t.triggerConfig.schedule.weekDays || [])], monthDays: [...(t.triggerConfig.schedule.monthDays || [])] };
+  }
   if (t.triggerConfig?.hybrid) info.hybrid = { ...info.hybrid, ...t.triggerConfig.hybrid };
 
   if (t.slaValue != null) {
@@ -124,12 +138,22 @@ export function validateProcessInfo(info: ProcessInfo): ProcessInfoErrors {
   if (!info.triggerType) errors.triggerType = 'REQUIRED';
 
   if (info.triggerType === 'MANUAL' && !info.manual.inputFormId) errors.manualFormId = 'REQUIRED';
-  // ⚠ "Điều kiện kích hoạt" có dấu * nhưng chưa có design popup cài điều kiện → tạm chưa bắt buộc
+  // Điều kiện kích hoạt (Figma 364:24387): mọi dòng phải đủ Tham số + Kiểu so sánh + Giá trị
   if (info.triggerType === 'AUTO' && !info.auto.apiId) errors.autoApiId = 'REQUIRED';
+  if (info.triggerType === 'AUTO' && !isConditionRulesComplete(info.auto.conditions.rules)) errors.autoConditions = 'REQUIRED';
 
   if (info.triggerType === 'SCHEDULE') {
-    if (!info.schedule.runDate) errors.runDate = 'REQUIRED';
-    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(info.schedule.runTime)) errors.runTime = 'TIME_FORMAT';
+    const validTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(info.schedule.runTime);
+    if (info.schedule.mode === 'REPEAT') {
+      // Lặp lại: chọn chu kỳ (243:12389) → chọn xong mới hiện + bắt buộc Giờ chạy (248:13116)
+      if (!info.schedule.repeat) errors.repeat = 'REQUIRED';
+      else if (info.schedule.repeat === 'WEEKLY' && !info.schedule.weekDays?.length) errors.weekDays = 'REQUIRED';
+      else if (info.schedule.repeat === 'MONTHLY' && !info.schedule.monthDays?.length) errors.monthDays = 'REQUIRED';
+      else if (!validTime) errors.runTime = 'TIME_FORMAT';
+    } else {
+      if (!info.schedule.runDate) errors.runDate = 'REQUIRED';
+      if (!validTime) errors.runTime = 'TIME_FORMAT';
+    }
   }
   if (info.triggerType === 'HYBRID') {
     if (!info.hybrid.apiId) errors.apiId = 'REQUIRED';
@@ -156,4 +180,19 @@ export function toProcessInfoPayload(info: ProcessInfo) {
     slaValue: info.slaValue,
     slaUnit: info.slaUnit
   };
+}
+
+/** Một dòng điều kiện kích hoạt trống, mặc định kiểu so sánh "Bằng (=)" như design */
+export function createEmptyConditionRule(): ConditionRuleItem {
+  return { param: '', operator: 'EQ', value: '' };
+}
+
+/** Một dòng đã nhập đủ Tham số + Kiểu so sánh + Giá trị */
+export function isConditionRuleComplete(rule: ConditionRuleItem): boolean {
+  return !!(rule.param && rule.operator && String(rule.value ?? '').trim());
+}
+
+/** Có ít nhất 1 dòng và mọi dòng đều nhập đủ */
+export function isConditionRulesComplete(rules: ConditionRuleItem[]): boolean {
+  return rules.length > 0 && rules.every(isConditionRuleComplete);
 }
