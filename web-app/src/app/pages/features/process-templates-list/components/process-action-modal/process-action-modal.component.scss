@@ -1,0 +1,150 @@
+@use '../../../../../shared/styles/processx-tokens' as px;
+
+// Câu mô tả: Body/md/Medium, tên quy trình SemiBold
+.action-desc {
+  margin: 0;
+  @include px.body-md-medium;
+  color: px.$neutral-900;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+// Danh sách khi nhiều quy trình: tiêu đề + các thẻ cách nhau 8
+.action-list {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+}
+
+.action-list-label {
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-900;
+}
+
+// Process list: viền Neutral/300, radius 8; các hàng ngăn bằng viền
+.process-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-md;
+}
+
+// Process row: padding 12/16, gap 12
+.process-row {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: px.$space-12;
+  padding: px.$space-12 px.$space-16;
+
+  & + & {
+    border-top: 1px solid px.$neutral-300;
+  }
+}
+
+// Kiểu thẻ rời (dừng ban hành nhiều, 427:25905): bỏ khung chung, mỗi hàng một khung riêng cách nhau 8
+.process-list.process-list-cards {
+  gap: px.$space-8;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  .process-row {
+    background: px.$white;
+    border: 1px solid px.$neutral-300;
+    border-radius: px.$radius-md;
+  }
+}
+
+.process-index {
+  flex-shrink: 0;
+  width: 20px;
+  @include px.body-sm-medium;
+  color: px.$neutral-600;
+}
+
+.process-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: px.$space-2;
+  min-width: 0;
+}
+
+.process-name {
+  overflow: hidden;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-900;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.process-meta {
+  @include px.body-sm-medium;
+  color: px.$neutral-600;
+  white-space: nowrap;
+}
+
+// Buttons size md: cao 40, padding 8/16, radius 8, SemiBold 16/24
+.action-buttons {
+  display: flex;
+  gap: px.$space-12;
+}
+
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 px.$space-16;
+  border: 1px solid transparent;
+  border-radius: px.$radius-md;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+}
+
+.px-btn-default {
+  background: px.$white;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &:hover {
+    border-color: px.$neutral-800;
+  }
+}
+
+.px-btn-primary {
+  background: px.$primary-600;
+  color: px.$white;
+
+  &:hover {
+    background: px.$primary-500;
+  }
+}
+
+// Actions/Red/400
+.px-btn-danger {
+  background: px.$red-400;
+  color: px.$white;
+
+  &:hover {
+    filter: brightness(0.92);
+  }
+}

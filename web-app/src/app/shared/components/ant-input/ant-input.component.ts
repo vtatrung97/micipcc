@@ -28,6 +28,8 @@ export class AntInputComponent implements ControlValueAccessor {
   @Input() readonly: boolean = false;
   @Input() allowClear: boolean = false;
   @Input() prefixIcon?: string;
+  /** Icon SVG 24px của Figma đặt trước ô nhập (vd: 'assets/icons/processx/search.svg'); ưu tiên hơn `prefixIcon` */
+  @Input() prefixSrc?: string;
   @Input() suffixIcon?: string;
   @Input() maxLength?: number;
   @Input() showCount: boolean = false;

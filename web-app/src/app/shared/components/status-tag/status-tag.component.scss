@@ -1,3 +1,5 @@
+@use '../../styles/processx-tokens' as px;
+
 .ant-tag {
   display: inline-flex;
   align-items: center;
@@ -82,4 +84,35 @@
   0% { transform: scale(0.95); opacity: 0.8; }
   50% { transform: scale(1.3); opacity: 1; }
   100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* Badge Fill (Figma ProcessX "Badge": Fill Gray / Green / Gray-500) */
+.px-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-4 px.$space-8;
+  border-radius: px.$space-4;
+  font-family: px.$font-family;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &[data-status="active"],
+  &[data-status="published"],
+  &[data-status="completed"],
+  &[data-status="success"] {
+    background: px.$green-300;
+    color: px.$white;
+  }
+
+  &[data-status="inactive"],
+  &[data-status="archived"],
+  &[data-status="cancelled"] {
+    background: px.$neutral-500;
+    color: px.$white;
+  }
 }

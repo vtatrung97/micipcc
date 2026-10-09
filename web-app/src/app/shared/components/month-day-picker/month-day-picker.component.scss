@@ -120,6 +120,12 @@ $warning: #faad14;
   }
 }
 
+// Phía dưới không đủ chỗ → mở lên trên ô
+.mdp-dropdown-up {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
 .mdp-day {
   width: 32px;
   height: 32px;

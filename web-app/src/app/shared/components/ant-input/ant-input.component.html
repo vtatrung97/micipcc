@@ -8,9 +8,14 @@
   [class.px-input-affix-wrapper-sm]="size === 'small'"
   [class.px-input-affix-wrapper-lg]="size === 'large'">
   
-  <span class="px-input-prefix" *ngIf="prefixIcon">
-    <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
+  <span class="px-input-prefix" *ngIf="prefixSrc; else prefixIconTpl">
+    <img [src]="prefixSrc" width="24" height="24" alt="" />
   </span>
+  <ng-template #prefixIconTpl>
+    <span class="px-input-prefix" *ngIf="prefixIcon">
+      <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
+    </span>
+  </ng-template>
 
   <input
     #inputElement

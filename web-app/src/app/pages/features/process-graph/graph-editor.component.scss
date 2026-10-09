@@ -1,3 +1,5 @@
+@use '../../../shared/styles/processx-tokens' as px;
+
 /* ============================================================================
    CALL FLOW / IVR BUILDER STUDIO - EXACT MINIMAL THEME
    Bám sát 100% hình ảnh mẫu Call Flow Builder:
@@ -28,210 +30,265 @@
    1. TOPBAR & CALL FLOW TABS
    ============================================================================ */
 /* ============================================================================
-   1. TOPBAR CHUẨN VIETTEL (BACK ARROW, TITLE, BADGE, NÚT BAN HÀNH ĐỎ)
+   1. BUILDER TOOLBAR (Figma 264:42054): cao 72, padding 0/24, viền dưới Neutral/300
    ============================================================================ */
 .studio-topbar {
-  height: 50px;
-  min-height: 50px;
-  background: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
+  height: 72px;
+  min-height: 72px;
+  background: px.$white;
+  border-bottom: 1px solid px.$neutral-300;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  gap: px.$space-16;
+  padding: 0 px.$space-24;
+  font-family: px.$font-family;
   z-index: 25;
 }
 
 .topbar-left-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: px.$space-16;
+  min-width: 0;
 }
 
+// Back Button 20px
 .back-btn {
-  width: 32px;
-  height: 32px;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  color: #1e293b;
-  border-radius: 6px;
-  transition: all 0.18s ease;
+  border-radius: px.$radius-sm;
+  transition: background 0.18s ease;
 
   &:hover {
-    background: #f1f5f9;
-    color: #dc2626;
+    background: px.$neutral-100;
   }
 }
 
+// Line dọc 24px Neutral/300
 .topbar-divider-vertical {
+  flex-shrink: 0;
   width: 1px;
-  height: 20px;
-  background: #e2e8f0;
+  height: 24px;
+  background: px.$neutral-300;
 }
 
 .process-title-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: px.$space-16;
+  min-width: 0;
 }
 
+// Body/lg/SemiBold 18/28
 .process-title-text {
-  font-size: 15px;
-  font-weight: 600;
-  color: #0f172a;
   margin: 0;
-  max-width: 360px;
-  white-space: nowrap;
+  max-width: 480px;
   overflow: hidden;
+  font-family: px.$font-family;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+  color: px.$neutral-900;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
+// _Text field dropdown: padding 12, radius 12, viền Neutral/300; "Phiên bản n" Body/md/Medium + badge + chevron 24
 .version-dropdown-badge {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
-  gap: 6px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 3px 8px;
+  gap: px.$space-8;
+  padding: px.$space-12;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease;
 
   &:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    border-color: px.$neutral-800;
   }
 
   .version-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: #334155;
+    @include px.body-md-medium;
+    color: px.$neutral-900;
+    white-space: nowrap;
   }
 
+  // Badge "Nháp": nền Neutral/200, chữ Neutral/600, 12/18 SemiBold, radius 4
   .draft-tag {
-    font-size: 11px;
-    font-weight: 500;
-    color: #64748b;
-    background: #f1f5f9;
-    padding: 1px 5px;
-    border-radius: 4px;
+    padding: px.$space-4 px.$space-8;
+    border-radius: px.$space-4;
+    background: px.$neutral-200;
+    color: px.$neutral-600;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   .dropdown-arrow {
-    color: #94a3b8;
+    flex-shrink: 0;
   }
 }
 
 .topbar-actions-container {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
-  gap: 8px;
+  gap: px.$space-16;
 }
 
+// Buttons: cao 44, padding 8/16, radius 8, Body/md/SemiBold
 .topbar-btn {
-  height: 32px;
-  padding: 0 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  height: 44px;
+  padding: px.$space-8 px.$space-16;
+  border: 1px solid transparent;
+  border-radius: px.$radius-md;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 
+  // Hủy: không nền, chữ Neutral/800
   &.text-btn {
     background: transparent;
-    border: none;
-    color: #64748b;
+    color: px.$neutral-800;
 
     &:hover {
-      background: #f1f5f9;
-      color: #0f172a;
+      background: px.$neutral-100;
     }
   }
 
+  // Lưu nháp: viền Primary/400, chữ Primary/600
   &.outline-btn {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #334155;
+    background: px.$white;
+    border-color: px.$primary-400;
+    color: px.$primary-600;
 
     &:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-      color: #0f172a;
+      border-color: px.$primary-600;
+      background: px.$primary-50;
     }
   }
 
+  // Ban hành: nền Primary/600
   &.primary-red-btn {
-    background: #dc2626;
-    border: 1px solid #dc2626;
-    color: #ffffff;
-    font-weight: 600;
-    border-radius: 6px;
+    background: px.$primary-600;
+    color: px.$white;
 
     &:hover {
-      background: #b91c1c;
-      border-color: #b91c1c;
-      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+      background: px.$primary-500;
     }
   }
 }
 
 /* ============================================================================
-   2. SUB-HEADER TABS (THÔNG TIN CHUNG | THIẾT KẾ QUY TRÌNH)
+   2. STEPPER (Figma 388:30528): padding 16/24, progress rộng 600 ở giữa, nút bên phải
    ============================================================================ */
 .sub-header-tabs {
-  height: 40px;
-  min-height: 40px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
+  justify-content: flex-end;
+  min-height: 72px;
+  padding: px.$space-16 px.$space-24;
+  background: px.$white;
+  border-bottom: 1px solid px.$neutral-300;
+  box-sizing: border-box;
+  font-family: px.$font-family;
   z-index: 20;
 
-  .tabs-left-nav {
+  // progress: ① ─── ② căn giữa thanh, các phần cách 24
+  .process-stepper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     display: flex;
     align-items: center;
-    gap: 24px;
-    height: 100%;
+    gap: px.$space-24;
+    width: 600px;
+    max-width: calc(100% - 320px);
+    transform: translate(-50%, -50%);
   }
 
-  .sub-tab-item {
-    background: transparent;
-    border: none;
-    height: 100%;
-    font-size: 13px;
-    font-weight: 500;
-    color: #64748b;
-    cursor: pointer;
-    position: relative;
-    display: inline-flex;
+  .stepper-item {
+    display: flex;
+    flex-shrink: 0;
     align-items: center;
-    padding: 0 4px;
-    transition: color 0.15s ease;
+    gap: px.$space-8;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
 
-    &:hover {
-      color: #0f172a;
+    // Bước chưa tới: tròn Neutral/300, chữ Neutral/400
+    .stepper-index {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 112px;
+      background: px.$neutral-300;
+      color: px.$white;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 700;
     }
 
-    &.active {
-      color: #dc2626;
+    .stepper-label {
+      font-size: 16px;
+      line-height: 24px;
       font-weight: 600;
+      color: px.$neutral-400;
+      white-space: nowrap;
+    }
 
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #dc2626;
-        border-radius: 2px 2px 0 0;
+    // Bước hiện tại: tròn + chữ Primary/600
+    &.active {
+      .stepper-index {
+        background: px.$primary-600;
       }
+
+      .stepper-label {
+        color: px.$primary-600;
+      }
+    }
+  }
+
+  .stepper-divider {
+    flex: 1 1 0;
+    min-width: 24px;
+    height: 1px;
+    background: px.$neutral-300;
+  }
+
+  // "Tiếp theo": nền Neutral/100, chữ Neutral/800, padding 8/16, radius 8
+  .stepper-next-btn {
+    padding: px.$space-8 px.$space-16;
+    border: none;
+    border-radius: px.$radius-md;
+    background: px.$neutral-100;
+    color: px.$neutral-800;
+    font-family: px.$font-family;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: px.$neutral-300;
     }
   }
 
@@ -1652,4 +1709,10 @@
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
+}
+// Tab "Thông tin chung": phủ toàn vùng làm việc (canvas X6 vẫn ở dưới để không phải khởi tạo lại)
+.info-tab-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
 }

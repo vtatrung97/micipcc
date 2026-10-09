@@ -1,0 +1,18 @@
+<label class="px-radio" [class.px-radio-checked]="checked" [class.px-radio-disabled]="disabled">
+  <span class="px-radio-control">
+    <input type="radio"
+           class="px-radio-input"
+           [attr.name]="name || null"
+           [checked]="checked"
+           [disabled]="disabled"
+           (change)="onChange($event)" />
+    <span class="px-radio-circle">
+      <img *ngIf="checked" [src]="checkIcon" width="14" height="14" alt="" />
+    </span>
+  </span>
+
+  <span class="px-radio-text" *ngIf="label || description">
+    <span class="px-radio-label" *ngIf="label">{{ label }}</span>
+    <span class="px-radio-desc" *ngIf="description">{{ description }}</span>
+  </span>
+</label>

@@ -1,14 +1,17 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
   forwardRef,
   HostListener,
   Input,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectOption } from '../ant-select/ant-select.component';
+import { shouldDropUp } from '../../utils/dropdown-placement';
 
 const ICON_BASE = 'assets/icons/processx';
 
@@ -29,7 +32,7 @@ const ICON_BASE = 'assets/icons/processx';
     }
   ]
 })
-export class MultiSelectComponent implements ControlValueAccessor {
+export class MultiSelectComponent implements ControlValueAccessor, AfterViewInit {
   @Input() options: SelectOption[] = [];
   @Input() placeholder: string = 'Chọn tại đây';
   @Input() searchPlaceholder: string = 'Tìm kiếm';
@@ -43,6 +46,8 @@ export class MultiSelectComponent implements ControlValueAccessor {
   @Input() status: 'error' | 'warning' | '' = '';
   /** Kích thước: small 40 · middle 48 (mặc định) · large 56 */
   @Input() size: 'small' | 'middle' | 'large' = 'middle';
+  /** Mở sẵn danh sách ngay khi ô được hiển thị (vd: vừa chọn "Hàng tuần") */
+  @Input() autoOpen: boolean = false;
 
   @Output() valueChange = new EventEmitter<any[]>();
 
@@ -56,6 +61,12 @@ export class MultiSelectComponent implements ControlValueAccessor {
   };
 
   isOpen: boolean = false;
+  /** Dropdown mở lên trên khi phía dưới không đủ chỗ */
+  dropUp: boolean = false;
+  /** Đang đo kích thước dropdown (ẩn tạm) */
+  measuring: boolean = false;
+
+  @ViewChild('panel') panelRef?: ElementRef<HTMLDivElement>;
   keyword: string = '';
   selectedValues: any[] = [];
 
@@ -63,6 +74,11 @@ export class MultiSelectComponent implements ControlValueAccessor {
   private onTouched: () => void = () => {};
 
   constructor(private elRef: ElementRef) {}
+
+  ngAfterViewInit(): void {
+    // Đợi vòng click hiện tại (vd: chọn option ở ô khác) kết thúc để document:click không đóng ngay
+    if (this.autoOpen) setTimeout(() => !this.isOpen && !this.disabled && this.open());
+  }
 
   // ===== Hiển thị =====
   get selectedOptions(): SelectOption[] {
@@ -121,7 +137,7 @@ export class MultiSelectComponent implements ControlValueAccessor {
   // ===== Tương tác =====
   togglePanel(): void {
     if (this.disabled) return;
-    this.isOpen ? this.close() : (this.isOpen = true);
+    this.isOpen ? this.close() : this.open();
   }
 
   toggleOption(option: SelectOption): void {
@@ -156,6 +172,17 @@ export class MultiSelectComponent implements ControlValueAccessor {
   @HostListener('keydown.escape')
   onEscape(): void {
     if (this.isOpen) this.close();
+  }
+
+  private open(): void {
+    this.isOpen = true;
+    this.dropUp = false;
+    this.measuring = true;
+    setTimeout(() => {
+      if (!this.isOpen) return;
+      this.dropUp = shouldDropUp(this.elRef.nativeElement, this.panelRef?.nativeElement.offsetHeight || 0);
+      this.measuring = false;
+    });
   }
 
   private close(): void {

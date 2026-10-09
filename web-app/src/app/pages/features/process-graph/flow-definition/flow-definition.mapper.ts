@@ -196,12 +196,19 @@ export function graphToFlowDefinition(graph: any): FlowDefinition {
 }
 
 export function buildSaveDraftPayload(
-  meta: { name: string; description?: string; versionName?: string; rowVersion?: number },
+  meta: { name: string; description?: string; versionName?: string; rowVersion?: number }
+    & Partial<Omit<SaveFlowDraftPayload, 'name' | 'description' | 'versionName' | 'rowVersion' | 'flowJson'>>,
   def: FlowDefinition
 ): SaveFlowDraftPayload {
   return {
     name: meta.name,
     description: meta.description || '',
+    code: meta.code,
+    category: meta.category,
+    triggerType: meta.triggerType,
+    triggerConfig: meta.triggerConfig,
+    slaValue: meta.slaValue,
+    slaUnit: meta.slaUnit,
     versionName: meta.versionName,
     rowVersion: meta.rowVersion,
     flowJson: JSON.stringify(def)

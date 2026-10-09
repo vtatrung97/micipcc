@@ -1,13 +1,16 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
   forwardRef,
   HostListener,
   Input,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { shouldDropUp } from '../../utils/dropdown-placement';
 
 /**
  * Chọn NGÀY TRONG THÁNG (1 → 31), không gắn với tháng/năm cụ thể.
@@ -26,7 +29,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
     }
   ]
 })
-export class MonthDayPickerComponent implements ControlValueAccessor {
+export class MonthDayPickerComponent implements ControlValueAccessor, AfterViewInit {
   @Input() placeholder: string = 'Chọn ngày';
   @Input() multiple: boolean = true;
   @Input() disabled: boolean = false;
@@ -38,18 +41,31 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
   @Input() disabledDays: number[] = [];
   /** Vị trí popup so với ô nhập */
   @Input() placement: 'bottomLeft' | 'bottomRight' = 'bottomRight';
+  /** Mở sẵn lưới ngày ngay khi ô được hiển thị (vd: vừa chọn "Hàng tháng") */
+  @Input() autoOpen: boolean = false;
 
   @Output() valueChange = new EventEmitter<number[] | number | null>();
 
   readonly days: number[] = Array.from({ length: 31 }, (_, i) => i + 1);
 
   isOpen: boolean = false;
+  /** Popup mở lên trên khi phía dưới không đủ chỗ */
+  dropUp: boolean = false;
+  /** Đang đo kích thước popup (ẩn tạm) */
+  measuring: boolean = false;
+
+  @ViewChild('panel') panelRef?: ElementRef<HTMLDivElement>;
   selected: number[] = [];
 
   private onChange: (val: number[] | number | null) => void = () => {};
   private onTouched: () => void = () => {};
 
   constructor(private elRef: ElementRef) {}
+
+  ngAfterViewInit(): void {
+    // Đợi vòng click hiện tại (vd: chọn option ở ô khác) kết thúc để document:click không đóng ngay
+    if (this.autoOpen) setTimeout(() => !this.isOpen && !this.disabled && this.open());
+  }
 
   get hasValue(): boolean {
     return this.selected.length > 0;
@@ -92,7 +108,7 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
 
   togglePicker(): void {
     if (this.disabled) return;
-    this.isOpen ? this.close() : (this.isOpen = true);
+    this.isOpen ? this.close() : this.open();
   }
 
   toggleDay(day: number): void {
@@ -125,6 +141,17 @@ export class MonthDayPickerComponent implements ControlValueAccessor {
   @HostListener('keydown.escape')
   onEscape(): void {
     if (this.isOpen) this.close();
+  }
+
+  private open(): void {
+    this.isOpen = true;
+    this.dropUp = false;
+    this.measuring = true;
+    setTimeout(() => {
+      if (!this.isOpen) return;
+      this.dropUp = shouldDropUp(this.elRef.nativeElement, this.panelRef?.nativeElement.offsetHeight || 0, 4);
+      this.measuring = false;
+    });
   }
 
   private close(): void {

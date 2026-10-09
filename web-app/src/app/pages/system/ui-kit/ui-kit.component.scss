@@ -336,3 +336,97 @@ code {
   align-items: flex-start;
   gap: 16px;
 }
+
+// Demo Radio: dựng lại frame Figma 237:11006 (rộng ~750)
+.radio-demo {
+  max-width: 760px;
+}
+
+.schedule-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schedule-divider {
+  height: 1px;
+  background: #e3e3e3;
+}
+
+.schedule-fields {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  // Ngày chạy giãn hết phần còn lại; Giờ chạy chỉ rộng bằng 2 ô hh : mm.
+  // app-form-field mặc định width 100% → phải tắt ở cột giờ, nếu không cột ngày bị bóp về 0.
+  .schedule-date {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .schedule-time {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+
+// Time input: 2 ô 80px cách dấu ":" 4px
+.time-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  ant-input {
+    width: 80px;
+  }
+
+  ::ng-deep .px-input {
+    text-align: center;
+  }
+}
+
+// Hybrid: 2 ô chọn xếp dọc, cách 10 (Figma 264:16237)
+.hybrid-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// Thanh "Đã chọn n · Bỏ chọn" phía trên bảng
+.table-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #707070;
+
+  b {
+    color: #292929;
+  }
+}
+
+.table-selection-clear {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: #ed0231;
+  cursor: pointer;
+}
+
+// Demo tooltip: label + icon "?" cách 4
+.tooltip-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #292929;
+}

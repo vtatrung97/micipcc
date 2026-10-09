@@ -10,6 +10,7 @@ import { NodeFactoryService } from './node-factory.service';
 import { NodeEditorService } from './node-editor.service';
 import { GraphHistoryService } from './graph-history.service';
 import { FlowDefinition } from '../models/flow-definition.model';
+import { toProcessInfoPayload } from '../models/process-info.model';
 import { graphToFlowDefinition, buildSaveDraftPayload, parseFlowJson, flowNodeToNodeData, handleToPortId } from '../flow-definition/flow-definition.mapper';
 
 /** Lưu nháp / Ban hành, vẽ lại flow từ response BE, mở dữ liệu canvas cũ. */
@@ -56,8 +57,10 @@ export class FlowPersistenceService {
     const definition = graphToFlowDefinition(this.store.graph);
     const payload = buildSaveDraftPayload(
       {
-        name: this.store.currentTemplate.name,
-        description: this.store.currentTemplate.description,
+        // Tên / mô tả / cấu hình lấy từ tab "Thông tin chung"
+        name: this.store.processInfo.name.trim(),
+        description: this.store.processInfo.description,
+        ...toProcessInfoPayload(this.store.processInfo),
         versionName: this.store.currentTemplate.version
           ? `Phiên bản ${this.store.currentTemplate.version}`
           : undefined,

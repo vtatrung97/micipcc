@@ -131,6 +131,12 @@
   overflow: hidden;
 }
 
+// Phía dưới không đủ chỗ → mở lên trên ô
+.ms-panel-up {
+  top: auto;
+  bottom: calc(100% + #{px.$space-8});
+}
+
 .ms-search {
   flex-shrink: 0;
   padding: px.$space-8 px.$space-8 0;

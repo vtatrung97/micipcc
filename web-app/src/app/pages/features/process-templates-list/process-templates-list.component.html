@@ -1,827 +1,186 @@
-<div class="feature-page-container">
-  <div class="page-top-nav">
-    <app-breadcrumbs [items]="['Quản lý Quy trình', 'Danh mục Template']"></app-breadcrumbs>
-  </div>
+<section class="process-list">
+  <!-- 1. Tiêu đề + nút tạo mới -->
+  <header class="process-list-header">
+    <h1 class="process-list-title">Danh sách quy trình</h1>
+    <button
+      *ngIf="canCreate"
+      nz-button
+      nzType="primary"
+      type="button"
+      class="px-btn-primary"
+      (click)="openCreate()">
+      <img [src]="icons.plus" width="24" height="24" alt="" />
+      <span>Tạo quy trình</span>
+    </button>
+  </header>
 
-  <!-- ==================================================================== -->
-  <!-- 1. PAGE HEADER & CỤM NÚT THAO TÁC ĐẦU TRANG                         -->
-  <!-- ==================================================================== -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="header-tag-row">
-        <span class="header-tag">QUẢN LÝ QUY TRÌNH</span>
-        <span class="user-scope-chip" *ngIf="currentUser">
-          <ant-icon name="user" [size]="13" style="margin-right: 4px;"></ant-icon>
-          {{ currentUser.fullName }} ({{ currentUser.roleTitle }}) • {{ currentUser.department || 'Toàn hệ thống' }}
-        </span>
-      </div>
-      <h2 class="page-title">
-        <ant-icon name="project" [size]="22" style="margin-right: 8px; color: #1677ff;"></ant-icon>
-        Quản lý Quy trình & Danh mục Template BPMN 2.0
-      </h2>
-      <p class="page-subtitle">
-        Quản trị vòng đời mẫu quy trình nghiệp vụ (Draft, Published, Inactive), phiên bản hiệu lực, SLA và thiết lập luồng Canvas
-      </p>
-    </div>
-    <div class="header-actions">
-      <!-- Nút Làm mới danh sách từ API -->
-      <button 
-        type="button"
-        class="btn btn-secondary" 
-        (click)="loadTemplates()" 
-        [disabled]="isLoading"
-        title="Tải lại danh sách Template từ máy chủ API">
-        <ant-icon name="reload" [size]="14" [class.spin-animation]="isLoading" style="margin-right: 5px;"></ant-icon>
-        <span>Làm mới</span>
-      </button>
+  <!-- 2. Hàng bộ lọc -->
+  <div class="process-list-toolbar">
+    <div class="process-list-filters">
+      <ant-input
+        class="process-list-search"
+        prefixSrc="assets/icons/processx/search.svg"
+        placeholder="Tìm theo tên hoặc mã quy trình"
+        [allowClear]="true"
+        [(ngModel)]="searchKeyword"
+        (valueChange)="onSearchChange()">
+      </ant-input>
 
-      <!-- Nút/Tab Cấu hình A/B Testing -->
-      <button 
-        type="button"
-        class="btn btn-secondary btn-experiment" 
-        (click)="openExperimentModal()"
-        title="Thiết lập chạy song song 2 phiên bản Template">
-        <ant-icon name="experiment" [size]="16" class="btn-icon" color="#722ed1"></ant-icon>
-        <span>Thử nghiệm A/B Testing</span>
-        <span class="badge-exp-count" *ngIf="activeExperimentsCount > 0">{{ activeExperimentsCount }}</span>
-      </button>
+      <app-quick-filter
+        [options]="statusOptions"
+        [(ngModel)]="statusFilter"
+        (valueChange)="onStatusChange()">
+      </app-quick-filter>
 
-      <!-- Nút Tạo mới quy trình -->
-      <button 
-        type="button"
-        class="btn btn-primary" 
-        (click)="openCreateModal()" 
-        *ngIf="canCreate"
-        title="Tạo quy trình nghiệp vụ mới">
-        <ant-icon name="plus" [size]="15" class="btn-icon"></ant-icon>
-        <span>Tạo mới quy trình</span>
+      <button type="button" class="px-btn-link" (click)="showAdvancedFilter = true">
+        <img [src]="icons.filter" width="24" height="24" alt="" />
+        <span>Bộ lọc nâng cao</span>
+        <span class="px-btn-link-count" *ngIf="advancedFilterCount > 0">{{ advancedFilterCount }}</span>
       </button>
     </div>
-  </div>
 
-  <!-- ==================================================================== -->
-  <!-- METRIC CARDS STATS SUMMARY                                           -->
-  <!-- ==================================================================== -->
-  <div class="stats-row">
-    <div class="stat-card" (click)="selectedStatus = ''" [class.active-filter]="selectedStatus === ''">
-      <div class="stat-header">
-        <span class="stat-num">{{ allTemplates.length }}</span>
-        <span class="stat-icon stat-icon-total">
-          <ant-icon name="appstore" [size]="20" color="#1677ff"></ant-icon>
-        </span>
-      </div>
-      <span class="stat-title">Tổng số Quy trình</span>
-    </div>
-    <div class="stat-card active" (click)="selectedStatus = 'Published'" [class.active-filter]="selectedStatus === 'Published'">
-      <div class="stat-header">
-        <span class="stat-num">{{ countByStatus('Published') }}</span>
-        <span class="stat-icon stat-icon-active">
-          <ant-icon name="check-circle" [size]="20" color="#52c41a"></ant-icon>
-        </span>
-      </div>
-      <span class="stat-title">Đang hoạt động (PUBLISHED)</span>
-    </div>
-    <div class="stat-card draft" (click)="selectedStatus = 'Draft'" [class.active-filter]="selectedStatus === 'Draft'">
-      <div class="stat-header">
-        <span class="stat-num">{{ countByStatus('Draft') }}</span>
-        <span class="stat-icon stat-icon-draft">
-          <ant-icon name="edit" [size]="20" color="#faad14"></ant-icon>
-        </span>
-      </div>
-      <span class="stat-title">Bản nháp (DRAFT)</span>
-    </div>
-    <div class="stat-card inactive" (click)="selectedStatus = 'Inactive'" [class.active-filter]="selectedStatus === 'Inactive'">
-      <div class="stat-header">
-        <span class="stat-num">{{ countByStatus('Inactive') }}</span>
-        <span class="stat-icon stat-icon-inactive">
-          <ant-icon name="pause-circle" [size]="20" color="#8c8c8c"></ant-icon>
-        </span>
-      </div>
-      <span class="stat-title">Tạm dừng (INACTIVE)</span>
-    </div>
-  </div>
-
-  <!-- ==================================================================== -->
-  <!-- 2. BỘ LỌC VÀ TÌM KIẾM (FILTER & SEARCH BAR)                          -->
-  <!-- ==================================================================== -->
-  <div class="content-card">
-    <div class="card-toolbar">
-      <div class="toolbar-left" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <div style="width: 280px;">
-          <ant-input 
-            [(ngModel)]="searchKeyword" 
-            (valueChange)="page = 1"
-            placeholder="Tìm kiếm theo mã quy trình (code), tên..." 
-            [allowClear]="true" 
-            prefixIcon="search">
-          </ant-input>
-        </div>
-
-        <div style="width: 220px;">
-          <ant-select 
-            [(ngModel)]="selectedStatus" 
-            (valueChange)="page = 1"
-            [options]="statusFilterOptions" 
-            placeholder="Tất cả trạng thái"
-            [allowClear]="true">
-          </ant-select>
-        </div>
-
-        <div style="width: 220px;">
-          <ant-select 
-            [(ngModel)]="selectedCategory" 
-            (valueChange)="page = 1"
-            [options]="categoryFilterOptions" 
-            placeholder="Tất cả danh mục nghiệp vụ"
-            [allowClear]="true">
-          </ant-select>
-        </div>
-
-        <div style="width: 220px;">
-          <ant-select 
-            [(ngModel)]="selectedOrg" 
-            (valueChange)="page = 1"
-            [options]="orgFilterOptions" 
-            placeholder="Tất cả đơn vị / phòng ban"
-            [allowClear]="true">
-          </ant-select>
-        </div>
-
-        <!-- Mở drawer "Bộ lọc nâng cao" (Buttons / Link Primary) -->
-        <button type="button" class="btn-advanced-filter" (click)="showAdvancedFilter = true">
-          <ant-icon name="filter" [size]="20"></ant-icon>
-          <span>Bộ lọc nâng cao</span>
-          <span class="advanced-filter-count" *ngIf="advancedFilterCount > 0">{{ advancedFilterCount }}</span>
-        </button>
-      </div>
-
-      <div class="toolbar-right" *ngIf="hasActiveFilter">
-        <button type="button" class="btn-reset-filter" (click)="resetFilters()">
-          <ant-icon name="reload" [size]="13" style="margin-right: 4px;"></ant-icon>
-          <span>Đặt lại bộ lọc</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- ==================================================================== -->
-    <!-- 3. BẢNG DỮ LIỆU BỌC TRONG APP-DATA-TABLE CHUẨN DÙNG CHUNG             -->
-    <!-- ==================================================================== -->
-    <app-data-table 
-      [loading]="isLoading"
-      [total]="filteredTemplates.length" 
-      [page]="page" 
-      [pageSize]="pageSize" 
-      (onPageChange)="page = $event"
-      emptyTitle="Không tìm thấy quy trình nào phù hợp"
-      emptyDescription="Vui lòng kiểm tra lại từ khóa tìm kiếm hoặc điều kiện lọc trạng thái/danh mục.">
-      
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width: 140px;">Mã quy trình</th>
-            <th>Tên quy trình & Mục tiêu nghiệp vụ</th>
-            <th style="width: 150px;">Phân loại / Danh mục</th>
-            <th style="width: 90px; text-align: center;">Phiên bản</th>
-            <th style="width: 150px;">Đơn vị sở hữu</th>
-            <th style="width: 125px; text-align: center;">Trạng thái</th>
-            <th style="width: 135px;">Xuất bản gần nhất</th>
-            <th style="width: 220px; text-align: center;">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of paginatedTemplates" [class.row-inactive]="item.status === 'Inactive'">
-            <!-- 1. Mã quy trình (code) -->
-            <td>
-              <span class="code-pill" [title]="item.code">
-                <code>{{ item.code }}</code>
-              </span>
-            </td>
-
-            <!-- 2. Tên quy trình (name) -->
-            <td>
-              <div class="process-title-cell">
-                <span class="process-name-link" (click)="editOnCanvas(item)">
-                  {{ item.name }}
-                </span>
-                <span class="process-desc" [title]="item.description">
-                  {{ item.description || 'Chưa có mô tả mục tiêu' }}
-                </span>
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                  <app-sla-badge [status]="item.slaStatus || 'normal'" [text]="'SLA: ' + item.sla"></app-sla-badge>
-                  <span class="running-instances-chip" *ngIf="(item.active_instances_count ?? 0) > 0">
-                    <ant-icon name="sync" [size]="11" [spin]="true" style="margin-right: 3px; color: #1677ff;"></ant-icon>
-                    <strong>{{ item.active_instances_count }}</strong> đang chạy
-                  </span>
-                </div>
-              </div>
-            </td>
-
-            <!-- 3. Phân loại / Danh mục (category) -->
-            <td>
-              <span class="category-badge" [ngClass]="getCategoryClass(item.category)">
-                {{ item.category || 'Mặc định' }}
-              </span>
-            </td>
-
-            <!-- 4. Phiên bản hiệu lực (version_no / active_version_id) -->
-            <td style="text-align: center;">
-              <span class="badge-version" title="Phiên bản đang chạy thực tế">{{ item.version }}</span>
-            </td>
-
-            <!-- 5. Đơn vị sở hữu (owner_org_id) -->
-            <td>
-              <span class="org-badge" [title]="item.owner_org_id">
-                <ant-icon name="bank" [size]="13" style="margin-right: 4px; color: #1677ff;"></ant-icon>
-                {{ item.owner_org_name || 'Hệ thống chung' }}
-              </span>
-            </td>
-
-            <!-- 6. Trạng thái (status) -->
-            <td style="text-align: center;">
-              <app-status-tag [status]="item.status"></app-status-tag>
-            </td>
-
-            <!-- 7. Thời gian cập nhật / Xuất bản gần nhất (published_at) -->
-            <td>
-              <span class="date-text">
-                {{ item.published_at || item.updatedAt || 'Hôm nay' }}
-              </span>
-            </td>
-
-            <!-- 8. Cụm nút Thao tác trên từng dòng (Row Actions) -->
-            <td>
-              <div class="row-actions">
-                <!-- Sửa quy trình: Điều hướng sang Canvas Builder -->
-                <button 
-                  type="button"
-                  class="action-btn edit-btn" 
-                  (click)="editOnCanvas(item)"
-                  [title]="canEdit ? 'Chỉnh sửa quy trình trên Canvas Builder' : 'Xem chi tiết quy trình'">
-                  <span class="btn-symbol">
-                    <ant-icon [name]="canEdit ? 'edit' : 'eye'" [size]="14"></ant-icon>
-                  </span>
-                  <span>{{ canEdit ? 'Sửa' : 'Xem' }}</span>
-                </button>
-
-                <!-- Bật / Tắt quy trình: Switch toggle -->
-                <button 
-                  type="button"
-                  class="action-btn toggle-btn" 
-                  *ngIf="canToggle"
-                  (click)="confirmToggleStatus(item)"
-                  [class.btn-is-published]="item.status === 'Published'"
-                  [title]="item.status === 'Published' ? 'Bấm để Tạm dừng (Inactive)' : 'Bấm để Kích hoạt (Published)'">
-                  <span class="btn-symbol">
-                    <ant-icon [name]="item.status === 'Published' ? 'pause-circle' : 'play-circle'" [size]="14"></ant-icon>
-                  </span>
-                  <span>{{ item.status === 'Published' ? 'Tắt' : 'Bật' }}</span>
-                </button>
-
-                <!-- Nhân bản quy trình: Copy modal -->
-                <button 
-                  type="button"
-                  class="action-btn clone-btn" 
-                  *ngIf="canCreate"
-                  (click)="openCloneModal(item)"
-                  title="Nhân bản quy trình này thành bản nháp mới">
-                  <span class="btn-symbol">
-                    <ant-icon name="copy" [size]="14"></ant-icon>
-                  </span>
-                  <span>Nhân bản</span>
-                </button>
-
-                <!-- Xem lịch sử phiên bản -->
-                <button 
-                  type="button"
-                  class="action-btn version-btn" 
-                  (click)="openVersionHistoryModal(item)"
-                  title="Xem lịch sử các phiên bản đã phát hành của quy trình này">
-                  <span class="btn-symbol">
-                    <ant-icon name="history" [size]="14"></ant-icon>
-                  </span>
-                </button>
-
-                <!-- Xóa quy trình: Kiểm tra chặn xóa nếu còn Flow Instance -->
-                <button 
-                  type="button"
-                  class="action-btn delete-btn" 
-                  *ngIf="canDelete"
-                  (click)="handleDeleteClick(item)"
-                  title="Xóa quy trình (Kiểm tra chặn xóa nếu có tiến trình đang xử lý)">
-                  <span class="btn-symbol">
-                    <ant-icon name="delete" [size]="14"></ant-icon>
-                  </span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </app-data-table>
-  </div>
-
-  <!-- ==================================================================== -->
-  <!-- MODAL 1: TẠO MỚI QUY TRÌNH                                           -->
-  <!-- ==================================================================== -->
-  <div class="modal-backdrop" *ngIf="showCreateModal" (click)="closeCreateModal()">
-    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div>
-          <h3 class="modal-title">
-            <ant-icon name="form" [size]="18" style="margin-right: 6px; color: #1677ff;"></ant-icon>
-            Khởi tạo Quy trình Nghiệp vụ Mới
-          </h3>
-          <p class="modal-subtitle">Nhập thông tin ban đầu trước khi chuyển sang không gian Canvas Builder</p>
-        </div>
-        <button type="button" class="close-btn" (click)="closeCreateModal()">
-          <ant-icon name="close" [size]="14"></ant-icon>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Tên quy trình -->
-        <app-form-field label="Tên quy trình nghiệp vụ" [required]="true">
-          <ant-input 
-            [(ngModel)]="newTemplateName" 
-            (valueChange)="onNewNameChange()"
-            placeholder="Ví dụ: Tiếp nhận & xử lý khiếu nại cước di động 5G">
-          </ant-input>
-        </app-form-field>
-
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <!-- Mã quy trình (code - unique) -->
-          <app-form-field label="Mã quy trình (Unique Code)" [required]="true" hint="Mã định danh kỹ thuật duy nhất trong tenant">
-            <ant-input 
-              [(ngModel)]="newTemplateCode" 
-              placeholder="Ví dụ: PRC_COMPLAINT_5G">
-            </ant-input>
-          </app-form-field>
-
-          <!-- Danh mục nghiệp vụ -->
-          <app-form-field label="Danh mục nghiệp vụ" [required]="true">
-            <ant-select 
-              [(ngModel)]="newTemplateCategory" 
-              [options]="categoryModalOptions" 
-              placeholder="Chọn danh mục">
-            </ant-select>
-          </app-form-field>
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <!-- Đơn vị sở hữu -->
-          <app-form-field label="Đơn vị / Phòng ban sở hữu" [required]="true">
-            <ant-select 
-              [(ngModel)]="newTemplateOrgId" 
-              [options]="orgModalOptions" 
-              placeholder="Chọn phòng ban">
-            </ant-select>
-          </app-form-field>
-
-          <!-- Cam kết SLA -->
-          <app-form-field label="Cam kết SLA chuẩn" [required]="true">
-            <ant-select 
-              [(ngModel)]="newTemplateSla" 
-              [options]="slaModalOptions" 
-              placeholder="Chọn cam kết SLA">
-            </ant-select>
-          </app-form-field>
-        </div>
-
-        <!-- Mô tả ngắn -->
-        <div class="form-group">
-          <label class="form-label">Mô tả mục tiêu quy trình</label>
-          <textarea 
-            [(ngModel)]="newTemplateDesc" 
-            rows="2" 
-            placeholder="Mô tả tóm tắt phạm vi giải quyết, các phòng ban phối hợp và chỉ tiêu hoàn thành..." 
-            class="form-control"></textarea>
-        </div>
-
-        <!-- Tùy chọn cách bắt đầu -->
-        <div class="form-group">
-          <label class="form-label">Tùy chọn cách bắt đầu trên Canvas Builder:</label>
-          <div class="template-choice-group">
-            <label class="choice-card" [class.selected]="initTemplateType === 'blank'">
-              <input type="radio" name="initType" [(ngModel)]="initTemplateType" value="blank" />
-              <div class="choice-content">
-                <span class="choice-title">
-                  <ant-icon name="file-add" [size]="16" style="margin-right: 6px; color: #1677ff;"></ant-icon>
-                  Bắt đầu từ bảng vẽ trống (Blank Canvas)
-                </span>
-                <span class="choice-desc">Bảng vẽ Canvas sạch với 1 Trigger Node ban đầu để tự thiết kế luồng từ đầu</span>
-              </div>
-            </label>
-
-            <label class="choice-card" [class.selected]="initTemplateType === 'telecom'">
-              <input type="radio" name="initType" [(ngModel)]="initTemplateType" value="telecom" />
-              <div class="choice-content">
-                <span class="choice-title">
-                  <ant-icon name="branches" [size]="16" style="margin-right: 6px; color: #52c41a;"></ant-icon>
-                  Sử dụng Mẫu Viễn thông chuẩn (7 Nodes BPMN)
-                </span>
-                <span class="choice-desc">Khởi tạo sẵn luồng chuẩn: Trigger -> User Task -> Condition -> Action -> End</span>
-              </div>
-            </label>
-
-            <label class="choice-card" [class.selected]="initTemplateType === 'clone'">
-              <input type="radio" name="initType" [(ngModel)]="initTemplateType" value="clone" />
-              <div class="choice-content" style="width: 100%;">
-                <span class="choice-title">
-                  <ant-icon name="copy" [size]="16" style="margin-right: 6px; color: #722ed1;"></ant-icon>
-                  Nhân bản từ một quy trình có sẵn
-                </span>
-                <span class="choice-desc">Kế thừa 100% các node và cấu hình đường nối từ quy trình hiện hữu</span>
-                <div class="sub-choice-select" *ngIf="initTemplateType === 'clone'">
-                  <select [(ngModel)]="selectedCloneSourceCode" class="form-control" style="margin-top: 6px;">
-                    <option *ngFor="let t of allTemplates" [value]="t.code">{{ t.code }} - {{ t.name }}</option>
-                  </select>
-                </div>
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Hủy bỏ</button>
-        <button 
+    <div class="process-list-toolbar-right">
+      <!-- Thao tác hàng loạt: hiện khi tích chọn record (Figma 326:21956, 364:26304) -->
+      <div class="bulk-actions" *ngIf="selectedRows.length > 0">
+        <span class="bulk-count">Đã chọn {{ selectedRows.length }}</span>
+        <button
+          *ngIf="canEdit && publishableSelected.length > 0"
           type="button"
-          class="btn btn-primary" 
-          [disabled]="!newTemplateName.trim() || !newTemplateCode.trim()" 
-          (click)="confirmCreateAndNavigate()">
-          <ant-icon name="rocket" [size]="15" style="margin-right: 6px;"></ant-icon>
-          <span>Xác nhận & Chuyển sang Canvas Builder</span>
+          class="px-btn-outline-primary"
+          (click)="openActionModal('publish', publishableSelected)">
+          Ban hành<ng-container *ngIf="publishableSelected.length !== selectedRows.length"> ({{ publishableSelected.length }})</ng-container>
         </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================================================================== -->
-  <!-- MODAL 2: NHÂN BẢN QUY TRÌNH                                         -->
-  <!-- ==================================================================== -->
-  <div class="modal-backdrop" *ngIf="showCloneModal" (click)="closeCloneModal()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div>
-          <h3 class="modal-title">
-            <ant-icon name="copy" [size]="18" style="margin-right: 6px; color: #1677ff;"></ant-icon>
-            Nhân bản Quy trình
-          </h3>
-          <p class="modal-subtitle">Tạo bản nháp mới sao chép toàn bộ cấu hình từ: <strong>{{ targetCloneItem?.code }}</strong></p>
-        </div>
-        <button type="button" class="close-btn" (click)="closeCloneModal()">
-          <ant-icon name="close" [size]="14"></ant-icon>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <app-form-field label="Tên quy trình mới" [required]="true">
-          <ant-input 
-            [(ngModel)]="cloneNewName" 
-            placeholder="Nhập tên bản sao quy trình">
-          </ant-input>
-        </app-form-field>
-
-        <app-form-field label="Mã quy trình mới (Code)" [required]="true">
-          <ant-input 
-            [(ngModel)]="cloneNewCode" 
-            placeholder="Ví dụ: PRC_COPY_01">
-          </ant-input>
-        </app-form-field>
-
-        <div class="form-group">
-          <label class="form-label">Ghi chú nhân bản</label>
-          <textarea 
-            [(ngModel)]="cloneDesc" 
-            rows="2" 
-            class="form-control"></textarea>
-        </div>
-
-        <div class="info-alert">
-          <ant-icon name="info-circle-fill" [size]="15" style="margin-right: 6px; color: #1677ff;"></ant-icon>
-          Bản sao mới sẽ được tạo ở trạng thái <strong>Bản nháp (DRAFT)</strong> với phiên bản <strong>V1.0-draft</strong>, giữ nguyên 100% cấu hình các Node và đường nối từ bản vẽ gốc.
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeCloneModal()">Hủy</button>
-        <button 
+        <button
+          *ngIf="canEdit && stoppableSelected.length > 0"
           type="button"
-          class="btn btn-primary" 
-          [disabled]="!cloneNewName.trim() || !cloneNewCode.trim()" 
-          (click)="confirmClone()">
-          <ant-icon name="copy" [size]="14" style="margin-right: 4px;"></ant-icon>
-          <span>Tạo bản sao</span>
+          class="px-btn-outline-primary"
+          (click)="openActionModal('stop', stoppableSelected)">
+          Dừng ban hành<ng-container *ngIf="stoppableSelected.length !== selectedRows.length"> ({{ stoppableSelected.length }})</ng-container>
         </button>
       </div>
+
+    <button
+      type="button"
+      class="px-btn-outline"
+      nz-dropdown
+      nzTrigger="click"
+      nzPlacement="bottomRight"
+      [nzDropdownMenu]="columnMenu"
+      title="Ẩn / hiện cột">
+      <img [src]="icons.sort" width="24" height="24" alt="" />
+      <span>Sắp xếp</span>
+    </button>
+    <!-- Panel ẩn/hiện cột: "Tất cả" + danh sách cột (cột Hành động luôn hiện, không có ở đây) -->
+    <nz-dropdown-menu #columnMenu="nzDropdownMenu">
+      <div class="column-panel" (click)="$event.stopPropagation()">
+        <div class="column-panel-all">
+          <ant-checkbox
+            type="drag"
+            label="Tất cả"
+            [ngModel]="isAllColumnsVisible"
+            [indeterminate]="isSomeColumnsVisible"
+            (checkedChange)="toggleAllColumns($event)"></ant-checkbox>
+        </div>
+        <div class="column-panel-list">
+          <ant-checkbox
+            *ngFor="let col of columns"
+            type="drag"
+            [label]="col.label"
+            [ngModel]="isColumnVisible(col.key)"
+            (checkedChange)="toggleColumn(col.key, $event)"></ant-checkbox>
+        </div>
+      </div>
+    </nz-dropdown-menu>
     </div>
   </div>
 
-  <!-- ==================================================================== -->
-  <!-- MODAL 3: CẢNH BÁO BẬT / TẮT QUY TRÌNH                               -->
-  <!-- ==================================================================== -->
-  <div class="modal-backdrop" *ngIf="showToggleModal" (click)="closeToggleModal()">
-    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <ant-icon 
-            [name]="targetToggleItem?.status === 'Published' ? 'pause-circle-fill' : 'play-circle-fill'" 
-            [size]="18" 
-            style="margin-right: 6px;" 
-            [color]="targetToggleItem?.status === 'Published' ? '#faad14' : '#52c41a'">
-          </ant-icon>
-          {{ targetToggleItem?.status === 'Published' ? 'Tạm dừng Quy trình (Inactive)' : 'Kích hoạt Quy trình (Published)' }}
-        </h3>
-        <button type="button" class="close-btn" (click)="closeToggleModal()">
-          <ant-icon name="close" [size]="14"></ant-icon>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <p *ngIf="targetToggleItem?.status === 'Published'">
-          Bạn có chắc chắn muốn chuyển quy trình <strong>[{{ targetToggleItem?.code }}]</strong> sang trạng thái <strong>Tạm dừng (INACTIVE)</strong> không?
-        </p>
-        <p *ngIf="targetToggleItem?.status !== 'Published'">
-          Bạn có chắc chắn muốn kích hoạt đưa quy trình <strong>[{{ targetToggleItem?.code }}]</strong> vào trạng thái <strong>Đang hoạt động (PUBLISHED)</strong> không?
-        </p>
-
-        <div class="warning-alert" *ngIf="targetToggleItem?.status === 'Published'">
-          <ant-icon name="warning-fill" [size]="15" style="margin-right: 6px; color: #faad14;"></ant-icon>
-          <strong>Ràng buộc nghiệp vụ:</strong> Khi tắt quy trình, hệ thống chỉ tạm dừng nhận các yêu cầu khởi tạo mới. <strong>Tuyệt đối không làm ảnh hưởng hoặc gián đoạn các Flow Instance đang xử lý dở dang trước đó</strong>.
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeToggleModal()">Hủy</button>
-        <button 
-          type="button"
-          class="btn" 
-          [ngClass]="targetToggleItem?.status === 'Published' ? 'btn-danger' : 'btn-primary'" 
-          (click)="executeToggleStatus()">
-          {{ targetToggleItem?.status === 'Published' ? 'Xác nhận Tạm dừng' : 'Xác nhận Kích hoạt' }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================================================================== -->
-  <!-- MODAL 4: CHẶN XÓA HOẶC XÁC NHẬN XÓA QUY TRÌNH                        -->
-  <!-- ==================================================================== -->
-  <div class="modal-backdrop" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-    <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
-      <div class="modal-header" [class.header-blocked]="isDeleteBlocked">
-        <h3 class="modal-title">
-          <ant-icon 
-            [name]="isDeleteBlocked ? 'stop-fill' : 'delete'" 
-            [size]="18" 
-            style="margin-right: 6px;" 
-            color="#ff4d4f">
-          </ant-icon>
-          {{ isDeleteBlocked ? 'Chặn Xóa Quy Trình' : 'Xác nhận Xóa Quy Trình' }}
-        </h3>
-        <button type="button" class="close-btn" (click)="closeDeleteModal()">
-          <ant-icon name="close" [size]="14"></ant-icon>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <!-- TRƯỜNG HỢP 1: BỊ CHẶN XÓA DO CÒN FLOW INSTANCE ĐANG CHẠY DỞ -->
-        <div *ngIf="isDeleteBlocked" class="blocked-container">
-          <div class="blocked-icon">
-            <ant-icon name="exclamation-circle-fill" [size]="48" color="#ff4d4f"></ant-icon>
-          </div>
-          <h4 class="blocked-title">Không thể xóa quy trình này!</h4>
-          <p class="blocked-msg">
-            Quy trình <strong>[{{ targetDeleteItem?.code }} - {{ targetDeleteItem?.name }}]</strong> hiện đang có 
-            <span class="badge-count-danger">{{ targetDeleteItem?.active_instances_count }}</span> 
-            tiến trình (Flow Instance) đang trong trạng thái xử lý chưa kết thúc.
-          </p>
-          <div class="warning-alert">
-            <ant-icon name="warning-fill" [size]="15" style="margin-right: 6px; color: #faad14;"></ant-icon>
-            <strong>Ràng buộc bảo vệ dữ liệu:</strong> Hệ thống không cho phép xóa các Template đang có luồng giao dịch chạy dở. Vui lòng hoàn tất hoặc kết thúc các tiến trình tại phân hệ Giám sát trước khi thực hiện xóa.
-          </div>
-        </div>
-
-        <!-- TRƯỜNG HỢP 2: HỢP LỆ ĐỂ XÓA AN TOÀN -->
-        <div *ngIf="!isDeleteBlocked">
-          <p>
-            Bạn có chắc chắn muốn xóa vĩnh viễn quy trình <strong>[{{ targetDeleteItem?.code }} - {{ targetDeleteItem?.name }}]</strong> không?
-          </p>
-          <p class="text-muted" style="font-size: 0.825rem;">
-            Hành động này sẽ xóa toàn bộ các phiên bản và cấu hình sơ đồ Canvas của quy trình này. Thao tác không thể hoàn tác.
-          </p>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
-          {{ isDeleteBlocked ? 'Đã hiểu' : 'Hủy bỏ' }}
-        </button>
-        <button 
-          type="button"
-          class="btn btn-danger" 
-          *ngIf="!isDeleteBlocked"
-          (click)="executeDelete()">
-          <ant-icon name="delete" [size]="14" style="margin-right: 4px;"></ant-icon>
-          <span>Xác nhận Xóa</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================================================================== -->
-  <!-- MODAL 5: XEM LỊCH SỬ PHIÊN BẢN (VERSION HISTORY)                    -->
-  <!-- ==================================================================== -->
-  <div class="modal-backdrop" *ngIf="showVersionModal" (click)="closeVersionModal()">
-    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div>
-          <h3 class="modal-title">
-            <ant-icon name="history" [size]="18" style="margin-right: 6px; color: #1677ff;"></ant-icon>
-            Lịch sử Phiên bản: {{ targetVersionItem?.code }}
-          </h3>
-          <p class="modal-subtitle">{{ targetVersionItem?.name }}</p>
-        </div>
-        <button type="button" class="close-btn" (click)="closeVersionModal()">
-          <ant-icon name="close" [size]="14"></ant-icon>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <div class="version-timeline">
-          <div class="timeline-item" *ngFor="let ver of targetVersionItem?.versions">
-            <div class="timeline-dot" [class.active]="ver.is_active"></div>
-            <div class="timeline-card">
-              <div class="timeline-header">
-                <div class="timeline-title-row">
-                  <span class="badge-version-lg">{{ ver.version_no }}</span>
-                  <span class="badge-active-tag" *ngIf="ver.is_active">Phiên bản hiện tại</span>
-                  <span class="status-pill-sm" [ngClass]="ver.status.toLowerCase()">{{ ver.status }}</span>
-                </div>
-                <span class="timeline-date">{{ ver.published_at }}</span>
-              </div>
-              <p class="timeline-changelog">{{ ver.changelog }}</p>
-              <div class="timeline-footer">
-                <span class="timeline-author">
-                  <ant-icon name="user" [size]="12" style="margin-right: 4px;"></ant-icon>
-                  Người phát hành: {{ ver.created_by }}
-                </span>
-                <button 
-                  type="button" 
-                  class="btn-open-canvas-sm" 
-                  (click)="viewVersionOnCanvas(targetVersionItem!, ver)">
-                  <ant-icon name="branches" [size]="13" style="margin-right: 4px;"></ant-icon>
-                  Mở xem bản vẽ này
-                </button>
-              </div>
+  <!-- 3. Bảng danh sách + phân trang -->
+  <app-data-table
+    [loading]="isLoading"
+    [total]="filteredRows.length"
+    [page]="page"
+    [pageSize]="pageSize"
+    emptyTitle="Không tìm thấy quy trình nào"
+    emptyDescription="Thử đổi từ khóa tìm kiếm hoặc điều kiện lọc."
+    (onPageChange)="onPageChange($event)"
+    (onPageSizeChange)="onPageSizeChange($event)">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-index">
+            <div class="px-cell-check">
+              <ant-checkbox
+                [ngModel]="selection.isAllSelected(pagedRows)"
+                [indeterminate]="selection.isSomeSelected(pagedRows)"
+                [disabled]="pagedRows.length === 0"
+                (checkedChange)="selection.toggleAll(pagedRows, $event)"></ant-checkbox>STT
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeVersionModal()">Đóng</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================================================================== -->
-  <!-- MODAL 6: THỬ NGHIỆM A/B TESTING                                     -->
-  <!-- ==================================================================== -->
-  <div class="modal-backdrop" *ngIf="showExperimentModal" (click)="closeExperimentModal()">
-    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div>
-          <h3 class="modal-title">
-            <ant-icon name="experiment" [size]="18" style="margin-right: 6px; color: #722ed1;"></ant-icon>
-            Cấu hình Thử nghiệm A/B Testing
-          </h3>
-          <p class="modal-subtitle">Chạy song song 2 phiên bản Template để so sánh hiệu quả SLA, FCR và CSAT</p>
-        </div>
-        <button type="button" class="close-btn" (click)="closeExperimentModal()">
-          <ant-icon name="close" [size]="14"></ant-icon>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Danh sách thử nghiệm hiện tại -->
-        <div class="experiment-list-section">
-          <h4 class="section-title">Danh sách Thử nghiệm Đang cấu hình</h4>
-          <div class="exp-card" *ngFor="let exp of experiments">
-            <div class="exp-card-header">
-              <div>
-                <span class="exp-code">{{ exp.experiment_id }}</span>
-                <strong class="exp-name">{{ exp.template_name }}</strong>
-              </div>
-              <span class="status-badge" [ngClass]="exp.status">
-                <span class="status-dot"></span>
-                {{ exp.status === 'running' ? 'Đang chạy' : 'Tạm dừng' }}
-              </span>
+          </th>
+          <th class="col-name" *ngIf="isColumnVisible('name')">Tên quy trình</th>
+          <th class="col-code" *ngIf="isColumnVisible('code')">Mã</th>
+          <th class="col-version" *ngIf="isColumnVisible('version')">Phiên bản</th>
+          <th class="col-status" *ngIf="isColumnVisible('status')">Trạng thái</th>
+          <th class="col-md" *ngIf="isColumnVisible('category')">Nhóm quy trình</th>
+          <th class="col-md" *ngIf="isColumnVisible('trigger')">Loại kích hoạt</th>
+          <th class="col-md" *ngIf="isColumnVisible('sla')">SLA</th>
+          <th class="col-person" *ngIf="isColumnVisible('createdBy')">Người tạo</th>
+          <th class="col-person" *ngIf="isColumnVisible('publishedBy')">Người ban hành</th>
+          <th class="col-date" *ngIf="isColumnVisible('createdDate')">Ngày tạo</th>
+          <th class="col-date" *ngIf="isColumnVisible('publishedDate')">Ngày ban hành</th>
+          <th class="col-actions">Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let row of pagedRows; let i = index; trackBy: trackByCode"
+          [class.is-selected]="selection.isSelected(row)">
+          <td>
+            <div class="px-cell-check">
+              <ant-checkbox
+                [ngModel]="selection.isSelected(row)"
+                (checkedChange)="selection.toggle(row, $event)"></ant-checkbox>{{ rowIndex(i) }}
             </div>
-
-            <div class="exp-versions-split">
-              <div class="split-col version-a">
-                <span class="col-title">Phiên bản A ({{ exp.ratio_a }}%)</span>
-                <span class="ver-pill">{{ exp.version_a_no }}</span>
-              </div>
-              <div class="split-divider">VS</div>
-              <div class="split-col version-b">
-                <span class="col-title">Phiên bản B ({{ 100 - exp.ratio_a }}%)</span>
-                <span class="ver-pill">{{ exp.version_b_no }}</span>
-              </div>
-            </div>
-
-            <!-- Tỷ lệ phân bổ trực quan -->
-            <div class="split-progress-bar">
-              <div class="bar-a" [style.width.%]="exp.ratio_a" [title]="'Phiên bản A: ' + exp.ratio_a + '%'">
-                {{ exp.ratio_a }}%
-              </div>
-              <div class="bar-b" [style.width.%]="100 - exp.ratio_a" [title]="'Phiên bản B: ' + (100 - exp.ratio_a) + '%'">
-                {{ 100 - exp.ratio_a }}%
-              </div>
-            </div>
-
-            <div class="exp-footer">
-              <span class="metric-tag">
-                <ant-icon name="project" [size]="13" style="margin-right: 4px;"></ant-icon>
-                Tiêu chí đánh giá: <strong>{{ exp.target_metric }}</strong>
-              </span>
-              <button 
-                type="button" 
-                class="btn-sm-toggle" 
-                (click)="toggleExperiment(exp.experiment_id)">
-                <ant-icon [name]="exp.status === 'running' ? 'pause-circle' : 'play-circle'" [size]="13" style="margin-right: 4px;"></ant-icon>
-                {{ exp.status === 'running' ? 'Tạm dừng thử nghiệm' : 'Tiếp tục chạy' }}
+          </td>
+          <td *ngIf="isColumnVisible('name')" [title]="row.item.name">{{ row.item.name }}</td>
+          <td *ngIf="isColumnVisible('code')" [title]="row.item.code">{{ row.item.code }}</td>
+          <td *ngIf="isColumnVisible('version')">{{ row.versionLabel }}</td>
+          <td *ngIf="isColumnVisible('status')">
+            <app-status-tag appearance="fill" [status]="row.statusKey" [text]="row.statusLabel"></app-status-tag>
+          </td>
+          <td *ngIf="isColumnVisible('category')">{{ row.item.category || '—' }}</td>
+          <td *ngIf="isColumnVisible('trigger')">{{ row.triggerLabel }}</td>
+          <td *ngIf="isColumnVisible('sla')">{{ row.slaLabel }}</td>
+          <td *ngIf="isColumnVisible('createdBy')">{{ row.createdBy }}</td>
+          <td *ngIf="isColumnVisible('publishedBy')">{{ row.publishedBy }}</td>
+          <td *ngIf="isColumnVisible('createdDate')">{{ row.createdDate }}</td>
+          <td *ngIf="isColumnVisible('publishedDate')">{{ row.publishedDate }}</td>
+          <td>
+            <div class="px-cell-actions">
+              <button
+                *ngIf="canEdit"
+                type="button"
+                class="px-cell-action-btn"
+                title="Chỉnh sửa"
+                (click)="openEdit(row)">
+                <img [src]="icons.edit" width="20" height="20" alt="" />
               </button>
+              <button type="button" class="px-cell-action-btn" title="Xem" (click)="openView(row)">
+                <img [src]="icons.view" width="20" height="20" alt="" />
+              </button>
+              <app-action-menu
+                [items]="row.menuItems"
+                [disabled]="row.menuItems.length === 0"
+                (action)="onRowAction($event, row)">
+              </app-action-menu>
             </div>
-          </div>
-        </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </app-data-table>
+</section>
 
-        <!-- Form tạo thử nghiệm A/B mới -->
-        <div class="new-exp-section">
-          <h4 class="section-title">
-            <ant-icon name="plus" [size]="14" style="margin-right: 4px; color: #1677ff;"></ant-icon>
-            Tạo Cấu hình Thử nghiệm A/B Mới
-          </h4>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Chọn Quy trình áp dụng</label>
-              <select [(ngModel)]="newExpTemplateCode" (ngModelChange)="onExpTemplateSelect()" class="form-control">
-                <option *ngFor="let t of allTemplates" [value]="t.code">{{ t.code }} - {{ t.name }}</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Tiêu chí đo lường chính</label>
-              <select [(ngModel)]="newExpMetric" class="form-control">
-                <option value="FCR (Tỷ lệ xử lý ngay lần đầu)">FCR (Tỷ lệ xử lý ngay lần đầu)</option>
-                <option value="CSAT (Điểm đánh giá hài lòng)">CSAT (Điểm đánh giá hài lòng)</option>
-                <option value="AHT (Thời gian xử lý trung bình)">AHT (Thời gian xử lý trung bình)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Phiên bản A (Mặc định)</label>
-              <input type="text" [(ngModel)]="newExpVersionA" class="form-control" placeholder="Ví dụ: V2.1 (Hiện tại)" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Phiên bản B (Thử nghiệm)</label>
-              <input type="text" [(ngModel)]="newExpVersionB" class="form-control" placeholder="Ví dụ: V2.2 (Thử nghiệm)" />
-            </div>
-          </div>
-
-          <!-- Slider phân bổ tỷ lệ -->
-          <div class="form-group">
-            <div class="slider-label-row">
-              <label class="form-label">Tỷ lệ phân bổ lưu lượng luồng (Ratio A / B):</label>
-              <span class="ratio-display">Phiên bản A: <strong>{{ newExpRatioA }}%</strong> | Phiên bản B: <strong>{{ 100 - newExpRatioA }}%</strong></span>
-            </div>
-            <input 
-              type="range" 
-              min="10" 
-              max="90" 
-              step="5" 
-              [(ngModel)]="newExpRatioA" 
-              class="ratio-slider" />
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeExperimentModal()">Đóng</button>
-        <button type="button" class="btn btn-primary" (click)="confirmCreateExperiment()">
-          <span>Lưu & Kích hoạt Thử nghiệm</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Drawer "Bộ lọc nâng cao" (Figma 71:11833) -->
+<!-- Drawer "Bộ lọc nâng cao" -->
 <app-advanced-filter-drawer
   [visible]="showAdvancedFilter"
   [value]="advancedFilter"
@@ -829,3 +188,11 @@
   (apply)="applyAdvancedFilter($event)"
   (closed)="showAdvancedFilter = false">
 </app-advanced-filter-drawer>
+
+<!-- Modal xác nhận: nhân bản / ban hành / dừng ban hành / xóa (1 hoặc nhiều quy trình) -->
+<app-process-action-modal
+  [action]="modalAction"
+  [processes]="modalRows"
+  (confirmed)="confirmActionModal()"
+  (closed)="closeActionModal()">
+</app-process-action-modal>

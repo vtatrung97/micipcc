@@ -1,16 +1,21 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
+import { PROCESS_STATUS_CONFIG, PROCESS_STATUS_ORDER, ProcessStatus } from '../../config/process-status.config';
+
+/** Khoảng ngày của app-date-picker isRange (YYYY-MM-DD, rỗng = không giới hạn đầu đó) */
+export interface DateRange {
+  from: string;
+  to: string;
+}
 
 /** Điều kiện của bộ lọc nâng cao danh sách quy trình */
 export interface ProcessAdvancedFilter {
   name: string;
   code: string;
   version: string;
-  status: '' | 'Published' | 'Inactive' | 'Draft';
-  draft: '' | 'yes' | 'no';
-  operation: '' | 'issue';
-  updatedDate: string;   // YYYY-MM-DD
-  publishedDate: string; // YYYY-MM-DD
+  status: '' | ProcessStatus;
+  updatedRange: DateRange | null;
+  publishedRange: DateRange | null;
 }
 
 export const EMPTY_ADVANCED_FILTER: ProcessAdvancedFilter = {
@@ -18,20 +23,23 @@ export const EMPTY_ADVANCED_FILTER: ProcessAdvancedFilter = {
   code: '',
   version: '',
   status: '',
-  draft: '',
-  operation: '',
-  updatedDate: '',
-  publishedDate: ''
+  updatedRange: null,
+  publishedRange: null
 };
+
+export function hasDateRange(range: DateRange | null | undefined): boolean {
+  return !!(range && (range.from || range.to));
+}
 
 /** Số điều kiện đang bật (để hiện badge trên nút mở bộ lọc) */
 export function countAdvancedFilter(filter: ProcessAdvancedFilter): number {
-  return (Object.keys(EMPTY_ADVANCED_FILTER) as (keyof ProcessAdvancedFilter)[])
-    .filter(key => !!String(filter[key] ?? '').trim()).length;
+  const texts = [filter.name, filter.code, filter.version, filter.status].filter(v => !!String(v || '').trim()).length;
+  const ranges = [filter.updatedRange, filter.publishedRange].filter(hasDateRange).length;
+  return texts + ranges;
 }
 
 /**
- * Drawer "Bộ lọc nâng cao" (Figma ProcessX node 71:11833).
+ * Drawer "Bộ lọc nâng cao" mở từ bên phải (Figma ProcessX node 364:23413).
  * Chỉnh trên bản nháp; chỉ phát `apply` khi bấm "Áp dụng".
  */
 @Component({
@@ -52,20 +60,7 @@ export class AdvancedFilterDrawerComponent implements OnChanges {
 
   readonly statusOptions: SelectOption[] = [
     { value: '', label: 'Tất cả' },
-    { value: 'Published', label: 'Đang hiệu lực' },
-    { value: 'Inactive', label: 'Tạm dừng' },
-    { value: 'Draft', label: 'Chưa ban hành' }
-  ];
-
-  readonly draftOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả' },
-    { value: 'yes', label: 'Có' },
-    { value: 'no', label: 'Không có' }
-  ];
-
-  readonly operationOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả' },
-    { value: 'issue', label: 'Có hồ sơ quá hạn / thất bại' }
+    ...PROCESS_STATUS_ORDER.map(s => ({ value: s, label: PROCESS_STATUS_CONFIG[s].filterLabel }))
   ];
 
   ngOnChanges(changes: SimpleChanges): void {

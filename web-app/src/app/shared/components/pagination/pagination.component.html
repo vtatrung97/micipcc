@@ -1,39 +1,50 @@
-<div class="ant-pagination" *ngIf="total > 0">
-  <div class="ant-pagination-total-text" *ngIf="showTotal">
-    Tổng số <strong>{{ total }}</strong> bản ghi
+<div class="px-pagination" *ngIf="total > 0">
+  <!-- Trái: số dòng hiển thị + khoảng bản ghi -->
+  <div class="px-pagination-left">
+    <div class="px-pagination-size" *ngIf="showSizeChanger">
+      <span class="px-pagination-text">Số dòng hiển thị</span>
+      <ant-select
+        class="px-pagination-select"
+        size="small"
+        placeholder=""
+        [options]="sizeOptions"
+        [ngModel]="pageSize"
+        (ngModelChange)="onPageSizeChange($event)">
+      </ant-select>
+    </div>
+
+    <div class="px-pagination-info" *ngIf="showTotal">
+      <span class="px-pagination-text">{{ rangeStart }} - {{ rangeEnd }}</span>
+      <span class="px-pagination-text">/</span>
+      <span class="px-pagination-result">
+        <span class="px-pagination-total">{{ total }}</span>
+        <span class="px-pagination-text">kết quả</span>
+      </span>
+    </div>
   </div>
 
-  <ul class="ant-pagination-list">
-    <!-- Prev Button -->
-    <li 
-      class="ant-pagination-prev" 
-      [class.ant-pagination-disabled]="page <= 1"
-      (click)="goToPage(page - 1)">
-      <button type="button" [disabled]="page <= 1">‹</button>
-    </li>
+  <!-- Phải: ‹ 1 2 3 … 88 89 90 › -->
+  <div class="px-pagination-pages">
+    <button type="button" class="px-pagination-nav" [disabled]="isFirst" (click)="goToPage(page - 1)" title="Trang trước">
+      <img [src]="isFirst ? icons.prevDisabled : icons.prev" width="20" height="20" alt="" />
+    </button>
 
-    <!-- Page Numbers -->
-    <li 
-      *ngFor="let p of pages"
-      class="ant-pagination-item"
-      [class.ant-pagination-item-active]="p === page"
-      (click)="goToPage(p)">
-      <a>{{ p }}</a>
-    </li>
+    <div class="px-pagination-list">
+      <ng-container *ngFor="let item of items; trackBy: trackByKey">
+        <span class="px-pagination-item px-pagination-ellipsis" *ngIf="item.page === null">...</span>
+        <button
+          *ngIf="item.page !== null"
+          type="button"
+          class="px-pagination-item"
+          [class.is-active]="item.page === page"
+          (click)="goToPage(item.page)">
+          {{ item.page }}
+        </button>
+      </ng-container>
+    </div>
 
-    <!-- Next Button -->
-    <li 
-      class="ant-pagination-next" 
-      [class.ant-pagination-disabled]="page >= totalPages"
-      (click)="goToPage(page + 1)">
-      <button type="button" [disabled]="page >= totalPages">›</button>
-    </li>
-  </ul>
-
-  <!-- Page Size Selector -->
-  <div class="ant-pagination-options" *ngIf="showSizeChanger">
-    <select class="page-size-select" [value]="pageSize" (change)="onPageSizeChange($event)">
-      <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / trang</option>
-    </select>
+    <button type="button" class="px-pagination-nav" [disabled]="isLast" (click)="goToPage(page + 1)" title="Trang sau">
+      <img [src]="isLast ? icons.nextDisabled : icons.next" width="20" height="20" alt="" />
+    </button>
   </div>
 </div>

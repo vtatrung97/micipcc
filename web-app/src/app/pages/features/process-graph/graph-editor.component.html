@@ -1,30 +1,29 @@
 <div class="x6-editor-wrapper">
   <!-- ==================================================================== -->
-  <!-- 1. TOP HEADER (Back arrow, Tiêu đề, Phiên bản 4 [Nháp v], Hủy, Lưu nháp, Ban hành) -->
+  <!-- 1. BUILDER TOOLBAR (Figma 264:42054): ← · Tên · [Phiên bản n · Nháp ⌄] · Hủy · Lưu nháp · Ban hành -->
   <!-- ==================================================================== -->
   <header class="studio-topbar">
     <div class="topbar-left-section">
       <a class="back-btn" routerLink="/process/templates-list" [title]="'PROCESS_GRAPH.HEADER.BACK_TITLE' | translate">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
+        <img src="assets/icons/processx/back.svg" width="20" height="20" alt="" />
       </a>
 
       <div class="topbar-divider-vertical"></div>
 
       <div class="process-title-group">
-        <h1 class="process-title-text" [title]="currentTemplate.name">{{ currentTemplate.name || ('PROCESS_GRAPH.HEADER.DEFAULT_NAME' | translate) }}</h1>
+        <h1 class="process-title-text" [title]="headerTitle">{{ headerTitle }}</h1>
 
-        <!-- Version selector dropdown badge: Phiên bản 4 [Nháp v] -->
+        <!-- _Text field dropdown: "Phiên bản n" + badge trạng thái + chevron -->
         <div class="version-dropdown-badge" [title]="'PROCESS_GRAPH.HEADER.VERSION_TITLE' | translate">
-          <span class="version-name">{{ 'PROCESS_GRAPH.HEADER.VERSION' | translate: { version: currentTemplate.version || '4' } }}</span>
-          <span class="draft-tag">{{ 'PROCESS_GRAPH.HEADER.DRAFT_TAG' | translate }}</span>
-          <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.5">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+          <span class="version-name">{{ 'PROCESS_GRAPH.HEADER.VERSION' | translate: { version: headerVersion } }}</span>
+          <span class="draft-tag" *ngIf="headerStatus === 'Draft'">{{ 'PROCESS_GRAPH.HEADER.DRAFT_TAG' | translate }}</span>
+          <app-status-tag
+            *ngIf="headerStatus !== 'Draft'"
+            appearance="fill"
+            [status]="headerStatus === 'Published' ? 'published' : 'inactive'"
+            [text]="(headerStatus === 'Published' ? 'PROCESS_GRAPH.HEADER.PUBLISHED_TAG' : 'PROCESS_GRAPH.HEADER.INACTIVE_TAG') | translate">
+          </app-status-tag>
+          <img class="dropdown-arrow" src="assets/icons/processx/chevron-down-neutral-500.svg" width="24" height="24" alt="" />
         </div>
       </div>
     </div>
@@ -38,7 +37,6 @@
         <span>{{ 'PROCESS_GRAPH.HEADER.SAVE_DRAFT' | translate }}</span>
       </button>
 
-      <!-- Primary Red Button: Ban hành -->
       <button type="button" class="topbar-btn primary-red-btn" (click)="saveProcessTemplate()"
         [title]="'PROCESS_GRAPH.HEADER.PUBLISH_TITLE' | translate">
         <span>{{ 'PROCESS_GRAPH.HEADER.PUBLISH' | translate }}</span>
@@ -47,20 +45,27 @@
   </header>
 
   <!-- ==================================================================== -->
-  <!-- 2. SUB-HEADER TABS (Thông tin chung | Thiết kế quy trình)             -->
+  <!-- 2. STEPPER (Figma "Quản lý quy trình stepper" 388:30528):             -->
+  <!--    ① Thông tin chung ── ② Thiết kế quy trình (giữa) · nút bên phải     -->
   <!-- ==================================================================== -->
   <div class="sub-header-tabs">
-    <div class="tabs-left-nav">
-      <button type="button" class="sub-tab-item" [class.active]="activeSubTab === 'info'" (click)="setSubTab('info')">
-        {{ 'PROCESS_GRAPH.TABS.GENERAL' | translate }}
+    <div class="process-stepper">
+      <button type="button" class="stepper-item" [class.active]="activeSubTab === 'info'" (click)="setSubTab('info')">
+        <span class="stepper-index">1</span>
+        <span class="stepper-label">{{ 'PROCESS_GRAPH.TABS.GENERAL' | translate }}</span>
       </button>
-      <button type="button" class="sub-tab-item" [class.active]="activeSubTab === 'design'" (click)="setSubTab('design')">
-        {{ 'PROCESS_GRAPH.TABS.DESIGN' | translate }}
+      <div class="stepper-divider"></div>
+      <button type="button" class="stepper-item" [class.active]="activeSubTab === 'design'" (click)="setSubTab('design')">
+        <span class="stepper-index">2</span>
+        <span class="stepper-label">{{ 'PROCESS_GRAPH.TABS.DESIGN' | translate }}</span>
       </button>
     </div>
 
     <div class="tabs-right-actions">
-      <button nz-dropdown [nzDropdownMenu]="sampleMenu" nzPlacement="bottomRight" class="sample-dropdown-btn" [title]="'PROCESS_GRAPH.SAMPLES.BUTTON_TITLE' | translate">
+      <button *ngIf="activeSubTab === 'info'" type="button" class="stepper-next-btn" (click)="setSubTab('design')">
+        {{ 'PROCESS_GRAPH.TABS.NEXT' | translate }}
+      </button>
+      <button *ngIf="activeSubTab === 'design'" nz-dropdown [nzDropdownMenu]="sampleMenu" nzPlacement="bottomRight" class="sample-dropdown-btn" [title]="'PROCESS_GRAPH.SAMPLES.BUTTON_TITLE' | translate">
         <span class="sample-btn-icon">⚡</span>
         <span class="sample-btn-text">{{ 'PROCESS_GRAPH.SAMPLES.BUTTON' | translate }}</span>
         <svg class="sample-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -367,5 +372,14 @@
 
     <!-- RIGHT SIDE CONFIG DRAWER -->
     <app-node-config-drawer></app-node-config-drawer>
+
+    <!-- TAB "THÔNG TIN CHUNG" (Figma 264:42051): phủ lên canvas, canvas vẫn giữ nguyên trong DOM -->
+    <app-process-info-form
+      *ngIf="activeSubTab === 'info'"
+      class="info-tab-panel"
+      [info]="processInfo"
+      [errors]="processInfoErrors"
+      [codeEditable]="isCreateMode">
+    </app-process-info-form>
   </div>
 </div>

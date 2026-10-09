@@ -1,0 +1,19 @@
+<div class="px-radio-group" role="radiogroup"
+     [class.px-radio-group-horizontal]="direction === 'horizontal'">
+  <ng-container *ngFor="let opt of options">
+    <app-radio
+      [name]="name"
+      [label]="opt.label"
+      [checked]="isChecked(opt)"
+      [disabled]="disabled || !!opt.disabled"
+      (selected)="choose(opt)">
+    </app-radio>
+
+    <!-- Nội dung mở rộng dưới lựa chọn đang chọn -->
+    <div class="px-radio-extra" *ngIf="extra && isChecked(opt)">
+      <div [class.px-radio-extra-box]="extraBoxed">
+        <ng-container *ngTemplateOutlet="extra.templateRef; context: { $implicit: opt, checked: true }"></ng-container>
+      </div>
+    </div>
+  </ng-container>
+</div>
