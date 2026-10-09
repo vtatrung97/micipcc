@@ -119,7 +119,7 @@ export class UiKitComponent {
     return this.tableEmpty ? [] : this.tableRows;
   }
 
-  // ===== Data table: menu hành động "⋮" (Figma 197:25236 + 364:25166) =====
+  // ===== Data table: menu hành động "⋮" =====
   lastRowAction: string = '';
   /** Cache theo trạng thái để không tạo mảng mới mỗi vòng change detection */
   private readonly rowMenuCache: Record<string, ActionMenuItem[]> = {};
@@ -157,7 +157,7 @@ export class UiKitComponent {
   scheduleHour: string = '';
   scheduleMinute: string = '';
   radioSingle: boolean = false;
-  // Hybrid: chọn API + biểu mẫu dữ liệu đầu vào (Figma 264:16237)
+  // Hybrid: chọn API + biểu mẫu dữ liệu đầu vào
   hybridApi: string | null = null;
   hybridForm: string | null = null;
   hybridApiOptions: SelectOption[] = [
@@ -254,7 +254,7 @@ export class UiKitComponent {
     },
     {
       id: 'ant-textarea', title: 'Ô nhập nhiều dòng', selector: 'ant-textarea',
-      description: 'Textarea theo Figma ProcessX "Text Area": cao 140px, radius 12, Inter Medium 16/24.',
+      description: 'Textarea theo "Text Area": cao 140px, radius 12, Inter Medium 16/24.',
       api: [
         { name: 'size', type: "'small' | 'middle' | 'large'", defaultValue: "'middle'" },
         { name: 'placeholder', type: 'string', defaultValue: "''" },
@@ -286,7 +286,7 @@ export class UiKitComponent {
     },
     {
       id: 'quick-filter', title: 'Lọc nhanh (chip)', selector: 'app-quick-filter',
-      description: 'Nhóm chip chọn một giá trị (Figma "Quick filters"): chip active nền đỏ, chip thường viền xám.',
+      description: 'Nhóm chip chọn một giá trị: chip active nền đỏ, chip thường viền xám.',
       api: [
         { name: 'ngModel', type: 'any (value của option)', defaultValue: 'null' },
         { name: 'options', type: 'SelectOption[]', defaultValue: '[]' },
@@ -296,7 +296,7 @@ export class UiKitComponent {
     },
     {
       id: 'drawer', title: 'Drawer', selector: 'app-drawer',
-      description: 'Khung drawer bên phải (Figma "Drawer content"): header + body cuộn + footer chiếu qua [drawer-footer]. Bản thật: "Bộ lọc nâng cao" ở trang Danh sách quy trình.',
+      description: 'Khung drawer bên phải: header + body cuộn + footer chiếu qua [drawer-footer]. Bản thật: "Bộ lọc nâng cao" ở trang Danh sách quy trình.',
       api: [
         { name: 'visible', type: 'boolean', defaultValue: 'false' },
         { name: 'title', type: 'string', defaultValue: "''" },
@@ -307,7 +307,7 @@ export class UiKitComponent {
     },
     {
       id: 'field-agent', title: 'Drawer "Giao việc"', selector: 'demo ghép component',
-      description: 'Dựng lại một phần drawer Giao việc trong Figma (node 107:5541 / 107:6231) bằng các component dùng chung, rộng 452px như design.',
+      description: 'Dựng lại một phần drawer Giao việc bằng các component dùng chung, rộng 452px như design.',
       api: []
     },
     {
@@ -353,7 +353,7 @@ export class UiKitComponent {
     },
     {
       id: 'radio', title: 'Radio', selector: 'app-radio-group · app-radio',
-      description: 'Theo Figma ProcessX (237:11006): ô tròn 20px, chọn → nền đỏ + ✓ trắng; nhóm dọc cách 8 / ngang cách 32; nội dung mở rộng lùi 28px trong khung nền xám.',
+      description: 'Ô tròn 20px, chọn → nền đỏ + ✓ trắng; nhóm dọc cách 8 / ngang cách 32; nội dung mở rộng lùi 28px trong khung nền xám.',
       api: [
         { name: 'ngModel (group)', type: 'any (value của option)', defaultValue: 'null' },
         { name: 'options (group)', type: 'SelectOption[]', defaultValue: '[]' },
@@ -367,7 +367,7 @@ export class UiKitComponent {
     },
     {
       id: 'ant-checkbox', title: 'Checkbox', selector: 'ant-checkbox',
-      description: 'Theo Figma ProcessX Design System (90:3095): 3 dạng Base / Label (+ mô tả) / Drag; trạng thái Default, Hover, Focused, Disabled, Read only; chưa chọn / đã chọn / nửa chọn.',
+      description: '3 dạng Base / Label (+ mô tả) / Drag; trạng thái Default, Hover, Focused, Disabled, Read only; chưa chọn / đã chọn / nửa chọn.',
       api: [
         { name: 'ngModel', type: 'boolean', defaultValue: 'false' },
         { name: 'label', type: 'string (hoặc ng-content)', defaultValue: '— (không có → dạng Base)' },
@@ -408,7 +408,7 @@ export class UiKitComponent {
     },
     {
       id: 'tooltip', title: 'Tooltip', selector: '[appTooltip] · app-help-tooltip',
-      description: 'Bong bóng nền đen chữ trắng có mũi tên (Figma 107:17046) + icon "?" 16px (316:69663). Gắn vào <body> nên không bị overflow cắt; thiếu chỗ thì tự lật cạnh.',
+      description: 'Bong bóng nền đen chữ trắng có mũi tên + icon "?" 16px. Gắn vào <body> nên không bị overflow cắt; thiếu chỗ thì tự lật cạnh.',
       api: [
         { name: 'appTooltip', type: 'string (\\n để xuống dòng)', defaultValue: "''" },
         { name: 'tooltipPlacement', type: "'top' | 'bottom' | 'left' | 'right'", defaultValue: "'top'" },
@@ -421,7 +421,7 @@ export class UiKitComponent {
     },
     {
       id: 'action-menu', title: 'Menu hành động (⋮)', selector: 'app-action-menu',
-      description: 'Nút ⋮ trong cột Hành động, mở menu Nhân bản / Dừng ban hành / Xóa (Figma 197:25236 + 364:25166). Menu position: fixed nên không bị bảng cuộn ngang cắt; căn phải theo nút, thiếu chỗ thì mở lên trên.',
+      description: 'Nút ⋮ trong cột Hành động, mở menu Nhân bản / Dừng ban hành / Xóa. Menu position: fixed nên không bị bảng cuộn ngang cắt; căn phải theo nút, thiếu chỗ thì mở lên trên.',
       api: [
         { name: 'items', type: 'ActionMenuItem[] { key, label, icon?, danger?, disabled? }', defaultValue: '[]' },
         { name: 'disabled', type: 'boolean', defaultValue: 'false' },

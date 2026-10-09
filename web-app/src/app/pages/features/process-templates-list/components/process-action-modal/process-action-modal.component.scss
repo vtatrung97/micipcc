@@ -1,6 +1,6 @@
 @use '../../../../../shared/styles/processx-tokens' as px;
 
-// Câu mô tả: Body/md/Medium, tên quy trình SemiBold
+// Câu mô tả: 16/24 Medium, tên quy trình SemiBold
 .action-desc {
   margin: 0;
   @include px.body-md-medium;
@@ -26,7 +26,7 @@
   color: px.$neutral-900;
 }
 
-// Process list: viền Neutral/300, radius 8; các hàng ngăn bằng viền
+// Khung danh sách: viền Neutral/300, radius 8; các hàng ngăn bằng viền
 .process-list {
   display: flex;
   flex-direction: column;
@@ -37,7 +37,7 @@
   border-radius: px.$radius-md;
 }
 
-// Process row: padding 12/16, gap 12
+// Một hàng quy trình: padding 12/16, gap 12
 .process-row {
   display: flex;
   flex-shrink: 0;
@@ -50,7 +50,7 @@
   }
 }
 
-// Kiểu thẻ rời (dừng ban hành nhiều, 427:25905): bỏ khung chung, mỗi hàng một khung riêng cách nhau 8
+// Kiểu thẻ rời (dừng ban hành nhiều): bỏ khung chung, mỗi hàng một khung riêng cách nhau 8
 .process-list.process-list-cards {
   gap: px.$space-8;
   background: transparent;
@@ -96,7 +96,7 @@
   white-space: nowrap;
 }
 
-// Buttons size md: cao 40, padding 8/16, radius 8, SemiBold 16/24
+// Nút: cao 40, padding 8/16, radius 8, SemiBold 16/24
 .action-buttons {
   display: flex;
   gap: px.$space-12;
@@ -139,7 +139,7 @@
   }
 }
 
-// Actions/Red/400
+// Nút xác nhận nguy hiểm (nền đỏ)
 .px-btn-danger {
   background: px.$red-400;
   color: px.$white;

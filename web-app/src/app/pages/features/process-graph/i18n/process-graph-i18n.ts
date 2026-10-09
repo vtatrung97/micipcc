@@ -4,11 +4,8 @@ import vi from './vi.json';
 import en from './en.json';
 
 /**
- * Bản dịch của màn Canvas Builder (ngx-translate).
- * Key nằm dưới `PROCESS_GRAPH.*`, xem vi.json / en.json cùng thư mục.
- *
- * Dùng trong template:  {{ 'PROCESS_GRAPH.HEADER.SAVE_DRAFT' | translate }}
- * Dùng trong code:      this.translate.instant('PROCESS_GRAPH.STATUS.READY')
+ * Bản dịch màn Canvas Builder (ngx-translate), key dưới `PROCESS_GRAPH.*` trong vi.json / en.json.
+ * Template: {{ 'PROCESS_GRAPH.HEADER.SAVE_DRAFT' | translate }} · code: translate.instant(key).
  */
 export const PROCESS_GRAPH_TRANSLATIONS: Record<string, any> = { vi, en };
 

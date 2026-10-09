@@ -5,7 +5,7 @@
   [class.ant-spin-lg]="size === 'large'"
   *ngIf="loading">
   
-  <!-- 1. Ant Design Classic 4-Dot Spinner -->
+  <!-- 1. Spinner 4 chấm kiểu antd -->
   <ng-container *ngIf="type === 'dots'">
     <div class="ant-spin ant-spin-spinning">
       <span class="ant-spin-dot ant-spin-dot-spin" [style.color]="color || '#1677ff'">
@@ -18,7 +18,7 @@
     </div>
   </ng-container>
 
-  <!-- 2. High-visibility Rotating Spinner -->
+  <!-- 2. Spinner xoay -->
   <ng-container *ngIf="type === 'spinner'">
     <div class="ant-spin ant-spin-spinning">
       <div class="ant-spin-graphic">
@@ -45,7 +45,7 @@
     </div>
   </ng-container>
 
-  <!-- 3. Skeleton Mode with optional Tip Header -->
+  <!-- 3. Skeleton, có thể kèm dòng tip -->
   <ng-container *ngIf="type === 'skeleton'">
     <div class="ant-skeleton-wrapper">
       <div class="ant-skeleton-header-tip" *ngIf="showTip && tip">

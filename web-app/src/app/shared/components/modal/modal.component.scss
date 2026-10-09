@@ -33,7 +33,7 @@
   animation: modalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-// Title: padding 16/24, Body/xl/Bold 20/30
+// Tiêu đề: padding 16/24, 20/30 Bold
 .modal-header {
   display: flex;
   flex-shrink: 0;
@@ -51,7 +51,7 @@
   color: px.$neutral-900;
 }
 
-// Close X modal: nút tròn 40px nền Neutral/100
+// Nút đóng: tròn 40px nền Neutral/100
 .modal-close {
   display: flex;
   flex-shrink: 0;
@@ -78,7 +78,7 @@
   overflow-y: auto;
 }
 
-// _Modal Actions: padding 24, nút căn phải cách nhau 12
+// Footer: padding 24, nút căn phải cách nhau 12
 .modal-footer {
   display: flex;
   flex-shrink: 0;

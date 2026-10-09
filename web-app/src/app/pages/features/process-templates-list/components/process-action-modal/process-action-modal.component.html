@@ -14,7 +14,7 @@
     <p class="action-desc">{{ text.bulk }}</p>
     <div class="action-list">
       <span class="action-list-label">{{ text.listLabel }} ({{ processes.length }})</span>
-      <!-- grouped: chung một khung (427:26391) · cards: mỗi quy trình một khung riêng (427:25905) -->
+      <!-- grouped: chung một khung · cards: mỗi quy trình một khung riêng -->
       <div class="process-list" [class.process-list-cards]="text.bulkLayout === 'cards'">
         <ng-container *ngFor="let row of processes; let i = index; trackBy: trackByCode">
           <ng-container *ngTemplateOutlet="processRow; context: { $implicit: row, index: i + 1 }"></ng-container>
@@ -37,7 +37,7 @@
   </div>
 </app-modal>
 
-<!-- Process row: [STT] · tên + "mã · phiên bản" · badge trạng thái -->
+<!-- Một hàng quy trình: [STT] · tên + "mã · phiên bản" · badge trạng thái -->
 <ng-template #processRow let-row let-index="index">
   <div class="process-row">
     <span class="process-index" *ngIf="index !== null">{{ index }}</span>

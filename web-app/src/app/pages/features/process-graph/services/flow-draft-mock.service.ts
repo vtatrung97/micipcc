@@ -4,12 +4,8 @@ import { delay } from 'rxjs/operators';
 import { ApiResponse, FlowDetailResponse, SaveFlowDraftPayload } from '../models/flow-definition.model';
 
 /**
- * GIẢ LẬP BE cho "Lưu nháp" / "Mở flow" khi chưa có API thật.
- * Lưu response vào localStorage theo mã quy trình.
- *
- * Khi BE sẵn sàng: thay 2 hàm dưới bằng ApiService
- *   saveDraft → PUT  /ticket-call-flows/{id}
- *   getFlow   → GET  /ticket-call-flows/{id}
+ * Giả lập BE cho "Lưu nháp" / "Mở flow": lưu response vào localStorage theo mã quy trình.
+ * Khi có API thật: saveDraft → PUT /ticket-call-flows/{id}, getFlow → GET /ticket-call-flows/{id}.
  */
 @Injectable({ providedIn: 'root' })
 export class FlowDraftMockService {

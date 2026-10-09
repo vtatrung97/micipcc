@@ -11,14 +11,9 @@ import {
 } from '@angular/core';
 
 /**
- * Khung bảng theo Figma ProcessX ("Table_view", node 71:12889).
- * Chiếu <table> của feature qua ng-content; component lo khung card, style header/cell,
- * hàng xen kẽ, cột hành động cố định bên phải, loading, empty state và pagination.
- *
- * Class tiện ích dùng trong <td> (xem README ở ui-kit):
- * - `px-cell-check`   : checkbox + STT (gap 12)
- * - `px-cell-stack`   : 2 dòng (dòng chính 14/20 + `px-cell-sub` 12/18 xám)
- * - `px-cell-actions` : cụm nút icon hành động; nút dùng class `px-cell-action-btn` (36 × 36)
+ * Khung card cho <table> chiếu qua ng-content: header/cell, hàng xen kẽ, cột hành động cố định, loading, empty, pagination.
+ * Class cho <td>: `px-cell-check` (checkbox + STT), `px-cell-stack` (2 dòng, dòng phụ `px-cell-sub`),
+ * `px-cell-actions` (cụm nút icon `px-cell-action-btn`).
  */
 @Component({
   selector: 'app-data-table',

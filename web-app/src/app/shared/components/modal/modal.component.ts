@@ -1,8 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 
 /**
- * Khung modal giữa màn hình theo Figma ProcessX "Modal" (vd: node 435:28809):
- * Title (20/30 Bold + nút đóng tròn) · nội dung (ng-content, padding ngang 24) · _Modal Actions (chiếu qua [modal-footer]).
+ * Khung modal giữa màn hình: tiêu đề + nút đóng · nội dung (ng-content) · footer (chiếu qua [modal-footer]).
  */
 @Component({
   selector: 'app-modal',

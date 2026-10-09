@@ -1,13 +1,8 @@
 import { ProcessTemplateItem } from './template.service';
 
-/**
- * 3 MẪU QUY TRÌNH CHUẨN DOANH NGHIỆP VIETTEL CUSTOMER SERVICE
- * Dựa trên các đặc tả JSON gửi Backend (Basic, Medium, Complex)
- */
+/** Mẫu quy trình dựng sẵn (cơ bản, trung bình, phức tạp) và dữ liệu giả cho màn danh sách. */
 export const DEFAULT_PRESET_TEMPLATES: ProcessTemplateItem[] = [
-  // ==========================================================================
-  // MẪU 1: LUỒNG CƠ BẢN (LINEAR BASIC FLOW)
-  // ==========================================================================
+  // ===== Mẫu 1: luồng tuyến tính cơ bản =====
   {
     code: 'PRC_BASIC_CSAT_FEEDBACK',
     name: 'Quy trình tiếp nhận và ghi nhận ý kiến đóng góp khách hàng (CSAT)',
@@ -35,9 +30,7 @@ export const DEFAULT_PRESET_TEMPLATES: ProcessTemplateItem[] = [
     ]
   },
 
-  // ==========================================================================
-  // MẪU 2: LUỒNG TRUNG BÌNH (EXCLUSIVE GATEWAY + ACTION API)
-  // ==========================================================================
+  // ===== Mẫu 2: exclusive gateway + action API =====
   {
     code: 'PRC_BILLING_DISPUTE_REVERSAL',
     name: 'Quy trình xử lý khiếu nại cước & Tự động hoàn cước viễn thông',
@@ -65,9 +58,7 @@ export const DEFAULT_PRESET_TEMPLATES: ProcessTemplateItem[] = [
     ]
   },
 
-  // ==========================================================================
-  // MẪU 3: LUỒNG PHỨC TẠP ENTERPRISE (PARALLEL SPLIT/JOIN + SUBPROCESS + MULTI-CHANNEL)
-  // ==========================================================================
+  // ===== Mẫu 3: parallel split/join + subprocess + đa kênh =====
   {
     code: 'PRC_VIP_ENTERPRISE_INCIDENT',
     name: 'Quy trình điều hành xử lý sự cố hạ tầng & Kênh truyền số liệu KHDN VIP',
@@ -95,9 +86,7 @@ export const DEFAULT_PRESET_TEMPLATES: ProcessTemplateItem[] = [
     ]
   },
 
-  // ==========================================================================
-  // MẪU 4: MẪU VIETTEL CUSTOMER SERVICE MẶC ĐỊNH
-  // ==========================================================================
+  // ===== Mẫu 4: mẫu Viettel Customer Service mặc định =====
   {
     code: 'PRC_MULTI_DEPT_COMPLAINT',
     name: 'Xử lý khiếu nại đa phòng ban',
@@ -125,9 +114,7 @@ export const DEFAULT_PRESET_TEMPLATES: ProcessTemplateItem[] = [
     ]
   },
 
-  // ==========================================================================
-  // DỮ LIỆU GIẢ CHO MÀN DANH SÁCH: đủ nhãn "Đang ban hành" / "Dừng ban hành"
-  // ==========================================================================
+  // ===== Dữ liệu giả cho màn danh sách (đủ trạng thái ban hành / dừng ban hành) =====
   ...[
     { code: 'ALT-2026', name: 'Giám sát và cảnh báo chỉ số', category: 'Cảnh báo chỉ số', version: 'V3.0', status: 'Published', triggerType: 'AUTO', slaValue: 4, slaUnit: 'Giờ', created_at: '10/03/2026 09:15', created_by: 'Lê Thị Hương', published_at: '12/03/2026 10:00', published_by: 'Lê Văn Hùng' },
     { code: 'SUR-2026', name: 'Khảo sát sau tương tác', category: 'Khảo sát CSAT', version: 'V2.0', status: 'Inactive', triggerType: 'SCHEDULE', slaValue: 1, slaUnit: 'Ngày', created_at: '10/04/2026 08:30', created_by: 'Phạm Minh Tuấn', published_at: '13/04/2026 14:20', published_by: 'Phạm Minh Tuấn' },

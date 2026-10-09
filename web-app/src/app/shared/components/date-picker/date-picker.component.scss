@@ -1,7 +1,5 @@
 @use '../../styles/processx-tokens' as px;
 
-// Theo Figma ProcessX "Date pickers input" + "Date pickers / Date single" (71:10555) + "_Date pickers" range (293:66499).
-
 :host {
   display: inline-block;
   width: 100%;
@@ -100,7 +98,7 @@
   }
 }
 
-// ===== Popup: padding 16, radius 16, Effect menu (single rộng 312) =====
+// ===== Popup: padding 16, radius 16, đổ bóng menu (single rộng 312) =====
 .dp-panel {
   position: absolute;
   top: calc(100% + #{px.$space-8});
@@ -187,7 +185,7 @@
   gap: px.$space-8;
 }
 
-// Text field trong popup: padding 8/12, radius 8, 14/20
+// Ô nhập ngày trong popup: padding 8/12, radius 8, 14/20
 .dp-input {
   @include px.body-sm-regular;
   flex: 1;
@@ -227,7 +225,7 @@
   }
 }
 
-// ===== Khoảng ngày (_Date pickers range): 2 lịch cách 24 → popup rộng 616 =====
+// ===== Khoảng ngày: 2 lịch cách 24 → popup rộng 616 =====
 .dp-panel-range {
   width: auto;
   // Các hàng (nhãn · 2 lịch · thanh hành động) xếp sát nhau, không gap
@@ -260,7 +258,7 @@
   gap: px.$space-24;
 }
 
-// Bar action: tóm tắt khoảng ngày + Đặt lại / Chọn
+// Thanh thao tác: tóm tắt khoảng ngày + Đặt lại / Chọn
 .dp-actions {
   display: flex;
   align-items: center;
@@ -282,7 +280,7 @@
   gap: px.$space-12;
 }
 
-// Buttons md: cao 48 (viền nằm trong), padding 12/24, radius 12, SemiBold 16/24
+// Nút: cao 48 (viền nằm trong), padding 12/24, radius 12, SemiBold 16/24
 .dp-btn {
   font-family: px.$font-family;
   font-size: 16px;
@@ -374,7 +372,7 @@
     color: px.$neutral-500;
   }
 
-  // Range: ngày nằm ngoài khoảng hợp lệ (Calendar cell / Disabled)
+  // Range: ngày nằm ngoài khoảng hợp lệ
   &:disabled {
     color: px.$neutral-500;
     background: transparent;

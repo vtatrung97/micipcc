@@ -1,17 +1,11 @@
 /**
- * BPMN 2.0 Standard Node Ports & Graph Validation Configuration
- * 
- * Rules:
- * 1. Trigger: In = 0 | Out = 1
- * 2. User Task: In = 1 | Out = 1 (hoặc Out = 2 nếu là Approval Step)
- * 3. Action (Service Task): In = 1 | Out = 2 cố định (Out chính: Thành công; Out phụ màu đỏ: Ngoại lệ/Lỗi - US-22, BR-INT-05)
- * 4. Condition (Exclusive Gateway): In = 1 | Out >= 2 (sinh cổng động theo danh sách nhánh rẽ)
- * 5. Split (Parallel Gateway): In = 1 | Out >= 2 (phân tách luồng chạy song song đồng thời)
- * 6. Merge (Parallel Gateway): In >= 2 | Out = 1 (gom và đồng bộ các luồng song song trước khi đi tiếp)
- * 7. End: In >= 1 | Out = 0 (kết thúc tiến trình)
+ * Cổng (port) theo type node + luật nối dây và validate đồ thị kiểu BPMN 2.0.
+ * Vào/ra: Bắt đầu 0/1 · Giao việc 1/1 (có duyệt 1/2) · Tác vụ hệ thống 1/1 (+ cổng lỗi)
+ * · Điều kiện 1/≥2 · Gộp nhánh ≥2/1 · Kết thúc ≥1/0.
  */
 
 import { NodeType, isGatewayType } from '../models/node-type';
+import { NODE_HEADER_CENTER_Y, nodeRowCenterY } from './node-view.config';
 export type { NodeType } from '../models/node-type';
 
 /** Hàm dịch (TranslateService.instant) truyền từ service vào các hàm thuần trong file này */
@@ -37,7 +31,7 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 0,
     minOut: 1,
     maxOut: 1,
-    description: 'Trigger: Khởi tạo tiến trình. In = 0 | Out = 1'
+    description: 'Trigger: Khởi tạo tiến trình. In = 0 | Out = 1',
   },
   USER_TASK: {
     type: 'USER_TASK',
@@ -46,7 +40,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 1,
     minOut: 1,
     maxOut: 2, // 1 cổng cho tác vụ thường, 2 cổng nếu là Approval Step
-    description: 'User Task: In = 1 | Out = 1 (hoặc Out = 2 nếu là Approval Step: Duyệt / Từ chối)'
+    description:
+      'User Task: In = 1 | Out = 1 (hoặc Out = 2 nếu là Approval Step: Duyệt / Từ chối)',
   },
   SYSTEM_TASK: {
     type: 'SYSTEM_TASK',
@@ -55,7 +50,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 1,
     minOut: 2,
     maxOut: 2,
-    description: 'Action: Gọi API ngầm. In = 1 | Out = 2 cố định (Out chính: Thành công 200; Out phụ: Ngoại lệ/Lỗi - US-22, BR-INT-05)'
+    description:
+      'Action: Gọi API ngầm. In = 1 | Out = 2 cố định (Out chính: Thành công 200; Out phụ: Ngoại lệ/Lỗi - US-22, BR-INT-05)',
   },
   GATEWAY_EXCLUSIVE: {
     type: 'GATEWAY_EXCLUSIVE',
@@ -64,7 +60,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 1,
     minOut: 2,
     maxOut: 99,
-    description: 'Condition: Exclusive Gateway. In = 1 | Out >= 2 (sinh cổng động theo danh sách nhánh rẽ)'
+    description:
+      'Condition: Exclusive Gateway. In = 1 | Out >= 2 (sinh cổng động theo danh sách nhánh rẽ)',
   },
   GATEWAY_INCLUSIVE: {
     type: 'GATEWAY_INCLUSIVE',
@@ -73,7 +70,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 1,
     minOut: 2,
     maxOut: 99,
-    description: 'Chọn nhiều nhánh: In = 1 | Out >= 2 (đi mọi nhánh có điều kiện thoả mãn)'
+    description:
+      'Chọn nhiều nhánh: In = 1 | Out >= 2 (đi mọi nhánh có điều kiện thoả mãn)',
   },
   GATEWAY_PARALLEL: {
     type: 'GATEWAY_PARALLEL',
@@ -82,7 +80,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 1,
     minOut: 2,
     maxOut: 99,
-    description: 'Split: Parallel Gateway. In = 1 | Out >= 2 (phân tách luồng chạy song song đồng thời)'
+    description:
+      'Split: Parallel Gateway. In = 1 | Out >= 2 (phân tách luồng chạy song song đồng thời)',
   },
   JOIN: {
     type: 'JOIN',
@@ -91,7 +90,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 99,
     minOut: 1,
     maxOut: 1,
-    description: 'Merge: Parallel Gateway. In >= 2 | Out = 1 (gom và đồng bộ các luồng song song trước khi đi tiếp)'
+    description:
+      'Merge: Parallel Gateway. In >= 2 | Out = 1 (gom và đồng bộ các luồng song song trước khi đi tiếp)',
   },
   END: {
     type: 'END',
@@ -100,7 +100,7 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 99,
     minOut: 0,
     maxOut: 0,
-    description: 'End: Kết thúc tiến trình. In >= 1 | Out = 0'
+    description: 'End: Kết thúc tiến trình. In >= 1 | Out = 0',
   },
   NOTIFICATION: {
     type: 'NOTIFICATION',
@@ -109,7 +109,8 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 1,
     minOut: 1,
     maxOut: 1,
-    description: 'Thông báo: Gửi tin nhắn SMS / Email / Webhook. In = 1 | Out = 1'
+    description:
+      'Thông báo: Gửi tin nhắn SMS / Email / Webhook. In = 1 | Out = 1',
   },
   SUB_PROCESS: {
     type: 'SUB_PROCESS',
@@ -118,190 +119,79 @@ export const BPMN_NODE_PORT_RULES: Record<NodeType, BpmnNodePortRule> = {
     maxIn: 1,
     minOut: 1,
     maxOut: 1,
-    description: 'Quy trình con: Gọi lồng tiến trình con. In = 1 | Out = 1'
-  }
+    description: 'Quy trình con: Gọi lồng tiến trình con. In = 1 | Out = 1',
+  },
 };
 
-/**
- * X6 Port Groups definition for BPMN Nodes
- */
+const PORT_IN = (title: string) => ({
+  markup: [
+    { tagName: 'circle', selector: 'portCircle' },
+    { tagName: 'title', selector: 'portTitle' },
+  ],
+  attrs: {
+    portCircle: {
+      r: 6,
+      magnet: 'passive',
+      fill: 'transparent',
+      stroke: 'none',
+    },
+    portTitle: { text: title },
+  },
+});
+
+const PORT_OUT = (title: string) => ({
+  markup: [
+    { tagName: 'circle', selector: 'portRing' },
+    { tagName: 'circle', selector: 'portCircle' },
+    { tagName: 'title', selector: 'portTitle' },
+  ],
+  attrs: {
+    portRing: { r: 4.5, fill: '#ffc0cd', stroke: 'none' },
+    portCircle: {
+      r: 4,
+      magnet: true,
+      fill: '#ed0231',
+      stroke: '#ffffff',
+      strokeWidth: 1,
+      cursor: 'crosshair',
+    },
+    portTitle: { text: title },
+  },
+});
+
+/** Nhóm cổng X6 dùng cho mọi loại node */
 export const BPMN_PORT_GROUPS = {
-  in: {
-    position: 'left',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 4,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#94a3b8',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Cổng vào (In)' }
-    }
-  },
+  in: { position: 'left', ...PORT_IN('Cổng vào (In)') },
+  // Cổng vào ở tâm phần đầu card (card có dòng nhánh cao hơn 72)
   inHeader: {
-    position: { name: 'absolute', args: { x: 0, y: 22 } },
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 4,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#94a3b8',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Cổng vào (In)' }
-    }
+    position: { name: 'absolute', args: { x: 0, y: NODE_HEADER_CENTER_Y } },
+    ...PORT_IN('Cổng vào (In)'),
   },
-  inMerge: {
-    position: 'left',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 4,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#94a3b8',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Cổng vào đồng bộ (Merge In)' }
-    }
-  },
-  out: {
-    position: 'right',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 3.5,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#ef4444',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Cổng ra (Output)' }
-    }
-  },
-  outSuccess: {
-    position: 'absolute',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 3.5,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#ef4444',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Thành công (200 OK)' }
-    }
-  },
+  inMerge: { position: 'left', ...PORT_IN('Cổng vào đồng bộ (Merge In)') },
+  out: { position: 'right', ...PORT_OUT('Cổng ra (Output)') },
+  outSuccess: { position: 'absolute', ...PORT_OUT('Thành công (200 OK)') },
   outException: {
     position: 'absolute',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 3.5,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#ef4444',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Ngoại lệ / Lỗi (Exception Path - BR-INT-05)' }
-    }
+    ...PORT_OUT('Ngoại lệ / Lỗi (Exception Path - BR-INT-05)'),
   },
   outCondition: {
     position: 'absolute',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 3.5,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#ef4444',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Cổng rẽ nhánh (Condition Out)' }
-    }
+    ...PORT_OUT('Cổng rẽ nhánh (Condition Out)'),
   },
-  outApprove: {
-    position: 'absolute',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 3.5,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#ef4444',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Đồng ý / Duyệt (Approve)' }
-    }
-  },
-  outReject: {
-    position: 'absolute',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 3.5,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#ef4444',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Từ chối (Reject)' }
-    }
-  },
+  outApprove: { position: 'absolute', ...PORT_OUT('Đồng ý / Duyệt (Approve)') },
+  outReject: { position: 'absolute', ...PORT_OUT('Từ chối (Reject)') },
   outSplit: {
     position: 'right',
-    markup: [
-      { tagName: 'circle', selector: 'portCircle' },
-      { tagName: 'title', selector: 'portTitle' }
-    ],
-    attrs: {
-      portCircle: {
-        r: 3.5,
-        magnet: true,
-        stroke: '#ffffff',
-        fill: '#ef4444',
-        strokeWidth: 1.5
-      },
-      portTitle: { text: 'Cổng luồng song song (Parallel Out)' }
-    }
-  }
+    ...PORT_OUT('Cổng luồng song song (Parallel Out)'),
+  },
 };
-
-/**
- * Standard Port Configuration Generator for all 7 BPMN Node types
- */
-export function getNodePortItems(type: NodeType, customData: any, cardWidth: number, t: TranslateFn): any[] {
+/** Danh sách cổng của node theo type */
+export function getNodePortItems(
+  type: NodeType,
+  customData: any,
+  cardWidth: number,
+  t: TranslateFn,
+): any[] {
   switch (type) {
     case 'START':
       // Trigger: In = 0 | Out = 1
@@ -309,56 +199,72 @@ export function getNodePortItems(type: NodeType, customData: any, cardWidth: num
         {
           id: 'out',
           group: 'out',
-          attrs: { portTitle: { text: t(P + 'START_OUT') } }
-        }
+          attrs: { portTitle: { text: t(P + 'START_OUT') } },
+        },
       ];
 
     case 'USER_TASK':
       // User Task: In = 1 | Out = 1 (hoặc Out = 2 nếu là Approval Step)
       if (customData?.isApprovalStep) {
         return [
-          { id: 'in', group: 'inHeader', attrs: { portTitle: { text: t(P + 'IN') } } },
+          {
+            id: 'in',
+            group: 'inHeader',
+            attrs: { portTitle: { text: t(P + 'IN') } },
+          },
           {
             id: 'out-approve',
             group: 'outApprove',
-            args: { x: cardWidth, y: 60 },
-            attrs: { portTitle: { text: t(P + 'APPROVE') } }
+            args: { x: cardWidth, y: nodeRowCenterY(0) },
+            attrs: { portTitle: { text: t(P + 'APPROVE') } },
           },
           {
             id: 'out-reject',
             group: 'outReject',
-            args: { x: cardWidth, y: 82 },
-            attrs: { portTitle: { text: t(P + 'REJECT') } }
-          }
+            args: { x: cardWidth, y: nodeRowCenterY(1) },
+            attrs: { portTitle: { text: t(P + 'REJECT') } },
+          },
         ];
       }
       return [
         { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'COMPLETE') } } }
+        {
+          id: 'out',
+          group: 'out',
+          attrs: { portTitle: { text: t(P + 'COMPLETE') } },
+        },
       ];
 
     case 'SYSTEM_TASK':
       // Action: 1 cổng ra chuẩn (hoặc 2 cổng nếu bật hasExceptionPort)
       if (customData?.hasExceptionPort) {
         return [
-          { id: 'in', group: 'inHeader', attrs: { portTitle: { text: t(P + 'IN') } } },
+          {
+            id: 'in',
+            group: 'inHeader',
+            attrs: { portTitle: { text: t(P + 'IN') } },
+          },
           {
             id: 'out-success',
             group: 'outSuccess',
-            args: { x: cardWidth, y: 60 },
-            attrs: { portTitle: { text: t(P + 'SUCCESS') } }
+            args: { x: cardWidth, y: nodeRowCenterY(0) },
+            attrs: { portTitle: { text: t(P + 'SUCCESS') } },
           },
           {
             id: 'out-failure',
             group: 'outException',
-            args: { x: cardWidth, y: 82 },
-            attrs: { portTitle: { text: t(P + 'FAILURE') } }
-          }
+            args: { x: cardWidth, y: nodeRowCenterY(1) },
+            attrs: { portTitle: { text: t(P + 'FAILURE') } },
+          },
         ];
       }
       return [
         { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'OUT') } } }
+        {
+          id: 'out',
+          group: 'out',
+          attrs: { portTitle: { text: t(P + 'OUT') } },
+        },
       ];
 
     case 'GATEWAY_EXCLUSIVE':
@@ -366,81 +272,125 @@ export function getNodePortItems(type: NodeType, customData: any, cardWidth: num
     case 'GATEWAY_INCLUSIVE': {
       // 3 loại điều kiện dùng chung cổng ra theo danh sách trường hợp (+ Mặc định)
       // Condition (Exclusive Gateway): In = 1 | Out >= 2
-      let branches: any[] = customData?.branches ? [...customData.branches] : [];
+      let branches: any[] = customData?.branches
+        ? [...customData.branches]
+        : [];
       if (!branches || branches.length === 0) {
         branches = [
-          { id: 'br-1', name: t('PROCESS_GRAPH.CANVAS.DEFAULT_CASE_NAME'), value: 'valid', expression: 'true', isDefault: false },
-          { id: 'br-default', name: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'), value: 'default', expression: 'default', isDefault: true }
+          {
+            id: 'br-1',
+            name: t('PROCESS_GRAPH.CANVAS.DEFAULT_CASE_NAME'),
+            value: 'valid',
+            expression: 'true',
+            isDefault: false,
+          },
+          {
+            id: 'br-default',
+            name: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'),
+            value: 'default',
+            expression: 'default',
+            isDefault: true,
+          },
         ];
       }
 
-      // Ensure default branch is always present and placed at the END (dưới cùng)
+      // Nhánh Mặc định luôn có và nằm cuối (dưới cùng)
       const defaultIdx = branches.findIndex((b: any) => b.isDefault);
       if (defaultIdx === -1) {
-        branches.push({ id: 'br-default', name: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'), value: 'default', expression: 'default', isDefault: true });
+        branches.push({
+          id: 'br-default',
+          name: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'),
+          value: 'default',
+          expression: 'default',
+          isDefault: true,
+        });
       } else if (defaultIdx !== branches.length - 1) {
         const [defBr] = branches.splice(defaultIdx, 1);
         branches.push(defBr);
       }
 
       return [
-        { id: 'in', group: 'inHeader', attrs: { portTitle: { text: t(P + 'IN') } } },
+        {
+          id: 'in',
+          group: 'inHeader',
+          attrs: { portTitle: { text: t(P + 'IN') } },
+        },
         ...branches.map((b: any, idx: number) => ({
           id: b.id || (b.isDefault ? 'out-default' : `out-branch-${idx}`),
           group: 'outCondition',
-          args: { x: cardWidth, y: 48 + idx * 20 },
+          args: { x: cardWidth, y: nodeRowCenterY(idx) },
           attrs: {
-            portCircle: {
-              r: 3.5,
-              magnet: true,
-              fill: '#ef4444',
-              stroke: '#ffffff',
-              strokeWidth: 1.5
+            portTitle: {
+              text: b.isDefault
+                ? t(P + 'DEFAULT_BRANCH')
+                : b.name ||
+                  b.defaultLabel ||
+                  t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 }),
             },
-            portTitle: { text: b.isDefault ? t(P + 'DEFAULT_BRANCH') : (b.name || b.defaultLabel || t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 })) }
-          }
-        }))
+          },
+        })),
       ];
     }
 
     case 'JOIN':
       // Merge (Parallel Gateway): In >= 2 | Out = 1
       return [
-        { id: 'in-merge-0', group: 'inMerge', attrs: { portTitle: { text: t(P + 'MERGE_IN_N', { index: 1 }) } } },
-        { id: 'in-merge-1', group: 'inMerge', attrs: { portTitle: { text: t(P + 'MERGE_IN_N', { index: 2 }) } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'CONTINUE') } } }
+        {
+          id: 'in-merge-0',
+          group: 'inMerge',
+          attrs: { portTitle: { text: t(P + 'MERGE_IN_N', { index: 1 }) } },
+        },
+        {
+          id: 'in-merge-1',
+          group: 'inMerge',
+          attrs: { portTitle: { text: t(P + 'MERGE_IN_N', { index: 2 }) } },
+        },
+        {
+          id: 'out',
+          group: 'out',
+          attrs: { portTitle: { text: t(P + 'CONTINUE') } },
+        },
       ];
 
     case 'END':
       // End: In >= 1 | Out = 0
       return [
-        { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'END_IN') } } }
+        {
+          id: 'in',
+          group: 'in',
+          attrs: { portTitle: { text: t(P + 'END_IN') } },
+        },
       ];
 
     case 'NOTIFICATION':
       return [
         { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'NOTIFY_DONE') } } }
+        {
+          id: 'out',
+          group: 'out',
+          attrs: { portTitle: { text: t(P + 'NOTIFY_DONE') } },
+        },
       ];
 
     case 'SUB_PROCESS':
       return [
         { id: 'in', group: 'in', attrs: { portTitle: { text: t(P + 'IN') } } },
-        { id: 'out', group: 'out', attrs: { portTitle: { text: t(P + 'SUB_PROCESS_DONE') } } }
+        {
+          id: 'out',
+          group: 'out',
+          attrs: { portTitle: { text: t(P + 'SUB_PROCESS_DONE') } },
+        },
       ];
 
     default:
       return [
         { id: 'in', group: 'in' },
-        { id: 'out', group: 'out' }
+        { id: 'out', group: 'out' },
       ];
   }
 }
 
-/**
- * Real-time BPMN Connection Dragging Validator (X6 connecting.validateConnection)
- * Ensures user CANNOT draw invalid wires violating BPMN port rules.
- */
+/** Kiểm tra khi kéo dây (X6 connecting.validateConnection): chặn nối sai luật cổng */
 export function validateBpmnConnection(params: {
   sourceCell: any;
   targetCell: any;
@@ -449,7 +399,8 @@ export function validateBpmnConnection(params: {
   edge?: any;
   graph?: any;
 }): boolean {
-  const { sourceCell, targetCell, sourcePort, targetPort, edge, graph } = params;
+  const { sourceCell, targetCell, sourcePort, targetPort, edge, graph } =
+    params;
 
   // 1. Chỉ cho phép nối giữa 2 Node khác nhau
   if (!sourceCell || !targetCell) return false;
@@ -497,7 +448,12 @@ export function validateBpmnConnection(params: {
       const tCellId = t?.cell || t;
       const sPId = s?.port || '';
       const tPId = t?.port || '';
-      return sCellId === sourceCell.id && tCellId === targetCell.id && sPId === sourcePort && tPId === targetPort;
+      return (
+        sCellId === sourceCell.id &&
+        tCellId === targetCell.id &&
+        sPId === sourcePort &&
+        tPId === targetPort
+      );
     });
     if (isDuplicate) return false;
 
@@ -505,7 +461,9 @@ export function validateBpmnConnection(params: {
     // Ngoại trừ JOIN (gom luồng) và END (kết thúc), các node khác chỉ nhận tối đa 1 dây vào (In = 1)
     if (targetType !== 'JOIN' && targetType !== 'END') {
       const incomingEdges = currentGraph.getIncomingEdges(targetCell) || [];
-      const incomingOtherEdges = incomingEdges.filter((e: any) => !edge || e.id !== edge.id);
+      const incomingOtherEdges = incomingEdges.filter(
+        (e: any) => !edge || e.id !== edge.id,
+      );
       if (incomingOtherEdges.length >= 1) {
         return false; // Đã có 1 luồng nối vào Node này
       }
@@ -546,20 +504,27 @@ export interface GraphValidationResult {
   summary: string;
 }
 
-/**
- * BPMN 2.0 Comprehensive Graph Validation Function
- * Checks all 7 BPMN node connectivity rules and returns detailed diagnostics.
- */
-export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationResult {
+/** Validate toàn bộ đồ thị theo luật cổng của từng loại node, trả về lỗi / cảnh báo */
+export function validateBpmnGraph(
+  graph: any,
+  t: TranslateFn,
+): GraphValidationResult {
   const errors: GraphValidationError[] = [];
   const warnings: GraphValidationError[] = [];
 
   if (!graph) {
     return {
       isValid: false,
-      errors: [{ type: 'START', code: 'GRAPH_NULL', message: t(V + 'GRAPH_NULL'), severity: 'error' }],
+      errors: [
+        {
+          type: 'START',
+          code: 'GRAPH_NULL',
+          message: t(V + 'GRAPH_NULL'),
+          severity: 'error',
+        },
+      ],
       warnings: [],
-      summary: t(V + 'GRAPH_NULL')
+      summary: t(V + 'GRAPH_NULL'),
     };
   }
 
@@ -569,27 +534,36 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
   if (nodes.length === 0) {
     return {
       isValid: false,
-      errors: [{ type: 'START', code: 'GRAPH_EMPTY', message: t(V + 'GRAPH_EMPTY'), severity: 'error' }],
+      errors: [
+        {
+          type: 'START',
+          code: 'GRAPH_EMPTY',
+          message: t(V + 'GRAPH_EMPTY'),
+          severity: 'error',
+        },
+      ],
       warnings: [],
-      summary: t(V + 'GRAPH_EMPTY_SUMMARY')
+      summary: t(V + 'GRAPH_EMPTY_SUMMARY'),
     };
   }
 
   // 1. KIỂM TRA TRIGGER (In = 0 | Out = 1)
-  const triggers = nodes.filter((n: any) => (n.getData()?.type || '') === 'START');
+  const triggers = nodes.filter(
+    (n: any) => (n.getData()?.type || '') === 'START',
+  );
   if (triggers.length === 0) {
     errors.push({
       type: 'START',
       code: 'TRIGGER_MISSING',
       message: t(V + 'TRIGGER_MISSING'),
-      severity: 'error'
+      severity: 'error',
     });
   } else if (triggers.length > 1) {
     warnings.push({
       type: 'START',
       code: 'TRIGGER_MULTIPLE',
       message: t(V + 'TRIGGER_MULTIPLE', { count: triggers.length }),
-      severity: 'warning'
+      severity: 'warning',
     });
   }
 
@@ -608,7 +582,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'START',
         code: 'TRIGGER_IN_INVALID',
         message: t(V + 'TRIGGER_IN_INVALID', { label, count: inEdges.length }),
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -621,7 +595,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'START',
         code: 'TRIGGER_OUT_ZERO',
         message: t(V + 'TRIGGER_OUT_ZERO', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     } else if (outEdges.length > 1) {
       errors.push({
@@ -631,19 +605,21 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'START',
         code: 'TRIGGER_OUT_EXCESS',
         message: t(V + 'TRIGGER_OUT_EXCESS', { label, count: outEdges.length }),
-        severity: 'error'
+        severity: 'error',
       });
     }
   });
 
   // 2. KIỂM TRA END EVENT (In >= 1 | Out = 0)
-  const endNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'END');
+  const endNodes = nodes.filter(
+    (n: any) => (n.getData()?.type || '') === 'END',
+  );
   if (endNodes.length === 0) {
     errors.push({
       type: 'END',
       code: 'END_MISSING',
       message: t(V + 'END_MISSING'),
-      severity: 'error'
+      severity: 'error',
     });
   }
 
@@ -662,7 +638,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'END',
         code: 'END_IN_ZERO',
         message: t(V + 'END_IN_ZERO', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -675,13 +651,15 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'END',
         code: 'END_OUT_INVALID',
         message: t(V + 'END_OUT_INVALID', { label, count: outEdges.length }),
-        severity: 'error'
+        severity: 'error',
       });
     }
   });
 
-  // 3. KIỂM TRA ACTION (Service Task: In = 1 | Out = 2 cố định - US-22, BR-INT-05)
-  const actionNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'SYSTEM_TASK');
+  // 3. KIỂM TRA ACTION (Service Task: In = 1 | Out = 1, thêm cổng Lỗi khi bật hasExceptionPort)
+  const actionNodes = nodes.filter(
+    (n: any) => (n.getData()?.type || '') === 'SYSTEM_TASK',
+  );
   actionNodes.forEach((actNode: any) => {
     const data = actNode.getData() || {};
     const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.SYSTEM_TASK');
@@ -697,14 +675,18 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'SYSTEM_TASK',
         code: 'ACTION_IN_ZERO',
         message: t(V + 'ACTION_IN_ZERO', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     }
 
-    // Action: cổng Thành công ('out', hoặc 'out-success' khi bật cổng lỗi) + cổng Lỗi ('out-failure', chỉ khi bật hasExceptionPort)
-    const outPortIds = outEdges.map((e: any) => e.getSourcePortId?.() || e.getSource()?.port);
-    const hasSuccessOut = outPortIds.includes('out') || outPortIds.includes('out-success');
-    const hasFailureOut = !data.hasExceptionPort || outPortIds.includes('out-failure');
+    // Action: cổng Thành công ('out' / 'out-success') + cổng Lỗi ('out-failure', khi bật hasExceptionPort)
+    const outPortIds = outEdges.map(
+      (e: any) => e.getSourcePortId?.() || e.getSource()?.port,
+    );
+    const hasSuccessOut =
+      outPortIds.includes('out') || outPortIds.includes('out-success');
+    const hasFailureOut =
+      !data.hasExceptionPort || outPortIds.includes('out-failure');
 
     if (!hasSuccessOut) {
       errors.push({
@@ -714,7 +696,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'SYSTEM_TASK',
         code: 'ACTION_SUCCESS_OUT_MISSING',
         message: t(V + 'ACTION_SUCCESS_OUT_MISSING', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -726,13 +708,15 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'SYSTEM_TASK',
         code: 'ACTION_EXCEPTION_OUT_MISSING',
         message: t(V + 'ACTION_EXCEPTION_OUT_MISSING', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     }
   });
 
   // 4. KIỂM TRA CONDITION (Exclusive Gateway: In = 1 | Out >= 2)
-  const conditionNodes = nodes.filter((n: any) => isGatewayType(n.getData()?.type));
+  const conditionNodes = nodes.filter((n: any) =>
+    isGatewayType(n.getData()?.type),
+  );
   conditionNodes.forEach((condNode: any) => {
     const data = condNode.getData() || {};
     const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.GATEWAY_EXCLUSIVE');
@@ -749,7 +733,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: data.type,
         code: 'CONDITION_IN_ZERO',
         message: t(V + 'CONDITION_IN_ZERO', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -761,17 +745,25 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         nodeLabel: label,
         type: data.type,
         code: 'CONDITION_BRANCH_LESS_THAN_2',
-        message: t(V + 'CONDITION_BRANCH_LESS_THAN_2', { label, count: branches.length }),
-        severity: 'error'
+        message: t(V + 'CONDITION_BRANCH_LESS_THAN_2', {
+          label,
+          count: branches.length,
+        }),
+        severity: 'error',
       });
     }
 
     // Từng cổng nhánh rẽ phải được nối dây ra ngoài
     branches.forEach((br: any, idx: number) => {
-      const portId = br.id || (br.isDefault ? 'out-default' : `out-branch-${idx}`);
+      const portId =
+        br.id || (br.isDefault ? 'out-default' : `out-branch-${idx}`);
       const isConnected = outEdges.some((e: any) => {
         const p = e.getSourcePortId?.() || e.getSource()?.port;
-        return p === portId || p === `out-branch-${idx}` || (br.isDefault && (p === 'out-default' || p === 'br-default'));
+        return (
+          p === portId ||
+          p === `out-branch-${idx}` ||
+          (br.isDefault && (p === 'out-default' || p === 'br-default'))
+        );
       });
       if (!isConnected) {
         if (br.isDefault) {
@@ -781,8 +773,11 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
             nodeLabel: label,
             type: data.type,
             code: 'CONDITION_DEFAULT_UNCONNECTED',
-            message: t(V + 'CONDITION_DEFAULT_UNCONNECTED', { branch: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'), label }),
-            severity: 'warning'
+            message: t(V + 'CONDITION_DEFAULT_UNCONNECTED', {
+              branch: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'),
+              label,
+            }),
+            severity: 'warning',
           });
         } else {
           errors.push({
@@ -791,8 +786,13 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
             nodeLabel: label,
             type: data.type,
             code: 'CONDITION_BRANCH_UNCONNECTED',
-            message: t(V + 'CONDITION_BRANCH_UNCONNECTED', { branch: br.name || t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 }), label }),
-            severity: 'error'
+            message: t(V + 'CONDITION_BRANCH_UNCONNECTED', {
+              branch:
+                br.name ||
+                t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 }),
+              label,
+            }),
+            severity: 'error',
           });
         }
       }
@@ -800,7 +800,9 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
   });
 
   // 5. KIỂM TRA USER TASK (In = 1 | Out = 1 hoặc Out = 2 nếu là Approval Step)
-  const taskNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'USER_TASK');
+  const taskNodes = nodes.filter(
+    (n: any) => (n.getData()?.type || '') === 'USER_TASK',
+  );
   taskNodes.forEach((taskNode: any) => {
     const data = taskNode.getData() || {};
     const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.USER_TASK');
@@ -817,14 +819,20 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'USER_TASK',
         code: 'TASK_IN_ZERO',
         message: t(V + 'TASK_IN_ZERO', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     }
 
     // User Task: Out = 1 (hoặc Out = 2 nếu Approval Step)
     if (isApproval) {
-      const hasApprove = outEdges.some((e: any) => (e.getSourcePortId?.() || e.getSource()?.port) === 'out-approve');
-      const hasReject = outEdges.some((e: any) => (e.getSourcePortId?.() || e.getSource()?.port) === 'out-reject');
+      const hasApprove = outEdges.some(
+        (e: any) =>
+          (e.getSourcePortId?.() || e.getSource()?.port) === 'out-approve',
+      );
+      const hasReject = outEdges.some(
+        (e: any) =>
+          (e.getSourcePortId?.() || e.getSource()?.port) === 'out-reject',
+      );
       if (!hasApprove || !hasReject) {
         errors.push({
           nodeId: taskNode.id,
@@ -833,7 +841,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
           type: 'USER_TASK',
           code: 'TASK_APPROVAL_OUT_MISSING',
           message: t(V + 'TASK_APPROVAL_OUT_MISSING', { label }),
-          severity: 'error'
+          severity: 'error',
         });
       }
     } else {
@@ -845,7 +853,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
           type: 'USER_TASK',
           code: 'TASK_OUT_ZERO',
           message: t(V + 'TASK_OUT_ZERO', { label }),
-          severity: 'error'
+          severity: 'error',
         });
       } else if (outEdges.length > 1) {
         errors.push({
@@ -855,14 +863,16 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
           type: 'USER_TASK',
           code: 'TASK_OUT_EXCESS',
           message: t(V + 'TASK_OUT_EXCESS', { label }),
-          severity: 'error'
+          severity: 'error',
         });
       }
     }
   });
 
   // 6. KIỂM TRA JOIN – Gộp nhánh (In >= 2 | Out = 1)
-  const mergeNodes = nodes.filter((n: any) => (n.getData()?.type || '') === 'JOIN');
+  const mergeNodes = nodes.filter(
+    (n: any) => (n.getData()?.type || '') === 'JOIN',
+  );
   mergeNodes.forEach((mNode: any) => {
     const data = mNode.getData() || {};
     const label = data.label || t('PROCESS_GRAPH.NODE_TYPES.JOIN');
@@ -877,8 +887,11 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         nodeLabel: label,
         type: 'JOIN',
         code: 'MERGE_IN_LESS_THAN_2',
-        message: t(V + 'MERGE_IN_LESS_THAN_2', { label, count: inEdges.length }),
-        severity: 'error'
+        message: t(V + 'MERGE_IN_LESS_THAN_2', {
+          label,
+          count: inEdges.length,
+        }),
+        severity: 'error',
       });
     }
 
@@ -891,7 +904,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'JOIN',
         code: 'MERGE_OUT_ZERO',
         message: t(V + 'MERGE_OUT_ZERO', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     } else if (outEdges.length > 1) {
       errors.push({
@@ -901,17 +914,18 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: 'JOIN',
         code: 'MERGE_OUT_EXCESS',
         message: t(V + 'MERGE_OUT_EXCESS', { label, count: outEdges.length }),
-        severity: 'error'
+        severity: 'error',
       });
     }
   });
 
-  // 8. KIỂM TRA NODE CÔ LẬP (ISOLATED NODES)
+  // 7. KIỂM TRA NODE CÔ LẬP (ISOLATED NODES)
   nodes.forEach((node: any) => {
     const inEdges = graph.getIncomingEdges(node) || [];
     const outEdges = graph.getOutgoingEdges(node) || [];
     const data = node.getData() || {};
-    const label = data.label || data.typeTitle || t('PROCESS_GRAPH.NODE_TYPES.STEP');
+    const label =
+      data.label || data.typeTitle || t('PROCESS_GRAPH.NODE_TYPES.STEP');
 
     if (inEdges.length === 0 && outEdges.length === 0) {
       errors.push({
@@ -921,7 +935,7 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
         type: data.type || 'USER_TASK',
         code: 'NODE_ISOLATED',
         message: t(V + 'NODE_ISOLATED', { label }),
-        severity: 'error'
+        severity: 'error',
       });
     }
   });
@@ -935,6 +949,6 @@ export function validateBpmnGraph(graph: any, t: TranslateFn): GraphValidationRe
     isValid,
     errors,
     warnings,
-    summary
+    summary,
   };
 }

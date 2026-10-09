@@ -3,7 +3,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectOption } from '../ant-select/ant-select.component';
 
 /**
- * Nhóm chip lọc nhanh, chọn một giá trị (Figma ProcessX "Quick filters" / "Filter / ...").
+ * Nhóm chip lọc nhanh, chọn một giá trị.
  * Chip active nền Primary/600 chữ trắng; chip thường viền Neutral/300 chữ Neutral/800; bo tròn hoàn toàn.
  */
 @Component({

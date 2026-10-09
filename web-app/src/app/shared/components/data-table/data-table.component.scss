@@ -64,16 +64,14 @@
   border-top: 1px solid px.$neutral-300;
 }
 
-// ============================================================================
-// <table> do feature chiếu vào
-// ============================================================================
+// ===== <table> do feature chiếu vào =====
 :host ::ng-deep .px-table-content > table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
 
-  // _Cell header: h52, padding 16/24, 14/20 Bold
+  // Ô header: h52, padding 16/24, 14/20 Bold
   > thead > tr > th {
     height: 52px;
     padding: px.$space-16 px.$space-24;
@@ -90,7 +88,7 @@
     box-sizing: border-box;
   }
 
-  // _Cell table: h60, padding 20/24, 14/20 Medium (nội dung cao hơn tự co padding dọc)
+  // Ô dữ liệu: h60, padding 20/24, 14/20 Medium (nội dung cao hơn tự co padding dọc)
   > tbody > tr > td {
     height: 60px;
     padding: px.$space-8 px.$space-24;
@@ -159,7 +157,7 @@
   }
 }
 
-// Hàng xen kẽ: hàng lẻ #F7F7F7 (Color/Background/Table)
+// Hàng xen kẽ: hàng lẻ nền #F7F7F7
 :host ::ng-deep .px-table-striped .px-table-content > table > tbody > tr:nth-child(odd) > td {
   background: px.$bg-table;
 }

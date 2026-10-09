@@ -34,9 +34,6 @@ export class ActionLibraryService {
 
   constructor(private apiService: ApiService) {}
 
-  /**
-   * Lấy danh sách Action Library từ backend API.
-   */
   public fetchActions(): Observable<ActionItem[]> {
     return this.apiService.get<{ actions: ActionItem[] } | ActionItem[]>(this.endpoint).pipe(
       map(res => {

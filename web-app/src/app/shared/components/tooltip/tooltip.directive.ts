@@ -22,11 +22,8 @@ const OPPOSITE: Record<TooltipPlacement, TooltipPlacement> = {
 let nextTooltipId = 0;
 
 /**
- * Hiện tooltip khi hover / focus vào phần tử.
- *   <button appTooltip="Xoá quy trình">…</button>
- *   <span [appTooltip]="text" tooltipPlacement="right"></span>
- * Tooltip gắn vào <body> (position: fixed) nên không bị bảng / drawer có overflow cắt;
- * thiếu chỗ ở cạnh đã chọn thì tự lật sang cạnh đối diện.
+ * Hiện tooltip khi hover / focus, vd: <button appTooltip="Xoá quy trình">…</button>.
+ * Gắn vào <body> (position: fixed) nên không bị overflow cắt; thiếu chỗ thì lật sang cạnh đối diện.
  */
 @Directive({ selector: '[appTooltip]' })
 export class TooltipDirective implements OnDestroy {
@@ -36,11 +33,7 @@ export class TooltipDirective implements OnDestroy {
   /** Trễ trước khi hiện (ms) */
   @Input() tooltipDelay: number = 100;
   @Input() tooltipDisabled: boolean = false;
-  /**
-   * Chỉ hiện khi chữ trong phần tử đang bị cắt (text-overflow: ellipsis / tràn khung).
-   * Dùng cho nhãn có thể dài trong ô chọn, menu, tag…:
-   *   <span class="label" [appTooltip]="label" [tooltipOnlyTruncated]="true">{{ label }}</span>
-   */
+  /** Chỉ hiện khi chữ đang bị cắt (ellipsis / tràn khung), dùng cho nhãn có thể dài */
   @Input() tooltipOnlyTruncated: boolean = false;
 
   private ref: ComponentRef<TooltipComponent> | null = null;

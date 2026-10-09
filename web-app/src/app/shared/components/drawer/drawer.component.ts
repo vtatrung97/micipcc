@@ -1,8 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 
 /**
- * Khung drawer bên phải theo Figma ProcessX "Drawer content":
- * header (_Header modal) · body cuộn · footer (_Modal Actions, chiếu qua [drawer-footer]).
+ * Khung drawer bên phải: header · body cuộn · footer (chiếu qua [drawer-footer]).
  */
 @Component({
   selector: 'app-drawer',

@@ -37,7 +37,7 @@ const TRIGGER_LABELS: Record<string, string> = {
 const EMPTY_TEXT = '—';
 
 /**
- * Màn "Danh sách quy trình" (Figma ProcessX node 243:11241):
+ * Màn "Danh sách quy trình":
  * Title + "Tạo quy trình" → tìm kiếm + chip lọc nhanh + "Bộ lọc nâng cao" + "Sắp xếp" (ẩn/hiện cột) → bảng + phân trang.
  */
 @Component({
@@ -80,7 +80,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     sort: 'assets/icons/processx/sort.svg',
     edit: 'assets/icons/processx/edit.svg',
     view: 'assets/icons/processx/eye.svg',
-    // Menu ⋮ (Figma 435:38658)
+    // Icon trong menu ⋮ của hàng
     copy: 'assets/icons/processx/copy.svg',
     stopPublish: 'assets/icons/processx/send-cancelled.svg',
     delete: 'assets/icons/processx/trash-danger.svg'
@@ -128,9 +128,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ============================================================================
-  // QUYỀN THAO TÁC
-  // ============================================================================
+  // ===== Quyền thao tác =====
   get canCreate(): boolean {
     return this.rbacService.hasPermission('Template', 'create');
   }
@@ -143,9 +141,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     return this.rbacService.hasPermission('Template', 'delete');
   }
 
-  // ============================================================================
-  // LỌC / SẮP XẾP / PHÂN TRANG
-  // ============================================================================
+  // ===== Lọc / sắp xếp / phân trang =====
   get advancedFilterCount(): number {
     return countAdvancedFilter(this.advancedFilter);
   }
@@ -256,7 +252,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     this.pagedRows = this.filteredRows.slice(start, start + this.pageSize);
   }
 
-  /** Mới tạo lên đầu */
+  /** Sắp xếp bản ghi mới tạo lên đầu */
   private sortRows(rows: ProcessRow[]): ProcessRow[] {
     const byCreated = (r: ProcessRow) => this.toTimestamp(r.item.created_at || r.item.updatedAt || r.item.published_at);
     return [...rows].sort((a, b) => byCreated(b) - byCreated(a));
@@ -320,9 +316,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     return m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)).getTime() : 0;
   }
 
-  // ============================================================================
-  // HÀNH ĐỘNG
-  // ============================================================================
+  // ===== Hành động =====
   /** "Tạo quy trình": mở Canvas Builder ở tab "Thông tin chung" */
   openCreate(): void {
     this.router.navigate(['/process/graph'], { queryParams: { mode: 'create', initType: 'blank' } });

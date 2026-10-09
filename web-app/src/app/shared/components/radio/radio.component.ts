@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /**
- * Một nút radio theo Figma ProcessX (node 237:11006 / component "Radio").
- * Ô tròn 20px: chưa chọn nền trắng viền Neutral/300; đã chọn nền + viền Primary/600, dấu ✓ trắng 14px.
+ * Một nút radio tròn 20px, đã chọn nền đỏ + dấu ✓ trắng.
  * Thường dùng qua `app-radio-group`; dùng lẻ khi cần tự bố trí (bind [checked] + (selected)).
  */
 @Component({

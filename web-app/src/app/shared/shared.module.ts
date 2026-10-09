@@ -43,7 +43,7 @@ const SHARED_MODULES = [
   FormsModule,
   ReactiveFormsModule,
   
-  // 22 Shared Component Modules
+  // Module component dùng chung
   AntIconModule,
   BreadcrumbsModule,
   SlaBadgeModule,

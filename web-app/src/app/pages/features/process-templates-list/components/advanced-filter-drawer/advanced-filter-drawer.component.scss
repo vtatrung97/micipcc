@@ -1,6 +1,6 @@
 @use '../../../../../shared/styles/processx-tokens' as px;
 
-// _Modal Actions: "Đặt lại" bên trái, nhóm "Hủy" + "Áp dụng" bên phải (cách 12)
+// Footer: "Đặt lại" bên trái, nhóm "Hủy" + "Áp dụng" bên phải (cách 12)
 .filter-actions {
   display: flex;
   align-items: center;
@@ -13,7 +13,7 @@
   gap: px.$space-12;
 }
 
-// Buttons size md: cao 40 (viền nằm trong), padding 8/16, radius 8, Inter SemiBold 16/24
+// Nút: cao 40 (viền nằm trong), padding 8/16, radius 8, SemiBold 16/24
 .px-btn {
   font-family: px.$font-family;
   font-size: 16px;

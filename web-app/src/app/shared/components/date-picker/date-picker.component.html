@@ -7,7 +7,7 @@
      [class.dp-status-error]="status === 'error'"
      [class.dp-status-warning]="status === 'warning'">
 
-  <!-- Ô hiển thị (Date pickers input) -->
+  <!-- Ô hiển thị -->
   <div class="dp-field" role="button" tabindex="0"
        [attr.aria-expanded]="isOpen"
        [attr.aria-disabled]="disabled"
@@ -85,12 +85,12 @@
        [style.visibility]="measuring ? 'hidden' : null"
        (click)="$event.stopPropagation()">
 
-    <!-- Một ngày (Date single) -->
+    <!-- Một ngày -->
     <ng-container *ngIf="!isRange">
       <ng-container *ngTemplateOutlet="calendarPane; context: { $implicit: 'start' }"></ng-container>
     </ng-container>
 
-    <!-- Khoảng ngày (_Date pickers range) -->
+    <!-- Khoảng ngày -->
     <ng-container *ngIf="isRange">
       <div class="dp-range-labels">
         <span>Ngày bắt đầu</span>

@@ -98,9 +98,7 @@
   }
 }
 
-/* ==================================================================== */
-/* ANT DESIGN CLASSIC 4-DOT SPINNER                                    */
-/* ==================================================================== */
+/* ===== Spinner 4 chấm kiểu antd ===== */
 .ant-spin-dot {
   position: relative;
   display: inline-block;
@@ -147,7 +145,7 @@
   }
 }
 
-/* Kích thước size */
+/* Kích thước */
 .ant-spin-container.ant-spin-sm {
   padding: 16px 12px;
 
@@ -199,9 +197,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ==================================================================== */
-/* SKELETON WITH TIP HEADER                                             */
-/* ==================================================================== */
+/* ===== Skeleton kèm dòng tip ===== */
 .ant-skeleton-wrapper {
   width: 100%;
   display: flex;
