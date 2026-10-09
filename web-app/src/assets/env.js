@@ -9,8 +9,8 @@
     realm: 'demo',
     clientId: 'agent-web',
     requireHttps: false,
-    showDebugInformation: false,
-    strictDiscoveryDocumentValidation: false
+    showDebugInformation: true,
+    strictDiscoveryDocumentValidation: true
   };
 
   /*========================================================================*/
@@ -18,7 +18,7 @@
   const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
 
   // false = tắt đăng nhập Keycloak (dùng khi dev chưa có Keycloak/BE), true = bật
-  const AUTH_ENABLED = false;
+  const AUTH_ENABLED = true;
 
   /*========================================================================*/
   const SERVICES = {
@@ -29,7 +29,7 @@
   };
 
   /*========================================================================*/
-  window.env.production = false;
+  window.env.production = true;
   window.env.PROFILE = PROFILE;
   window.env.KEYCLOAK = KEYCLOAK;
   window.env.SERVICES = SERVICES;

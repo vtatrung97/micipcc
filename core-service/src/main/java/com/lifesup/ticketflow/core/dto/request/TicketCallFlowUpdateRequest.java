@@ -1,9 +1,12 @@
 package com.lifesup.ticketflow.core.dto.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.lifesup.ticketflow.core.common.enums.SlaUnit;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
 import com.lifesup.ticketflow.core.configuration.StringTrimDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -26,8 +29,24 @@ public class TicketCallFlowUpdateRequest {
     @JsonDeserialize(using = StringTrimDeserializer.class)
     String name;
 
+    @Schema(description = "Phân loại nhóm quy trình. Không truyền thì giữ nguyên")
+    @Size(max = 100, message = "{validation.ticketCallFlow.category.size}")
+    @JsonDeserialize(using = StringTrimDeserializer.class)
+    String category;
+
     @Size(max = 1000, message = "{validation.ticketCallFlow.description.size}")
     String description;
+
+    @Schema(description = "Không truyền thì giữ nguyên")
+    @Valid
+    TicketCallFlowTriggerDto trigger;
+
+    @Schema(description = "Thời hạn xử lý (SLA). Không truyền thì giữ nguyên, truyền thì kèm slaUnit", example = "3")
+    @Min(value = 1, message = "{validation.ticketCallFlow.slaValue.min}")
+    Integer slaValue;
+
+    @Schema(description = "Không truyền thì giữ nguyên, truyền thì kèm slaValue")
+    SlaUnit slaUnit;
 
     @Schema(description = "Để trống thì giữ nguyên trạng thái hiện tại")
     TicketCallFlowStatus status;

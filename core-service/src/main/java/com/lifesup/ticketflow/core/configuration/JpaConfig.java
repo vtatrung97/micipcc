@@ -11,7 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 /** Tách khỏi class main để các test slice (@WebMvcTest) không phải dựng JPA. */
@@ -21,10 +20,10 @@ public class JpaConfig {
 
     public static final String SYSTEM_AUDITOR = "system";
 
-    /** Nguồn thời gian cho created_at/updated_at (DATETIME(3) UTC), cắt về mili giây cho khớp độ chính xác của cột. */
+    /** Nguồn thời gian cho created_at/updated_at, Spring Data tự đổi sang epoch millis vì field kiểu Long. */
     @Bean
     public DateTimeProvider auditingDateTimeProvider() {
-        return () -> Optional.of(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        return () -> Optional.of(Instant.now());
     }
 
     /**

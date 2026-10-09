@@ -1,6 +1,8 @@
 package com.lifesup.ticketflow.core.dto.response;
 
+import com.lifesup.ticketflow.core.common.enums.SlaUnit;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowTriggerDto;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -12,7 +14,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 
 /**
  * Chi tiết quy trình, kèm JSON canvas để FE vẽ lại.
@@ -32,8 +33,13 @@ public class TicketCallFlowResponse {
     String name;
     /** Tiền tố mã hồ sơ, VD "PAKN". */
     String caseCodePrefix;
+    String category;
     String description;
     TicketCallFlowStatus status;
+    /** null = quy trình tạo trước khi có cấu hình loại kích hoạt. */
+    TicketCallFlowTriggerDto trigger;
+    Integer slaValue;
+    SlaUnit slaUnit;
     /** Chuỗi JSON canvas, đúng nguyên văn như FE đã gửi lên. */
     String flowJson;
     /** Số phiên bản của flowJson ở trên. */
@@ -44,11 +50,11 @@ public class TicketCallFlowResponse {
     TicketCallFlowVersionSummaryResponse publishedVersion;
     /** Bản nháp, null = không có bản nháp. */
     TicketCallFlowVersionSummaryResponse draftVersion;
-    /** UTC, ISO-8601. */
-    Instant createdAt;
+    /** Epoch millis. */
+    Long createdAt;
     String createdBy;
-    /** UTC, ISO-8601. */
-    Instant updatedAt;
+    /** Epoch millis. */
+    Long updatedAt;
     String updatedBy;
     /** Gửi lại khi cập nhật / publish / huỷ bản nháp để chống lưu đè. */
     Long rowVersion;

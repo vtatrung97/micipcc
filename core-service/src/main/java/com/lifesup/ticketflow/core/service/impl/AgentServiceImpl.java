@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -34,7 +33,7 @@ public class AgentServiceImpl implements AgentService {
             agents.setStatus(userDto.isEnabled() ? UserAccountEntity.Status.ACTIVE.value : UserAccountEntity.Status.INACTIVE.value);
             agents.setGroupId(userDto.getGroupId());
             agents.setFullName(buildFullName(userDto.getLastName(), userDto.getFirstName()));
-            agents.setSyncedAt(Instant.now());
+            agents.setSyncedAt(System.currentTimeMillis());
             userAccountRepository.save(agents);
         } else {
             createAgent(userDto);
@@ -54,7 +53,7 @@ public class AgentServiceImpl implements AgentService {
         agents.setStatus(userDto.isEnabled() ? UserAccountEntity.Status.ACTIVE.value : UserAccountEntity.Status.INACTIVE.value);
         agents.setGroupId(userDto.getGroupId());
         agents.setFullName(buildFullName(userDto.getLastName(), userDto.getFirstName()));
-        agents.setSyncedAt(Instant.now());
+        agents.setSyncedAt(System.currentTimeMillis());
         userAccountRepository.save(agents);
     }
 

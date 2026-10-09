@@ -1,9 +1,9 @@
 package com.lifesup.ticketflow.core.service;
 
-import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCloneRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowPublishRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSearchRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
 import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
@@ -32,12 +32,7 @@ public interface TicketCallFlowService {
 
     TicketCallFlowResponse getById(Long id);
 
-    /**
-     * @param page     bắt đầu từ 1
-     * @param hasDraft true = chỉ quy trình có bản nháp, false = không có, null = không lọc
-     */
-    PageResponse<TicketCallFlowSummaryResponse> search(
-            String keyword, TicketCallFlowStatus status, Boolean hasDraft, int page, int size);
+    PageResponse<TicketCallFlowSummaryResponse> search(TicketCallFlowSearchRequest request);
 
     TicketCallFlowStatsResponse stats();
 

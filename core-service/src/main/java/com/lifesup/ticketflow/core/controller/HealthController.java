@@ -4,7 +4,6 @@ import com.lifesup.ticketflow.common.api.ApiResponse;
 import com.lifesup.ticketflow.core.dto.response.HealthCheckResponse;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
 import com.lifesup.ticketflow.common.i18n.Translator;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -41,7 +40,6 @@ public class HealthController {
     @NonFinal
     String serviceName;
 
-    @Operation(summary = "Kiểm tra trạng thái service và các thành phần (MariaDB, Redis...)")
     @SecurityRequirements
     @GetMapping
     public ResponseEntity<ApiResponse<HealthCheckResponse>> healthCheck() {

@@ -2,11 +2,15 @@ package com.lifesup.ticketflow.core.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lifesup.ticketflow.core.common.enums.ScheduleType;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
+import com.lifesup.ticketflow.core.common.enums.TriggerType;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCloneRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowPublishRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSearchRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowTriggerDto;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
 import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
@@ -31,13 +35,13 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -56,6 +60,29 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     /** Giới hạn kích thước JSON canvas (ký tự), tránh request quá lớn làm nặng DB. */
     static final int MAX_FLOW_JSON_LENGTH = 5_000_000;
 
+    /** Field sắp xếp (tên field trong TicketCallFlowSummaryResponse) → biểu thức JPQL trong TemplateRepository.search. */
+    static final Map<String, String> SORT_FIELDS = Map.ofEntries(
+            Map.entry("id", "t.id"),
+            Map.entry("code", "t.code"),
+            Map.entry("name", "t.name"),
+            Map.entry("caseCodePrefix", "t.caseCodePrefix"),
+            Map.entry("category", "t.category"),
+            Map.entry("description", "t.description"),
+            Map.entry("status", "t.status"),
+            Map.entry("triggerType", "t.triggerType"),
+            Map.entry("slaValue", "t.slaValue"),
+            Map.entry("slaUnit", "t.slaUnit"),
+            Map.entry("publishedVersionNo", "p.versionNo"),
+            Map.entry("publishedAt", "p.publishedAt"),
+            Map.entry("draftVersionNo", "d.versionNo"),
+            Map.entry("draftUpdatedAt", "d.updatedAt"),
+            Map.entry("draftUpdatedBy", "d.updatedBy"),
+            Map.entry("createdAt", "t.createdAt"),
+            Map.entry("createdBy", "t.createdBy"),
+            Map.entry("updatedAt", "t.updatedAt"),
+            Map.entry("updatedBy", "t.updatedBy"),
+            Map.entry("rowVersion", "t.rowVersion"));
+
     TemplateRepository templateRepository;
     TemplateVersionRepository templateVersionRepository;
     ObjectMapper objectMapper;
@@ -73,8 +100,12 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         entity.setCode(request.getCode());
         entity.setName(request.getName());
         entity.setCaseCodePrefix(request.getCaseCodePrefix());
+        entity.setCategory(request.getCategory());
         entity.setDescription(request.getDescription());
         entity.setStatus(TicketCallFlowStatus.DRAFT);
+        applyTrigger(entity, request.getTrigger());
+        entity.setSlaValue(request.getSlaValue());
+        entity.setSlaUnit(request.getSlaUnit());
 
         entity = insertWithUniqueCode(entity, validateFlowJson(request.getFlowJson()));
         log.info("Created template id={} code={}", entity.getId(), entity.getCode());
@@ -95,6 +126,16 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         entity.setDescription(request.getDescription() != null ? request.getDescription() : source.getDescription());
         // Bản sao luôn là bản nháp, người dùng chỉnh xong mới publish
         entity.setStatus(TicketCallFlowStatus.DRAFT);
+        entity.setCategory(source.getCategory());
+        entity.setTriggerType(source.getTriggerType());
+        entity.setInputFormId(source.getInputFormId());
+        entity.setTriggerApiId(source.getTriggerApiId());
+        entity.setScheduleType(source.getScheduleType());
+        entity.setScheduleRunDate(source.getScheduleRunDate());
+        entity.setScheduleRunTime(source.getScheduleRunTime());
+        entity.setScheduleRepeat(source.getScheduleRepeat());
+        entity.setSlaValue(source.getSlaValue());
+        entity.setSlaUnit(source.getSlaUnit());
 
         // flowJson của bản gốc đã được kiểm tra lúc lưu, sao chép nguyên văn
         entity = insertWithUniqueCode(entity, sourceVersion.getModelJson());
@@ -116,6 +157,19 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         }
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
+        if (request.getCategory() != null) {
+            entity.setCategory(request.getCategory());
+        }
+        if (request.getTrigger() != null) {
+            applyTrigger(entity, request.getTrigger());
+        }
+        if (request.getSlaValue() != null || request.getSlaUnit() != null) {
+            if (request.getSlaValue() == null || request.getSlaUnit() == null) {
+                throw new AppException(ErrorCode.TICKET_CALL_FLOW_SLA_INVALID);
+            }
+            entity.setSlaValue(request.getSlaValue());
+            entity.setSlaUnit(request.getSlaUnit());
+        }
 
         TemplateVersionEntity draft = templateVersionRepository
                 .findByTemplateIdAndStatus(id, TicketCallFlowVersionStatus.DRAFT)
@@ -149,7 +203,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
         applyVersionInfo(draft, request.getVersionName(), request.getVersionDescription());
         draft.setStatus(TicketCallFlowVersionStatus.PUBLISHED);
-        draft.setPublishedAt(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        draft.setPublishedAt(System.currentTimeMillis());
         draft.setPublishedBy(auditorAware.getCurrentAuditor().orElse(null));
         templateVersionRepository.saveAndFlush(draft);
 
@@ -192,10 +246,20 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<TicketCallFlowSummaryResponse> search(
-            String keyword, TicketCallFlowStatus status, Boolean hasDraft, int page, int size) {
-        PageRequest pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.desc("updatedAt"), Sort.Order.desc("id")));
-        return new PageResponse<>(templateRepository.search(toLikePattern(keyword), status, hasDraft, pageable));
+    public PageResponse<TicketCallFlowSummaryResponse> search(TicketCallFlowSearchRequest request) {
+        PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize(), toSort(request));
+        return new PageResponse<>(templateRepository.search(
+                toLikePattern(request.getKeyword()),
+                toLikePattern(request.getName()),
+                toLikePattern(request.getCode()),
+                request.getStatus(),
+                request.getHasDraft(),
+                request.getPublishedVersionNo(),
+                request.getUpdatedFrom(),
+                request.getUpdatedTo(),
+                request.getPublishedFrom(),
+                request.getPublishedTo(),
+                pageable));
     }
 
     @Override
@@ -271,6 +335,64 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         return entity;
     }
 
+    /**
+     * Kiểm tra field bắt buộc theo loại kích hoạt rồi gán vào quy trình.
+     * Chỉ lưu field của loại đã chọn, field của loại khác xoá về null để không còn cấu hình cũ.
+     */
+    private static void applyTrigger(TemplateEntity entity, TicketCallFlowTriggerDto trigger) {
+        TriggerType type = trigger.getType();
+        boolean once = type == TriggerType.SCHEDULE && trigger.getScheduleType() == ScheduleType.ONCE;
+        boolean repeat = type == TriggerType.SCHEDULE && trigger.getScheduleType() == ScheduleType.REPEAT;
+
+        // ponytail: HYBRID chưa có thiết kế chi tiết nên chưa kiểm field nào, bổ sung khi BA chốt
+        if (type == TriggerType.MANUAL && !StringUtils.hasText(trigger.getInputFormId())) {
+            throw triggerInvalid("inputFormId");
+        }
+        if (type == TriggerType.AUTO && !StringUtils.hasText(trigger.getApiId())) {
+            throw triggerInvalid("apiId");
+        }
+        if (type == TriggerType.SCHEDULE && trigger.getScheduleType() == null) {
+            throw triggerInvalid("scheduleType");
+        }
+        if (once && trigger.getRunDate() == null) {
+            throw triggerInvalid("runDate");
+        }
+        if (type == TriggerType.SCHEDULE && trigger.getRunTime() == null) {
+            throw triggerInvalid("runTime");
+        }
+        if (repeat && trigger.getRepeat() == null) {
+            throw triggerInvalid("repeat");
+        }
+
+        entity.setTriggerType(type);
+        entity.setInputFormId(type == TriggerType.MANUAL ? trigger.getInputFormId() : null);
+        entity.setTriggerApiId(type == TriggerType.AUTO ? trigger.getApiId() : null);
+        entity.setScheduleType(type == TriggerType.SCHEDULE ? trigger.getScheduleType() : null);
+        entity.setScheduleRunDate(once ? trigger.getRunDate() : null);
+        entity.setScheduleRunTime(type == TriggerType.SCHEDULE ? trigger.getRunTime() : null);
+        entity.setScheduleRepeat(repeat ? trigger.getRepeat() : null);
+    }
+
+    private static AppException triggerInvalid(String field) {
+        return new AppException(ErrorCode.TICKET_CALL_FLOW_TRIGGER_INVALID,
+                "err.ticketCallFlow.trigger." + field + ".required");
+    }
+
+    private static TicketCallFlowTriggerDto toTriggerDto(TemplateEntity entity) {
+        if (entity.getTriggerType() == null) {
+            return null;
+        }
+        return TicketCallFlowTriggerDto.builder()
+                .type(entity.getTriggerType())
+                .inputFormId(entity.getInputFormId())
+                .apiId(entity.getTriggerApiId())
+                .scheduleType(entity.getScheduleType())
+                .runDate(entity.getScheduleRunDate())
+                .runTime(entity.getScheduleRunTime())
+                .repeat(entity.getScheduleRepeat())
+                .build();
+    }
+
     /** Gán tên / mô tả phiên bản: null = giữ nguyên, chuỗi rỗng = xoá. */
     private static void applyVersionInfo(TemplateVersionEntity version, String name, String description) {
         if (name != null) {
@@ -294,9 +416,9 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
      * Câu UPDATE kèm điều kiện row_version cũ nên 2 người lưu cùng lúc thì người sau nhận 409.
      */
     private TemplateEntity touchAndSave(TemplateEntity entity) {
-        Instant now = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-        Instant updatedAt = entity.getUpdatedAt();
-        entity.setUpdatedAt(updatedAt != null && !updatedAt.isBefore(now) ? updatedAt.plusMillis(1) : now);
+        long now = System.currentTimeMillis();
+        Long updatedAt = entity.getUpdatedAt();
+        entity.setUpdatedAt(updatedAt != null && updatedAt >= now ? updatedAt + 1 : now);
         return templateRepository.saveAndFlush(entity);
     }
 
@@ -362,6 +484,21 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         return "%" + escaped + "%";
     }
 
+    /** Sắp xếp theo sortBy/sortDir (mặc định updatedAt giảm dần), luôn thêm id để phân trang ổn định. */
+    private static Sort toSort(TicketCallFlowSearchRequest request) {
+        String sortBy = StringUtils.hasText(request.getSortBy()) ? request.getSortBy().trim() : "updatedAt";
+        String path = SORT_FIELDS.get(sortBy);
+        if (path == null) {
+            throw new AppException(ErrorCode.TICKET_CALL_FLOW_SORT_INVALID);
+        }
+        Sort.Direction direction = StringUtils.hasText(request.getSortDir())
+                ? Sort.Direction.fromString(request.getSortDir().trim())
+                : Sort.Direction.DESC;
+        // Đường dẫn lấy từ whitelist SORT_FIELDS nên dùng unsafe được (cần cho alias p., d.)
+        Sort sort = JpaSort.unsafe(direction, path);
+        return "id".equals(sortBy) ? sort : sort.and(JpaSort.unsafe(Sort.Direction.DESC, "t.id"));
+    }
+
     private TicketCallFlowResponse toResponse(TemplateEntity entity) {
         TemplateVersionEntity published = templateVersionRepository
                 .findByTemplateIdAndStatus(entity.getId(), TicketCallFlowVersionStatus.PUBLISHED)
@@ -376,8 +513,12 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
                 .code(entity.getCode())
                 .name(entity.getName())
                 .caseCodePrefix(entity.getCaseCodePrefix())
+                .category(entity.getCategory())
                 .description(entity.getDescription())
                 .status(entity.getStatus())
+                .trigger(toTriggerDto(entity))
+                .slaValue(entity.getSlaValue())
+                .slaUnit(entity.getSlaUnit())
                 .flowJson(editing != null ? editing.getModelJson() : null)
                 .flowJsonVersionNo(editing != null ? editing.getVersionNo() : null)
                 .flowJsonVersionStatus(editing != null ? editing.getStatus() : null)

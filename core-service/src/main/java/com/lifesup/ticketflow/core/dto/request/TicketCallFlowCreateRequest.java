@@ -1,10 +1,14 @@
 package com.lifesup.ticketflow.core.dto.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.lifesup.ticketflow.core.common.enums.SlaUnit;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
 import com.lifesup.ticketflow.core.configuration.StringTrimDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -41,13 +45,31 @@ public class TicketCallFlowCreateRequest {
     @JsonDeserialize(using = StringTrimDeserializer.class)
     String caseCodePrefix;
 
+    @Schema(description = "Phân loại nhóm quy trình")
+    @NotBlank(message = "{validation.ticketCallFlow.category.required}")
+    @Size(max = 100, message = "{validation.ticketCallFlow.category.size}")
+    @JsonDeserialize(using = StringTrimDeserializer.class)
+    String category;
+
     @Size(max = 1000, message = "{validation.ticketCallFlow.description.size}")
     String description;
+
+    @NotNull(message = "{validation.ticketCallFlow.trigger.required}")
+    @Valid
+    TicketCallFlowTriggerDto trigger;
+
+    @Schema(description = "Thời hạn xử lý (SLA)", example = "3")
+    @NotNull(message = "{validation.ticketCallFlow.slaValue.required}")
+    @Min(value = 1, message = "{validation.ticketCallFlow.slaValue.min}")
+    Integer slaValue;
+
+    @NotNull(message = "{validation.ticketCallFlow.slaUnit.required}")
+    SlaUnit slaUnit;
 
     @Schema(description = "Mặc định DRAFT")
     TicketCallFlowStatus status;
 
-    @Schema(description = "Chuỗi JSON của canvas, BE lưu và trả lại nguyên văn", example = "{\"nodes\":[],\"edges\":[]}")
+    @Schema(description = "Chuỗi JSON của canvas, BE lưu và trả lại nguyên văn")
     @NotBlank(message = "{validation.ticketCallFlow.flowJson.required}")
     String flowJson;
 }

@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 
 /**
  * Bảng user_account: bản sao đọc người dùng từ Keycloak (Architecture Design mục 2.5),
@@ -54,7 +53,7 @@ public class UserAccountEntity extends BaseEntity {
 
     /** Lần đồng bộ gần nhất từ Keycloak. */
     @Column(name = "synced_at")
-    Instant syncedAt;
+    Long syncedAt;
 
     @Column(name = "kz_user_id", length = 100)
     String kzUserId;

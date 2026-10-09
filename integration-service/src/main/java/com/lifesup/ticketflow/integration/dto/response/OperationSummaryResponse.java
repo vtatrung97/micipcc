@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 
 /**
  * Một dòng trong danh sách API (operation), kèm hệ thống và kết nối chứa nó. Không trả schema/mapping (có thể lớn).
@@ -47,7 +46,7 @@ public class OperationSummaryResponse {
     String systemCode;
     String systemName;
 
-    /** UTC, ISO-8601. */
-    Instant updatedAt;
+    /** Epoch millis. */
+    Long updatedAt;
     String updatedBy;
 }

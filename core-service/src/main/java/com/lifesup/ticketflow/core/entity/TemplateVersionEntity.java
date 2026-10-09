@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 
 /**
  * Bảng template_version: một phiên bản của Template — mô hình Canvas (lưu JSON nguyên văn),
@@ -68,7 +67,7 @@ public class TemplateVersionEntity extends BaseEntity {
     String deploymentId;
 
     @Column(name = "published_at")
-    Instant publishedAt;
+    Long publishedAt;
 
     @Column(name = "published_by", length = 100)
     String publishedBy;

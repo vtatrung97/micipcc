@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 
 /** Chi tiết một phiên bản, kèm JSON canvas để FE xem lại. */
 @Data
@@ -30,10 +29,10 @@ public class TicketCallFlowVersionResponse {
     String versionDescription;
     /** Chuỗi JSON canvas, đúng nguyên văn như FE đã gửi lên. */
     String flowJson;
-    Instant publishedAt;
+    Long publishedAt;
     String publishedBy;
-    Instant createdAt;
+    Long createdAt;
     String createdBy;
-    Instant updatedAt;
+    Long updatedAt;
     String updatedBy;
 }
