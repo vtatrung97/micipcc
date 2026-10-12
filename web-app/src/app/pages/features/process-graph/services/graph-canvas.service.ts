@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { edgeAttrs, EDGE_COLOR, EDGE_ACTIVE_COLOR } from '../config/edge-style.config';
+import { NODE_COLORS, NODE_SHADOW, NODE_SHADOW_HOVER } from '../config/node-view.config';
+import { isGatewayType } from '../models/node-type';
 
 declare const X6: any;
 import { validateBpmnConnection } from '../config/ports.config';
@@ -9,6 +11,12 @@ import { NodeEditorService } from './node-editor.service';
 import { GraphBridgeService } from './graph-bridge.service';
 import { GraphHistoryService } from './graph-history.service';
 import { Graph, Scroller } from '@antv/x6';
+
+/** Giới hạn thu phóng: 50% → 500% (nút +/−, Ctrl + cuộn chuột, căn vừa màn hình) */
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 5;
+/** "Căn vừa màn hình" không phóng quá 125% với sơ đồ nhỏ */
+const FIT_MAX = 1.25;
 
 /** Khởi tạo X6 Graph, đăng ký sự kiện canvas, zoom, chế độ kéo canvas. */
 @Injectable()
@@ -47,17 +55,18 @@ export class GraphCanvasService {
     this.store.graph = new GraphClass({
       container,
       autoResize: true,
+      // Nền canvas xám nhạt, lưới chấm
       grid: {
-        size: 15,
+        size: 16,
         visible: true,
         type: 'dot',
         args: {
-          color: '#cbd5e1',
+          color: '#d4d4d4',
           thickness: 1.2,
         },
       },
       background: {
-        color: '#f8fafc',
+        color: '#f5f5f5',
       },
       scroller: {
         enabled: true,
@@ -69,17 +78,18 @@ export class GraphCanvasService {
         allowMulti: false,
         allowLoop: false,
         highlight: true,
+        // Dây bo cong mềm ở góc
         connector: {
           name: 'rounded',
           args: {
-            radius: 8,
+            radius: 16,
           },
         },
         router: {
           name: 'manhattan',
           args: {
             step: 10,
-            padding: 10,
+            padding: 24,
             startDirections: ['right', 'bottom'],
             endDirections: ['left', 'top'],
           },
@@ -100,8 +110,8 @@ export class GraphCanvasService {
         enabled: true,
         zoomAtMousePosition: true,
         modifiers: 'ctrl',
-        minScale: 0.4,
-        maxScale: 2.2,
+        minScale: ZOOM_MIN,
+        maxScale: ZOOM_MAX,
       },
     });
 
@@ -121,17 +131,20 @@ export class GraphCanvasService {
       }
     }
 
-    // Node Hover Highlight (Ant Design monochrome style)
+    // Hover node: đổ bóng đậm hơn
     this.store.graph.on('node:mouseenter', ({ node }: { node: any }) => {
-      if (this.store.selectedNode !== node) {
-        node.attr('body/stroke', '#1677ff');
-      }
+      node.attr('body/filter', NODE_SHADOW_HOVER);
     });
 
     this.store.graph.on('node:mouseleave', ({ node }: { node: any }) => {
-      if (this.store.selectedNode !== node) {
-        node.attr('body/stroke', '#e2e8f0');
-      }
+      node.attr('body/filter', NODE_SHADOW);
+    });
+
+    // Nút × trên card (attr event 'node:delete' trong node-view.config)
+    this.store.graph.on('node:delete', ({ node, e }: { node: any; e: any }) => {
+      e?.stopPropagation?.();
+      this.editor.deleteNode(node);
+      this.highlightSelectedNode();
     });
 
     // Edge Hover Highlight
@@ -156,9 +169,12 @@ export class GraphCanvasService {
     });
 
     // 4. KHI CLICK VÀO NODE -> MỞ DRAWER BÊN PHẢI QUA BRIDGE SERVICE (FR-05)
-    this.store.graph.on('node:click', ({ node }: { node: any }) => {
+    this.store.graph.on('node:click', ({ node, e }: { node: any; e: any }) => {
+      // Bấm nút × đã xoá node → bỏ qua click
+      if (!this.store.graph.hasCell(node.id) || e?.target?.getAttribute?.('event') === 'node:delete') return;
       this.editor.resetPreviousEdgeHighlight();
       this.editor.selectNode(node);
+      this.highlightSelectedNode();
       this.store.isDrawerOpen = true;
       this.bridgeService.selectNode(node, this.store.selectedNodeProps);
     });
@@ -166,10 +182,11 @@ export class GraphCanvasService {
     this.store.graph.on('blank:click', () => {
       this.editor.resetPreviousEdgeHighlight();
       this.editor.clearSelection();
+      this.highlightSelectedNode();
       this.bridgeService.clearSelection();
     });
 
-    // Tự động thiết lập style dây nối #94a3b8 khi nối dây (đồng bộ nét liền chuẩn, không sinh line riêng hay nhãn text)
+    // Dây vừa nối: áp style chuẩn (nét liền, không nhãn text)
     this.store.graph.on('edge:connected', ({ edge }: { edge: any }) => {
       edge.setAttrs(edgeAttrs());
       edge.attr('line/strokeDasharray', null);
@@ -179,12 +196,17 @@ export class GraphCanvasService {
     this.store.graph.on('cell:added', () => {
       this.store.updateCounts();
       this.history.pushHistorySnapshot();
+      this.refreshGatewayAlerts();
     });
 
     this.store.graph.on('cell:removed', () => {
       this.store.updateCounts();
       this.history.pushHistorySnapshot();
+      this.refreshGatewayAlerts();
     });
+
+    this.store.graph.on('edge:connected', () => this.refreshGatewayAlerts());
+    this.store.graph.on('node:change:ports', () => this.refreshGatewayAlerts());
 
     this.store.graph.on('scale', ({ sx }: { sx: number }) => {
       this.store.currentZoom = Math.round(sx * 100);
@@ -194,15 +216,57 @@ export class GraphCanvasService {
   }
 
 
+  /** Viền node đang chọn; node khác về viền mặc định */
+  public highlightSelectedNode(): void {
+    this.store.graph?.getNodes().forEach((n: any) => {
+      n.attr('body/stroke', n === this.store.selectedNode ? NODE_COLORS.borderSelected : NODE_COLORS.border);
+    });
+  }
+
+  /** Icon cảnh báo vàng trên gateway khi còn nhánh (cổng ra) chưa nối dây */
+  public refreshGatewayAlerts(): void {
+    const graph = this.store.graph;
+    if (!graph) return;
+    graph.getNodes().forEach((node: any) => {
+      if (!isGatewayType(node.getData()?.type)) return;
+      const outPorts = (node.getPorts() || []).filter((p: any) => p.group === 'outCondition');
+      const connected = new Set(
+        (graph.getOutgoingEdges(node) || []).map((edge: any) => edge.getSourcePortId?.()),
+      );
+      const missing = outPorts.some((p: any) => !connected.has(p.id));
+      node.attr('alertIcon/display', missing ? 'block' : 'none');
+    });
+  }
+
+  /**
+   * "Căn vừa màn hình": chọn mức zoom để thấy trọn toàn bộ quy trình trong khung nhìn rồi đưa sơ đồ vào giữa.
+   * Tính theo kích thước khung nhìn thật (scroller), giới hạn 50% → 125% để chữ trên node vẫn đọc được.
+   */
+  public zoomToFit(): void {
+    const graph = this.store.graph;
+    if (!graph || graph.getNodes().length === 0) return;
+    const scroller = graph.getPlugin?.('scroller');
+    const viewport: HTMLElement = scroller?.container || graph.container;
+    const { width, height } = viewport.getBoundingClientRect();
+    // Khung bao theo toạ độ gốc của node (không phụ thuộc mức zoom hiện tại)
+    const bbox = graph.getCellsBBox(graph.getNodes());
+    if (!width || !height || !bbox.width || !bbox.height) return;
+
+    const padding = 48;
+    const scale = Math.min((width - padding * 2) / bbox.width, (height - padding * 2) / bbox.height);
+    graph.zoomTo(Math.max(ZOOM_MIN, Math.min(scale, FIT_MAX)));
+    (scroller?.centerContent ? scroller : graph).centerContent();
+  }
+
   public zoomIn(): void {
     if (!this.store.graph) return;
-    this.store.graph.zoom(0.1);
+    this.store.graph.zoom(0.1, { minScale: ZOOM_MIN, maxScale: ZOOM_MAX });
   }
 
 
   public zoomOut(): void {
     if (!this.store.graph) return;
-    this.store.graph.zoom(-0.1);
+    this.store.graph.zoom(-0.1, { minScale: ZOOM_MIN, maxScale: ZOOM_MAX });
   }
 
 

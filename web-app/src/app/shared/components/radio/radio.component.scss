@@ -1,6 +1,6 @@
 @use '../../styles/processx-tokens' as px;
 
-// Figma ProcessX "Radio": ô tròn 20 (container pt 2px), cách chữ 8; chữ Body/sm 14/20 Neutral/900.
+// Ô tròn 20 (pt 2px), cách chữ 8; chữ 14/20 Neutral/900.
 
 :host {
   display: inline-block;
@@ -56,7 +56,7 @@
   border-color: px.$primary-600;
 }
 
-// Hover (không có trong design, đồng bộ với Checkbox)
+// Hover: đồng bộ với checkbox
 .px-radio:not(.px-radio-disabled):hover {
   .px-radio-circle {
     background: px.$primary-50;

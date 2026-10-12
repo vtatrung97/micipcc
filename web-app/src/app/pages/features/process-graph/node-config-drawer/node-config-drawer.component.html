@@ -1,28 +1,18 @@
 <aside class="properties-side-drawer" [class.open]="isVisible && !!nodeProps" [attr.aria-label]="'PROCESS_GRAPH.DRAWER.ARIA' | translate">
-  <!-- 1. DRAWER HEADER (Tiêu đề khớp Figma + Nút tròn X) -->
+  <!-- 1. DRAWER HEADER (Tiêu đề + Nút tròn X) -->
   <div class="drawer-header" *ngIf="nodeProps">
     <h3 class="drawer-title">{{ getDrawerTitle() }}</h3>
-    <button type="button" class="drawer-close-circle-btn" (click)="onClose()" [title]="'PROCESS_GRAPH.DRAWER.CLOSE_TITLE' | translate">
-      ✕
+    <button type="button" class="drawer-close-circle-btn" (click)="onClose()" [attr.aria-label]="'PROCESS_GRAPH.DRAWER.CLOSE_TITLE' | translate">
+      <img src="assets/icons/processx/close-modal.svg" width="24" height="24" alt="" />
     </button>
   </div>
 
   <!-- 2. SCROLLABLE FORM BODY -->
   <div class="drawer-body" *ngIf="nodeProps">
 
-    <!-- ===================================================================== -->
-    <!-- CASE 1: BẮT ĐẦU (Trigger)                                             -->
-    <!-- ===================================================================== -->
-    <div class="flat-drawer-section" *ngIf="nodeProps.type === 'START'">
-      <div class="form-group-item">
-        <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.TRIGGER_TYPE' | translate }}</label>
-        <input nz-input [value]="nodeProps.triggerType || ('PROCESS_GRAPH.DRAWER.TRIGGER_TYPE' | translate)" disabled class="readonly-pill-input" />
-      </div>
-
-      <div class="form-group-item">
-        <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.TRIGGER_FORM' | translate }}</label>
-        <input nz-input [value]="nodeProps.triggerFormSchedule || ('PROCESS_GRAPH.DRAWER.TRIGGER_FORM' | translate)" disabled class="readonly-pill-input" />
-      </div>
+    <!-- ===== CASE 1: BẮT ĐẦU (Trigger) ===== -->
+    <div class="start-drawer-section" *ngIf="nodeProps.type === 'START'">
+      <app-trigger-node-config [nodeProps]="nodeProps"></app-trigger-node-config>
     </div>
 
     <div class="flat-drawer-section" *ngIf="nodeProps.type === 'JOIN'">
@@ -32,9 +22,7 @@
       </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- CASE 2: KẾT THÚC (End)                                                -->
-    <!-- ===================================================================== -->
+    <!-- ===== CASE 2: KẾT THÚC (End) ===== -->
     <div class="flat-drawer-section" *ngIf="nodeProps.type === 'END'">
       <div class="form-group-item">
         <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.END_FORM' | translate }}</label>
@@ -50,9 +38,7 @@
       </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- CASE 3: GIAO VIỆC (User Task)                                         -->
-    <!-- ===================================================================== -->
+    <!-- ===== CASE 3: GIAO VIỆC (User Task) ===== -->
     <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'USER_TASK'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
@@ -182,9 +168,7 @@
       </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- CASE 4: THÔNG BÁO (Notification)                                      -->
-    <!-- ===================================================================== -->
+    <!-- ===== CASE 4: THÔNG BÁO (Notification) ===== -->
     <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'NOTIFICATION'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
@@ -250,9 +234,7 @@
       </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- CASE 5: QUY TRÌNH CON (Sub Process)                                   -->
-    <!-- ===================================================================== -->
+    <!-- ===== CASE 5: QUY TRÌNH CON (Sub Process) ===== -->
     <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'SUB_PROCESS'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
@@ -367,9 +349,7 @@
       </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- CASE 6: TÁC VỤ HỆ THỐNG (Action) - KHỚP ẢNH 1                         -->
-    <!-- ===================================================================== -->
+    <!-- ===== CASE 6: TÁC VỤ HỆ THỐNG (Action) ===== -->
     <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'SYSTEM_TASK'">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
@@ -519,10 +499,7 @@
       </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- CASE 7: ĐIỀU KIỆN (CHỌN 1 NHÁNH, CHẠY SONG SONG, CHỌN NHIỀU NHÁNH)   -->
-    <!-- CHUNG THÔNG TIN - KHÁC TYPE - KHỚP ẢNH 2, 3, 4, 5                     -->
-    <!-- ===================================================================== -->
+    <!-- ===== CASE 7: ĐIỀU KIỆN (chọn 1 nhánh / song song / chọn nhiều nhánh) — dùng chung UI ===== -->
     <div class="accordion-drawer-group" *ngIf="isGateway(nodeProps.type)">
       <!-- Accordion 1: Thông tin chung -->
       <div class="drawer-accordion-section">
@@ -661,9 +638,7 @@
   </div>
 </aside>
 
-<!-- ========================================================================= -->
-<!-- 3. MODAL ĐIỀU KIỆN (KHỚP ẢNH 4)                                           -->
-<!-- ========================================================================= -->
+<!-- ===== 3. MODAL ĐIỀU KIỆN ===== -->
 <div class="condition-modal-backdrop" *ngIf="isConditionModalVisible">
   <div class="condition-modal-card">
     <div class="condition-modal-header">

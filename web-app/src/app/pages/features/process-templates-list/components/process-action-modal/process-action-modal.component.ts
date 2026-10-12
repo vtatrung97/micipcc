@@ -15,7 +15,7 @@ interface ProcessActionText {
   confirm: string;
   /** Màu nút xác nhận */
   tone: 'primary' | 'danger';
-  /** Danh sách khi nhiều quy trình: 'cards' = mỗi quy trình một khung riêng cách 8 (427:25905), 'grouped' = chung một khung, ngăn bằng viền (427:26391) */
+  /** Danh sách khi nhiều quy trình: 'cards' = mỗi quy trình một khung riêng cách 8, 'grouped' = chung một khung, ngăn bằng viền */
   bulkLayout: 'cards' | 'grouped';
 }
 
@@ -63,12 +63,8 @@ const ACTION_TEXT: Record<ProcessAction, ProcessActionText> = {
 };
 
 /**
- * Modal xác nhận thao tác trên quy trình (Figma ProcessX):
- * - Nhân bản (435:28809)
- * - Dừng ban hành 1 quy trình (427:25538) / nhiều quy trình (427:25905)
- * - Ban hành 1 quy trình (427:26148) / nhiều quy trình (427:26391)
- * - Xóa (427:26510)
- * Nhiều quy trình: kiểu danh sách theo từng action (`bulkLayout`) — dừng ban hành dạng thẻ rời, ban hành dạng khung chung.
+ * Modal xác nhận thao tác trên quy trình: nhân bản, ban hành / dừng ban hành (1 hoặc nhiều), xóa.
+ * Nhiều quy trình: kiểu danh sách theo `bulkLayout` của action (dừng ban hành thẻ rời, ban hành khung chung).
  */
 @Component({
   selector: 'app-process-action-modal',

@@ -22,7 +22,7 @@
   animation: drawerSlide 0.24s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-// _Header modal: padding 16/24, viền dưới Neutral/300
+// Header: padding 16/24, viền dưới Neutral/300
 .drawer-header {
   display: flex;
   flex-shrink: 0;
@@ -43,7 +43,7 @@
   color: px.$neutral-900;
 }
 
-// Close X modal: nút tròn 40px nền Neutral/100
+// Nút đóng: tròn 40px nền Neutral/100
 .drawer-close {
   display: flex;
   align-items: center;
@@ -70,7 +70,7 @@
   overflow-y: auto;
 }
 
-// _Modal Actions: padding 24, viền trên Neutral/300
+// Footer: padding 24, viền trên Neutral/300
 .drawer-footer {
   flex-shrink: 0;
   padding: px.$space-24;

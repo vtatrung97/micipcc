@@ -7,7 +7,7 @@ import { ProcessTemplatesListRoutingModule } from './process-templates-list-rout
 import { AdvancedFilterDrawerComponent } from './components/advanced-filter-drawer/advanced-filter-drawer.component';
 import { ProcessActionModalComponent } from './components/process-action-modal/process-action-modal.component';
 
-// NG-ZORRO Modules
+// ng-zorro
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMessageModule } from 'ng-zorro-antd/message';

@@ -1,14 +1,11 @@
 import { NodeType } from './node-type';
 
 /**
- * Định dạng dữ liệu lưu / vẽ lại flow (khớp FLOW_SCHEMA.md).
- * FE gửi `FlowDefinition` (dạng chuỗi JSON) trong `flowJson` khi Lưu nháp,
- * BE trả lại nguyên văn để FE vẽ lại canvas.
+ * Định dạng lưu / vẽ lại flow (khớp FLOW_SCHEMA.md): FE gửi `FlowDefinition` dạng chuỗi JSON
+ * trong `flowJson` khi Lưu nháp, BE trả nguyên văn để FE vẽ lại canvas.
  */
 
-// ============================================================================
-// Payload / Response với BE
-// ============================================================================
+// ===== Payload / Response với BE =====
 
 /** Body `PUT /api/v1/ticket-call-flows/{id}` khi bấm "Lưu nháp" */
 export interface SaveFlowDraftPayload {
@@ -54,9 +51,7 @@ export interface ApiResponse<T> {
   result: T;
 }
 
-// ============================================================================
-// FlowDefinition
-// ============================================================================
+// ===== FlowDefinition =====
 
 export interface FlowDefinition {
   nodes: FlowNode[];
@@ -85,13 +80,13 @@ export interface FlowEdge {
   target: string;
 }
 
-// ============================================================================
-// config theo từng type (theo drawer design)
-// ============================================================================
+// ===== config theo từng type node =====
 
 export interface StartConfig {
   triggerType: string | null;      // Kiểu kích hoạt
   triggerRefId: string | null;     // Form / Lịch được chọn
+  /** "Khởi tạo biến quy trình" (kích hoạt thủ công): biến ← trường biểu mẫu */
+  variables?: Array<{ name: string; formField: string | null; apiField?: string | null; value?: string | null; displayName: string }>;
 }
 
 export type ConditionOperator = 'EQ' | 'NEQ' | 'GT' | 'LT' | 'CONTAINS';

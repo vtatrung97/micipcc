@@ -31,15 +31,13 @@ interface CalendarPane {
 type PaneKey = 'start' | 'end';
 
 const ICON_BASE = 'assets/icons/processx';
-/** Rộng popup khoảng ngày: 16 + 280 + 24 + 280 + 16 (Figma "_Date pickers" range) */
+/** Rộng popup khoảng ngày: 16 + 280 + 24 + 280 + 16 */
 const RANGE_PANEL_WIDTH = 616;
 const SINGLE_PANEL_WIDTH = 312;
 
 /**
- * Chọn ngày theo Figma ProcessX.
- * - Một ngày ("Date single", 71:10555): ngModel = 'YYYY-MM-DD'; bấm ngày là chọn luôn.
- * - Khoảng ngày (isRange, "_Date pickers" 293:66499): ngModel = { from, to } (YYYY-MM-DD);
- *   2 lịch độc lập "Ngày bắt đầu" / "Ngày kết thúc", chỉ áp dụng khi bấm "Chọn".
+ * Chọn ngày. Một ngày: ngModel = 'YYYY-MM-DD', bấm ngày là chọn luôn.
+ * Khoảng ngày (isRange): ngModel = { from, to }, 2 lịch độc lập, chỉ áp dụng khi bấm "Chọn".
  */
 @Component({
   selector: 'app-date-picker',
@@ -64,8 +62,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   /** Kích thước: small 40 · middle 48 (mặc định) · large 56 */
   @Input() size: 'small' | 'middle' | 'large' = 'middle';
   /**
-   * Popup dùng position: fixed theo toạ độ màn hình thay vì absolute theo ô.
-   * Bật khi ô nằm trong vùng cuộn hẹp (vd: drawer) để popup khoảng ngày 616px không bị cắt.
+   * Popup dùng position: fixed thay vì absolute để không bị cắt trong vùng cuộn hẹp (vd: drawer).
    * Cuộn bất kỳ vùng nào khi đang mở sẽ đóng popup.
    */
   @Input() fixedPanel: boolean = false;
@@ -129,7 +126,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
     return this.formatDisplay(this.rawEnd);
   }
 
-  /** Dòng tóm tắt ở "Bar action": 22/10/2024 → 22/11/2024 */
+  /** Dòng tóm tắt khoảng ngày ở thanh thao tác: 22/10/2024 → 22/11/2024 */
   get draftSummary(): string {
     const empty = 'DD/MM/YYYY';
     return `${this.formatDisplay(this.draftStart) || empty} → ${this.formatDisplay(this.draftEnd) || empty}`;

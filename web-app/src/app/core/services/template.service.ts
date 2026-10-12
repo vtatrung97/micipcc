@@ -5,14 +5,8 @@ import { ApiService } from '@core/http/api.service';
 import { DEFAULT_PRESET_TEMPLATES } from './preset-templates.constant';
 
 /**
- * ============================================================================
- * IPCC 2.0 FLOW SYSTEM - TEMPLATE MANAGEMENT SERVICE
- * ============================================================================
- * Quản lý vòng đời và dữ liệu của các Process Template (US-01, US-02, FR-07 -> FR-10, FR-25)
- * Kết nối tương tác trực tiếp giữa:
- * - Trang 1: Danh sách Template & Vòng đời (/templates/templates-management)
- * - Trang 2: Canvas Builder độc lập (/templates/graph)
- * ============================================================================
+ * Quản lý vòng đời và dữ liệu Process Template (US-01, US-02, FR-07 → FR-10, FR-25).
+ * Dùng chung cho màn danh sách template và Canvas Builder.
  */
 
 export interface TemplateVersionItem {
@@ -59,7 +53,7 @@ export interface ProcessTemplateItem {
   created_at?: string; // DD/MM/YYYY HH:mm
   created_by?: string;
   updatedAt?: string;
-  active_instances_count?: number; // Dành cho FR-09: Kiểm tra chặn xóa nếu còn instance chạy dở
+  active_instances_count?: number; // FR-09: chặn xóa nếu còn instance chạy dở
   // Tab "Thông tin chung" của Canvas Builder (process-graph/models/process-info.model.ts)
   triggerType?: 'MANUAL' | 'AUTO' | 'SCHEDULE' | 'HYBRID' | null;
   triggerConfig?: {
@@ -98,9 +92,6 @@ export class TemplateService {
     this.loadFromStorage();
   }
 
-  /**
-   * Gọi API lấy danh sách Template.
-   */
   public fetchTemplatesFromApi(): Observable<ProcessTemplateItem[]> {
     return this.apiService.get<{ templates: ProcessTemplateItem[] } | ProcessTemplateItem[]>(this.endpoint).pipe(
       map(res => {
@@ -225,9 +216,7 @@ export class TemplateService {
     this.saveToStorage();
   }
 
-  /**
-   * FR-10: Nhân bản quy trình
-   */
+  /** FR-10: Nhân bản quy trình */
   public cloneTemplate(sourceCode: string, newCode?: string, newName?: string, description?: string): ProcessTemplateItem | null {
     const original = this.getTemplateByCode(sourceCode);
     if (!original) return null;
@@ -255,9 +244,7 @@ export class TemplateService {
     return cloned;
   }
 
-  /**
-   * FR-08: Bật / Tắt quy trình
-   */
+  /** FR-08: Bật / tắt quy trình */
   public toggleStatus(code: string): { success: boolean; newStatus: 'Published' | 'Inactive'; message: string } {
     const template = this.getTemplateByCode(code);
     if (!template) {
@@ -273,9 +260,7 @@ export class TemplateService {
     return { success: true, newStatus: nextStatus, message };
   }
 
-  /**
-   * FR-09: Xóa quy trình
-   */
+  /** FR-09: Xóa quy trình, chặn nếu còn instance đang chạy */
   public deleteTemplate(code: string): { success: boolean; message: string; activeInstances?: number } {
     const template = this.getTemplateByCode(code);
     if (!template) {
@@ -303,9 +288,7 @@ export class TemplateService {
     this.updateTemplate(code, { graphData });
   }
 
-  // ============================================================================
-  // FR-25: A/B TESTING CONFIGURATION
-  // ============================================================================
+  // ===== FR-25: cấu hình A/B testing =====
   public getExperiments(): TemplateExperimentConfig[] {
     return this.experimentsSubject.value;
   }

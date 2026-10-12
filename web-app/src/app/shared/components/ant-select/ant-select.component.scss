@@ -1,8 +1,7 @@
 @use '../../styles/processx-tokens' as px;
 
-// Theo Figma ProcessX "_Text field dropdown" (size sm) + "_Input dropdown menu item".
 // Ô cao 48 (viền nằm trong), radius 12; mở: viền 2px Neutral/800 + chevron đỏ hướng lên.
-// Dropdown: panel radius 12, Effect menu; item 16/24, mục đang chọn nền Neutral/200 + dấu ✓ đỏ.
+// Dropdown: panel radius 12, đổ bóng menu; item 16/24, mục đang chọn nền Neutral/200 + dấu ✓ đỏ.
 
 :host {
   display: inline-block;
@@ -174,7 +173,7 @@
   display: none;
 }
 
-/* Option elements */
+/* Chấm màu / badge trong option */
 .option-dot {
   display: inline-block;
   flex-shrink: 0;
@@ -193,7 +192,7 @@
   color: px.$neutral-600;
 }
 
-/* Dropdown (_Text field search dropdown) */
+/* Dropdown */
 .px-select-dropdown {
   position: absolute;
   top: calc(100% + #{px.$space-8});
@@ -212,7 +211,7 @@
   box-sizing: border-box;
   animation: antSelectSlideDown 0.18s cubic-bezier(0.23, 1, 0.32, 1);
 
-  // Thanh cuộn mảnh (_Scroll bar)
+  // Thanh cuộn mảnh
   scrollbar-width: thin;
   scrollbar-color: px.$neutral-300 transparent;
 
@@ -236,6 +235,12 @@
   top: auto;
   bottom: calc(100% + #{px.$space-8});
   animation-name: antSelectSlideUp;
+}
+
+// fixedPanel: toạ độ màn hình do component tính (top/left/width), bỏ top/bottom của chế độ thường
+.px-select-dropdown.px-select-dropdown-fixed {
+  position: fixed;
+  bottom: auto;
 }
 
 @keyframes antSelectSlideUp {

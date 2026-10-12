@@ -7,7 +7,7 @@
      [class.ms-status-error]="status === 'error'"
      [class.ms-status-warning]="status === 'warning'">
 
-  <!-- Ô hiển thị (_Text field dropdown) -->
+  <!-- Ô hiển thị -->
   <div class="ms-trigger" role="combobox" tabindex="0"
        [attr.aria-expanded]="isOpen"
        [attr.aria-disabled]="disabled"
@@ -32,7 +32,7 @@
     <img class="ms-chevron" [src]="isOpen ? icons.chevronActive : icons.chevron" width="24" height="24" alt="" />
   </div>
 
-  <!-- Dropdown (_Text field search dropdown) -->
+  <!-- Dropdown -->
   <div #panel class="ms-panel" *ngIf="isOpen"
        [class.ms-panel-up]="dropUp"
        [style.visibility]="measuring ? 'hidden' : null"

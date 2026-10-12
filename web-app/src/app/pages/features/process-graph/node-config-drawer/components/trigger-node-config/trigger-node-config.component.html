@@ -1,75 +1,356 @@
-<div class="trigger-config-container" *ngIf="nodeProps">
-  <div class="drawer-section-heading mt-4">
-    <ant-icon name="thunderbolt" [size]="14" style="margin-right: 6px;"></ant-icon>
-    <span>SỰ KIỆN KÍCH HOẠT (TRIGGER EVENT)</span>
+<div class="start-config" *ngIf="nodeProps">
+  <!-- Kiểu kích hoạt: chỉ xem, đổi ở tab Thông tin chung -->
+  <app-form-field
+    [label]="'PROCESS_GRAPH.DRAWER.START.TRIGGER_TYPE' | translate"
+    [spacing]="0"
+  >
+    <ant-input
+      [readonly]="true"
+      [ngModel]="
+        triggerType
+          ? ('PROCESS_GRAPH.DRAWER.START.TRIGGER_TYPES.' + triggerType
+            | translate)
+          : ''
+      "
+      [placeholder]="'PROCESS_GRAPH.DRAWER.START.TRIGGER_EMPTY' | translate"
+    ></ant-input>
+  </app-form-field>
+
+  <!-- ===================== Biểu mẫu ===================== -->
+  <app-form-field
+    *ngIf="hasForm"
+    [label]="'PROCESS_GRAPH.DRAWER.START.FORM' | translate"
+    [spacing]="0"
+  >
+    <ant-input
+      class="start-form-value"
+      [readonly]="true"
+      [ngModel]="formLabel"
+      [placeholder]="'PROCESS_GRAPH.DRAWER.START.FORM_EMPTY' | translate"
+    ></ant-input>
+  </app-form-field>
+
+  <!-- =====================  API endpoint + Điều kiện kích hoạt ===================== -->
+  <ng-container *ngIf="hasApi">
+    <app-form-field
+      [label]="'PROCESS_GRAPH.DRAWER.START.API_ENDPOINT' | translate"
+      [spacing]="0"
+    >
+      <ant-input
+        class="start-form-value"
+        [readonly]="true"
+        [ngModel]="apiEndpoint"
+        [placeholder]="'PROCESS_GRAPH.DRAWER.START.API_EMPTY' | translate"
+      ></ant-input>
+    </app-form-field>
+
+    <app-form-field
+      [label]="'PROCESS_GRAPH.INFO.TRIGGER_CONDITION' | translate"
+      [required]="true"
+      [spacing]="0"
+    >
+      <div class="condition-box">
+        <div class="condition-grid condition-head">
+          <span>{{ "PROCESS_GRAPH.CONDITION_MODAL.PARAM" | translate }}</span>
+          <span>{{
+            "PROCESS_GRAPH.CONDITION_MODAL.OPERATOR" | translate
+          }}</span>
+          <span>{{ "PROCESS_GRAPH.CONDITION_MODAL.VALUE" | translate }}</span>
+        </div>
+        <div class="condition-grid" *ngFor="let rule of conditionRules">
+          <span
+            class="condition-cell"
+            [appTooltip]="rule.param"
+            [tooltipOnlyTruncated]="true"
+            >{{ rule.param || "—" }}</span
+          >
+          <span
+            class="condition-cell"
+            [tooltipOnlyTruncated]="true"
+            [appTooltip]="
+              rule.operator
+                ? ('PROCESS_GRAPH.DRAWER.START.OPERATORS.' + rule.operator
+                  | translate)
+                : ''
+            "
+            >{{
+              rule.operator
+                ? ("PROCESS_GRAPH.DRAWER.START.OPERATORS." + rule.operator
+                  | translate)
+                : "—"
+            }}</span
+          >
+          <span
+            class="condition-cell"
+            [appTooltip]="rule.value"
+            [tooltipOnlyTruncated]="true"
+            >{{ rule.value || "—" }}</span
+          >
+        </div>
+        <span class="condition-empty" *ngIf="conditionRules.length === 0">{{
+          "PROCESS_GRAPH.DRAWER.START.CONDITION_EMPTY" | translate
+        }}</span>
+      </div>
+    </app-form-field>
+  </ng-container>
+
+  <!-- ===================== Lập lịch : lịch chạy chỉ xem ===================== -->
+  <div
+    class="schedule-box"
+    *ngIf="triggerType === 'SCHEDULE' && schedule as sch"
+  >
+    <app-radio-group
+      class="schedule-mode"
+      direction="horizontal"
+      [ngModel]="sch.mode"
+      [options]="scheduleModeOptions"
+    ></app-radio-group>
+    <div class="schedule-divider"></div>
+
+    <!-- Lặp lại: chu kỳ (+ thứ / ngày) + giờ chạy -->
+    <ng-container *ngIf="sch.mode === 'REPEAT'">
+      <app-form-field
+        [label]="'PROCESS_GRAPH.INFO.REPEAT' | translate"
+        [required]="true"
+        [spacing]="0"
+      >
+        <ant-input
+          class="start-form-value"
+          [readonly]="true"
+          [ngModel]="
+            sch.repeat
+              ? ('PROCESS_GRAPH.INFO.REPEAT_OPTIONS.' + sch.repeat | translate)
+              : ''
+          "
+        ></ant-input>
+      </app-form-field>
+      <app-form-field
+        *ngIf="sch.repeat === 'WEEKLY'"
+        [label]="'PROCESS_GRAPH.INFO.WEEK_DAYS_LABEL' | translate"
+        [required]="true"
+        [spacing]="0"
+      >
+        <div class="readonly-tags">
+          <span class="readonly-tag" *ngFor="let d of sch.weekDays">{{
+            "PROCESS_GRAPH.INFO.WEEK_DAYS." + d | translate
+          }}</span>
+        </div>
+      </app-form-field>
+      <app-form-field
+        *ngIf="sch.repeat === 'MONTHLY'"
+        [label]="'PROCESS_GRAPH.INFO.MONTH_DAYS' | translate"
+        [required]="true"
+        [spacing]="0"
+      >
+        <ant-input
+          class="start-form-value"
+          [readonly]="true"
+          [ngModel]="monthDaysText"
+        ></ant-input>
+      </app-form-field>
+    </ng-container>
+
+    <!-- Chạy một lần: ngày chạy -->
+    <app-form-field
+      *ngIf="sch.mode !== 'REPEAT'"
+      [label]="'PROCESS_GRAPH.INFO.RUN_DATE' | translate"
+      [required]="true"
+      [spacing]="0"
+    >
+      <ant-input
+        class="start-form-value"
+        [readonly]="true"
+        [ngModel]="runDateText"
+      ></ant-input>
+    </app-form-field>
+
+    <app-form-field
+      [label]="'PROCESS_GRAPH.INFO.RUN_TIME' | translate"
+      [required]="true"
+      [spacing]="0"
+    >
+      <div class="time-readonly">
+        <span class="time-box">{{ runHour || "hh" }}</span>
+        <span class="time-sep">:</span>
+        <span class="time-box">{{ runMinute || "mm" }}</span>
+      </div>
+    </app-form-field>
   </div>
 
-  <!-- Loại sự kiện Trigger -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Sự kiện kích hoạt</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.triggerEvent" (ngModelChange)="onPropChange('triggerEvent')"
-        name="triggerEvent">
-        <nz-option nzValue="Inbound Call (Tổng đài 1800xxxx)" nzLabel="Inbound Call (Tổng đài 1800xxxx)"></nz-option>
-        <nz-option nzValue="CRM Ticket Created (Ticket mới từ CRM)" nzLabel="CRM Ticket Created (Ticket mới từ CRM)"></nz-option>
-        <nz-option nzValue="Webhook Event (API bên thứ 3)" nzLabel="Webhook Event (API bên thứ 3)"></nz-option>
-        <nz-option nzValue="Schedule Cron (Định kỳ tự động)" nzLabel="Schedule Cron (Định kỳ tự động)"></nz-option>
-        <nz-option nzValue="Manual Trigger (Khởi tạo thủ công bởi Agent)" nzLabel="Manual Trigger (Khởi tạo thủ công bởi Agent)"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+  <ng-container *ngIf="hasVariables">
+    <div class="start-divider" *ngIf="!isFixedValue"></div>
 
-  <!-- Gán quyền phụ trách (Assignee) -->
-  <nz-form-item>
-    <nz-form-label>Đối tượng xử lý ban đầu</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.assignee" (ngModelChange)="onPropChange('assignee')"
-        name="stepAssignee">
-        <nz-option nzValue="Hệ thống tự động (System)" nzLabel="Hệ thống tự động (System)"></nz-option>
-        <nz-option nzValue="Điện thoại viên (FO/BO)" nzLabel="Điện thoại viên (FO/BO)"></nz-option>
-        <nz-option nzValue="Tổ Tiếp nhận Khách hàng VIP" nzLabel="Tổ Tiếp nhận Khách hàng VIP"></nz-option>
-        <nz-option nzValue="Trưởng ca (Supervisor)" nzLabel="Trưởng ca (Supervisor)"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+    <section class="start-section">
+      <button
+        type="button"
+        class="start-section-head"
+        (click)="isVariablesOpen = !isVariablesOpen"
+        [attr.aria-expanded]="isVariablesOpen"
+      >
+        <span>{{
+          "PROCESS_GRAPH.DRAWER.START.VARIABLES_TITLE" | translate
+        }}</span>
+        <img
+          [src]="
+            isVariablesOpen
+              ? 'assets/icons/processx/chevron-up-active.svg'
+              : 'assets/icons/processx/chevron-down.svg'
+          "
+          width="24"
+          height="24"
+          alt=""
+        />
+      </button>
 
-  <!-- Cam kết thời hạn SLA -->
-  <div class="form-row-2">
-    <nz-form-item>
-      <nz-form-label>Cam kết SLA</nz-form-label>
-      <nz-form-control>
-        <nz-select [(ngModel)]="nodeProps.sla" (ngModelChange)="onPropChange('sla')" name="stepSla">
-          <nz-option nzValue="15m SLA" nzLabel="15m SLA (Khẩn cấp)"></nz-option>
-          <nz-option nzValue="30m SLA" nzLabel="30m SLA"></nz-option>
-          <nz-option nzValue="1h SLA" nzLabel="1h SLA"></nz-option>
-          <nz-option nzValue="2h SLA" nzLabel="2h SLA (Tiêu chuẩn)"></nz-option>
-          <nz-option nzValue="24h SLA" nzLabel="24h SLA"></nz-option>
-        </nz-select>
-      </nz-form-control>
-    </nz-form-item>
+      <!-- Bảng biến: Biến quy trình · Trường nguồn / Giá trị cố định · Tên hiển thị · [xoá – ghim phải] -->
+      <div class="var-table" *ngIf="isVariablesOpen">
+        <div class="var-scroll">
+          <table [class.table-hybrid]="isHybrid">
+            <thead>
+              <tr>
+                <th>
+                  {{ "PROCESS_GRAPH.DRAWER.START.COL_VARIABLE" | translate }}
+                </th>
+                <ng-container *ngIf="isHybrid; else singleSourceHead">
+                  <th>
+                    {{ "PROCESS_GRAPH.DRAWER.START.COL_API_FIELD" | translate }}
+                  </th>
+                  <th>
+                    {{
+                      "PROCESS_GRAPH.DRAWER.START.COL_FORM_FIELD" | translate
+                    }}
+                  </th>
+                </ng-container>
+                <ng-template #singleSourceHead>
+                  <th>
+                    {{
+                      "PROCESS_GRAPH.DRAWER.START." + sourceColumnKey
+                        | translate
+                    }}
+                  </th>
+                </ng-template>
+                <th>
+                  {{
+                    "PROCESS_GRAPH.DRAWER.START.COL_DISPLAY_NAME" | translate
+                  }}
+                </th>
+                <th class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let row of rows; let i = index; trackBy: trackByIndex"
+              >
+                <td>
+                  <input
+                    class="cell-input"
+                    [(ngModel)]="row.variable"
+                    (ngModelChange)="save()"
+                    [placeholder]="
+                      'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate
+                    "
+                  />
+                </td>
+                <!-- Hybrid: Trường dữ liệu API + Trường biểu mẫu -->
+                <ng-container *ngIf="isHybrid; else singleSourceCell">
+                  <td>
+                    <ant-select
+                      class="cell-select"
+                      size="small"
+                      [fixedPanel]="true"
+                      [(ngModel)]="row.apiField"
+                      (ngModelChange)="save()"
+                      [options]="apiFieldOptions"
+                      [placeholder]="
+                        'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate
+                      "
+                    ></ant-select>
+                  </td>
+                  <td>
+                    <ant-select
+                      class="cell-select"
+                      size="small"
+                      [fixedPanel]="true"
+                      [(ngModel)]="row.formField"
+                      (ngModelChange)="save()"
+                      [options]="formFieldOptions"
+                      [placeholder]="
+                        'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate
+                      "
+                    ></ant-select>
+                  </td>
+                </ng-container>
+                <ng-template #singleSourceCell>
+                  <td>
+                    <input
+                      *ngIf="isFixedValue; else sourceSelect"
+                      class="cell-input"
+                      [(ngModel)]="row.fixedValue"
+                      (ngModelChange)="save()"
+                      [placeholder]="
+                        'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate
+                      "
+                    />
+                    <ng-template #sourceSelect>
+                      <ant-select
+                        class="cell-select"
+                        size="small"
+                        [fixedPanel]="true"
+                        [(ngModel)]="row.formField"
+                        (ngModelChange)="save()"
+                        [options]="sourceFieldOptions"
+                        [placeholder]="
+                          'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate
+                        "
+                      ></ant-select>
+                    </ng-template>
+                  </td>
+                </ng-template>
+                <td>
+                  <input
+                    class="cell-input"
+                    [(ngModel)]="row.displayName"
+                    (ngModelChange)="save()"
+                    [placeholder]="
+                      'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate
+                    "
+                  />
+                </td>
+                <td class="col-action">
+                  <button
+                    *ngIf="canRemove(i)"
+                    type="button"
+                    class="row-remove"
+                    (click)="removeRow(i)"
+                    [appTooltip]="
+                      'PROCESS_GRAPH.DRAWER.START.REMOVE_ROW' | translate
+                    "
+                  >
+                    <img
+                      src="assets/icons/processx/trash-danger.svg"
+                      width="20"
+                      height="20"
+                      alt=""
+                    />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-    <nz-form-item>
-      <nz-form-label>Cảnh báo Timeout</nz-form-label>
-      <nz-form-control>
-        <nz-select [(ngModel)]="nodeProps.timeout" (ngModelChange)="onPropChange('timeout')" name="stepTimeout">
-          <nz-option nzValue="5 phút" nzLabel="5 phút (Cảnh báo vàng)"></nz-option>
-          <nz-option nzValue="15 phút" nzLabel="15 phút"></nz-option>
-          <nz-option nzValue="30 phút" nzLabel="30 phút"></nz-option>
-          <nz-option nzValue="1 giờ" nzLabel="1 giờ"></nz-option>
-          <nz-option nzValue="Không giới hạn" nzLabel="Không giới hạn"></nz-option>
-        </nz-select>
-      </nz-form-control>
-    </nz-form-item>
-  </div>
-
-  <!-- Ghi chú mô tả -->
-  <nz-form-item>
-    <nz-form-label>Mô tả nguồn kích hoạt</nz-form-label>
-    <nz-form-control>
-      <textarea nz-input rows="3" [(ngModel)]="nodeProps.description"
-        (ngModelChange)="onPropChange('description')" name="stepDesc"
-        placeholder="Ghi chú điều kiện hoặc nguồn phát sinh sự kiện...">
-      </textarea>
-    </nz-form-control>
-  </nz-form-item>
+        <div class="var-add">
+          <button type="button" class="var-add-btn" (click)="addRow()">
+            <img
+              src="assets/icons/processx/plus-blue.svg"
+              width="24"
+              height="24"
+              alt=""
+            />
+            <span>{{ "PROCESS_GRAPH.DRAWER.START.ADD_ROW" | translate }}</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </ng-container>
 </div>

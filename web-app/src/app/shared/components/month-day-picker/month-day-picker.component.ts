@@ -13,9 +13,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { shouldDropUp } from '../../utils/dropdown-placement';
 
 /**
- * Chọn NGÀY TRONG THÁNG (1 → 31), không gắn với tháng/năm cụ thể.
- * Dùng cho lịch chạy định kỳ, ví dụ "chạy vào ngày 7, 14, 21, 28 hằng tháng".
- * Giá trị ngModel: `number[]` (đã sắp xếp tăng dần) khi multiple, `number | null` khi chọn một.
+ * Chọn ngày trong tháng (1 → 31) cho lịch chạy định kỳ, không gắn với tháng/năm cụ thể.
+ * ngModel: `number[]` (sắp xếp tăng dần) khi multiple, `number | null` khi chọn một.
  */
 @Component({
   selector: 'app-month-day-picker',

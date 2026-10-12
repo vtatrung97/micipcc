@@ -5,7 +5,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1200; // trên dropdown (1050) và modal (1100/1101)
+  z-index: 1200; // trên dropdown và modal (1100/1101)
   pointer-events: none;
 }
 
@@ -19,7 +19,7 @@
   animation: pxTooltipIn 0.12s ease;
 }
 
-// Body/sm/Medium, trắng; xuống dòng theo max-width hoặc ký tự \n trong text
+// Chữ 14/20 Medium, trắng; xuống dòng theo max-width hoặc ký tự \n trong text
 .px-tooltip-text {
   font-family: px.$font-family;
   font-size: 14px;

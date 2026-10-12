@@ -9,16 +9,16 @@ export interface FlowInstanceItem {
   process_instance_id: string; // Mã định danh duy nhất của tiến trình
   business_key: string;        // Mã định danh nghiệp vụ (VD: số thuê bao 0903..., mã khiếu nại KN-...)
   template_id?: string;
-  template_name: string;       // Tên quy trình
+  template_name: string;
   version_no: string;          // Phiên bản hiệu lực (VD: V1.0, V2.1)
   status: FlowInstanceStatus;  // Trạng thái: RUNNING | COMPLETED | OVERDUE | FAILED | EXCEPTION
   current_step_name: string;   // Tên Node/bước đang dừng
   activity_id: string;         // ID của Activity/Node hiện tại
   current_owner: string;       // Người/bộ phận phụ trách duy nhất theo FR-13, US-20
-  assignee?: string;           // Người phụ trách
+  assignee?: string;
   candidate_group?: string;    // Phòng ban phụ trách (VD: Phòng CSKH)
   started_at: string;          // Ngày giờ bắt đầu (ISO string)
-  ended_at?: string;           // Ngày giờ kết thúc
+  ended_at?: string;
   due_at: string;              // Thời hạn cam kết SLA
   sla_status?: 'normal' | 'warning' | 'overdue';
   trigger_source: string;      // Kênh tiếp nhận: Zalo, Facebook, SMS, IPCC 2.0, Webhook, MANUAL
@@ -57,12 +57,12 @@ export interface FlowTimelineItem {
 
 export interface FlowInstanceFilter {
   search?: string;           // Tìm theo process_instance_id hoặc business_key
-  template_id?: string;      // ID Template quy trình
+  template_id?: string;
   status?: string;           // Trạng thái: RUNNING, COMPLETED, OVERDUE, FAILED
   current_owner?: string;    // Người hoặc bộ phận phụ trách
   from_date?: string;        // Thời gian khởi tạo từ
   to_date?: string;          // Thời gian khởi tạo đến
-  trigger_source?: string;   // Nguồn kích hoạt
+  trigger_source?: string;
   page: number;
   page_size: number;
 }
@@ -86,9 +86,7 @@ export interface AssigneeOption {
   department: string;
 }
 
-// ============================================================================
-// [TRANG 2] LỊCH SỬ THỰC THI & AUDIT TRAIL (US-23)
-// ============================================================================
+// ===== Trang 2: lịch sử thực thi & audit trail (US-23) =====
 export interface FlowHistoryItem {
   process_instance_id: string;
   business_key: string;
@@ -149,9 +147,7 @@ export interface AuditTrailDetail {
   variable_changes: VariableChangeRecord[];
 }
 
-// ============================================================================
-// [TRANG 3] NHẬT KÝ LOG HỆ THỐNG (FR-15 IMMUTABLE LOGS)
-// ============================================================================
+// ===== Trang 3: nhật ký log hệ thống (FR-15, immutable logs) =====
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'FATAL' | 'DEBUG';
 
 export interface SystemLogItem {
@@ -206,9 +202,7 @@ export class FlowInstanceService {
 
   constructor(private apiService: ApiService) {}
 
-  // --------------------------------------------------------------------------
-  // 1. MÀN HÌNH GIÁM SÁT TIẾN TRÌNH THỜI GIAN THỰC (/instances/monitor)
-  // --------------------------------------------------------------------------
+  // ===== 1. Giám sát tiến trình thời gian thực (/instances/monitor) =====
 
   public getInstances(filter: FlowInstanceFilter): Observable<FlowInstanceListResponse> {
     let params = new HttpParams()
@@ -272,9 +266,7 @@ export class FlowInstanceService {
     return this.apiService.get<AssigneeOption[]>(`${this.endpoint}/assignees`);
   }
 
-  // --------------------------------------------------------------------------
-  // 2. MÀN HÌNH LỊCH SỬ THỰC THI & AUDIT (US-23) (/instances/history)
-  // --------------------------------------------------------------------------
+  // ===== 2. Lịch sử thực thi & audit, US-23 (/instances/history) =====
 
   public getExecutionHistory(filter: FlowHistoryFilter): Observable<FlowHistoryListResponse> {
     let params = new HttpParams()
@@ -310,9 +302,7 @@ export class FlowInstanceService {
     return this.apiService.get<AuditTrailDetail>(`${this.endpoint}/${instanceId}/audit`);
   }
 
-  // --------------------------------------------------------------------------
-  // 3. MÀN HÌNH NHẬT KÝ LOG HỆ THỐNG (FR-15 IMMUTABLE LOGS) (/instances/logs)
-  // --------------------------------------------------------------------------
+  // ===== 3. Nhật ký log hệ thống, FR-15 (/instances/logs) =====
 
   public getSystemLogs(filter: SystemLogFilter): Observable<SystemLogListResponse> {
     let params = new HttpParams()

@@ -1,22 +1,292 @@
+@use '../../../../../../shared/styles/processx-tokens' as px;
+
 :host {
   display: block;
 }
 
-.drawer-section-heading {
+// Nội dung drawer: các khối cách 24
+.start-config {
   display: flex;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #475569;
-  letter-spacing: 0.04em;
-  margin-bottom: 14px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #f1f5f9;
-  text-transform: uppercase;
+  flex-direction: column;
+  gap: px.$space-24;
+  font-family: px.$font-family;
 }
 
-.form-row-2 {
+// Giá trị biểu mẫu: chữ đậm màu hơn ô readonly mặc định
+:host ::ng-deep .start-form-value .px-input-affix-wrapper {
+  color: px.$neutral-900;
+}
+
+// Điều kiện kích hoạt (chỉ xem): khung trắng, mỗi dòng 3 ô xám
+.condition-box {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+  padding: px.$space-16;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+}
+
+.condition-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: px.$space-8;
+}
+
+.condition-head {
+  @include px.body-md-medium;
+  color: px.$neutral-900;
+}
+
+.condition-cell {
+  overflow: hidden;
+  padding: px.$space-12;
+  background: px.$neutral-100;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+  @include px.body-md-medium;
+  color: px.$neutral-900;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.condition-empty {
+  @include px.body-sm-medium;
+  color: px.$neutral-500;
+}
+
+// Lập lịch: khung lịch chạy nền xám, chỉ xem
+.schedule-box {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-16;
+  padding: px.$space-16;
+  background: px.$neutral-100;
+  border-radius: px.$radius-lg;
+}
+
+// Radio chỉ hiển thị lựa chọn đã cài ở tab Thông tin chung, không cho đổi tại đây
+.schedule-mode {
+  pointer-events: none;
+}
+
+:host ::ng-deep .schedule-mode .px-radio-label {
+  font-weight: 500;
+}
+
+.schedule-divider {
+  height: 1px;
+  background: px.$neutral-300;
+}
+
+// Giờ chạy chỉ xem: 2 ô trắng 80px, chữ căn giữa, cách 4
+.time-readonly {
+  display: flex;
+  align-items: center;
+  gap: px.$space-4;
+}
+
+.time-box {
+  width: 80px;
+  padding: px.$space-12;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+  box-sizing: border-box;
+  @include px.body-md-medium;
+  color: px.$neutral-500;
+  text-align: center;
+}
+
+.time-sep {
+  @include px.body-md-medium;
+  color: px.$neutral-900;
+}
+
+.readonly-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: px.$space-8;
+}
+
+.readonly-tag {
+  padding: px.$space-8 px.$space-12;
+  background: px.$neutral-200;
+  border-radius: px.$radius-sm;
+  @include px.body-sm-regular;
+  color: px.$neutral-900;
+}
+
+.start-divider {
+  height: 1px;
+  background: px.$neutral-300;
+}
+
+.start-section {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-16;
+}
+
+// Tiêu đề khối + chevron thu gọn
+.start-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-900;
+  text-align: left;
+}
+
+// Bảng biến quy trình: có viền, bo góc
+.var-table {
+  overflow: hidden;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-xl;
+}
+
+// Cuộn ngang khi 3 cột rộng hơn drawer; cột xoá dính bên phải
+.var-scroll {
+  overflow-x: auto;
+}
+
+// 3 cột cố định (130 + 160 + 150) + cột xoá 48 → rộng hơn drawer thì cuộn ngang, chữ dài cắt "…"
+table {
+  width: 488px;
+  min-width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+th,
+td {
+  width: 150px;
+  padding: px.$space-12 px.$space-24;
+  border-right: 1px solid px.$neutral-300;
+  border-bottom: 1px solid px.$neutral-300;
+  background: px.$white;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+// Cột: Biến 130 · Trường nguồn 160 · Tên hiển thị 150
+th:nth-child(1) {
+  width: 130px;
+}
+
+th:nth-child(2) {
+  width: 160px;
+}
+
+// Hybrid: thêm cột "Trường biểu mẫu" 160 → 130 + 160 + 160 + 150 + 48
+.table-hybrid {
+  width: 648px;
+
+  th:nth-child(3) {
+    width: 160px;
+  }
+}
+
+// Header bảng: nền xám nhạt, chữ đậm
+th {
+  background: px.$neutral-100;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  color: px.$neutral-900;
+  text-align: left;
+  white-space: nowrap;
+}
+
+// Cột xoá ghim bên phải khi bảng cuộn ngang (đổ bóng nhẹ để tách khỏi cột đang trượt bên dưới)
+.col-action {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  box-shadow: -6px 0 8px -6px rgba(0, 0, 0, 0.12);
+  width: 48px;
+  min-width: 48px;
+  padding: px.$space-12 px.$space-4;
+  border-right: none;
+  border-left: 1px solid px.$neutral-300;
+  text-align: center;
+}
+
+// Ô nhập trong bảng: không khung, chỉ gạch chân
+.cell-input {
+  width: 100%;
+  min-width: 0;
+  padding: px.$space-8 0;
+  border: none;
+  border-bottom: 1px solid px.$neutral-400;
+  outline: none;
+  background: transparent;
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: px.$neutral-900;
+
+  &::placeholder {
+    color: px.$neutral-500;
+  }
+
+  &:focus {
+    border-bottom-color: px.$neutral-800;
+  }
+}
+
+// Ô chọn trong bảng: cùng kiểu gạch chân như ô nhập
+:host ::ng-deep .cell-select .px-select.px-select-sm .px-select-selector {
+  height: 37px;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid px.$neutral-400;
+  border-radius: 0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.row-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8;
+  border: none;
+  border-radius: px.$radius-md;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-100;
+  }
+}
+
+// Dòng thêm: link "Thêm dữ liệu"
+.var-add {
+  padding: px.$space-12 px.$space-16;
+}
+
+.var-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-4;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  @include px.body-md-medium;
+  color: px.$blue-300;
 }

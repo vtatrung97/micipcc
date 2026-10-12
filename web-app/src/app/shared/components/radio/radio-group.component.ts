@@ -29,10 +29,8 @@ export class RadioExtraDirective {
 let nextGroupId = 0;
 
 /**
- * Nhóm radio chọn một giá trị (Figma ProcessX node 237:11006).
- * - direction 'vertical': các lựa chọn xếp dọc, cách 8 (danh sách "Kích hoạt thủ công / tự động / Lặp lịch / Hybrid").
- * - direction 'horizontal': xếp ngang, cách 32 ("Chạy một lần / Lặp lại").
- * - Nội dung mở rộng: khung lùi trái 28px (thẳng hàng chữ) dưới lựa chọn đang chọn.
+ * Nhóm radio chọn một giá trị. direction 'vertical': xếp dọc cách 8; 'horizontal': xếp ngang cách 32.
+ * Nội dung mở rộng hiện dưới lựa chọn đang chọn, lùi trái 28px cho thẳng hàng chữ.
  */
 @Component({
   selector: 'app-radio-group',
@@ -50,7 +48,7 @@ export class RadioGroupComponent implements ControlValueAccessor {
   @Input() options: SelectOption[] = [];
   @Input() direction: 'vertical' | 'horizontal' = 'vertical';
   @Input() disabled: boolean = false;
-  /** Bọc nội dung mở rộng trong khung nền Neutral/100, padding 16, radius 12 như design */
+  /** Bọc nội dung mở rộng trong khung nền Neutral/100, padding 16, radius 12 */
   @Input() extraBoxed: boolean = true;
 
   @Output() valueChange = new EventEmitter<any>();

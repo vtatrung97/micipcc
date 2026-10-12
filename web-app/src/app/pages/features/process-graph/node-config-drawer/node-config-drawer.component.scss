@@ -1,18 +1,20 @@
+@use '../../../../shared/styles/processx-tokens' as px;
+
 :host {
   display: contents;
 }
 
+// Drawer: rộng 500, viền trái, đổ bóng nhẹ
 .properties-side-drawer {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 360px;
-  min-width: 360px;
-  max-width: 360px;
-  background: #ffffff;
-  border-left: 1px solid #e4e4e7;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.05);
+  width: 500px;
+  max-width: 100%;
+  background: px.$white;
+  border-left: 1px solid px.$neutral-300;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   z-index: 30;
   display: flex;
   flex-direction: column;
@@ -20,57 +22,55 @@
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 
+  // transform: none khi mở để dropdown position: fixed bên trong định vị theo màn hình
   &.open {
-    transform: translateX(0);
+    transform: none;
   }
 }
 
-/* ============================================================================
-   1. DRAWER HEADER (Title: Giao việc / Thông báo... + Nút tròn X)
-   ============================================================================ */
+/* ===== 1. Header: tiêu đề + nút đóng tròn ===== */
 .drawer-header {
-  height: 52px;
-  min-height: 52px;
-  padding: 0 20px;
-  border-bottom: 1px solid #f4f4f5;
+  padding: px.$space-16 px.$space-24;
+  border-bottom: 1px solid px.$neutral-300;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #ffffff;
+  gap: px.$space-12;
+  background: px.$white;
   flex-shrink: 0;
 
   .drawer-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #18181b;
     margin: 0;
-    letter-spacing: -0.2px;
+    font-family: px.$font-family;
+    font-size: 20px;
+    line-height: 30px;
+    font-weight: 700;
+    color: px.$neutral-900;
   }
 
   .drawer-close-circle-btn {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: #f4f4f5;
-    border: none;
-    color: #71717a;
-    font-size: 12px;
-    cursor: pointer;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
+    padding: px.$space-8;
+    border: none;
+    border-radius: 112px;
+    background: px.$neutral-100;
+    cursor: pointer;
 
     &:hover {
-      background: #e4e4e7;
-      color: #18181b;
+      background: px.$neutral-300;
     }
   }
 }
 
-/* ============================================================================
-   2. SCROLLABLE BODY & ACCORDIONS
-   ============================================================================ */
+// Nội dung node Bắt đầu: padding 24
+.start-drawer-section {
+  padding: px.$space-24;
+}
+
+/* ===== 2. Scrollable body & accordions ===== */
 .drawer-body {
   flex: 1;
   overflow-y: auto;
@@ -152,9 +152,7 @@
   }
 }
 
-/* ============================================================================
-   3. FORM CONTROLS & FIELDS (100% FIGMA ALIGNED)
-   ============================================================================ */
+/* ===== 3. Form controls & fields ===== */
 .form-group-item {
   margin-bottom: 14px;
 
@@ -452,9 +450,7 @@
   }
 }
 
-/* ============================================================================
-   4. TÁC VỤ HỆ THỐNG (ACTION NODE - ẢNH 1)
-   ============================================================================ */
+/* ===== 4. Tác vụ hệ thống (Action node) ===== */
 .btn-test-connection {
   border: 1px solid #ef4444;
   background: #ffffff;
@@ -497,9 +493,7 @@
   }
 }
 
-/* ============================================================================
-   5. ĐIỀU KIỆN (CONDITION, SPLIT, MERGE - ẢNH 2, 3, 5)
-   ============================================================================ */
+/* ===== 5. Điều kiện (Condition, Split, Merge) ===== */
 .condition-case-card {
   border: 1px solid #e4e4e7;
   border-radius: 8px;
@@ -635,9 +629,7 @@
   }
 }
 
-/* ============================================================================
-   6. MODAL ĐIỀU KIỆN (ẢNH 4)
-   ============================================================================ */
+/* ===== 6. Modal điều kiện ===== */
 .condition-modal-backdrop {
   position: fixed;
   top: 0;
