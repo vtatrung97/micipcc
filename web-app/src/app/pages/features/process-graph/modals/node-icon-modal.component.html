@@ -1,0 +1,54 @@
+<app-modal [visible]="visible" [title]="'PROCESS_GRAPH.ICON_MODAL.TITLE' | translate" (closed)="closed.emit()">
+  <!-- ng-content của app-modal luôn được dựng → chỉ render khi mở -->
+  <ng-container *ngIf="visible">
+    <!-- Vùng tải lên: kéo thả hoặc bấm để chọn nhiều tệp -->
+    <div class="upload-field">
+      <span class="upload-label">{{ 'PROCESS_GRAPH.ICON_MODAL.UPLOAD' | translate }}<span class="required">*</span></span>
+      <label class="upload-zone" [class.dragging]="isDragging"
+             (dragover)="$event.preventDefault(); isDragging = true" (dragleave)="isDragging = false" (drop)="onDrop($event)">
+        <input #fileInput type="file" multiple hidden [accept]="accept" (change)="onFileInput(fileInput)" />
+        <img src="assets/icons/processx/upload-folder.svg" width="48" height="48" alt="" />
+        <span class="upload-text">
+          <span>{{ 'PROCESS_GRAPH.ICON_MODAL.DROP' | translate }}</span>
+          <span class="upload-or">{{ 'PROCESS_GRAPH.ICON_MODAL.OR' | translate }}</span>
+          <span class="upload-link">{{ 'PROCESS_GRAPH.ICON_MODAL.CHOOSE' | translate }}</span>
+        </span>
+        <span class="upload-hint">{{ 'PROCESS_GRAPH.ICON_MODAL.HINT' | translate }}</span>
+      </label>
+      <span class="upload-error" *ngIf="errorText">{{ errorText }}</span>
+    </div>
+
+    <div class="icon-divider"></div>
+
+    <!-- Danh sách icon: icon hệ thống + tệp đã tải lên, bấm để chọn -->
+    <div class="icon-list-wrap">
+      <span class="icon-list-title">{{ 'PROCESS_GRAPH.ICON_MODAL.LIST' | translate }}</span>
+      <div class="icon-list" role="listbox">
+        <div class="icon-item" *ngFor="let asset of assets; trackBy: trackById" role="option"
+             [class.selected]="asset.id === selectedId" [attr.aria-selected]="asset.id === selectedId"
+             (click)="selectedId = asset.id">
+          <span class="icon-file">
+            <span class="icon-thumb"><img [src]="asset.src" width="24" height="24" alt="" /></span>
+            <span class="icon-name" [appTooltip]="asset.name" [tooltipOnlyTruncated]="true">{{ asset.name }}</span>
+          </span>
+          <span class="icon-actions">
+            <a class="icon-action" [href]="asset.src" [attr.download]="asset.name" (click)="$event.stopPropagation()"
+               [appTooltip]="'PROCESS_GRAPH.ICON_MODAL.DOWNLOAD' | translate">
+              <img src="assets/icons/processx/cloud-download.svg" width="20" height="20" alt="" />
+            </a>
+            <!-- Icon hệ thống không xoá được -->
+            <button *ngIf="!asset.isBuiltIn" type="button" class="icon-action" (click)="$event.stopPropagation(); remove(asset)"
+                    [appTooltip]="'PROCESS_GRAPH.ICON_MODAL.DELETE' | translate">
+              <img src="assets/icons/processx/trash-file.svg" width="20" height="20" alt="" />
+            </button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div modal-footer class="icon-modal-actions">
+    <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="px-btn px-btn-primary" [disabled]="!canSave" (click)="save()">{{ 'PROCESS_GRAPH.COMMON.SAVE' | translate }}</button>
+  </div>
+</app-modal>

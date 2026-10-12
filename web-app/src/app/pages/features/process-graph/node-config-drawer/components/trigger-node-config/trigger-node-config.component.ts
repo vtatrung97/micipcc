@@ -91,9 +91,14 @@ export class TriggerNodeConfigComponent implements OnChanges {
 
   /** Điều kiện kích hoạt đã cài ở tab Thông tin chung (chỉ xem) */
   get conditionRules(): ConditionRuleItem[] {
-    // ⚠ Tab Thông tin chung chưa có ô cài điều kiện cho Hybrid → Hybrid hiện khung trống
-    if (this.triggerType !== 'AUTO') return [];
-    return this.store.processInfo?.auto?.conditions?.rules || [];
+    const info = this.store.processInfo;
+    const rules =
+      this.triggerType === 'HYBRID'
+        ? info?.hybrid?.conditions?.rules
+        : this.triggerType === 'AUTO'
+          ? info?.auto?.conditions?.rules
+          : null;
+    return rules || [];
   }
 
   /** Có dòng Biểu mẫu (thủ công / hybrid) */

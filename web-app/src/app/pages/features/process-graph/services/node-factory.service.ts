@@ -15,13 +15,15 @@ import {
   nodeRowAttrs,
 } from '../config/node-view.config';
 import { GraphEditorStore } from '../state/graph-editor.store';
+import { NodeIconService } from './node-icon.service';
 
 /** Dựng card node (giao diện, cổng) theo type, sinh mã bước, icon. */
 @Injectable()
 export class NodeFactoryService {
   constructor(
     private translate: TranslateService,
-    private store: GraphEditorStore
+    private store: GraphEditorStore,
+    private icons: NodeIconService
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -194,7 +196,7 @@ export class NodeFactoryService {
 
     // 1. START / END: hình tròn 56 với icon 24
     if (type === 'START' || type === 'END') {
-      const view = nodeCircleView(type, nodeLabel);
+      const view = nodeCircleView(type, nodeLabel, this.icons.getIconSrc(type));
       const node = this.store.graph.addNode({
         id: customData?.id,
         shape: 'rect',
@@ -279,7 +281,7 @@ export class NodeFactoryService {
     });
     const nodeHeight = nodeCardHeight(rows.length);
     const markup = nodeCardMarkup();
-    const attrs = nodeCardAttrs(type, itemDef.typeTitle, nodeLabel, rows);
+    const attrs = nodeCardAttrs(type, itemDef.typeTitle, nodeLabel, rows, this.icons.getIconSrc(type));
 
     const portItems = getNodePortItems(
       type,

@@ -1,0 +1,50 @@
+<!-- Nút "+ Thêm bước" cạnh mỗi cổng ra chưa nối -->
+<button *ngFor="let anchor of anchors; trackBy: trackByKey" type="button" class="add-step-btn"
+        [class.active]="openAnchor?.key === anchor.key" [class.compact]="anchor.isCompact"
+        [style.left.px]="anchor.left" [style.top.px]="anchor.top"
+        (mousedown)="$event.stopPropagation()" (click)="toggleMenu(anchor, $event)">
+  <img src="assets/icons/processx/plus-neutral-16.svg" width="16" height="16" alt="" />
+  <span>{{ 'PROCESS_GRAPH.ADD_STEP.BUTTON' | translate }}</span>
+</button>
+
+<!-- Menu chọn loại bước: ô tìm kiếm + nhóm Điều kiện + các bước thường -->
+<div class="add-step-menu" *ngIf="openAnchor" [style.left.px]="menuLeft" [style.top.px]="menuTop"
+     (mousedown)="$event.stopPropagation()" (wheel)="$event.stopPropagation()">
+  <div class="add-step-search">
+    <img src="assets/icons/processx/search-primary.svg" width="24" height="24" alt="" />
+    <input #searchInput type="text" [(ngModel)]="keyword"
+           [placeholder]="'PROCESS_GRAPH.ADD_STEP.SEARCH_PLACEHOLDER' | translate" />
+    <button *ngIf="keyword" type="button" class="add-step-clear" (click)="keyword = ''; searchInput.focus()"
+            [attr.aria-label]="'PROCESS_GRAPH.ADD_STEP.CLEAR' | translate">
+      <img src="assets/icons/processx/close-white-14.svg" width="14" height="14" alt="" />
+    </button>
+  </div>
+
+  <div class="add-step-list">
+    <div class="add-step-group" *ngIf="conditionOptions.length">
+      <span class="add-step-group-title">{{ 'PROCESS_GRAPH.PALETTE.CONDITION_GROUP' | translate }}</span>
+      <div class="add-step-group-items">
+        <ng-container *ngFor="let option of conditionOptions; trackBy: trackByType">
+          <ng-container *ngTemplateOutlet="stepItem; context: { $implicit: option }"></ng-container>
+        </ng-container>
+      </div>
+    </div>
+
+    <ng-container *ngFor="let option of stepOptions; trackBy: trackByType">
+      <ng-container *ngTemplateOutlet="stepItem; context: { $implicit: option }"></ng-container>
+    </ng-container>
+
+    <span class="add-step-empty" *ngIf="!conditionOptions.length && !stepOptions.length">
+      {{ 'PROCESS_GRAPH.ADD_STEP.EMPTY' | translate }}
+    </span>
+  </div>
+</div>
+
+<ng-template #stepItem let-option>
+  <button type="button" class="add-step-item" (click)="addStep(option.type)">
+    <span class="add-step-icon" [style.background]="iconBg(option.type)">
+      <img [src]="iconSrc(option.type)" width="24" height="24" alt="" />
+    </span>
+    <span class="add-step-title">{{ option.title }}</span>
+  </button>
+</ng-template>

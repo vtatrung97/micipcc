@@ -4,12 +4,14 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { TemplateService, ProcessTemplateItem } from '@core/services/template.service';
+import { PROCESS_CATEGORIES } from '@core/services/process-category.constant';
 import { RbacService } from '@core/rbac/services/rbac.service';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
 import { ActionMenuItem } from '@shared/components/action-menu/action-menu.component';
 import { TableSelection } from '@shared/utils/table-selection';
 import {
   ProcessAdvancedFilter,
+  AdvancedFilterOptions,
   EMPTY_ADVANCED_FILTER,
   countAdvancedFilter,
   DateRange,
@@ -89,7 +91,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   /** Hàng đã lọc + sắp xếp (tính lại khi dữ liệu hoặc bộ lọc đổi) */
   filteredRows: ProcessRow[] = [];
   /** Phiên bản đang tồn tại thực tế (cho drawer Bộ lọc nâng cao) */
-  versionOptions: SelectOption[] = [];
+  filterOptions: AdvancedFilterOptions = { categories: [], triggers: [], creators: [], updaters: [] };
   pagedRows: ProcessRow[] = [];
 
   private destroy$ = new Subject<void>();
@@ -106,7 +108,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(list => {
         this.allTemplates = list || [];
-        this.versionOptions = this.buildVersionOptions();
+        this.filterOptions = this.buildFilterOptions();
         this.refresh();
       });
 
@@ -187,11 +189,28 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
 
   // Tính lại chỉ khi danh sách đổi: getter trả mảng mới mỗi vòng change detection
   // khiến ant-select dựng lại DOM option liên tục → click vào option không ăn
-  private buildVersionOptions(): SelectOption[] {
-    const versions = Array.from(new Set(this.allTemplates.map(t => t.version).filter(Boolean)));
-    return versions
-      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-      .map(v => ({ value: v, label: v }));
+/** Lựa chọn cho bộ lọc nâng cao: nhóm quy trình cố định, người tạo / cập nhật lấy từ dữ liệu */
+  private buildFilterOptions(): AdvancedFilterOptions {
+    const toOptions = (values: string[]) =>
+      Array.from(new Set(values.filter(v => v && v !== EMPTY_TEXT)))
+        .sort((a, b) => a.localeCompare(b, 'vi'))
+        .map(v => ({ value: v, label: v }));
+    return {
+      categories: PROCESS_CATEGORIES.map(c => ({ value: c, label: c })),
+      triggers: Object.entries(TRIGGER_LABELS).map(([value, label]) => ({ value, label })),
+      creators: toOptions(this.allTemplates.map(t => this.creatorOf(t))),
+      updaters: toOptions(this.allTemplates.map(t => this.updaterOf(t)))
+    };
+  }
+
+  private creatorOf(item: ProcessTemplateItem): string {
+    const versions = item.versions || [];
+    return item.created_by || versions[versions.length - 1]?.created_by || '';
+  }
+
+  /** Chưa có người cập nhật thì coi người tạo là người cập nhật gần nhất */
+  private updaterOf(item: ProcessTemplateItem): string {
+    return item.updated_by || this.creatorOf(item);
   }
 
   onSearchChange(): void {
@@ -265,8 +284,12 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
 
     return includes(item.name, f.name)
       && includes(item.code, f.code)
-      && (!f.version || item.version === f.version)
+      && (!f.category || item.category === f.category)
       && (!f.status || item.status === f.status)
+      && (!f.triggerType || item.triggerType === f.triggerType)
+      && (!f.createdBy || this.creatorOf(item) === f.createdBy)
+      && (!f.updatedBy || this.updaterOf(item) === f.updatedBy)
+      && this.inRange(item.created_at || item.updatedAt, f.createdRange)
       && this.inRange(item.updatedAt, f.updatedRange)
       && this.inRange(item.status !== 'Draft' ? item.published_at : undefined, f.publishedRange);
   }
@@ -292,7 +315,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
       triggerLabel: (item.triggerType && TRIGGER_LABELS[item.triggerType]) || EMPTY_TEXT,
       slaLabel: item.slaValue ? `${item.slaValue} ${item.slaUnit || ''}`.trim() : (item.sla || EMPTY_TEXT),
       createdDate: this.toDisplayDate(item.created_at || item.updatedAt || item.published_at),
-      createdBy: item.created_by || versions[versions.length - 1]?.created_by || EMPTY_TEXT,
+      createdBy: this.creatorOf(item) || EMPTY_TEXT,
       publishedDate: isPublishedOnce ? this.toDisplayDate(item.published_at) : EMPTY_TEXT,
       publishedBy: isPublishedOnce ? (item.published_by || activeVersion?.created_by || EMPTY_TEXT) : EMPTY_TEXT,
       menuItems: this.buildMenuItems(item)

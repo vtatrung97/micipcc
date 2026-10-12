@@ -408,6 +408,37 @@
           "NEQ": "!= (Not equal)"
         },
         "COL_FIXED_VALUE": "Fixed value"
+      },
+      "USER_TASK": {
+        "ACTOR_HINT": "Select one of the options below",
+        "ASSIGN_TYPE": "Assignment type",
+        "ASSIGN_TYPES": {
+          "MANUAL": "Manual assignment",
+          "AUTO": "Automatic assignment"
+        },
+        "ASSIGN_STRATEGY": "Assignment strategy",
+        "STRATEGIES": {
+          "ROUND_ROBIN": "Round robin",
+          "LEAST_BUSY": "Least busy"
+        },
+        "FORM_SECTION": "Form",
+        "INPUT_DATA": "Input data",
+        "OUTPUT_DATA": "Output data",
+        "COL_MAPPED": "Mapped"
+      },
+      "END_RESULTS": "Result",
+      "SYSTEM_TASK": {
+        "CONNECTION_OK": "API connected successfully.",
+        "COL_API_REQUEST": "API request",
+        "CONNECTION_FAILED": "Could not connect to the API. Please try again."
+      },
+      "SUB_PROCESS": {
+        "VIEW": "View process",
+        "COL_SUB_INPUT": "Sub-process input",
+        "COL_SUB_VARIABLE": "Sub-process variable"
+      },
+      "VALIDATION": {
+        "REQUIRED": "This field is required"
       }
     },
     "CONDITION_MODAL": {
@@ -439,6 +470,7 @@
     },
     "OPTIONS": {
       "END_FORMS": {
+        "DONE": "Processing completion form",
         "DEFAULT": "Default end form",
         "CLOSE_PAKN": "Complaint closing form",
         "CSAT": "CSAT survey form"
@@ -532,6 +564,25 @@
       "MERGE_OUT_ZERO": "Join [{{label}}] has no outgoing flow (Out = 1)",
       "MERGE_OUT_EXCESS": "Join [{{label}}] must have exactly 1 outgoing flow (Out = 1, currently {{count}})",
       "NODE_ISOLATED": "Step [{{label}}] is isolated (no connections)"
+    },
+    "ICON_MODAL": {
+      "TITLE": "Choose icon",
+      "EDIT": "Change icon",
+      "UPLOAD": "Upload files",
+      "DROP": "Drag and drop to upload",
+      "OR": "or",
+      "CHOOSE": "Choose files",
+      "HINT": "SVG, JPG, PNG (Max 10MB)",
+      "LIST": "Uploaded files",
+      "DOWNLOAD": "Download",
+      "DELETE": "Delete file",
+      "REJECTED": "Could not upload: {{names}}. Only SVG, JPG, PNG up to 10MB are accepted."
+    },
+    "ADD_STEP": {
+      "BUTTON": "Add step",
+      "SEARCH_PLACEHOLDER": "Search steps",
+      "EMPTY": "No matching steps",
+      "CLEAR": "Clear keyword"
     }
   }
 }

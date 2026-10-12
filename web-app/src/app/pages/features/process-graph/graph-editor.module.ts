@@ -7,12 +7,14 @@ import { GraphEditorComponent } from './graph-editor.component';
 import { GraphEditorRoutingModule } from './graph-editor-routing.module';
 import { SharedModule } from '@shared/shared.module';
 import { NodeConfigDrawerComponent } from './node-config-drawer/node-config-drawer.component';
+import { AddStepOverlayComponent } from './add-step/add-step-overlay.component';
 import { ProcessInfoFormComponent } from './info-form/process-info-form.component';
 import {
   TemplateInfoModalComponent,
   NotifyConfigModalComponent,
   JsonPreviewModalComponent,
-  ValidationModalComponent
+  ValidationModalComponent,
+  NodeIconModalComponent
 } from './modals';
 import {
   ActionNodeConfigComponent,
@@ -44,11 +46,13 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
   declarations: [
     GraphEditorComponent,
     NodeConfigDrawerComponent,
+    AddStepOverlayComponent,
     ProcessInfoFormComponent,
     TemplateInfoModalComponent,
     NotifyConfigModalComponent,
     JsonPreviewModalComponent,
     ValidationModalComponent,
+    NodeIconModalComponent,
     ActionNodeConfigComponent,
     ConditionNodeConfigComponent,
     TaskNodeConfigComponent,

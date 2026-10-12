@@ -408,6 +408,37 @@
           "NEQ": "!= (Khác)"
         },
         "COL_FIXED_VALUE": "Giá trị cố định"
+      },
+      "USER_TASK": {
+        "ACTOR_HINT": "Bắt buộc chọn 1 trong các điều kiện",
+        "ASSIGN_TYPE": "Loại giao việc",
+        "ASSIGN_TYPES": {
+          "MANUAL": "Giao việc thủ công",
+          "AUTO": "Giao việc tự động"
+        },
+        "ASSIGN_STRATEGY": "Cơ chế giao việc",
+        "STRATEGIES": {
+          "ROUND_ROBIN": "Xoay vòng",
+          "LEAST_BUSY": "Rảnh nhất"
+        },
+        "FORM_SECTION": "Biểu mẫu",
+        "INPUT_DATA": "Dữ liệu đầu vào",
+        "OUTPUT_DATA": "Dữ liệu đầu ra",
+        "COL_MAPPED": "Ánh xạ"
+      },
+      "END_RESULTS": "Kết quả",
+      "SYSTEM_TASK": {
+        "CONNECTION_OK": "API đã kết nối thành công.",
+        "COL_API_REQUEST": "Yêu cầu API",
+        "CONNECTION_FAILED": "Không thể kết nối tới API. Vui lòng thử lại."
+      },
+      "SUB_PROCESS": {
+        "VIEW": "Xem quy trình",
+        "COL_SUB_INPUT": "Đầu vào quy trình con",
+        "COL_SUB_VARIABLE": "Biến quy trình con"
+      },
+      "VALIDATION": {
+        "REQUIRED": "Vui lòng nhập thông tin bắt buộc"
       }
     },
     "CONDITION_MODAL": {
@@ -439,6 +470,7 @@
     },
     "OPTIONS": {
       "END_FORMS": {
+        "DONE": "Form hoàn thành xử lý",
         "DEFAULT": "Biểu mẫu mặc định kết thúc",
         "CLOSE_PAKN": "Biểu mẫu đóng PAKN",
         "CSAT": "Biểu mẫu khảo sát CSAT"
@@ -532,6 +564,25 @@
       "MERGE_OUT_ZERO": "Gộp nhánh [{{label}}] chưa có luồng ra (Out = 1)",
       "MERGE_OUT_EXCESS": "Gộp nhánh [{{label}}] chỉ được có đúng 1 luồng ra (Out = 1, hiện có {{count}})",
       "NODE_ISOLATED": "Bước [{{label}}] đang đứng cô lập (chưa có dây nối nào)"
+    },
+    "ICON_MODAL": {
+      "TITLE": "Chọn biểu tượng",
+      "EDIT": "Đổi biểu tượng",
+      "UPLOAD": "Tải tệp lên",
+      "DROP": "Kéo thả để tải lên",
+      "OR": "hoặc",
+      "CHOOSE": "Chọn tệp tin",
+      "HINT": "SVG, JPG, PNG (Tối đa 10MB)",
+      "LIST": "Các tệp đã tải lên",
+      "DOWNLOAD": "Tải xuống",
+      "DELETE": "Xoá tệp",
+      "REJECTED": "Không tải được: {{names}}. Chỉ nhận SVG, JPG, PNG tối đa 10MB."
+    },
+    "ADD_STEP": {
+      "BUTTON": "Thêm bước",
+      "SEARCH_PLACEHOLDER": "Tìm bước",
+      "EMPTY": "Không tìm thấy bước phù hợp",
+      "CLEAR": "Xoá từ khoá"
     }
   }
 }

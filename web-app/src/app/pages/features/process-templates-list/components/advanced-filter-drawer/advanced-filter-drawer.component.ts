@@ -12,8 +12,13 @@ export interface DateRange {
 export interface ProcessAdvancedFilter {
   name: string;
   code: string;
-  version: string;
+  /** Nhóm quy trình */
+  category: string;
   status: '' | ProcessStatus;
+  triggerType: string;
+  createdBy: string;
+  createdRange: DateRange | null;
+  updatedBy: string;
   updatedRange: DateRange | null;
   publishedRange: DateRange | null;
 }
@@ -21,11 +26,23 @@ export interface ProcessAdvancedFilter {
 export const EMPTY_ADVANCED_FILTER: ProcessAdvancedFilter = {
   name: '',
   code: '',
-  version: '',
+  category: '',
   status: '',
+  triggerType: '',
+  createdBy: '',
+  createdRange: null,
+  updatedBy: '',
   updatedRange: null,
   publishedRange: null
 };
+
+/** Danh sách lựa chọn của các ô chọn trong bộ lọc (dựng từ dữ liệu ở màn danh sách) */
+export interface AdvancedFilterOptions {
+  categories: SelectOption[];
+  triggers: SelectOption[];
+  creators: SelectOption[];
+  updaters: SelectOption[];
+}
 
 export function hasDateRange(range: DateRange | null | undefined): boolean {
   return !!(range && (range.from || range.to));
@@ -33,8 +50,9 @@ export function hasDateRange(range: DateRange | null | undefined): boolean {
 
 /** Số điều kiện đang bật (để hiện badge trên nút mở bộ lọc) */
 export function countAdvancedFilter(filter: ProcessAdvancedFilter): number {
-  const texts = [filter.name, filter.code, filter.version, filter.status].filter(v => !!String(v || '').trim()).length;
-  const ranges = [filter.updatedRange, filter.publishedRange].filter(hasDateRange).length;
+  const texts = [filter.name, filter.code, filter.category, filter.status, filter.triggerType, filter.createdBy, filter.updatedBy]
+    .filter(v => !!String(v || '').trim()).length;
+  const ranges = [filter.createdRange, filter.updatedRange, filter.publishedRange].filter(hasDateRange).length;
   return texts + ranges;
 }
 
@@ -50,18 +68,14 @@ export function countAdvancedFilter(filter: ProcessAdvancedFilter): number {
 export class AdvancedFilterDrawerComponent implements OnChanges {
   @Input() visible: boolean = false;
   @Input() value: ProcessAdvancedFilter = { ...EMPTY_ADVANCED_FILTER };
-  /** Danh sách phiên bản đang tồn tại thực tế */
-  @Input() versionOptions: SelectOption[] = [];
+  @Input() options: AdvancedFilterOptions = { categories: [], triggers: [], creators: [], updaters: [] };
 
   @Output() apply = new EventEmitter<ProcessAdvancedFilter>();
   @Output() closed = new EventEmitter<void>();
 
   draft: ProcessAdvancedFilter = { ...EMPTY_ADVANCED_FILTER };
 
-  readonly statusOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả' },
-    ...PROCESS_STATUS_ORDER.map(s => ({ value: s, label: PROCESS_STATUS_CONFIG[s].filterLabel }))
-  ];
+  readonly statusOptions: SelectOption[] = PROCESS_STATUS_ORDER.map(s => ({ value: s, label: PROCESS_STATUS_CONFIG[s].filterLabel }));
 
   ngOnChanges(changes: SimpleChanges): void {
     // Mỗi lần mở drawer: nạp lại bản nháp từ bộ lọc đang áp dụng

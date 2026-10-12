@@ -60,42 +60,7 @@
               <ant-select [(ngModel)]="info.auto.apiId" [options]="apiOptions"
                           [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
             </app-form-field>
-            <!-- Điều kiện kích hoạt: bảng Tham số · Kiểu so sánh · Giá trị so sánh;
-                 từ dòng thứ 2 có nút xoá ở cuối, luôn còn ít nhất 1 dòng -->
-            <app-form-field [label]="'PROCESS_GRAPH.INFO.TRIGGER_CONDITION' | translate" [required]="true"
-                            [error]="error('autoConditions')" [spacing]="0">
-              <div class="condition-box">
-                <div class="condition-list">
-                  <div class="condition-grid condition-head">
-                    <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.PARAM' | translate }}</span>
-                    <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.OPERATOR' | translate }}</span>
-                    <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.VALUE' | translate }}</span>
-                    <span></span>
-                  </div>
-
-                  <div class="condition-grid" *ngFor="let rule of info.auto.conditions.rules; let i = index">
-                    <ant-select [(ngModel)]="rule.param" [options]="conditionParamOptions"
-                                [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
-                                [class.is-invalid]="isRuleFieldInvalid(rule, 'param')"></ant-select>
-                    <ant-select [(ngModel)]="rule.operator" [options]="conditionOperatorOptions"
-                                [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
-                                [class.is-invalid]="isRuleFieldInvalid(rule, 'operator')"></ant-select>
-                    <ant-input [(ngModel)]="rule.value" [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_INPUT' | translate"
-                               [status]="isRuleFieldInvalid(rule, 'value') ? 'error' : ''"></ant-input>
-                    <button *ngIf="i > 0" type="button" class="condition-remove"
-                            [title]="'PROCESS_GRAPH.CONDITION_MODAL.REMOVE' | translate"
-                            (click)="removeConditionRule(i)">
-                      <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
-                    </button>
-                  </div>
-                </div>
-
-                <button type="button" class="condition-add" (click)="addConditionRule()">
-                  <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
-                  <span>{{ 'PROCESS_GRAPH.INFO.ADD_CONDITION' | translate }}</span>
-                </button>
-              </div>
-            </app-form-field>
+            <ng-container *ngTemplateOutlet="conditionField; context: { $implicit: info.auto.conditions.rules, errorKey: 'autoConditions', paramLabel: 'PROCESS_GRAPH.CONDITION_MODAL.PARAM' }"></ng-container>
           </div>
 
           <!-- Lặp lịch -->
@@ -163,12 +128,13 @@
             </ng-template>
           </div>
 
-          <!-- Hybrid -->
+          <!-- Hybrid: API + điều kiện kích hoạt + biểu mẫu -->
           <div *ngIf="isTrigger(option, 'HYBRID')" class="trigger-extra trigger-extra-compact">
             <app-form-field [label]="'PROCESS_GRAPH.INFO.API' | translate" [required]="true" [error]="error('apiId')" [spacing]="0">
               <ant-select [(ngModel)]="info.hybrid.apiId" [options]="apiOptions"
                           [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
             </app-form-field>
+            <ng-container *ngTemplateOutlet="conditionField; context: { $implicit: info.hybrid.conditions.rules, errorKey: 'hybridConditions', paramLabel: 'PROCESS_GRAPH.DRAWER.START.COL_API_FIELD' }"></ng-container>
             <app-form-field [label]="'PROCESS_GRAPH.INFO.INPUT_FORM' | translate" [required]="true" [error]="error('inputFormId')" [spacing]="0">
               <ant-select [(ngModel)]="info.hybrid.inputFormId" [options]="inputFormOptions"
                           [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
@@ -179,3 +145,41 @@
     </app-form-field>
   </section>
 </div>
+
+<!-- Điều kiện kích hoạt (Tự động / Hybrid): từ dòng thứ 2 có nút xoá, luôn còn ít nhất 1 dòng -->
+<ng-template #conditionField let-rules let-errorKey="errorKey" let-paramLabel="paramLabel">
+  <app-form-field [label]="'PROCESS_GRAPH.INFO.TRIGGER_CONDITION' | translate" [required]="true"
+                  [error]="error(errorKey)" [spacing]="0">
+    <div class="condition-box">
+      <div class="condition-list">
+        <div class="condition-grid condition-head">
+          <span>{{ paramLabel | translate }}</span>
+          <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.OPERATOR' | translate }}</span>
+          <span>{{ 'PROCESS_GRAPH.CONDITION_MODAL.VALUE' | translate }}</span>
+          <span></span>
+        </div>
+
+        <div class="condition-grid" *ngFor="let rule of rules; let i = index">
+          <ant-select [(ngModel)]="rule.param" [options]="conditionParamOptions"
+                      [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
+                      [class.is-invalid]="isRuleFieldInvalid(rule, 'param', errorKey)"></ant-select>
+          <ant-select [(ngModel)]="rule.operator" [options]="conditionOperatorOptions"
+                      [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"
+                      [class.is-invalid]="isRuleFieldInvalid(rule, 'operator', errorKey)"></ant-select>
+          <ant-input [(ngModel)]="rule.value" [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_INPUT' | translate"
+                     [status]="isRuleFieldInvalid(rule, 'value', errorKey) ? 'error' : ''"></ant-input>
+          <button *ngIf="i > 0" type="button" class="condition-remove"
+                  [title]="'PROCESS_GRAPH.CONDITION_MODAL.REMOVE' | translate"
+                  (click)="removeConditionRule(rules, i)">
+            <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="condition-add" (click)="addConditionRule(rules)">
+        <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+        <span>{{ 'PROCESS_GRAPH.INFO.ADD_CONDITION' | translate }}</span>
+      </button>
+    </div>
+  </app-form-field>
+</ng-template>

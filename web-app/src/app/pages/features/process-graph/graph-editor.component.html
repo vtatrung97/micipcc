@@ -116,6 +116,8 @@
     <!-- CANVAS HOST -->
     <main class="canvas-area-host" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)">
       <div #container class="x6-graph-container"></div>
+      <!-- Nút "+ Thêm bước" sau mỗi cổng ra chưa nối -->
+      <app-add-step-overlay #addStep></app-add-step-overlay>
 
       <!-- Toolbar: Hoàn tác · Làm lại | Thu nhỏ · % · Phóng to | Căn vừa màn hình · Sắp xếp lại -->
       <div class="canvas-toolbar" role="toolbar" [attr.aria-label]="'PROCESS_GRAPH.TOOLBAR.ARIA' | translate">

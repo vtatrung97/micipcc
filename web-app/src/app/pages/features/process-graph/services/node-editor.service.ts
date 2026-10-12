@@ -340,7 +340,6 @@ export class NodeEditorService {
       selectedApi: data.selectedApi || '',
       timeoutSeconds:
         data.timeoutSeconds !== undefined ? data.timeoutSeconds : 0,
-      apiOutput: data.apiOutput || '',
 
       // Condition fields
       branches:
@@ -391,15 +390,6 @@ export class NodeEditorService {
           ? data.subProcessWaitComplete
           : true,
       subProcessInputMapping: data.subProcessInputMapping || '',
-      actionInputMappings: (data.actionInputMappings || []).map((r: any) => ({
-        ...r,
-      })),
-      subProcessInputMappings: (data.subProcessInputMappings || []).map(
-        (r: any) => ({ ...r }),
-      ),
-      subProcessOutputMappings: (data.subProcessOutputMappings || []).map(
-        (r: any) => ({ ...r }),
-      ),
     };
 
     this.store.selectedCellInfo = `[${this.store.selectedNodeProps.label}] ${this.store.selectedNodeProps.typeTitle}`;
