@@ -26,15 +26,18 @@ File hướng dẫn cho Claude Code. **Không commit** (đã có trong `.gitigno
 - Trả lời, comment, message lỗi, tài liệu: **tiếng Việt**.
 - Code theo phong cách meloscan-backend (`E:\NguyenQuangHa\VBA\Melo\meloscan-backend`): Lombok
   `@RequiredArgsConstructor` + `@FieldDefaults(level = PRIVATE, makeFinal = true)`, DTO `@Data @Builder`,
-  `ApiResponse`, `ErrorCode` + `AppException`, service dạng **interface + impl**.
+  `ApiResponse`, `CoreErrorCode` + `AppException`, service dạng **interface + impl**.
 - Không log dữ liệu nhạy cảm (mật khẩu, token, API key). Không dùng aspect log toàn bộ tham số.
 
 ### Response & lỗi
 - Mọi API trả `ApiResponse { code, message, result, requestId }`. Thành công: `code = 200`.
-- Lỗi: khai báo trong `ErrorCode` (mã số + HTTP status), key message `err.code.<TÊN_MÃ>` khai báo ngay trong enum, nội dung trong i18n.
-  Ném `new AppException(ErrorCode.X)`, hoặc `new AppException(ErrorCode.X, "key i18n khác / câu cụ thể")` để thay message;
-  `GlobalExceptionHandler` dịch message (là key thì dịch, là câu thì giữ nguyên) và trả `ApiResponse`.
-- Nhóm mã: `1xxx` chung/xác thực, `2xxx` ticket call flow. Module mới dùng dải tiếp theo (`3xxx`...).
+- Lỗi nghiệp vụ của core-service: khai báo trong `common/exception/CoreErrorCode` (mã số + HTTP status, implement `BaseErrorCode`),
+  key message `err.code.<TÊN_MÃ>`, nội dung trong i18n. Lỗi nền tảng (xác thực, validate, 404, conflict...) là `ErrorCode` của common-core.
+  Ném `new AppException(CoreErrorCode.X)`, `AppException.withArgs(CoreErrorCode.X, args...)` khi message có {0},
+  hoặc `new AppException(CoreErrorCode.X, "key i18n khác / câu cụ thể")` để thay message.
+- `CoreExceptionHandler extends BaseExceptionHandler` (common-core) dịch message và trả `ApiResponse`;
+  case lỗi riêng của core-service thêm / override trong `CoreExceptionHandler`.
+- Dải mã: `1xxx` chung (common-core), `2xxx` core-service, `3xxx` integration-service (xem libraries/README.md).
 
 ### Đa ngôn ngữ
 - Theo header `Accept-Language`, hỗ trợ `vi`, `en`. **Không truyền / sai định dạng / không hỗ trợ → `vi`.**
@@ -120,7 +123,7 @@ core-service/
     │   ├── dto/request/           # request DTO (validation)
     │   ├── dto/response/          # ApiResponse, PageResponse, response DTO, DTO Keycloak
     │   ├── entity/                # BaseEntity + entity JPA
-    │   ├── exception/             # ErrorCode, AppException, GlobalExceptionHandler
+    │   ├── common/exception/      # CoreErrorCode (2xxx), CoreExceptionHandler
     │   ├── repository/            # Spring Data JPA
     │   ├── security/              # SecurityConfig (luồng + PUBLIC_ENDPOINTS + CORS),
     │   │                          # ApiKeyAuthenticationFilter, KeycloakAuthenticationFilter (kèm token lồng bên trong)
@@ -141,7 +144,7 @@ core-service/
 3. `dto/request/XxxCreateRequest`, `XxxUpdateRequest`; `dto/response/XxxResponse` (+ `XxxSummaryResponse` nếu có danh sách).
 4. `service/XxxService` + `service/impl/XxxServiceImpl` (`@Transactional`, ném `AppException`).
 5. `controller/XxxController` `@RequestMapping("/api/v1/xxx")`, trả `ApiResponse`, chỉ `@Tag` ở class, không `@Operation`/`@Parameter`/comment trên method.
-6. `ErrorCode` dải mã mới + message vi/en.
+6. Mã lỗi mới trong `CoreErrorCode` (dải 2xxx) + message vi/en.
 
 ## API hiện có
 

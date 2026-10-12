@@ -22,6 +22,7 @@ import com.lifesup.ticketflow.core.entity.TemplateEntity;
 import com.lifesup.ticketflow.core.entity.TemplateVersionEntity;
 import com.lifesup.ticketflow.common.exception.AppException;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
+import com.lifesup.ticketflow.core.common.exception.CoreErrorCode;
 import com.lifesup.ticketflow.core.repository.TemplateRepository;
 import com.lifesup.ticketflow.core.repository.TemplateVersionRepository;
 import com.lifesup.ticketflow.core.service.TicketCallFlowService;
@@ -93,7 +94,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     public TicketCallFlowResponse create(TicketCallFlowCreateRequest request) {
         // Chưa có phiên bản hiệu lực nên chỉ có thể là DRAFT
         if (request.getStatus() != null && request.getStatus() != TicketCallFlowStatus.DRAFT) {
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_STATUS_INVALID);
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_STATUS_INVALID);
         }
 
         TemplateEntity entity = new TemplateEntity();
@@ -165,7 +166,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         }
         if (request.getSlaValue() != null || request.getSlaUnit() != null) {
             if (request.getSlaValue() == null || request.getSlaUnit() == null) {
-                throw new AppException(ErrorCode.TICKET_CALL_FLOW_SLA_INVALID);
+                throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_SLA_INVALID);
             }
             entity.setSlaValue(request.getSlaValue());
             entity.setSlaUnit(request.getSlaUnit());
@@ -227,7 +228,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
         // Bản nháp duy nhất của quy trình chưa publish: huỷ đi thì quy trình không còn nội dung
         if (templateVersionRepository.findByTemplateIdAndStatus(id, TicketCallFlowVersionStatus.PUBLISHED).isEmpty()) {
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_DRAFT_NOT_DISCARDABLE);
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_DRAFT_NOT_DISCARDABLE);
         }
         templateVersionRepository.delete(draft);
         templateVersionRepository.flush();
@@ -281,7 +282,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         findActive(id);
         TemplateVersionEntity version = templateVersionRepository
                 .findByTemplateIdAndVersionNo(id, versionNo)
-                .orElseThrow(() -> new AppException(ErrorCode.TICKET_CALL_FLOW_VERSION_NOT_FOUND));
+                .orElseThrow(() -> new AppException(CoreErrorCode.TICKET_CALL_FLOW_VERSION_NOT_FOUND));
         return TicketCallFlowVersionResponse.builder()
                 .flowId(version.getTemplateId())
                 .versionNo(version.getVersionNo())
@@ -315,10 +316,10 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
      */
     private TemplateEntity insertWithUniqueCode(TemplateEntity entity, String flowJson) {
         if (templateRepository.existsByCodeAndDeletedFalse(entity.getCode())) {
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_CODE_EXISTED);
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_CODE_EXISTED);
         }
         if (templateRepository.existsByCaseCodePrefixAndDeletedFalse(entity.getCaseCodePrefix())) {
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED);
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED);
         }
         try {
             entity = templateRepository.saveAndFlush(entity);
@@ -326,8 +327,8 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
             // 2 request cùng tạo 1 mã / 1 tiền tố: request sau vướng unique key, phân biệt theo tên ràng buộc
             String message = String.valueOf(e.getMostSpecificCause().getMessage());
             throw new AppException(message.contains("uk_template_active_case_prefix")
-                    ? ErrorCode.TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED
-                    : ErrorCode.TICKET_CALL_FLOW_CODE_EXISTED, e);
+                    ? CoreErrorCode.TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED
+                    : CoreErrorCode.TICKET_CALL_FLOW_CODE_EXISTED, e);
         }
         TemplateVersionEntity draft = newDraft(entity.getId(), 1);
         draft.setModelJson(flowJson);
@@ -374,7 +375,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     }
 
     private static AppException triggerInvalid(String field) {
-        return new AppException(ErrorCode.TICKET_CALL_FLOW_TRIGGER_INVALID,
+        return new AppException(CoreErrorCode.TICKET_CALL_FLOW_TRIGGER_INVALID,
                 "err.ticketCallFlow.trigger." + field + ".required");
     }
 
@@ -433,14 +434,14 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     private void validateStatusChange(TemplateEntity entity, TicketCallFlowStatus status) {
         boolean published = entity.getStatus() != TicketCallFlowStatus.DRAFT;
         if (published == (status == TicketCallFlowStatus.DRAFT)) {
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_STATUS_INVALID);
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_STATUS_INVALID);
         }
     }
 
     private TemplateVersionEntity findDraftOrThrow(Long templateId) {
         return templateVersionRepository
                 .findByTemplateIdAndStatus(templateId, TicketCallFlowVersionStatus.DRAFT)
-                .orElseThrow(() -> new AppException(ErrorCode.TICKET_CALL_FLOW_DRAFT_NOT_FOUND));
+                .orElseThrow(() -> new AppException(CoreErrorCode.TICKET_CALL_FLOW_DRAFT_NOT_FOUND));
     }
 
     /** Bản đang sửa: bản nháp nếu có, không thì bản đang hiệu lực. */
@@ -448,13 +449,13 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         return templateVersionRepository
                 .findByTemplateIdAndStatus(templateId, TicketCallFlowVersionStatus.DRAFT)
                 .or(() -> templateVersionRepository.findByTemplateIdAndStatus(templateId, TicketCallFlowVersionStatus.PUBLISHED))
-                .orElseThrow(() -> new AppException(ErrorCode.TICKET_CALL_FLOW_VERSION_NOT_FOUND));
+                .orElseThrow(() -> new AppException(CoreErrorCode.TICKET_CALL_FLOW_VERSION_NOT_FOUND));
     }
 
     private TemplateEntity findActive(Long id) {
         return templateRepository
                 .findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new AppException(ErrorCode.TICKET_CALL_FLOW_NOT_FOUND));
+                .orElseThrow(() -> new AppException(CoreErrorCode.TICKET_CALL_FLOW_NOT_FOUND));
     }
 
     /**
@@ -465,12 +466,12 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
      */
     private String validateFlowJson(String flowJson) {
         if (flowJson.length() > MAX_FLOW_JSON_LENGTH) {
-            throw new AppException(ErrorCode.FLOW_JSON_TOO_LARGE);
+            throw new AppException(CoreErrorCode.FLOW_JSON_TOO_LARGE);
         }
         try {
             objectMapper.readTree(flowJson);
         } catch (JsonProcessingException e) {
-            throw new AppException(ErrorCode.FLOW_JSON_INVALID, e);
+            throw new AppException(CoreErrorCode.FLOW_JSON_INVALID, e);
         }
         return flowJson;
     }
@@ -489,7 +490,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         String sortBy = StringUtils.hasText(request.getSortBy()) ? request.getSortBy().trim() : "updatedAt";
         String path = SORT_FIELDS.get(sortBy);
         if (path == null) {
-            throw new AppException(ErrorCode.TICKET_CALL_FLOW_SORT_INVALID);
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_SORT_INVALID);
         }
         Sort.Direction direction = StringUtils.hasText(request.getSortDir())
                 ? Sort.Direction.fromString(request.getSortDir().trim())

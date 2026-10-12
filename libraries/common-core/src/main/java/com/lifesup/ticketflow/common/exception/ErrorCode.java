@@ -5,10 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
 /**
- * Mã lỗi dùng chung: mã số, key message trong i18n/messages*.properties và HTTP status.
+ * Mã lỗi nền tảng dùng chung (1xxx): mã số, key message trong i18n/messages*.properties và HTTP status.
+ * Chỉ gồm lỗi mà thư viện tự phát sinh (xác thực, phân quyền, validate, 404/405, conflict, Redis, lỗi không xác định).
+ * Lỗi nghiệp vụ khai báo trong enum riêng của từng service, implement {@link BaseErrorCode}
+ * (core-service: CoreErrorCode 2xxx, integration-service: IntegrationErrorCode 3xxx).
  */
 @Getter
-public enum ErrorCode {
+public enum ErrorCode implements BaseErrorCode {
     UNCATEGORIZED_EXCEPTION(9999, "err.code.UNCATEGORIZED_EXCEPTION", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_REQUEST(1000, "err.code.INVALID_REQUEST", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1001, "err.code.UNAUTHENTICATED", HttpStatus.UNAUTHORIZED),
@@ -25,21 +28,7 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED(1012, "err.code.METHOD_NOT_ALLOWED", HttpStatus.METHOD_NOT_ALLOWED),
     MALFORMED_REQUEST(1013, "err.code.MALFORMED_REQUEST", HttpStatus.BAD_REQUEST),
     SERVICE_UNHEALTHY(1014, "err.code.SERVICE_UNHEALTHY", HttpStatus.SERVICE_UNAVAILABLE),
-    DATA_CONFLICT(1015, "err.code.DATA_CONFLICT", HttpStatus.CONFLICT),
-
-    // Ticket call flow
-    TICKET_CALL_FLOW_NOT_FOUND(2001, "err.code.TICKET_CALL_FLOW_NOT_FOUND", HttpStatus.NOT_FOUND),
-    TICKET_CALL_FLOW_CODE_EXISTED(2002, "err.code.TICKET_CALL_FLOW_CODE_EXISTED", HttpStatus.CONFLICT),
-    FLOW_JSON_INVALID(2003, "err.code.FLOW_JSON_INVALID", HttpStatus.BAD_REQUEST),
-    FLOW_JSON_TOO_LARGE(2004, "err.code.FLOW_JSON_TOO_LARGE", HttpStatus.PAYLOAD_TOO_LARGE),
-    TICKET_CALL_FLOW_VERSION_NOT_FOUND(2005, "err.code.TICKET_CALL_FLOW_VERSION_NOT_FOUND", HttpStatus.NOT_FOUND),
-    TICKET_CALL_FLOW_DRAFT_NOT_FOUND(2006, "err.code.TICKET_CALL_FLOW_DRAFT_NOT_FOUND", HttpStatus.BAD_REQUEST),
-    TICKET_CALL_FLOW_DRAFT_NOT_DISCARDABLE(2007, "err.code.TICKET_CALL_FLOW_DRAFT_NOT_DISCARDABLE", HttpStatus.BAD_REQUEST),
-    TICKET_CALL_FLOW_STATUS_INVALID(2008, "err.code.TICKET_CALL_FLOW_STATUS_INVALID", HttpStatus.BAD_REQUEST),
-    TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED(2009, "err.code.TICKET_CALL_FLOW_CASE_CODE_PREFIX_EXISTED", HttpStatus.CONFLICT),
-    TICKET_CALL_FLOW_TRIGGER_INVALID(2010, "err.code.TICKET_CALL_FLOW_TRIGGER_INVALID", HttpStatus.BAD_REQUEST),
-    TICKET_CALL_FLOW_SLA_INVALID(2011, "err.code.TICKET_CALL_FLOW_SLA_INVALID", HttpStatus.BAD_REQUEST),
-    TICKET_CALL_FLOW_SORT_INVALID(2012, "err.code.TICKET_CALL_FLOW_SORT_INVALID", HttpStatus.BAD_REQUEST);
+    DATA_CONFLICT(1015, "err.code.DATA_CONFLICT", HttpStatus.CONFLICT);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

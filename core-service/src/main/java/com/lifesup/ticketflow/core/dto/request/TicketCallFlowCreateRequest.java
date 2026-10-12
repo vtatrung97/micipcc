@@ -3,7 +3,7 @@ package com.lifesup.ticketflow.core.dto.request;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.lifesup.ticketflow.core.common.enums.SlaUnit;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
-import com.lifesup.ticketflow.core.configuration.StringTrimDeserializer;
+import com.lifesup.ticketflow.common.json.StringTrimDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;

@@ -1,7 +1,8 @@
 package com.lifesup.ticketflow.integration.entity;
 
 import com.lifesup.ticketflow.integration.common.enums.AuthType;
-import com.lifesup.ticketflow.integration.common.enums.IntegrationStatus;
+import com.lifesup.ticketflow.integration.common.enums.Protocol;
+import com.lifesup.ticketflow.integration.common.enums.Status;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,9 +37,9 @@ public class ConnectionEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     String name;
 
-    /** REST | SOAP */
+    @Enumerated(EnumType.STRING)
     @Column(name = "protocol", nullable = false, length = 20)
-    String protocol;
+    Protocol protocol;
 
     @Column(name = "base_url", nullable = false, length = 1000)
     String baseUrl;
@@ -67,8 +68,19 @@ public class ConnectionEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    IntegrationStatus status;
+    Status status;
 
     @Column(name = "deleted", nullable = false)
     boolean deleted;
+
+    @Column(name = "tenant_id", length = 100, updatable = false)
+    String tenantId;
+
+    /** Realm Keycloak của người tạo, gán khi tạo mới từ SecurityContextUtils.getRealm(). */
+    @Column(name = "realm", length = 100, updatable = false)
+    String realm;
+
+    /** Id group Keycloak của người tạo. */
+    @Column(name = "group_id", length = 36, updatable = false)
+    String groupId;
 }

@@ -19,6 +19,8 @@ import java.util.Map;
 /** Access to the user, roles and RPT permissions stored in the current SecurityContext. */
 public final class SecurityContextUtils {
 
+    private static final String REALMS_PATH = "/realms/";
+
     private SecurityContextUtils() {}
 
     public static Authentication getCurrentAuthentication() {
@@ -51,6 +53,28 @@ public final class SecurityContextUtils {
 
     public static String getEmail() {
         return getJwt().getClaimAsString("email");
+    }
+
+    /**
+     * Realm Keycloak của token hiện tại, lấy từ claim iss ({@code https://host/realms/<realm>}
+     * hoặc {@code https://host/auth/realms/<realm>}). Không phải JWT (API key, job nền) hoặc không đọc được thì null.
+     */
+    public static String getRealm() {
+        if (!isJwtAuthenticationToken()) {
+            return null;
+        }
+        String issuer = getJwt().getClaimAsString("iss");
+        if (!StringUtils.hasText(issuer)) {
+            return null;
+        }
+        int index = issuer.lastIndexOf(REALMS_PATH);
+        if (index < 0) {
+            return null;
+        }
+        String realm = issuer.substring(index + REALMS_PATH.length());
+        int slash = realm.indexOf('/');
+        realm = slash >= 0 ? realm.substring(0, slash) : realm;
+        return StringUtils.hasText(realm) ? realm : null;
     }
 
     public static String getApiKeyClientId() {

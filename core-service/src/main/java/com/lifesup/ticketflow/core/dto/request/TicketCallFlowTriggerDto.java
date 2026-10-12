@@ -1,10 +1,10 @@
 package com.lifesup.ticketflow.core.dto.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.lifesup.ticketflow.common.json.StringTrimDeserializer;
 import com.lifesup.ticketflow.core.common.enums.ScheduleRepeat;
 import com.lifesup.ticketflow.core.common.enums.ScheduleType;
 import com.lifesup.ticketflow.core.common.enums.TriggerType;
-import com.lifesup.ticketflow.core.configuration.StringTrimDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

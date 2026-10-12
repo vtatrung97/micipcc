@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.common.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.lifesup.ticketflow.common.exception.ErrorCode;
+import com.lifesup.ticketflow.common.exception.BaseErrorCode;
 import com.lifesup.ticketflow.common.i18n.Translator;
 import com.lifesup.ticketflow.common.web.RequestIdFilter;
 import lombok.AccessLevel;
@@ -40,15 +40,15 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+    public static <T> ApiResponse<T> error(BaseErrorCode errorCode) {
         return error(errorCode, Translator.toLocale(errorCode.getMessage()), null);
     }
 
-    public static <T> ApiResponse<T> error(ErrorCode errorCode, Locale locale) {
+    public static <T> ApiResponse<T> error(BaseErrorCode errorCode, Locale locale) {
         return error(errorCode, Translator.toLocale(locale, errorCode.getMessage()), null);
     }
 
-    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message, T result) {
+    public static <T> ApiResponse<T> error(BaseErrorCode errorCode, String message, T result) {
         return ApiResponse.<T>builder()
                 .code(errorCode.getCode())
                 .message(message)

@@ -1,6 +1,7 @@
 package com.lifesup.ticketflow.integration.entity;
 
-import com.lifesup.ticketflow.integration.common.enums.IntegrationStatus;
+import com.lifesup.ticketflow.integration.common.enums.HttpMethod;
+import com.lifesup.ticketflow.integration.common.enums.OperationStatus;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,9 +42,9 @@ public class OperationEntity extends BaseEntity {
     @Column(name = "description", length = 1000)
     String description;
 
-    /** GET | POST | PUT | PATCH | DELETE */
+    @Enumerated(EnumType.STRING)
     @Column(name = "http_method", nullable = false, length = 10)
-    String httpMethod;
+    HttpMethod httpMethod;
 
     /** Path nối sau base_url của kết nối. */
     @Column(name = "path", nullable = false, length = 1000)
@@ -78,8 +79,19 @@ public class OperationEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    IntegrationStatus status;
+    OperationStatus status;
 
     @Column(name = "deleted", nullable = false)
     boolean deleted;
+
+    @Column(name = "tenant_id", length = 100, updatable = false)
+    String tenantId;
+
+    /** Realm Keycloak của người tạo, gán khi tạo mới từ SecurityContextUtils.getRealm(). */
+    @Column(name = "realm", length = 100, updatable = false)
+    String realm;
+
+    /** Id group Keycloak của người tạo. */
+    @Column(name = "group_id", length = 36, updatable = false)
+    String groupId;
 }

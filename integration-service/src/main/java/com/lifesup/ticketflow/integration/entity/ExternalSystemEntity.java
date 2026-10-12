@@ -1,6 +1,7 @@
 package com.lifesup.ticketflow.integration.entity;
 
-import com.lifesup.ticketflow.integration.common.enums.IntegrationStatus;
+import com.lifesup.ticketflow.integration.common.enums.Environment;
+import com.lifesup.ticketflow.integration.common.enums.Status;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,17 +32,29 @@ public class ExternalSystemEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     String name;
 
-    /** Môi trường kết nối, VD DEV, UAT, PROD. */
+    /** Môi trường kết nối, null = không phân biệt. */
+    @Enumerated(EnumType.STRING)
     @Column(name = "environment", length = 20)
-    String environment;
+    Environment environment;
 
     @Column(name = "description", length = 1000)
     String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    IntegrationStatus status;
+    Status status;
 
     @Column(name = "deleted", nullable = false)
     boolean deleted;
+
+    @Column(name = "tenant_id", length = 100, updatable = false)
+    String tenantId;
+
+    /** Realm Keycloak của người tạo, gán khi tạo mới từ SecurityContextUtils.getRealm(). */
+    @Column(name = "realm", length = 100, updatable = false)
+    String realm;
+
+    /** Id group Keycloak của người tạo. */
+    @Column(name = "group_id", length = 36, updatable = false)
+    String groupId;
 }

@@ -2,7 +2,8 @@ package com.lifesup.ticketflow.integration.dto.response;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.lifesup.ticketflow.integration.common.enums.IntegrationStatus;
+import com.lifesup.ticketflow.integration.common.enums.HttpMethod;
+import com.lifesup.ticketflow.integration.common.enums.OperationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,9 +31,9 @@ public class OperationSummaryResponse {
     Integer versionNo;
     String name;
     String description;
-    String httpMethod;
+    HttpMethod httpMethod;
     String path;
-    IntegrationStatus status;
+    OperationStatus status;
 
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(type = "string", example = "702305427898417152")

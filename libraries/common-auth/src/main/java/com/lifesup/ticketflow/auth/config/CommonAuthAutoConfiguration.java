@@ -5,6 +5,7 @@ import com.lifesup.ticketflow.auth.aop.PermissionAspect;
 import com.lifesup.ticketflow.auth.filter.ApiKeyAuthenticationFilter;
 import com.lifesup.ticketflow.auth.filter.PolicyEnforcerFilter;
 import com.lifesup.ticketflow.common.api.ApiResponse;
+import com.lifesup.ticketflow.common.exception.BaseErrorCode;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
 import io.minio.MinioClient;
 import jakarta.servlet.http.HttpServletRequest;
@@ -146,7 +147,7 @@ public class CommonAuthAutoConfiguration {
     private static void writeError(
             HttpServletRequest request,
             HttpServletResponse response,
-            ErrorCode errorCode,
+            BaseErrorCode errorCode,
             ObjectMapper objectMapper,
             LocaleResolver localeResolver) throws IOException {
         if (response.isCommitted()) {
