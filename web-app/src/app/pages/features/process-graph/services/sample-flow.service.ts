@@ -260,7 +260,6 @@ export class SampleFlowService {
         sla: '30 phút',
         slaWarning: true,
         formTemplate: 'FORM_CSAT_FEEDBACK_V1',
-        formOutput: 'output_csat_classification',
         description: 'Kiểm tra nội dung góp ý, gắn tag phân loại chủ đề',
       },
     );
@@ -362,7 +361,6 @@ export class SampleFlowService {
         agent: 'Điện thoại viên (FO/BO)',
         sla: '45 phút',
         formTemplate: 'FORM_CDR_VERIFY_V2',
-        formOutput: 'output_verified_amount',
       },
     );
 

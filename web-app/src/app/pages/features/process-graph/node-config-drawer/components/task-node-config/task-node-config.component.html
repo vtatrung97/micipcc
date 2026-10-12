@@ -1,75 +1,194 @@
-<div class="task-config-container" *ngIf="nodeProps">
-  <div class="drawer-section-heading mt-4">
-    <ant-icon name="user" [size]="14" style="margin-right: 6px;"></ant-icon>
-    <span>CẤU HÌNH TÁC VỤ & PHÂN QUYỀN</span>
-  </div>
+<div class="task-config" *ngIf="nodeProps">
+  <!-- ===== Thông tin chung ===== -->
+  <section class="task-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
+    <ng-container *ngIf="openSections.general">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="errors.label ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
 
-  <!-- User Task: Approval Step switch -->
-  <div class="approval-toggle-box mb-3">
-    <div class="approval-toggle-content">
-      <span class="approval-toggle-title">Bước Phê duyệt (Approval Task)</span>
-      <span class="approval-toggle-desc">Tự động sinh 2 cổng ra: Đồng ý & Từ chối</span>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0">
+        <ant-input class="step-code" [readonly]="true" [ngModel]="nodeProps.nodeKey || 'ma_buoc'"></ant-input>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')"
+                      [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
+      </app-form-field>
+
+      <!-- Thời hạn xử lý: số + đơn vị (rộng 148) -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.SLA_DURATION' | translate" [spacing]="0">
+        <div class="sla-row">
+          <ant-input type="number" [(ngModel)]="nodeProps.slaSeconds" (ngModelChange)="save('slaSeconds')"
+                     [placeholder]="'PROCESS_GRAPH.COMMON.NUMBER_PLACEHOLDER' | translate"></ant-input>
+          <ant-select class="sla-unit" [(ngModel)]="nodeProps.sla" (ngModelChange)="save('sla')"
+                      [options]="slaUnitOptions"></ant-select>
+        </div>
+      </app-form-field>
+
+      <ant-checkbox [(ngModel)]="nodeProps.slaWarning" (ngModelChange)="save('slaWarning')"
+                    [label]="'PROCESS_GRAPH.DRAWER.FIELDS.SLA_WARNING' | translate"></ant-checkbox>
+    </ng-container>
+  </section>
+
+  <div class="task-divider"></div>
+
+  <!-- ===== Người thực hiện ===== -->
+  <section class="task-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'actor', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.ACTOR', hint: 'PROCESS_GRAPH.DRAWER.USER_TASK.ACTOR_HINT' }"></ng-container>
+    <ng-container *ngIf="openSections.actor">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.USER_TASK.ASSIGN_TYPE' | translate" [spacing]="0">
+        <app-radio-group class="radio-2col" direction="horizontal" [(ngModel)]="nodeProps.assignType"
+                         (ngModelChange)="onAssignTypeChange()" [options]="assignTypeOptions"></app-radio-group>
+      </app-form-field>
+
+      <!-- Chỉ hiện khi Giao việc tự động -->
+      <app-form-field *ngIf="isAutoAssign" [label]="'PROCESS_GRAPH.DRAWER.USER_TASK.ASSIGN_STRATEGY' | translate" [spacing]="0">
+        <app-radio-group class="radio-2col" direction="horizontal" [(ngModel)]="nodeProps.assignStrategy"
+                         (ngModelChange)="save('assignStrategy')" [options]="strategyOptions"></app-radio-group>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DEPARTMENT' | translate" [error]="errors.department ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.department" (ngModelChange)="save('department')" [options]="departmentOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.GROUP' | translate" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.team" (ngModelChange)="save('team')" [options]="teamOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.AGENT' | translate" [error]="errors.agent ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.agent" (ngModelChange)="save('agent')" [options]="agentOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
+    </ng-container>
+  </section>
+
+  <div class="task-divider"></div>
+
+  <!-- ===== Biểu mẫu + Dữ liệu đầu vào ===== -->
+  <section class="task-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'form', title: 'PROCESS_GRAPH.DRAWER.USER_TASK.FORM_SECTION' }"></ng-container>
+    <ng-container *ngIf="openSections.form">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.FORM' | translate" [error]="errors.formTemplate ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.formTemplate" (ngModelChange)="onFormChange()" [options]="formOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.USER_TASK.INPUT_DATA' | translate" [error]="errors.formInputs ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <!-- Biến quy trình · Ánh xạ · Trường biểu mẫu · [xoá – ghim phải] -->
+        <div class="map-table">
+          <div class="map-scroll">
+            <table class="table-input">
+              <thead>
+                <tr>
+                  <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_VARIABLE' | translate }}</th>
+                  <th class="col-center">{{ 'PROCESS_GRAPH.DRAWER.USER_TASK.COL_MAPPED' | translate }}</th>
+                  <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_FORM_FIELD' | translate }}</th>
+                  <th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of inputs; let i = index; trackBy: trackByIndex">
+                  <td>
+                    <div class="var-cell">
+                      <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                                  (ngModelChange)="save('formInputs')" [options]="variableOptions"
+                                  [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+                      <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
+                            [appTooltip]="caption" [tooltipOnlyTruncated]="true">{{ caption }}</span>
+                    </div>
+                  </td>
+                  <td class="col-center">
+                    <ant-checkbox [(ngModel)]="row.mapped" (ngModelChange)="onMappedChange(row)"></ant-checkbox>
+                  </td>
+                  <td>
+                    <ant-select *ngIf="row.mapped" class="cell-select" size="small" [fixedPanel]="true"
+                                [(ngModel)]="row.formField" (ngModelChange)="save('formInputs')" [options]="formFieldOptions"
+                                [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+                  </td>
+                  <td class="col-action">
+                    <ng-container *ngTemplateOutlet="removeBtn; context: { show: inputs.length > 1, kind: 'input', index: i }"></ng-container>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'input' }"></ng-container>
+        </div>
+      </app-form-field>
+    </ng-container>
+  </section>
+
+  <div class="task-divider"></div>
+
+  <!-- ===== Dữ liệu đầu ra: Biến quy trình · Trường biểu mẫu · Tên hiển thị ===== -->
+  <section class="task-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'output', title: 'PROCESS_GRAPH.DRAWER.USER_TASK.OUTPUT_DATA' }"></ng-container>
+    <div class="map-table" *ngIf="openSections.output">
+      <div class="map-scroll">
+        <table class="table-output">
+          <thead>
+            <tr>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_VARIABLE' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_FORM_FIELD' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_DISPLAY_NAME' | translate }}</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of outputs; let i = index; trackBy: trackByIndex">
+              <td>
+                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('formOutputs')"
+                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
+              </td>
+              <td>
+                <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.formField"
+                            (ngModelChange)="save('formOutputs')" [options]="formFieldOptions"
+                            [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+              </td>
+              <td>
+                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('formOutputs')"
+                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
+              </td>
+              <td class="col-action">
+                <ng-container *ngTemplateOutlet="removeBtn; context: { show: outputs.length > 1, kind: 'output', index: i }"></ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'output' }"></ng-container>
     </div>
-    <nz-switch [(ngModel)]="nodeProps.isApprovalStep" (ngModelChange)="onUserTaskApprovalToggle()"
-      name="isApprovalStep">
-    </nz-switch>
-  </div>
-
-  <!-- Gán quyền xử lý (Assignee) -->
-  <nz-form-item>
-    <nz-form-label>Đối tượng xử lý (Assignee)</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.assignee" (ngModelChange)="onPropChange('assignee')"
-        name="stepAssignee">
-        <nz-option nzValue="Điện thoại viên (FO/BO)" nzLabel="Điện thoại viên (FO/BO)"></nz-option>
-        <nz-option nzValue="Tổ Tiếp nhận Khách hàng VIP" nzLabel="Tổ Tiếp nhận Khách hàng VIP"></nz-option>
-        <nz-option nzValue="Trưởng ca (Supervisor)" nzLabel="Trưởng ca (Supervisor)"></nz-option>
-        <nz-option nzValue="Phòng Cước & Đối soát CDR" nzLabel="Phòng Cước & Đối soát CDR"></nz-option>
-        <nz-option nzValue="Kỹ thuật viên FTTH / OLT" nzLabel="Kỹ thuật viên FTTH / OLT"></nz-option>
-        <nz-option nzValue="Hệ thống tự động (System)" nzLabel="Hệ thống tự động (System)"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
-
-  <!-- Cam kết thời hạn SLA -->
-  <div class="form-row-2">
-    <nz-form-item>
-      <nz-form-label>Cam kết SLA</nz-form-label>
-      <nz-form-control>
-        <nz-select [(ngModel)]="nodeProps.sla" (ngModelChange)="onPropChange('sla')" name="stepSla">
-          <nz-option nzValue="15m SLA" nzLabel="15m SLA (Khẩn cấp)"></nz-option>
-          <nz-option nzValue="30m SLA" nzLabel="30m SLA"></nz-option>
-          <nz-option nzValue="1h SLA" nzLabel="1h SLA"></nz-option>
-          <nz-option nzValue="2h SLA" nzLabel="2h SLA (Tiêu chuẩn)"></nz-option>
-          <nz-option nzValue="4h SLA" nzLabel="4h SLA"></nz-option>
-          <nz-option nzValue="24h SLA" nzLabel="24h SLA"></nz-option>
-        </nz-select>
-      </nz-form-control>
-    </nz-form-item>
-
-    <nz-form-item>
-      <nz-form-label>Cảnh báo Timeout</nz-form-label>
-      <nz-form-control>
-        <nz-select [(ngModel)]="nodeProps.timeout" (ngModelChange)="onPropChange('timeout')" name="stepTimeout">
-          <nz-option nzValue="5 phút" nzLabel="5 phút (Cảnh báo vàng)"></nz-option>
-          <nz-option nzValue="15 phút" nzLabel="15 phút"></nz-option>
-          <nz-option nzValue="30 phút" nzLabel="30 phút"></nz-option>
-          <nz-option nzValue="1 giờ" nzLabel="1 giờ"></nz-option>
-          <nz-option nzValue="2 giờ" nzLabel="2 giờ"></nz-option>
-          <nz-option nzValue="Không giới hạn" nzLabel="Không giới hạn"></nz-option>
-        </nz-select>
-      </nz-form-control>
-    </nz-form-item>
-  </div>
-
-  <!-- Ghi chú mô tả -->
-  <nz-form-item>
-    <nz-form-label>Mô tả tác vụ</nz-form-label>
-    <nz-form-control>
-      <textarea nz-input rows="3" [(ngModel)]="nodeProps.description"
-        (ngModelChange)="onPropChange('description')" name="stepDesc"
-        placeholder="Nhập ghi chú chi tiết nghiệp vụ bước này...">
-      </textarea>
-    </nz-form-control>
-  </nz-form-item>
+  </section>
 </div>
+
+<!-- Tiêu đề khối (+ dòng mô tả) và chevron thu gọn -->
+<ng-template #sectionHead let-key="key" let-title="title" let-hint="hint">
+  <button type="button" class="section-head" (click)="toggleSection(key)" [attr.aria-expanded]="isOpen(key)">
+    <span class="section-title-wrap">
+      <span class="section-title">{{ title | translate }}</span>
+      <span class="section-hint" *ngIf="hint">{{ hint | translate }}</span>
+    </span>
+    <img class="section-chevron" [class.collapsed]="!isOpen(key)"
+         src="assets/icons/processx/chevron-up.svg" width="24" height="24" alt="" />
+  </button>
+</ng-template>
+
+<ng-template #removeBtn let-show="show" let-kind="kind" let-index="index">
+  <button *ngIf="show" type="button" class="row-remove" (click)="removeRow(kind, index)"
+          [appTooltip]="'PROCESS_GRAPH.DRAWER.START.REMOVE_ROW' | translate">
+    <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+  </button>
+</ng-template>
+
+<ng-template #addRowBtn let-kind="kind">
+  <div class="map-add">
+    <button type="button" class="map-add-btn" (click)="addRow(kind)">
+      <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+      <span>{{ 'PROCESS_GRAPH.DRAWER.START.ADD_ROW' | translate }}</span>
+    </button>
+  </div>
+</ng-template>

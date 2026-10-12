@@ -89,21 +89,20 @@ export class ProcessInfoFormComponent implements OnDestroy {
     this.info.code = (value || '').toUpperCase().replace(/\s+/g, '_');
   }
 
-  // ===== Điều kiện kích hoạt (Kích hoạt tự động) =====
+  // ===== Điều kiện kích hoạt (Tự động / Hybrid) =====
   /** Thêm một dòng điều kiện trống */
-  addConditionRule(): void {
-    this.info.auto.conditions.rules.push(createEmptyConditionRule());
+  addConditionRule(rules: ConditionRuleItem[]): void {
+    rules.push(createEmptyConditionRule());
   }
 
   /** Xoá dòng điều kiện — luôn giữ lại ít nhất 1 dòng (dòng đầu không có nút xoá) */
-  removeConditionRule(index: number): void {
-    const rules = this.info.auto.conditions.rules;
+  removeConditionRule(rules: ConditionRuleItem[], index: number): void {
     if (rules.length > 1) rules.splice(index, 1);
   }
 
   /** Ô trống của một dòng → viền đỏ khi form đang báo lỗi điều kiện */
-  isRuleFieldInvalid(rule: ConditionRuleItem, field: keyof ConditionRuleItem): boolean {
-    return !!this.errors.autoConditions && !String(rule[field] ?? '').trim();
+  isRuleFieldInvalid(rule: ConditionRuleItem, field: keyof ConditionRuleItem, errorKey: keyof ProcessInfoErrors): boolean {
+    return !!this.errors[errorKey] && !String(rule[field] ?? '').trim();
   }
 
   isTrigger(option: SelectOption, type: ProcessTriggerType): boolean {

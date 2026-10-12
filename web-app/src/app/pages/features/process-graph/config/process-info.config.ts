@@ -1,4 +1,5 @@
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
+import { PROCESS_CATEGORIES } from '@core/services/process-category.constant';
 
 /**
  * Danh mục cho tab "Thông tin chung".
@@ -6,13 +7,7 @@ import { SelectOption } from '@shared/components/ant-select/ant-select.component
  */
 
 /** Phân loại nhóm quy trình (đồng bộ với danh sách ở màn Danh sách quy trình) */
-export const PROCESS_CATEGORY_OPTIONS: SelectOption[] = [
-  'Xử lý khiếu nại',
-  'Cảnh báo chỉ số',
-  'Chăm sóc sau tương tác',
-  'Happy Call / Telesales',
-  'Khảo sát CSAT'
-].map(c => ({ value: c, label: c }));
+export const PROCESS_CATEGORY_OPTIONS: SelectOption[] = PROCESS_CATEGORIES.map(c => ({ value: c, label: c }));
 
 /** API dùng cho kích hoạt Hybrid */
 export const PROCESS_HYBRID_API_OPTIONS: SelectOption[] = [

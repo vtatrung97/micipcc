@@ -12,10 +12,16 @@ export interface ProcessManualConfig {
   inputFormId: string | null;
 }
 
-/** Kích hoạt tự động: API + điều kiện kích hoạt (cùng cấu trúc rule với popup Điều kiện của gateway) */
+/** Điều kiện kích hoạt (cùng cấu trúc rule với popup Điều kiện của gateway) */
+export interface ProcessTriggerConditions {
+  logicOperator: 'AND' | 'OR';
+  rules: ConditionRuleItem[];
+}
+
+/** Kích hoạt tự động: API + điều kiện kích hoạt */
 export interface ProcessAutoConfig {
   apiId: string | null;
-  conditions: { logicOperator: 'AND' | 'OR'; rules: ConditionRuleItem[] };
+  conditions: ProcessTriggerConditions;
 }
 
 /** Chu kỳ lặp khi mode = REPEAT (ô "Lặp lại") */
@@ -36,9 +42,10 @@ export interface ProcessScheduleConfig {
   monthDays: number[];
 }
 
-/** Hybrid: API + biểu mẫu dữ liệu đầu vào */
+/** Hybrid: API + điều kiện kích hoạt + biểu mẫu dữ liệu đầu vào */
 export interface ProcessHybridConfig {
   apiId: string | null;
+  conditions: ProcessTriggerConditions;
   inputFormId: string | null;
 }
 
@@ -67,7 +74,7 @@ export interface ProcessInfo {
 
 /** Field bắt buộc → key lỗi i18n (PROCESS_GRAPH.INFO.ERRORS.*) */
 export type ProcessInfoErrors = Partial<Record<
-  'name' | 'code' | 'category' | 'triggerType' | 'manualFormId' | 'autoApiId' | 'autoConditions' | 'runDate' | 'runTime' | 'repeat' | 'weekDays' | 'monthDays' | 'apiId' | 'inputFormId' | 'sla',
+  'name' | 'code' | 'category' | 'triggerType' | 'manualFormId' | 'autoApiId' | 'autoConditions' | 'hybridConditions' | 'runDate' | 'runTime' | 'repeat' | 'weekDays' | 'monthDays' | 'apiId' | 'inputFormId' | 'sla',
   string
 >>;
 
@@ -79,9 +86,9 @@ export function createEmptyProcessInfo(): ProcessInfo {
     description: '',
     triggerType: null,
     manual: { inputFormId: null },
-    auto: { apiId: null, conditions: { logicOperator: 'AND', rules: [createEmptyConditionRule()] } },
+    auto: { apiId: null, conditions: toTriggerConditions(null) },
     schedule: { mode: 'ONCE', runDate: '', runTime: '', repeat: null, weekDays: [], monthDays: [] },
-    hybrid: { apiId: null, inputFormId: null },
+    hybrid: { apiId: null, conditions: toTriggerConditions(null), inputFormId: null },
     slaValue: null,
     slaUnit: 'Ngày'
   };
@@ -101,19 +108,19 @@ export function processInfoFromTemplate(t: ProcessTemplateItem | null | undefine
   if (t.triggerConfig?.auto) {
     info.auto = {
       apiId: t.triggerConfig.auto.apiId ?? null,
-      conditions: {
-        logicOperator: t.triggerConfig.auto.conditions?.logicOperator || 'AND',
-        // Luôn có ít nhất 1 điều kiện
-        rules: t.triggerConfig.auto.conditions?.rules?.length
-          ? t.triggerConfig.auto.conditions.rules.map(r => ({ ...r }))
-          : [createEmptyConditionRule()]
-      }
+      conditions: toTriggerConditions(t.triggerConfig.auto.conditions)
     };
   }
   if (t.triggerConfig?.schedule) {
     info.schedule = { ...info.schedule, ...t.triggerConfig.schedule, repeat: t.triggerConfig.schedule.repeat ?? null, weekDays: [...(t.triggerConfig.schedule.weekDays || [])], monthDays: [...(t.triggerConfig.schedule.monthDays || [])] };
   }
-  if (t.triggerConfig?.hybrid) info.hybrid = { ...info.hybrid, ...t.triggerConfig.hybrid };
+  if (t.triggerConfig?.hybrid) {
+    info.hybrid = {
+      apiId: t.triggerConfig.hybrid.apiId ?? null,
+      conditions: toTriggerConditions(t.triggerConfig.hybrid.conditions),
+      inputFormId: t.triggerConfig.hybrid.inputFormId ?? null
+    };
+  }
 
   if (t.slaValue != null) {
     info.slaValue = t.slaValue;
@@ -157,6 +164,7 @@ export function validateProcessInfo(info: ProcessInfo): ProcessInfoErrors {
   }
   if (info.triggerType === 'HYBRID') {
     if (!info.hybrid.apiId) errors.apiId = 'REQUIRED';
+    if (!isConditionRulesComplete(info.hybrid.conditions.rules)) errors.hybridConditions = 'REQUIRED';
     if (!info.hybrid.inputFormId) errors.inputFormId = 'REQUIRED';
   }
 
@@ -175,10 +183,19 @@ export function toProcessInfoPayload(info: ProcessInfo) {
       : info.triggerType === 'AUTO'
         ? { auto: { apiId: info.auto.apiId, conditions: { ...info.auto.conditions, rules: [...info.auto.conditions.rules] } } }
       : info.triggerType === 'SCHEDULE' ? { schedule: { ...info.schedule } }
-      : info.triggerType === 'HYBRID' ? { hybrid: { ...info.hybrid } }
+      : info.triggerType === 'HYBRID'
+        ? { hybrid: { ...info.hybrid, conditions: { ...info.hybrid.conditions, rules: [...info.hybrid.conditions.rules] } } }
       : null,
     slaValue: info.slaValue,
     slaUnit: info.slaUnit
+  };
+}
+
+/** Sao chép điều kiện kích hoạt từ dữ liệu lưu; luôn có ít nhất 1 dòng */
+function toTriggerConditions(src: { logicOperator?: 'AND' | 'OR'; rules?: ConditionRuleItem[] } | null | undefined): ProcessTriggerConditions {
+  return {
+    logicOperator: src?.logicOperator || 'AND',
+    rules: src?.rules?.length ? src.rules.map(r => ({ ...r })) : [createEmptyConditionRule()]
   };
 }
 

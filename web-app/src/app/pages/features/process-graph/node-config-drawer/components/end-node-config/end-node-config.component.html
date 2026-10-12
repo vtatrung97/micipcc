@@ -1,30 +1,62 @@
-<div class="end-config-container" *ngIf="nodeProps">
-  <div class="drawer-section-heading mt-4">
-    <ant-icon name="stop" [size]="14" style="margin-right: 6px;"></ant-icon>
-    <span>CẤU HÌNH KẾT THÚC TIẾN TRÌNH (END)</span>
-  </div>
+<div class="end-config" *ngIf="nodeProps">
+  <app-form-field [label]="'PROCESS_GRAPH.DRAWER.END_FORM' | translate" [error]="errors.endFormTemplate ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+    <ant-select [(ngModel)]="nodeProps.endFormTemplate" (ngModelChange)="onFormChange()" [options]="formOptions"
+                [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+  </app-form-field>
 
-  <!-- Trạng thái kết thúc -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Trạng thái kết thúc tiến trình</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.assignee" (ngModelChange)="onPropChange('assignee')"
-        name="endStatus">
-        <nz-option nzValue="Thành công (Completed)" nzLabel="Thành công (Completed)"></nz-option>
-        <nz-option nzValue="Huỷ bỏ (Cancelled)" nzLabel="Huỷ bỏ (Cancelled)"></nz-option>
-        <nz-option nzValue="Thất bại sự cố (Failed/Terminated)" nzLabel="Thất bại sự cố (Failed/Terminated)"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+  <div class="end-divider"></div>
 
-  <!-- Ghi chú mô tả kết thúc -->
-  <nz-form-item>
-    <nz-form-label>Mô tả kết quả kết thúc</nz-form-label>
-    <nz-form-control>
-      <textarea nz-input rows="3" [(ngModel)]="nodeProps.description"
-        (ngModelChange)="onPropChange('description')" name="stepDesc"
-        placeholder="Ghi chú điều kiện và kết quả khi quy trình đi vào bước kết thúc này...">
-      </textarea>
-    </nz-form-control>
-  </nz-form-item>
+  <!-- Kết quả: Biến quy trình · Trường biểu mẫu · [xoá – ghim phải] -->
+  <section class="end-section">
+    <button type="button" class="section-head" (click)="isResultsOpen = !isResultsOpen" [attr.aria-expanded]="isResultsOpen">
+      <span>{{ 'PROCESS_GRAPH.DRAWER.END_RESULTS' | translate }}</span>
+      <img class="section-chevron" [class.collapsed]="!isResultsOpen"
+           src="assets/icons/processx/chevron-up.svg" width="24" height="24" alt="" />
+    </button>
+
+    <div class="map-table" *ngIf="isResultsOpen">
+      <div class="map-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_VARIABLE' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_FORM_FIELD' | translate }}</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of rows; let i = index; trackBy: trackByIndex">
+              <td>
+                <div class="var-cell">
+                  <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                              (ngModelChange)="save('endResults')" [options]="variableOptions"
+                              [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+                  <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
+                        [appTooltip]="caption" [tooltipOnlyTruncated]="true">{{ caption }}</span>
+                </div>
+              </td>
+              <td>
+                <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.formField"
+                            (ngModelChange)="save('endResults')" [options]="formFieldOptions"
+                            [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+              </td>
+              <td class="col-action">
+                <button *ngIf="rows.length > 1" type="button" class="row-remove" (click)="removeRow(i)"
+                        [appTooltip]="'PROCESS_GRAPH.DRAWER.START.REMOVE_ROW' | translate">
+                  <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="map-add">
+        <button type="button" class="map-add-btn" (click)="addRow()">
+          <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+          <span>{{ 'PROCESS_GRAPH.DRAWER.START.ADD_ROW' | translate }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
 </div>

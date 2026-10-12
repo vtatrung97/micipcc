@@ -20,7 +20,9 @@
       </ng-template>
     </ng-container>
 
-    <ng-container *ngIf="isRange">
+    <!-- Khoảng ngày chưa chọn + có placeholder → hiện một dòng placeholder -->
+    <span class="dp-placeholder" *ngIf="isRange && !hasValue && placeholder">{{ placeholder }}</span>
+    <ng-container *ngIf="isRange && (hasValue || !placeholder)">
       <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayStart" [appTooltip]="displayStart || startPlaceholder || 'Từ ngày'" [tooltipOnlyTruncated]="true">{{ displayStart || startPlaceholder || 'Từ ngày' }}</span>
       <span class="dp-separator">→</span>
       <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayEnd" [appTooltip]="displayEnd || endPlaceholder || 'Đến ngày'" [tooltipOnlyTruncated]="true">{{ displayEnd || endPlaceholder || 'Đến ngày' }}</span>

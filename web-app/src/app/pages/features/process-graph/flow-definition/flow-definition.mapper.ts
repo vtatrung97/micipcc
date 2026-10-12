@@ -10,7 +10,6 @@ import {
   FlowNodeConfig,
   GatewayConfig,
   JoinConfig,
-  MappingRow,
   NotificationConfig,
   SaveFlowDraftPayload,
   StartConfig,
@@ -84,10 +83,6 @@ export function handleToPortId(type: NodeType, handle: string, data: Partial<Nod
 
 // ===== Canvas → FlowDefinition (Lưu nháp) =====
 
-function toMappingRows(rows: Array<{ source: string; target: string }> | undefined): MappingRow[] {
-  return (rows || []).map(r => ({ input: r.source, output: r.target || null }));
-}
-
 function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeConfig {
   switch (type) {
     case 'START':
@@ -119,6 +114,8 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
 
     case 'USER_TASK':
       return {
+        assignType: d.assignType || 'MANUAL',
+        assignStrategy: d.assignType === 'AUTO' ? d.assignStrategy || 'ROUND_ROBIN' : null,
         departmentId: d.department || null,
         groupId: d.team || null,
         agentId: d.agent || null,
@@ -126,7 +123,12 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
         slaUnit: d.sla && SLA_UNITS.includes(d.sla) ? d.sla : null,
         slaWarning: !!d.slaWarning,
         formId: d.formTemplate || null,
-        formOutputFieldId: d.formOutput || null
+        inputs: (d.formInputs || [])
+          .filter(r => r.variable)
+          .map(r => ({ variable: r.variable as string, formField: r.mapped ? r.formField || null : null })),
+        outputs: (d.formOutputs || [])
+          .filter(r => r.variable?.trim() && r.formField)
+          .map(r => ({ formField: r.formField as string, variable: r.variable.trim(), displayName: r.displayName || '' }))
       } as UserTaskConfig;
 
     case 'SYSTEM_TASK':
@@ -135,8 +137,12 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
         apiId: d.selectedApi || null,
         timeout: d.timeoutSeconds ?? null,
         retry: d.retryCount ?? null,
-        inputMapping: toMappingRows(d.actionInputMappings),
-        outputFieldId: d.apiOutput || null
+        inputs: (d.apiInputs || [])
+          .filter(r => r.apiParam)
+          .map(r => ({ apiParam: r.apiParam as string, variable: r.variable || null })),
+        outputs: (d.apiOutputs || [])
+          .filter(r => r.apiField && r.variable?.trim())
+          .map(r => ({ apiField: r.apiField as string, variable: r.variable.trim(), displayName: r.displayName || '' }))
       } as SystemTaskConfig;
 
     case 'NOTIFICATION': {
@@ -149,12 +155,21 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
     case 'SUB_PROCESS':
       return {
         subProcessId: d.subProcessTemplateId || null,
-        inputMapping: toMappingRows(d.subProcessInputMappings),
-        outputMapping: toMappingRows(d.subProcessOutputMappings)
+        inputs: (d.subProcessInputs || [])
+          .filter(r => r.subField)
+          .map(r => ({ subField: r.subField as string, variable: r.variable || null })),
+        outputs: (d.subProcessOutputs || [])
+          .filter(r => r.subField && r.variable?.trim())
+          .map(r => ({ subField: r.subField as string, variable: r.variable.trim(), displayName: r.displayName || '' }))
       } as SubProcessConfig;
 
     case 'END':
-      return { endFormId: d.endFormTemplate || null } as EndConfig;
+      return {
+        endFormId: d.endFormTemplate || null,
+        results: (d.endResults || [])
+          .filter(r => r.variable)
+          .map(r => ({ variable: r.variable as string, formField: r.formField || null }))
+      } as EndConfig;
   }
 }
 
@@ -224,10 +239,6 @@ export function parseFlowJson(res: FlowDetailResponse): FlowDefinition {
   return { nodes: raw?.nodes || [], edges: raw?.edges || [], viewport: raw?.viewport };
 }
 
-function fromMappingRows(rows: MappingRow[] | undefined): Array<{ source: string; target: string }> {
-  return (rows || []).map(r => ({ source: r.input, target: r.output || '' }));
-}
-
 /**
  * FlowNode → customData truyền vào createCompactCardNode() để dựng lại card.
  * `edges` dùng để suy ra node nào cần cổng phụ (Tác vụ hệ thống có luồng lỗi, Giao việc phê duyệt).
@@ -273,6 +284,10 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
     case 'USER_TASK':
       return {
         ...base,
+        assignType: c.assignType === 'AUTO' ? 'AUTO' : 'MANUAL',
+        assignStrategy: c.assignStrategy || 'ROUND_ROBIN',
+        formInputs: (c.inputs || []).map((r: any) => ({ variable: r.variable || null, mapped: !!r.formField, formField: r.formField ?? null })),
+        formOutputs: (c.outputs || []).map((r: any) => ({ variable: r.variable || '', formField: r.formField ?? null, displayName: r.displayName || '' })),
         department: c.departmentId || '',
         team: c.groupId || '',
         agent: c.agentId || '',
@@ -280,7 +295,6 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
         sla: c.slaUnit || '',
         slaWarning: !!c.slaWarning,
         formTemplate: c.formId || '',
-        formOutput: c.formOutputFieldId || '',
         isApprovalStep: handles.includes('approved') || handles.includes('rejected')
       };
 
@@ -291,8 +305,8 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
         selectedApi: c.apiId || '',
         timeoutSeconds: c.timeout ?? undefined,
         retryCount: c.retry ?? undefined,
-        actionInputMappings: fromMappingRows(c.inputMapping),
-        apiOutput: c.outputFieldId || '',
+        apiInputs: (c.inputs || []).map((r: any) => ({ apiParam: r.apiParam || null, variable: r.variable ?? null })),
+        apiOutputs: (c.outputs || []).map((r: any) => ({ apiField: r.apiField || null, variable: r.variable || '', displayName: r.displayName || '' })),
         hasExceptionPort: handles.includes('error')
       };
 
@@ -309,12 +323,16 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
       return {
         ...base,
         subProcessTemplateId: c.subProcessId || '',
-        subProcessInputMappings: fromMappingRows(c.inputMapping),
-        subProcessOutputMappings: fromMappingRows(c.outputMapping)
+        subProcessInputs: (c.inputs || []).map((r: any) => ({ subField: r.subField || null, variable: r.variable ?? null })),
+        subProcessOutputs: (c.outputs || []).map((r: any) => ({ subField: r.subField || null, variable: r.variable || '', displayName: r.displayName || '' }))
       };
 
     case 'END':
-      return { ...base, endFormTemplate: c.endFormId || '' };
+      return {
+        ...base,
+        endFormTemplate: c.endFormId || '',
+        endResults: (c.results || []).map((r: any) => ({ variable: r.variable || null, formField: r.formField ?? null }))
+      };
 
     default:
       return base;

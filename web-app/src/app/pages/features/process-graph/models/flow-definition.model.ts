@@ -22,7 +22,11 @@ export interface SaveFlowDraftPayload {
       conditions: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
     };
     schedule?: { mode: 'ONCE' | 'REPEAT'; runDate: string; runTime: string };
-    hybrid?: { apiId: string | null; inputFormId: string | null };
+    hybrid?: {
+      apiId: string | null;
+      inputFormId: string | null;
+      conditions?: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
+    };
   } | null;
   slaValue?: number | null;
   slaUnit?: string;
@@ -114,19 +118,28 @@ export interface JoinConfig {
 }
 
 export interface UserTaskConfig {
+  assignType: 'MANUAL' | 'AUTO';   // Loại giao việc
+  assignStrategy: 'ROUND_ROBIN' | 'LEAST_BUSY' | null; // Cơ chế giao việc (chỉ khi AUTO)
   departmentId: string | null;     // Phòng ban
   groupId: string | null;          // Nhóm
   agentId: string | null;          // Agent
   slaValue: number | null;         // SLA › Thời hạn xử lý (số)
   slaUnit: string | null;          // SLA › Thời hạn xử lý (đơn vị: Giờ | Ngày | Tuần)
   slaWarning: boolean;             // SLA › Cảnh báo trước khi quá hạn
-  formId: string | null;           // Output từ biểu mẫu › Biểu mẫu
-  formOutputFieldId: string | null; // Output từ biểu mẫu › Output từ biểu mẫu
+  formId: string | null;           // Biểu mẫu
+  inputs: UserTaskInputMapping[];  // Dữ liệu đầu vào
+  outputs: UserTaskOutputMapping[]; // Dữ liệu đầu ra
 }
 
-export interface MappingRow {
-  input: string;                   // cột Đầu vào
-  output: string | null;           // cột Đầu ra
+export interface UserTaskInputMapping {
+  variable: string;                // Biến quy trình
+  formField: string | null;        // Trường biểu mẫu, null khi không ánh xạ
+}
+
+export interface UserTaskOutputMapping {
+  formField: string;               // Trường biểu mẫu
+  variable: string;                // Biến quy trình nhận giá trị
+  displayName: string;
 }
 
 export interface SystemTaskConfig {
@@ -134,8 +147,8 @@ export interface SystemTaskConfig {
   apiId: string | null;            // API
   timeout: number | null;          // Timeout (giây)
   retry: number | null;            // Retry
-  inputMapping: MappingRow[];      // Mapping Input
-  outputFieldId: string | null;    // Output API › Output từ biểu mẫu
+  inputs: { apiParam: string; variable: string | null }[];  // Dữ liệu đầu vào
+  outputs: { apiField: string; variable: string; displayName: string }[]; // Dữ liệu đầu ra
 }
 
 export interface NotificationConfig {
@@ -146,12 +159,13 @@ export interface NotificationConfig {
 
 export interface SubProcessConfig {
   subProcessId: string | null;     // Chọn quy trình con
-  inputMapping: MappingRow[];      // Mapping Input
-  outputMapping: MappingRow[];     // Output
+  inputs: { subField: string; variable: string | null }[];  // Dữ liệu đầu vào
+  outputs: { subField: string; variable: string; displayName: string }[]; // Dữ liệu đầu ra
 }
 
 export interface EndConfig {
   endFormId: string | null;        // Biểu mẫu kết thúc
+  results: { variable: string; formField: string | null }[]; // Kết quả
 }
 
 export type FlowNodeConfig =
