@@ -1,0 +1,28 @@
+-- user_account: bản sao đọc người dùng Keycloak, đồng bộ qua CDC ipcc_account.user (giống core-service).
+CREATE TABLE user_account (
+    id              BIGINT        NOT NULL COMMENT 'TSID',
+    keycloak_id     VARCHAR(36)   NOT NULL COMMENT 'Id user Keycloak',
+    username        VARCHAR(100)  NULL COMMENT 'Tên đăng nhập',
+    full_name       VARCHAR(255)  NULL,
+    email           VARCHAR(255)  NULL,
+    org_unit_id     BIGINT        NULL COMMENT 'Đơn vị (org_unit.id)',
+    manager_user    VARCHAR(36)   NULL COMMENT 'Keycloak id của quản lý trực tiếp',
+    status          SMALLINT      NOT NULL DEFAULT 1 COMMENT '0 = INACTIVE, 1 = ACTIVE',
+    synced_at       BIGINT        NULL COMMENT 'Lần đồng bộ gần nhất từ Keycloak, epoch millis',
+    kz_user_id      VARCHAR(100)  NULL,
+    kz_account_id   VARCHAR(100)  NULL,
+    vsa_user_login  VARCHAR(100)  NULL,
+    description     VARCHAR(1000) NULL,
+    tenant_id       VARCHAR(100)  NULL,
+    realm           VARCHAR(100)  NULL COMMENT 'Realm Keycloak của user',
+    group_id        VARCHAR(36)   NULL COMMENT 'Id group Keycloak của user',
+    created_at      BIGINT        NOT NULL COMMENT 'Epoch millis',
+    created_by      VARCHAR(100)  NULL,
+    updated_at      BIGINT        NULL COMMENT 'Epoch millis',
+    updated_by      VARCHAR(100)  NULL,
+    row_version     BIGINT        NOT NULL DEFAULT 0 COMMENT 'Optimistic lock',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_user_account_keycloak_id (keycloak_id),
+    KEY idx_user_account_org_unit (org_unit_id),
+    KEY idx_user_account_group_id (group_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Bản sao đọc người dùng từ Keycloak';

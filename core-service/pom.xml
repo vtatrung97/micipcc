@@ -66,6 +66,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- Kafka: nhận CDC user tài khoản IPCC 2.0 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-stream-binder-kafka</artifactId>
+        </dependency>
+
         <!-- Health check, metrics -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

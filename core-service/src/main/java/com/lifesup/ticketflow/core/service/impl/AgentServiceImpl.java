@@ -26,6 +26,7 @@ public class AgentServiceImpl implements AgentService {
         UserAccountEntity agents = userAccountRepository.findByKeycloakId(userDto.getId());
         if (agents != null) {
             agents.setUsername(userDto.getUsername());
+            agents.setVsaUserLogin(userDto.getUsername());
             agents.setKzUserId(userDto.getKzUserId());
             agents.setKzAccountId(userDto.getKzAccountId());
             agents.setRealm(userDto.getRealm());
@@ -46,6 +47,7 @@ public class AgentServiceImpl implements AgentService {
         UserAccountEntity agents = new UserAccountEntity();
         agents.setKeycloakId(userDto.getId());
         agents.setUsername(userDto.getUsername());
+        agents.setVsaUserLogin(userDto.getUsername());
         agents.setKzUserId(userDto.getKzUserId());
         agents.setKzAccountId(userDto.getKzAccountId());
         agents.setRealm(userDto.getRealm());

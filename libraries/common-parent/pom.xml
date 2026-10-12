@@ -28,10 +28,19 @@
         <minio.version>8.5.17</minio.version>
         <flowable.version>7.2.0</flowable.version>
         <hypersistence-utils.version>3.10.3</hypersistence-utils.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Spring Cloud tương thích Spring Boot 3.5.x -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.lifesup.ticketflow</groupId>
                 <artifactId>common-core</artifactId>

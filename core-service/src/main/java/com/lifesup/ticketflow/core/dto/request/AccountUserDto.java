@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-/** Thông tin user tài khoản (Keycloak) dùng để đồng bộ sang bảng user_account. */
+/** Thông tin user tài khoản (Keycloak) dùng để đồng bộ sang bảng user_account.. */
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
