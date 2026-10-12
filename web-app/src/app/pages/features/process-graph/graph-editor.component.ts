@@ -19,9 +19,7 @@ import {
   NODE_CARD_HEIGHT,
   NODE_CARD_WIDTH,
   NODE_ICON_BG,
-  NODE_ICON_SRC,
   PALETTE_CONDITION_ICON_SRC,
-  PALETTE_END_ICON_SRC,
 } from './config/node-view.config';
 import { GraphEditorStore } from './state/graph-editor.store';
 import { GraphBridgeService } from './services/graph-bridge.service';
@@ -34,6 +32,10 @@ import { GraphLayoutService } from './services/graph-layout.service';
 import { SampleFlowService } from './services/sample-flow.service';
 import { FlowPersistenceService } from './services/flow-persistence.service';
 import { GraphDialogService } from './services/graph-dialog.service';
+import { ProcessVariableService } from './services/process-variable.service';
+import { NodeIconService } from './services/node-icon.service';
+import { AddStepOverlayComponent } from './add-step/add-step-overlay.component';
+import { NodePlacementService } from './services/node-placement.service';
 import {
   ProcessInfo,
   ProcessInfoErrors,
@@ -67,9 +69,14 @@ export type { NodeType } from './models/node-type';
     SampleFlowService,
     FlowPersistenceService,
     GraphDialogService,
+    ProcessVariableService,
+    NodeIconService,
+    NodePlacementService,
   ],
 })
 export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('addStep', { static: true }) addStep!: AddStepOverlayComponent;
+
   @ViewChild('container', { static: true })
   containerRef!: ElementRef<HTMLDivElement>;
 
@@ -93,6 +100,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     private history: GraphHistoryService,
     private layout: GraphLayoutService,
     private samples: SampleFlowService,
+    private icons: NodeIconService,
+    private placement: NodePlacementService,
     private persistence: FlowPersistenceService,
     private dialogs: GraphDialogService,
     private translate: TranslateService,
@@ -147,7 +156,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   public readonly paletteConditionIcon = PALETTE_CONDITION_ICON_SRC;
 
   public paletteIconSrc(type: NodeType): string {
-    return type === 'END' ? PALETTE_END_ICON_SRC : NODE_ICON_SRC[type];
+    return this.icons.getPaletteIconSrc(type);
   }
 
   public paletteIconBg(type: NodeType): string {
@@ -324,6 +333,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.canvas.initGraph(this.containerRef.nativeElement);
+    this.addStep.attach();
     this.loadInitialFlow();
   }
 
@@ -439,21 +449,9 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-  // Thêm Node từ Palette
+  /** Bấm trên Thư viện bước: thêm ngay sau bước đang chọn và nối cạnh */
   public addStandardNode(type: NodeType): void {
-    if (!this.store.graph) return;
-    const x = 160 + Math.floor(Math.random() * 200);
-    const y = 140 + Math.floor(Math.random() * 150);
-    const node = this.factory.createCompactCardNode(type, x, y);
-    if (node && isGatewayType(type)) {
-      this.gatewayJoin.createJoinForGateway(node);
-    }
-    if (node) {
-      this.editor.selectNode(node);
-      this.store.isDrawerOpen = true;
-      this.bridgeService.selectNode(node, this.store.selectedNodeProps);
-      this.store.selectedCellInfo = this.t('STATUS.NODE_ADDED', { type: this.t(`NODE_TYPES.${type}`) });
-    }
+    this.placement.placeNodeFromPalette(type);
   }
 
   public onPaletteDragStart(event: DragEvent, type: NodeType): void {
@@ -476,17 +474,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       ? this.store.graph.clientToLocal({ x: event.clientX, y: event.clientY })
       : { x: event.clientX - rect.left, y: event.clientY - rect.top };
 
-    const node = this.factory.createCompactCardNode(type, p.x - NODE_CARD_WIDTH / 2, p.y - NODE_CARD_HEIGHT / 2);
-    if (node && isGatewayType(type)) {
-      this.gatewayJoin.createJoinForGateway(node);
-    }
-    if (node) {
-      this.editor.selectNode(node);
-      this.store.isDrawerOpen = true;
-      this.bridgeService.selectNode(node, this.store.selectedNodeProps);
-      this.store.updateCounts();
-      this.history.pushHistorySnapshot();
-    }
+    this.placement.placeNode(type, p.x - NODE_CARD_WIDTH / 2, p.y - NODE_CARD_HEIGHT / 2);
   }
 
   public revertChanges(): void {

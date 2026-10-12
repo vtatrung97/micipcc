@@ -1,52 +1,148 @@
-<div class="subprocess-config-container" *ngIf="nodeProps">
-  <div class="drawer-section-heading mt-4">
-    <ant-icon name="sync" [size]="14" style="margin-right: 6px;"></ant-icon>
-    <span>CẤU HÌNH QUY TRÌNH CON (SUB-PROCESS)</span>
-  </div>
+<div class="sub-config" *ngIf="nodeProps">
+  <!-- ===== Thông tin chung ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
+    <ng-container *ngIf="isOpen('general')">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="errors.label ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
 
-  <!-- Chọn quy trình con -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Chọn Quy trình con</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.subProcessTemplateId" (ngModelChange)="onPropChange('subProcessTemplateId')"
-        name="subProcessTemplateId" nzPlaceHolder="Chọn quy trình con cần gọi..." nzShowSearch>
-        <nz-option *ngFor="let t of availableTemplates" [nzValue]="t.code" [nzLabel]="t.name + ' (' + t.code + ')'">
-        </nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0">
+        <ant-input class="step-code" [readonly]="true" [ngModel]="nodeProps.nodeKey || 'ma_buoc'"></ant-input>
+      </app-form-field>
 
-  <!-- Phiên bản quy trình -->
-  <nz-form-item>
-    <nz-form-label>Phiên bản áp dụng</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.subProcessVersion" (ngModelChange)="onPropChange('subProcessVersion')"
-        name="subProcessVersion">
-        <nz-option nzValue="LATEST" nzLabel="Luôn dùng bản mới nhất (LATEST)"></nz-option>
-        <nz-option nzValue="v1.0" nzLabel="Phiên bản v1.0"></nz-option>
-        <nz-option nzValue="v2.0" nzLabel="Phiên bản v2.0"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')"
+                      [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
+      </app-form-field>
+    </ng-container>
+  </section>
 
-  <!-- Chờ quy trình con hoàn tất -->
-  <div class="wait-toggle-box mb-3">
-    <div class="wait-toggle-content">
-      <span class="wait-toggle-title">Chờ quy trình con hoàn tất</span>
-      <span class="wait-toggle-desc">Tạm dừng luồng chính cho đến khi quy trình con kết thúc</span>
+  <div class="action-divider"></div>
+
+  <!-- ===== Quy trình con ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'subProcess', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.SUB_PROCESS' }"></ng-container>
+    <div class="sub-process-field" *ngIf="isOpen('subProcess')">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.SUB_PROCESS' | translate" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.subProcessTemplateId" (ngModelChange)="onProcessChange()" [options]="processOptions"
+                    [showSearch]="true" [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
+      <!-- Mở quy trình con đã chọn ở tab mới -->
+      <button *ngIf="nodeProps.subProcessTemplateId" type="button" class="view-process-btn" (click)="viewProcess()">
+        <img src="assets/icons/processx/link-primary.svg" width="20" height="20" alt="" />
+        <span>{{ 'PROCESS_GRAPH.DRAWER.SUB_PROCESS.VIEW' | translate }}</span>
+      </button>
     </div>
-    <nz-switch [(ngModel)]="nodeProps.subProcessWaitComplete" (ngModelChange)="onPropChange('subProcessWaitComplete')"
-      name="subProcessWaitComplete">
-    </nz-switch>
-  </div>
+  </section>
 
-  <!-- Tham số truyền vào -->
-  <nz-form-item>
-    <nz-form-label>Tham số đầu vào (Input Mapping)</nz-form-label>
-    <nz-form-control>
-      <textarea nz-input rows="3" class="font-mono text-xs" [(ngModel)]="nodeProps.subProcessInputMapping"
-        (ngModelChange)="onPropChange('subProcessInputMapping')" name="subProcessInputMapping"
-        placeholder='{ "ticket_id": "${flow.variables.ticket_id}" }'></textarea>
-    </nz-form-control>
-  </nz-form-item>
+  <div class="action-divider"></div>
+
+  <!-- ===== Dữ liệu đầu vào: Đầu vào quy trình con · Biến quy trình ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'input', title: 'PROCESS_GRAPH.DRAWER.USER_TASK.INPUT_DATA' }"></ng-container>
+    <div class="map-table" *ngIf="isOpen('input')">
+      <div class="map-scroll">
+        <table class="table-input">
+          <thead>
+            <tr>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.SUB_PROCESS.COL_SUB_INPUT' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_VARIABLE' | translate }}</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of inputs; let i = index; trackBy: trackByIndex">
+              <td>
+                <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.subField"
+                            (ngModelChange)="save('subProcessInputs')" [options]="subInputOptions"
+                            [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+              </td>
+              <td>
+                <div class="var-cell">
+                  <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                              (ngModelChange)="save('subProcessInputs')" [options]="variableOptions"
+                              [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+                  <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
+                        [appTooltip]="caption" [tooltipOnlyTruncated]="true">{{ caption }}</span>
+                </div>
+              </td>
+              <td class="col-action">
+                <ng-container *ngTemplateOutlet="removeBtn; context: { show: inputs.length > 1, kind: 'input', index: i }"></ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'input' }"></ng-container>
+    </div>
+  </section>
+
+  <div class="action-divider"></div>
+
+  <!-- ===== Dữ liệu đầu ra: Biến quy trình con · Biến quy trình · Tên hiển thị ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'output', title: 'PROCESS_GRAPH.DRAWER.USER_TASK.OUTPUT_DATA' }"></ng-container>
+    <div class="map-table" *ngIf="isOpen('output')">
+      <div class="map-scroll">
+        <table class="table-output">
+          <thead>
+            <tr>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.SUB_PROCESS.COL_SUB_VARIABLE' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_VARIABLE' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_DISPLAY_NAME' | translate }}</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of outputs; let i = index; trackBy: trackByIndex">
+              <td>
+                <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.subField"
+                            (ngModelChange)="save('subProcessOutputs')" [options]="subOutputOptions"
+                            [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+              </td>
+              <td>
+                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('subProcessOutputs')"
+                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
+              </td>
+              <td>
+                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('subProcessOutputs')"
+                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
+              </td>
+              <td class="col-action">
+                <ng-container *ngTemplateOutlet="removeBtn; context: { show: outputs.length > 1, kind: 'output', index: i }"></ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'output' }"></ng-container>
+    </div>
+  </section>
 </div>
+
+<!-- Tiêu đề khối + chevron thu gọn -->
+<ng-template #sectionHead let-key="key" let-title="title">
+  <button type="button" class="section-head" (click)="toggleSection(key)" [attr.aria-expanded]="isOpen(key)">
+    <span>{{ title | translate }}</span>
+    <img class="section-chevron" [class.collapsed]="!isOpen(key)"
+         src="assets/icons/processx/chevron-up.svg" width="24" height="24" alt="" />
+  </button>
+</ng-template>
+
+<ng-template #removeBtn let-show="show" let-kind="kind" let-index="index">
+  <button *ngIf="show" type="button" class="row-remove" (click)="removeRow(kind, index)"
+          [appTooltip]="'PROCESS_GRAPH.DRAWER.START.REMOVE_ROW' | translate">
+    <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+  </button>
+</ng-template>
+
+<ng-template #addRowBtn let-kind="kind">
+  <div class="map-add">
+    <button type="button" class="map-add-btn" (click)="addRow(kind)">
+      <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+      <span>{{ 'PROCESS_GRAPH.DRAWER.START.ADD_ROW' | translate }}</span>
+    </button>
+  </div>
+</ng-template>

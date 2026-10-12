@@ -7,21 +7,44 @@
     <ant-input [(ngModel)]="draft.code" placeholder="Nhập tại đây"></ant-input>
   </app-form-field>
 
-  <app-form-field label="Phiên bản hiệu lực" [spacing]="0">
-    <ant-select [(ngModel)]="draft.version" [options]="versionOptions"
+  <app-form-field label="Nhóm quy trình" [spacing]="0">
+    <ant-select [(ngModel)]="draft.category" [options]="options.categories"
                 placeholder="Chọn tại đây" [allowClear]="true"></ant-select>
   </app-form-field>
 
   <app-form-field label="Trạng thái" [spacing]="0">
-    <app-quick-filter [(ngModel)]="draft.status" [options]="statusOptions"></app-quick-filter>
+    <ant-select [(ngModel)]="draft.status" [options]="statusOptions"
+                placeholder="Chọn tại đây" [allowClear]="true"></ant-select>
   </app-form-field>
 
-  <app-form-field label="Cập nhật lần cuối" [spacing]="0">
-    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.updatedRange"></app-date-picker>
+  <app-form-field label="Loại kích hoạt" [spacing]="0">
+    <ant-select [(ngModel)]="draft.triggerType" [options]="options.triggers"
+                placeholder="Chọn tại đây" [allowClear]="true"></ant-select>
+  </app-form-field>
+
+  <app-form-field label="Người tạo" [spacing]="0">
+    <ant-select [(ngModel)]="draft.createdBy" [options]="options.creators" [showSearch]="true"
+                placeholder="Chọn tại đây" [allowClear]="true"></ant-select>
+  </app-form-field>
+
+  <app-form-field label="Ngày tạo" [spacing]="0">
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.createdRange"
+                     placeholder="dd/mm/yyyy-dd/mm/yyyy"></app-date-picker>
+  </app-form-field>
+
+  <app-form-field label="Người cập nhật" [spacing]="0">
+    <ant-select [(ngModel)]="draft.updatedBy" [options]="options.updaters" [showSearch]="true"
+                placeholder="Chọn tại đây" [allowClear]="true"></ant-select>
+  </app-form-field>
+
+  <app-form-field label="Ngày cập nhật" [spacing]="0">
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.updatedRange"
+                     placeholder="dd/mm/yyyy-dd/mm/yyyy"></app-date-picker>
   </app-form-field>
 
   <app-form-field label="Ngày ban hành" [spacing]="0">
-    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.publishedRange"></app-date-picker>
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.publishedRange"
+                     placeholder="dd/mm/yyyy-dd/mm/yyyy"></app-date-picker>
   </app-form-field>
 
   <div drawer-footer class="filter-actions">

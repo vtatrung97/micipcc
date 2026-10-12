@@ -53,6 +53,7 @@ export interface ProcessTemplateItem {
   created_at?: string; // DD/MM/YYYY HH:mm
   created_by?: string;
   updatedAt?: string;
+  updated_by?: string;
   active_instances_count?: number; // FR-09: chặn xóa nếu còn instance chạy dở
   // Tab "Thông tin chung" của Canvas Builder (process-graph/models/process-info.model.ts)
   triggerType?: 'MANUAL' | 'AUTO' | 'SCHEDULE' | 'HYBRID' | null;
@@ -63,7 +64,11 @@ export interface ProcessTemplateItem {
       conditions: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
     };
     schedule?: { mode: 'ONCE' | 'REPEAT'; runDate: string; runTime: string; repeat?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | null; weekDays?: number[]; monthDays?: number[] };
-    hybrid?: { apiId: string | null; inputFormId: string | null };
+    hybrid?: {
+      apiId: string | null;
+      inputFormId: string | null;
+      conditions?: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
+    };
   } | null;
   slaValue?: number | null;
   slaUnit?: string;
@@ -185,7 +190,10 @@ export class TemplateService {
       status: item.status || 'Draft',
       description: item.description || '',
       published_at: formattedDate,
+      created_at: formattedDate,
+      created_by: 'Admin Người dùng',
       updatedAt: formattedDate,
+      updated_by: 'Admin Người dùng',
       active_instances_count: 0,
       versions: [initialVersion],
       graphData: item.graphData || null
@@ -207,6 +215,7 @@ export class TemplateService {
           ...t, 
           ...updates, 
           updatedAt: formattedDate,
+          updated_by: updates.updated_by || 'Admin Người dùng',
           published_at: updates.status === 'Published' ? formattedDate : t.published_at 
         };
       }

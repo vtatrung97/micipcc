@@ -153,6 +153,7 @@ export function nodeCardAttrs(
   typeTitle: string,
   label: string,
   rows: string[],
+  iconSrc: string = NODE_ICON_SRC[type],
 ): any {
   const attrs: any = {
     body: {
@@ -182,8 +183,8 @@ export function nodeCardAttrs(
       y: PAD_Y + 8,
       width: 24,
       height: 24,
-      'xlink:href': NODE_ICON_SRC[type],
-      href: NODE_ICON_SRC[type],
+      'xlink:href': iconSrc,
+      href: iconSrc,
       cursor: 'pointer',
     },
     typeText: {
@@ -252,6 +253,7 @@ export function nodeCardAttrs(
 export function nodeCircleView(
   type: 'START' | 'END',
   label: string,
+  iconSrc: string = NODE_ICON_SRC[type],
 ): { markup: any[]; attrs: any } {
   const r = NODE_CIRCLE_SIZE / 2;
   return {
@@ -276,8 +278,8 @@ export function nodeCircleView(
         y: r - 12,
         width: 24,
         height: 24,
-        'xlink:href': NODE_ICON_SRC[type],
-        href: NODE_ICON_SRC[type],
+        'xlink:href': iconSrc,
+        href: iconSrc,
         cursor: 'pointer',
       },
       nameText: {

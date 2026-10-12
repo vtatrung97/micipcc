@@ -1,0 +1,174 @@
+@use '../../../../shared/styles/processx-tokens' as px;
+
+// Phủ toàn canvas nhưng không chặn thao tác; chỉ nút và menu nhận chuột
+:host {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+  font-family: px.$font-family;
+}
+
+// Nút pill: viền nét đứt, mở menu thì viền liền đậm
+.add-step-btn {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-2;
+  padding: px.$space-4 px.$space-8;
+  border: 1px dashed px.$neutral-400;
+  border-radius: 112px;
+  background: px.$white;
+  transform: translateY(-50%);
+  font-family: px.$font-family;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: px.$neutral-600;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+
+  &:hover,
+  &.active {
+    border-style: solid;
+    border-color: px.$neutral-600;
+  }
+
+  // Bản nhỏ cho các dòng nhánh sát nhau: cao 18
+  &.compact {
+    padding: 0 px.$space-6;
+    font-size: 11px;
+    line-height: 16px;
+
+    img {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+// Menu 320 × 444: ô tìm kiếm + danh sách cuộn
+.add-step-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  height: 444px;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+  background: px.$white;
+  box-shadow: 0 0 14px -4px rgba(0, 0, 0, 0.05), 0 32px 48px -8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.add-step-search {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: px.$space-8;
+  height: 40px;
+  margin: px.$space-8 px.$space-8 0;
+  padding: px.$space-8 px.$space-12;
+  border: 2px solid px.$neutral-800;
+  border-radius: px.$radius-md;
+  box-sizing: border-box;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: px.$font-family;
+    @include px.body-sm-medium;
+    color: px.$neutral-900;
+
+    &::placeholder {
+      color: px.$neutral-500;
+    }
+  }
+}
+
+.add-step-clear {
+  display: flex;
+  flex-shrink: 0;
+  padding: px.$space-2;
+  border: none;
+  border-radius: 99px;
+  background: px.$neutral-500;
+  cursor: pointer;
+}
+
+.add-step-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: px.$space-12;
+  min-height: 0;
+  padding: px.$space-12;
+  overflow-y: auto;
+}
+
+// Nhóm Điều kiện: tiêu đề + các bước lùi vào 16, có vạch trái
+.add-step-group {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+}
+
+.add-step-group-title {
+  @include px.body-sm-semibold;
+  color: px.$neutral-600;
+}
+
+.add-step-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+  padding-left: px.$space-16;
+  border-left: 1px solid px.$neutral-300;
+}
+
+// Một bước: icon 40 + tên 14/20
+.add-step-item {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: px.$space-12;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: px.$radius-md;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-100;
+  }
+}
+
+.add-step-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: px.$radius-md;
+}
+
+.add-step-title {
+  @include px.body-sm-regular;
+  color: px.$neutral-900;
+}
+
+.add-step-empty {
+  @include px.body-sm-regular;
+  color: px.$neutral-500;
+  text-align: center;
+}

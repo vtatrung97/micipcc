@@ -1,0 +1,21 @@
+<div class="px-input-number"
+     [class.px-input-number-focused]="isFocused"
+     [class.px-input-number-disabled]="disabled"
+     [class.px-input-number-error]="status === 'error'">
+  <input class="px-input-number-input" type="text" inputmode="decimal"
+         [value]="value ?? ''" [placeholder]="placeholder" [disabled]="disabled"
+         (input)="onInput($any($event.target).value)" (focus)="isFocused = true" (blur)="onBlur()"
+         (keydown.arrowUp)="$event.preventDefault(); stepBy(1)"
+         (keydown.arrowDown)="$event.preventDefault(); stepBy(-1)" />
+  <span class="px-input-number-suffix" *ngIf="suffix">{{ suffix }}</span>
+
+  <!-- Nút tăng / giảm -->
+  <div class="px-input-number-steps">
+    <button type="button" class="px-input-number-step" tabindex="-1" [disabled]="disabled" (click)="stepBy(1)">
+      <img src="assets/icons/processx/chevron-up-16.svg" width="16" height="16" alt="" />
+    </button>
+    <button type="button" class="px-input-number-step" tabindex="-1" [disabled]="disabled" (click)="stepBy(-1)">
+      <img src="assets/icons/processx/chevron-down-16.svg" width="16" height="16" alt="" />
+    </button>
+  </div>
+</div>

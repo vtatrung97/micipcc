@@ -42,6 +42,14 @@ export interface NodePropertyModel {
 
   // User Task specific
   isApprovalStep?: boolean;
+  /** Loại giao việc: thủ công / tự động */
+  assignType?: UserTaskAssignType;
+  /** Cơ chế giao việc, chỉ dùng khi assignType = AUTO */
+  assignStrategy?: UserTaskAssignStrategy;
+  /** Dữ liệu đầu vào: biến quy trình → trường biểu mẫu */
+  formInputs?: UserTaskInputRow[];
+  /** Dữ liệu đầu ra: trường biểu mẫu → biến quy trình */
+  formOutputs?: UserTaskOutputRow[];
 
   // Action specific (US-34, BR-INT-01..05, REQ-11)
   actionSource?: 'library' | 'custom';
@@ -85,8 +93,9 @@ export interface NodePropertyModel {
   agent?: string;
   slaWarning?: boolean;
   formTemplate?: string;
-  formOutput?: string;
   endFormTemplate?: string;
+  /** Kết quả của node Kết thúc: biến quy trình → trường biểu mẫu kết thúc */
+  endResults?: EndResultRow[];
   triggerType?: string;
   triggerFormSchedule?: string;
   startVariables?: StartVariableRow[];
@@ -97,7 +106,10 @@ export interface NodePropertyModel {
   integratedSystem?: string;
   selectedApi?: string;
   timeoutSeconds?: number;
-  apiOutput?: string;
+  /** Dữ liệu đầu vào: tham số yêu cầu API ← biến quy trình */
+  apiInputs?: SystemTaskInputRow[];
+  /** Dữ liệu đầu ra: trường dữ liệu API → biến quy trình */
+  apiOutputs?: SystemTaskOutputRow[];
 
   // Condition flow outputs
   defaultFlowOutput?: string;
@@ -106,10 +118,9 @@ export interface NodePropertyModel {
   // Tác vụ hệ thống: bật cổng Lỗi (out-failure)
   hasExceptionPort?: boolean;
 
-  // Bảng mapping (Đầu vào → Đầu ra)
-  actionInputMappings?: Array<{ source: string; target: string }>;
-  subProcessInputMappings?: Array<{ source: string; target: string }>;
-  subProcessOutputMappings?: Array<{ source: string; target: string }>;
+  // Quy trình con: đầu vào quy trình con ← biến quy trình; biến quy trình con → biến quy trình
+  subProcessInputs?: SubProcessInputRow[];
+  subProcessOutputs?: SubProcessOutputRow[];
 
   // Cặp Gateway ⇄ JOIN tự sinh
   joinNodeId?: string;
@@ -144,4 +155,58 @@ export interface StartVariableRow {
   fixedValue?: string;
   /** Trường dữ liệu API (kích hoạt Hybrid — dùng cùng formField là trường biểu mẫu) */
   apiField?: string | null;
+}
+
+export type UserTaskAssignType = 'MANUAL' | 'AUTO';
+
+/** Xoay vòng / Rảnh nhất */
+export type UserTaskAssignStrategy = 'ROUND_ROBIN' | 'LEAST_BUSY';
+
+/** Một dòng "Dữ liệu đầu vào" của node Giao việc */
+export interface UserTaskInputRow {
+  /** Biến quy trình (khai báo ở node Bắt đầu) */
+  variable: string | null;
+  /** Có ánh xạ biến vào trường biểu mẫu không */
+  mapped: boolean;
+  /** Trường biểu mẫu nhận giá trị, chỉ dùng khi mapped = true */
+  formField: string | null;
+}
+
+/** Một dòng "Dữ liệu đầu vào" của node Tác vụ hệ thống */
+export interface SystemTaskInputRow {
+  apiParam: string | null;
+  variable: string | null;
+}
+
+/** Một dòng "Dữ liệu đầu ra" của node Tác vụ hệ thống */
+export interface SystemTaskOutputRow {
+  apiField: string | null;
+  variable: string;
+  displayName: string;
+}
+
+/** Một dòng "Dữ liệu đầu vào" của node Quy trình con */
+export interface SubProcessInputRow {
+  subField: string | null;
+  variable: string | null;
+}
+
+/** Một dòng "Dữ liệu đầu ra" của node Quy trình con */
+export interface SubProcessOutputRow {
+  subField: string | null;
+  variable: string;
+  displayName: string;
+}
+
+/** Một dòng "Kết quả" của node Kết thúc */
+export interface EndResultRow {
+  variable: string | null;
+  formField: string | null;
+}
+
+/** Một dòng "Dữ liệu đầu ra" của node Giao việc */
+export interface UserTaskOutputRow {
+  variable: string;
+  formField: string | null;
+  displayName: string;
 }

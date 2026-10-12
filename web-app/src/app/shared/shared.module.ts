@@ -9,6 +9,7 @@ import { SlaBadgeModule } from './components/sla-badge/sla-badge.module';
 
 // 2. Nhóm Form & Input Controls
 import { AntInputModule } from './components/ant-input/ant-input.module';
+import { AntInputNumberModule } from './components/ant-input-number/ant-input-number.module';
 import { AntSelectModule } from './components/ant-select/ant-select.module';
 import { DatePickerModule } from './components/date-picker/date-picker.module';
 import { MonthDayPickerModule } from './components/month-day-picker/month-day-picker.module';
@@ -48,6 +49,7 @@ const SHARED_MODULES = [
   BreadcrumbsModule,
   SlaBadgeModule,
   AntInputModule,
+  AntInputNumberModule,
   AntSelectModule,
   DatePickerModule,
   MonthDayPickerModule,

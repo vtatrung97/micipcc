@@ -1,16 +1,27 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, DoCheck, OnInit, OnDestroy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { GraphBridgeService } from '../services/graph-bridge.service';
 import { NodePropertyModel, ActionLibraryItem, ConditionBranch, ConditionRuleItem } from '../models/node-property.model';
 import { isGatewayType } from '../models/node-type';
+import { NODE_ICON_BG } from '../config/node-view.config';
+import { NodeIconService } from '../services/node-icon.service';
+import { GraphEditorStore } from '../state/graph-editor.store';
+import { NodeFieldErrors, hasNodeErrors, validateNodeProps } from '../models/node-validation';
+
+/** Trạng thái node lúc mở drawer — dùng để hoàn tác khi bấm Hủy */
+interface NodeSnapshot {
+  nodeId: string;
+  node: any;
+  edges: any[];
+}
 
 @Component({
   selector: 'app-node-config-drawer',
   templateUrl: './node-config-drawer.component.html',
   styleUrls: ['./node-config-drawer.component.scss']
 })
-export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
+export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
   public isVisible: boolean = false;
   public selectedNode: any = null;
   public nodeProps: NodePropertyModel | null = null;
@@ -18,16 +29,7 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
   // Accordion open/close states
   public accordions: Record<string, boolean> = {
     general: true,
-    actor: true,
-    sla: true,
-    output: true,
     notification: true,
-    subProcess: true,
-    mappingInput: true,
-    mappingOutput: true,
-    integration: true,
-    execution: true,
-    outputApi: true,
     cases: true,
     defaultFlow: true,
     errorFlow: true
@@ -39,11 +41,17 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
   public editingRules: ConditionRuleItem[] = [];
   public editingLogicOperator: 'AND' | 'OR' = 'AND';
 
+  /** Đã bấm Lưu mà còn thiếu trường bắt buộc → bắt đầu hiện lỗi */
+  public isSubmitted: boolean = false;
+
+  private snapshot: NodeSnapshot | null = null;
   private sub = new Subscription();
 
   constructor(
     public bridgeService: GraphBridgeService,
     private translate: TranslateService,
+    private icons: NodeIconService,
+    private store: GraphEditorStore,
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -61,15 +69,15 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.bridgeService.selectedNode$.subscribe(node => {
         this.selectedNode = node;
+        // Mở drawer cho node khác → chụp lại trạng thái để Hủy
+        if (node && node.id !== this.snapshot?.nodeId) this.takeSnapshot(node);
+        if (!node) this.snapshot = null;
       })
     );
 
     this.sub.add(
       this.bridgeService.selectedNodeProps$.subscribe(props => {
         this.nodeProps = props ? { ...props } : null;
-        if (this.nodeProps && this.ensureMappingRows(this.nodeProps)) {
-          this.onPropChange('all');
-        }
         if (this.nodeProps && isGatewayType(this.nodeProps.type)) {
           if (!this.nodeProps.branches || this.nodeProps.branches.length === 0) {
             this.nodeProps.branches = [
@@ -82,8 +90,69 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     );
   }
 
+  /** Lỗi các trường bắt buộc (chỉ hiện sau lần bấm Lưu đầu tiên); giữ nguyên object khi không đổi để input con ổn định */
+  public errors: NodeFieldErrors = {};
+
+  ngDoCheck(): void {
+    const next = this.isSubmitted && this.nodeProps ? validateNodeProps(this.nodeProps) : {};
+    if (JSON.stringify(next) !== JSON.stringify(this.errors)) this.errors = next;
+  }
+
+  /** Lưu: đủ trường bắt buộc thì giữ thay đổi và đóng; thiếu thì báo lỗi, cuộn tới ô lỗi đầu tiên */
+  public onSave(): void {
+    if (!this.nodeProps) return;
+    this.isSubmitted = true;
+    if (hasNodeErrors(validateNodeProps(this.nodeProps))) {
+      setTimeout(() => document.querySelector('.properties-side-drawer .has-error, .properties-side-drawer .field-error')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+      return;
+    }
+    this.finish();
+  }
+
+  /** Hủy / nút X: trả node về trạng thái lúc mở drawer rồi đóng */
   public onClose(): void {
+    this.restoreSnapshot();
+    this.finish();
+  }
+
+  private finish(): void {
+    this.snapshot = null;
+    this.isSubmitted = false;
     this.bridgeService.closeDrawer();
+  }
+
+  private takeSnapshot(node: any): void {
+    const graph = this.store.graph;
+    this.isSubmitted = false;
+    this.snapshot = {
+      nodeId: node.id,
+      node: node.toJSON(),
+      edges: (graph?.getConnectedEdges(node) || []).map((e: any) => e.toJSON()),
+    };
+  }
+
+  /** Khôi phục data, hình, cổng của node và các cạnh nối vào cổng đã bị xoá */
+  private restoreSnapshot(): void {
+    const graph = this.store.graph;
+    const snap = this.snapshot;
+    const node = snap && graph?.getCellById(snap.nodeId);
+    if (!snap || !node) return;
+    if (JSON.stringify(node.toJSON()) === JSON.stringify(snap.node)) return;
+
+    node.setData(snap.node.data, { overwrite: true });
+    node.setAttrs(snap.node.attrs, { overwrite: true });
+    node.resize(snap.node.size.width, snap.node.size.height);
+    node.removePorts();
+    node.addPorts(snap.node.ports?.items || []);
+
+    const portIds = new Set((snap.node.ports?.items || []).map((p: any) => p.id));
+    graph.getConnectedEdges(node).forEach((edge: any) => {
+      const end = edge.getSourceCellId() === node.id ? edge.getSource() : edge.getTarget();
+      if (end.port && !portIds.has(end.port)) graph.removeEdge(edge);
+    });
+    snap.edges
+      .filter((e) => !graph.getCellById(e.id) && graph.getCellById(e.source?.cell) && graph.getCellById(e.target?.cell))
+      .forEach((e) => graph.addEdge(e));
   }
 
   public onLabelChange(): void {
@@ -105,71 +174,22 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     return isGatewayType(type);
   }
 
+  /** Modal "Chọn biểu tượng" mở từ icon trên header */
+  public isIconModalOpen: boolean = false;
+
+  /** Icon trên header drawer (mọi loại bước trừ Gộp nhánh tự sinh) */
+  public get headerIcon(): { src: string; bg: string } | null {
+    const type = this.nodeProps?.type;
+    if (!type || type === 'JOIN') return null;
+    return { src: this.icons.getIconSrc(type), bg: NODE_ICON_BG[type] };
+  }
+
   public getDrawerTitle(): string {
     if (!this.nodeProps) return this.t('DRAWER.DEFAULT_TITLE');
     if (isGatewayType(this.nodeProps.type)) {
       return this.t('DRAWER.GATEWAY_TITLE', { type: this.t(`NODE_TYPES.${this.nodeProps.type}`) });
     }
     return this.t(`NODE_TYPES.${this.nodeProps.type}`);
-  }
-
-  /** Bảng mapping mặc định khi node chưa có dữ liệu. Trả true nếu vừa thêm mặc định (cần lưu vào node). */
-  private ensureMappingRows(props: NodePropertyModel): boolean {
-    const defaults = () => [
-      { source: this.t('DRAWER.DEFAULT_MAPPING_1'), target: '' },
-      { source: this.t('DRAWER.DEFAULT_MAPPING_2'), target: '' }
-    ];
-    let changed = false;
-    if (props.type === 'SYSTEM_TASK' && !props.actionInputMappings?.length) {
-      props.actionInputMappings = defaults();
-      changed = true;
-    }
-    if (props.type === 'SUB_PROCESS') {
-      if (!props.subProcessInputMappings?.length) {
-        props.subProcessInputMappings = defaults();
-        changed = true;
-      }
-      if (!props.subProcessOutputMappings?.length) {
-        props.subProcessOutputMappings = defaults();
-        changed = true;
-      }
-    }
-    return changed;
-  }
-
-  // Mapping helpers (lưu vào nodeProps để gửi lên khi Lưu nháp)
-  public addInputMapping(): void {
-    this.nodeProps?.subProcessInputMappings?.push({ source: this.t('DRAWER.NEW_PARAM'), target: '' });
-    this.onPropChange('subProcessInputMappings');
-  }
-
-  public addOutputMapping(): void {
-    this.nodeProps?.subProcessOutputMappings?.push({ source: this.t('DRAWER.NEW_PARAM'), target: '' });
-    this.onPropChange('subProcessOutputMappings');
-  }
-
-  public removeInputMapping(index: number): void {
-    this.nodeProps?.subProcessInputMappings?.splice(index, 1);
-    this.onPropChange('subProcessInputMappings');
-  }
-
-  public removeOutputMapping(index: number): void {
-    this.nodeProps?.subProcessOutputMappings?.splice(index, 1);
-    this.onPropChange('subProcessOutputMappings');
-  }
-
-  public addActionMapping(): void {
-    this.nodeProps?.actionInputMappings?.push({ source: this.t('DRAWER.NEW_PARAM'), target: '' });
-    this.onPropChange('actionInputMappings');
-  }
-
-  public removeActionMapping(index: number): void {
-    this.nodeProps?.actionInputMappings?.splice(index, 1);
-    this.onPropChange('actionInputMappings');
-  }
-
-  public testConnection(): void {
-    alert(this.t('MESSAGES.TEST_CONNECTION_OK'));
   }
 
   // Condition cases helpers

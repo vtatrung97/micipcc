@@ -1,0 +1,89 @@
+@use '../../styles/processx-tokens' as px;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+// Khung cao 48 như ô nhập; cụm nút tăng/giảm sát mép phải, ngăn bằng viền trái
+.px-input-number {
+  @include px.field-box;
+  display: flex;
+  align-items: stretch;
+  gap: px.$space-8;
+  height: 48px;
+  padding-left: px.$space-12;
+  overflow: hidden;
+
+  &:hover:not(.px-input-number-disabled) {
+    border-color: px.$neutral-800;
+  }
+
+  &.px-input-number-focused {
+    border-color: px.$neutral-800;
+  }
+
+  &.px-input-number-error,
+  &.px-input-number-error:hover {
+    border-color: px.$primary-600;
+  }
+
+  &.px-input-number-disabled {
+    background: px.$neutral-100;
+    cursor: not-allowed;
+  }
+}
+
+.px-input-number-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: px.$font-family;
+  @include px.body-md-medium;
+  color: px.$neutral-900;
+
+  &::placeholder {
+    color: px.$neutral-400;
+  }
+}
+
+.px-input-number-suffix {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  @include px.body-sm-semibold;
+  color: px.$neutral-400;
+}
+
+.px-input-number-steps {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-left: 1px solid px.$neutral-100;
+}
+
+.px-input-number-step {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-4 px.$space-8;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  & + & {
+    border-top: 1px solid px.$neutral-100;
+  }
+
+  &:hover:not(:disabled) {
+    background: px.$neutral-100;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}

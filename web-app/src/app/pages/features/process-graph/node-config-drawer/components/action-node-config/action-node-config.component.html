@@ -1,100 +1,174 @@
-<div class="action-config-container" *ngIf="nodeProps">
-  <div class="drawer-section-heading mt-4">
-    <ant-icon name="rocket" [size]="14" style="margin-right: 6px;"></ant-icon>
-    <span>NGUỒN ACTION & TỰ ĐỘNG HÓA</span>
-  </div>
+<div class="action-config" *ngIf="nodeProps">
+  <!-- ===== Thông tin chung ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
+    <ng-container *ngIf="isOpen('general')">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="errors.label ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
 
-  <div class="action-source-toggle mb-3">
-    <button type="button" class="source-toggle-btn" [class.active]="nodeProps.actionSource === 'library'"
-      (click)="setActionSource('library')">
-      📦 Thư viện Action mẫu
-    </button>
-    <button type="button" class="source-toggle-btn" [class.active]="nodeProps.actionSource === 'custom'"
-      (click)="setActionSource('custom')">
-      ⚙️ Cấu hình API riêng
-    </button>
-  </div>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0">
+        <ant-input class="step-code" [readonly]="true" [ngModel]="nodeProps.nodeKey || 'ma_buoc'"></ant-input>
+      </app-form-field>
 
-  <!-- Dropdown chọn mẫu Action từ Library -->
-  <nz-form-item *ngIf="nodeProps.actionSource === 'library'">
-    <nz-form-label>Chọn Action mẫu từ thư viện</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.actionLibraryId" (ngModelChange)="onActionLibrarySelect($event)"
-        name="actionLibrarySelect" nzPlaceHolder="Chọn mẫu API...">
-        <nz-option *ngFor="let lib of actionLibraries" [nzValue]="lib.id"
-          [nzLabel]="'[' + lib.method + '] ' + lib.name + ' (' + lib.category + ')'">
-        </nz-option>
-      </nz-select>
-      <span class="field-hint">Tự động nạp sẵn Endpoint, Request/Response mapping và các thông số tối ưu.</span>
-    </nz-form-control>
-  </nz-form-item>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')"
+                      [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
+      </app-form-field>
+    </ng-container>
+  </section>
 
-  <!-- API Endpoint & Method -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Endpoint URL & Method</nz-form-label>
-    <nz-form-control>
-      <nz-input-group [nzAddOnBefore]="methodSelectTpl">
-        <input nz-input class="font-mono text-xs" [(ngModel)]="nodeProps.actionEndpoint"
-          (ngModelChange)="onPropChange('actionEndpoint')" name="actionEndpoint"
-          placeholder="https://api.domain.vn/v1/..." />
-      </nz-input-group>
-      <ng-template #methodSelectTpl>
-        <nz-select [(ngModel)]="nodeProps.actionMethod" (ngModelChange)="onPropChange('actionMethod')"
-          name="actionMethod" style="width: 90px;">
-          <nz-option nzValue="GET" nzLabel="GET"></nz-option>
-          <nz-option nzValue="POST" nzLabel="POST"></nz-option>
-          <nz-option nzValue="PUT" nzLabel="PUT"></nz-option>
-          <nz-option nzValue="DELETE" nzLabel="DELETE"></nz-option>
-        </nz-select>
-      </ng-template>
-    </nz-form-control>
-  </nz-form-item>
+  <div class="action-divider"></div>
 
-  <!-- Request Body Mapping -->
-  <nz-form-item>
-    <nz-form-label>
-      <span>Request Body Mapping</span>
-      <span class="label-subtext">(JSON map từ flow.variables)</span>
-    </nz-form-label>
-    <nz-form-control>
-      <textarea nz-input rows="3" class="font-mono text-xs" [(ngModel)]="nodeProps.requestBodyMapping"
-        (ngModelChange)="onPropChange('requestBodyMapping')" name="requestBodyMapping"
-        placeholder="&#123;&#10;  &quot;callId&quot;: &quot;${flow.variables.call_id}&quot;&#10;&#125;">
-      </textarea>
-    </nz-form-control>
-  </nz-form-item>
+  <!-- ===== Hệ thống tích hợp ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'integration', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.INTEGRATION' }"></ng-container>
+    <ng-container *ngIf="isOpen('integration')">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.INTEGRATION_SYSTEM' | translate" [error]="errors.integratedSystem ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.integratedSystem" (ngModelChange)="onSystemChange()" [options]="systemOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
 
-  <!-- Response Mapping -->
-  <nz-form-item>
-    <nz-form-label>
-      <span>Response Mapping</span>
-      <span class="label-subtext">(Lưu biến vào flow.variables)</span>
-    </nz-form-label>
-    <nz-form-control>
-      <textarea nz-input rows="2" class="font-mono text-xs" [(ngModel)]="nodeProps.responseMapping"
-        (ngModelChange)="onPropChange('responseMapping')" name="responseMapping"
-        placeholder="flow.variables.status = response.data.status;">
-      </textarea>
-    </nz-form-control>
-  </nz-form-item>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.API' | translate" [error]="errors.selectedApi ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.selectedApi" (ngModelChange)="onApiChange()" [options]="apiOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
 
-  <!-- SLA & Resilience Settings -->
-  <div class="form-row-2">
-    <nz-form-item>
-      <nz-form-label>SLA bước (giây)</nz-form-label>
-      <nz-form-control>
-        <input nz-input type="number" [(ngModel)]="nodeProps.slaSeconds"
-          (ngModelChange)="onPropChange('slaSeconds')" name="slaSeconds" min="1" />
-      </nz-form-control>
-    </nz-form-item>
+      <div class="connection">
+        <button nz-button type="button" class="test-connection-btn" [disabled]="!selectedApi" (click)="testConnection()">
+          {{ 'PROCESS_GRAPH.DRAWER.FIELDS.TEST_CONNECTION' | translate }}
+        </button>
+        <p class="connection-alert success" *ngIf="connectionStatus === 'success'">
+          <img src="assets/icons/processx/check-circle-success.svg" width="20" height="20" alt="" />
+          <span>{{ 'PROCESS_GRAPH.DRAWER.SYSTEM_TASK.CONNECTION_OK' | translate }}</span>
+        </p>
+        <p class="connection-alert failed" *ngIf="connectionStatus === 'failed'" role="alert">
+          <img src="assets/icons/processx/alert-circle-danger.svg" width="20" height="20" alt="" />
+          <span>{{ 'PROCESS_GRAPH.DRAWER.SYSTEM_TASK.CONNECTION_FAILED' | translate }}</span>
+        </p>
+      </div>
 
-    <nz-form-item>
-      <nz-form-label>Circuit Breaker (ms)</nz-form-label>
-      <nz-form-control>
-        <input nz-input type="number" class="font-mono" [(ngModel)]="nodeProps.circuitBreakerTimeoutMs"
-          (ngModelChange)="onPropChange('circuitBreakerTimeoutMs')" name="circuitBreakerTimeoutMs"
-          placeholder="3000" />
-      </nz-form-control>
-    </nz-form-item>
-  </div>
+      <!-- Timeout (giây) · Retry -->
+      <div class="exec-row">
+        <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.TIMEOUT' | translate" [error]="errors.timeoutSeconds ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+          <ant-input-number [(ngModel)]="nodeProps.timeoutSeconds" (ngModelChange)="save('timeoutSeconds')" [min]="0"
+                            placeholder="0" [suffix]="'PROCESS_GRAPH.DRAWER.FIELDS.SECONDS' | translate"></ant-input-number>
+        </app-form-field>
+        <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.RETRY' | translate" [error]="errors.retryCount ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+          <ant-input-number [(ngModel)]="nodeProps.retryCount" (ngModelChange)="save('retryCount')" [min]="0"
+                            placeholder="0"></ant-input-number>
+        </app-form-field>
+      </div>
+    </ng-container>
+  </section>
+
+  <div class="action-divider"></div>
+
+  <!-- ===== Dữ liệu đầu vào: Yêu cầu API · Biến quy trình ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'input', title: 'PROCESS_GRAPH.DRAWER.USER_TASK.INPUT_DATA' }"></ng-container>
+    <div class="map-table" *ngIf="isOpen('input')">
+      <div class="map-scroll">
+        <table class="table-input">
+          <thead>
+            <tr>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.SYSTEM_TASK.COL_API_REQUEST' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_VARIABLE' | translate }}</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of inputs; let i = index; trackBy: trackByIndex">
+              <td>
+                <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.apiParam"
+                            (ngModelChange)="save('apiInputs')" [options]="requestParamOptions"
+                            [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+              </td>
+              <td>
+                <div class="var-cell">
+                  <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                              (ngModelChange)="save('apiInputs')" [options]="variableOptions"
+                              [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+                  <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
+                        [appTooltip]="caption" [tooltipOnlyTruncated]="true">{{ caption }}</span>
+                </div>
+              </td>
+              <td class="col-action">
+                <ng-container *ngTemplateOutlet="removeBtn; context: { show: inputs.length > 1, kind: 'input', index: i }"></ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'input' }"></ng-container>
+    </div>
+  </section>
+
+  <div class="action-divider"></div>
+
+  <!-- ===== Dữ liệu đầu ra: Trường dữ liệu API · Biến quy trình · Tên hiển thị ===== -->
+  <section class="action-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'output', title: 'PROCESS_GRAPH.DRAWER.USER_TASK.OUTPUT_DATA' }"></ng-container>
+    <div class="map-table" *ngIf="isOpen('output')">
+      <div class="map-scroll">
+        <table class="table-output">
+          <thead>
+            <tr>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_API_FIELD' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_VARIABLE' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.START.COL_DISPLAY_NAME' | translate }}</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of outputs; let i = index; trackBy: trackByIndex">
+              <td>
+                <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.apiField"
+                            (ngModelChange)="save('apiOutputs')" [options]="responseFieldOptions"
+                            [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+              </td>
+              <td>
+                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('apiOutputs')"
+                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
+              </td>
+              <td>
+                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('apiOutputs')"
+                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
+              </td>
+              <td class="col-action">
+                <ng-container *ngTemplateOutlet="removeBtn; context: { show: outputs.length > 1, kind: 'output', index: i }"></ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'output' }"></ng-container>
+    </div>
+  </section>
 </div>
+
+<!-- Tiêu đề khối + chevron thu gọn -->
+<ng-template #sectionHead let-key="key" let-title="title">
+  <button type="button" class="section-head" (click)="toggleSection(key)" [attr.aria-expanded]="isOpen(key)">
+    <span>{{ title | translate }}</span>
+    <img class="section-chevron" [class.collapsed]="!isOpen(key)"
+         src="assets/icons/processx/chevron-up.svg" width="24" height="24" alt="" />
+  </button>
+</ng-template>
+
+<ng-template #removeBtn let-show="show" let-kind="kind" let-index="index">
+  <button *ngIf="show" type="button" class="row-remove" (click)="removeRow(kind, index)"
+          [appTooltip]="'PROCESS_GRAPH.DRAWER.START.REMOVE_ROW' | translate">
+    <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+  </button>
+</ng-template>
+
+<ng-template #addRowBtn let-kind="kind">
+  <div class="map-add">
+    <button type="button" class="map-add-btn" (click)="addRow(kind)">
+      <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+      <span>{{ 'PROCESS_GRAPH.DRAWER.START.ADD_ROW' | translate }}</span>
+    </button>
+  </div>
+</ng-template>
