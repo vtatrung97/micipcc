@@ -42,9 +42,7 @@ export function normalizeOperator(op: string | undefined): ConditionOperator {
   return (['EQ', 'NEQ', 'GT', 'LT', 'CONTAINS'].includes(op) ? op : 'EQ') as ConditionOperator;
 }
 
-// ============================================================================
-// Port (X6) ⇄ sourceHandle (FlowEdge)
-// ============================================================================
+// ===== Port (X6) ⇄ sourceHandle (FlowEdge) =====
 
 export function portIdToHandle(type: NodeType, portId: string | undefined, data: Partial<NodePropertyModel>): string {
   const port = portId || 'out';
@@ -84,9 +82,7 @@ export function handleToPortId(type: NodeType, handle: string, data: Partial<Nod
   }
 }
 
-// ============================================================================
-// Canvas → FlowDefinition (Lưu nháp)
-// ============================================================================
+// ===== Canvas → FlowDefinition (Lưu nháp) =====
 
 function toMappingRows(rows: Array<{ source: string; target: string }> | undefined): MappingRow[] {
   return (rows || []).map(r => ({ input: r.source, output: r.target || null }));
@@ -95,7 +91,13 @@ function toMappingRows(rows: Array<{ source: string; target: string }> | undefin
 function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeConfig {
   switch (type) {
     case 'START':
-      return { triggerType: d.triggerType || null, triggerRefId: d.triggerFormSchedule || null } as StartConfig;
+      return {
+        triggerType: d.triggerType || null,
+        triggerRefId: d.triggerFormSchedule || null,
+        variables: (d.startVariables || [])
+          .filter(v => v.variable?.trim())
+          .map(v => ({ name: v.variable.trim(), formField: v.formField || null, apiField: v.apiField || null, value: v.fixedValue ?? null, displayName: v.displayName || '' }))
+      } as StartConfig;
 
     case 'GATEWAY_EXCLUSIVE':
     case 'GATEWAY_PARALLEL':
@@ -215,9 +217,7 @@ export function buildSaveDraftPayload(
   };
 }
 
-// ============================================================================
-// Response BE → dữ liệu node X6 (vẽ lại)
-// ============================================================================
+// ===== Response BE → dữ liệu node X6 (vẽ lại) =====
 
 export function parseFlowJson(res: FlowDetailResponse): FlowDefinition {
   const raw: any = typeof res.flowJson === 'string' ? JSON.parse(res.flowJson) : res.flowJson;
@@ -245,7 +245,12 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
 
   switch (fn.type) {
     case 'START':
-      return { ...base, triggerType: c.triggerType || '', triggerFormSchedule: c.triggerRefId || '' };
+      return {
+        ...base,
+        triggerType: c.triggerType || '',
+        triggerFormSchedule: c.triggerRefId || '',
+        startVariables: (c.variables || []).map((v: any) => ({ variable: v.name || '', formField: v.formField ?? null, apiField: v.apiField ?? null, fixedValue: v.value ?? '', displayName: v.displayName || '' }))
+      };
 
     case 'GATEWAY_EXCLUSIVE':
     case 'GATEWAY_PARALLEL':

@@ -39,7 +39,7 @@ export function countAdvancedFilter(filter: ProcessAdvancedFilter): number {
 }
 
 /**
- * Drawer "Bộ lọc nâng cao" mở từ bên phải (Figma ProcessX node 364:23413).
+ * Drawer "Bộ lọc nâng cao" mở từ bên phải.
  * Chỉnh trên bản nháp; chỉ phát `apply` khi bấm "Áp dụng".
  */
 @Component({

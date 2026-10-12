@@ -47,7 +47,8 @@
     "TABS": {
       "GENERAL": "General info",
       "DESIGN": "Process design",
-      "NEXT": "Next"
+      "NEXT": "Next",
+      "BACK": "Back"
     },
     "INFO": {
       "NEW_PROCESS": "New process",
@@ -192,16 +193,17 @@
       "VALIDATE_TITLE": "Validate process (BPMN validation)",
       "CLEAR_TITLE": "Clear canvas",
       "ZOOM_OUT_TITLE": "Zoom out",
-      "ZOOM_RESET_TITLE": "Reset zoom to 100%",
+      "ZOOM_RESET_TITLE": "Zoom level. Click to reset to 100%",
       "ZOOM_IN_TITLE": "Zoom in",
       "AUTO": "Auto",
-      "AUTO_TITLE": "Auto layout",
+      "AUTO_TITLE": "Re-arrange process",
       "DELETE": "Delete",
       "DELETE_TITLE": "Delete selected step",
       "REVERT": "Revert",
       "REVERT_TITLE": "Discard changes",
       "SAVE": "Save",
-      "SAVE_TITLE": "Save process configuration"
+      "SAVE_TITLE": "Save process configuration",
+      "FIT_TITLE": "Fit to screen"
     },
     "FOOTER": {
       "COPYRIGHT": "Copyright 2026 Viettel Customer Service, Inc"
@@ -375,7 +377,38 @@
       "NEW_PARAM": "New parameter",
       "NEW_CASE": "Case {{index}}",
       "DEFAULT_MAPPING_1": "Complaint category level 1",
-      "DEFAULT_MAPPING_2": "Complaint category level 2"
+      "DEFAULT_MAPPING_2": "Complaint category level 2",
+      "START": {
+        "TRIGGER_TYPE": "Trigger type",
+        "TRIGGER_EMPTY": "Not set in General info",
+        "TRIGGER_TYPES": {
+          "MANUAL": "Manual",
+          "AUTO": "Automatic",
+          "SCHEDULE": "Scheduled",
+          "HYBRID": "Hybrid"
+        },
+        "FORM": "Form",
+        "FORM_EMPTY": "No form selected in General info",
+        "VARIABLES_TITLE": "Initialize process variables",
+        "COL_VARIABLE": "Process variable",
+        "COL_FORM_FIELD": "Form field",
+        "COL_DISPLAY_NAME": "Display name",
+        "ADD_ROW": "Add row",
+        "REMOVE_ROW": "Remove row",
+        "API_ENDPOINT": "API endpoint",
+        "API_EMPTY": "No API selected in General info",
+        "COL_API_FIELD": "API data field",
+        "CONDITION_EMPTY": "No conditions set in General info",
+        "OPERATORS": {
+          "EQ": "= (Equals)",
+          "GTE": ">= (Greater or equal)",
+          "LTE": "<= (Less or equal)",
+          "GT": "> (Greater than)",
+          "LT": "< (Less than)",
+          "NEQ": "!= (Not equal)"
+        },
+        "COL_FIXED_VALUE": "Fixed value"
+      }
     },
     "CONDITION_MODAL": {
       "TITLE": "Conditions",

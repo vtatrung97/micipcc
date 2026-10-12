@@ -47,7 +47,8 @@
     "TABS": {
       "GENERAL": "Thông tin chung",
       "DESIGN": "Thiết kế quy trình",
-      "NEXT": "Tiếp theo"
+      "NEXT": "Tiếp theo",
+      "BACK": "Quay lại"
     },
     "INFO": {
       "NEW_PROCESS": "Quy trình mới",
@@ -184,24 +185,25 @@
     },
     "TOOLBAR": {
       "ARIA": "Thanh công cụ điều khiển Canvas",
-      "UNDO_TITLE": "Hoàn tác - Undo",
-      "REDO_TITLE": "Làm lại - Redo",
+      "UNDO_TITLE": "Hoàn tác",
+      "REDO_TITLE": "Làm lại",
       "DEBUG": "Debug",
       "DEBUG_TITLE": "Kiểm tra dữ liệu JSON Payload (Debug)",
       "VALIDATE": "Kiểm tra",
       "VALIDATE_TITLE": "Kiểm tra tính hợp lệ quy trình (BPMN Validation)",
       "CLEAR_TITLE": "Xóa trắng / Làm sạch Canvas",
       "ZOOM_OUT_TITLE": "Thu nhỏ",
-      "ZOOM_RESET_TITLE": "Đặt lại tỷ lệ 100%",
+      "ZOOM_RESET_TITLE": "Mức thu phóng. Bấm để về 100%",
       "ZOOM_IN_TITLE": "Phóng to",
       "AUTO": "Auto",
-      "AUTO_TITLE": "Tự động căn chỉnh luồng",
+      "AUTO_TITLE": "Sắp xếp lại quy trình",
       "DELETE": "Xoá",
       "DELETE_TITLE": "Xóa bước đang chọn",
       "REVERT": "Huỷ",
       "REVERT_TITLE": "Hủy bỏ các thay đổi",
       "SAVE": "Lưu",
-      "SAVE_TITLE": "Lưu cấu hình quy trình"
+      "SAVE_TITLE": "Lưu cấu hình quy trình",
+      "FIT_TITLE": "Căn vừa màn hình"
     },
     "FOOTER": {
       "COPYRIGHT": "Copy right 2026 Viettel Customer Service, Inc"
@@ -375,7 +377,38 @@
       "NEW_PARAM": "Tham số mới",
       "NEW_CASE": "Trường hợp {{index}}",
       "DEFAULT_MAPPING_1": "Phân loại phản ánh cấp 1",
-      "DEFAULT_MAPPING_2": "Phân loại phản ánh cấp 2"
+      "DEFAULT_MAPPING_2": "Phân loại phản ánh cấp 2",
+      "START": {
+        "TRIGGER_TYPE": "Kiểu kích hoạt",
+        "TRIGGER_EMPTY": "Chưa chọn ở Thông tin chung",
+        "TRIGGER_TYPES": {
+          "MANUAL": "Thủ công",
+          "AUTO": "Tự động",
+          "SCHEDULE": "Lập lịch",
+          "HYBRID": "Hybrid"
+        },
+        "FORM": "Biểu mẫu",
+        "FORM_EMPTY": "Chưa chọn biểu mẫu ở Thông tin chung",
+        "VARIABLES_TITLE": "Khởi tạo biến quy trình",
+        "COL_VARIABLE": "Biến quy trình",
+        "COL_FORM_FIELD": "Trường biểu mẫu",
+        "COL_DISPLAY_NAME": "Tên hiển thị",
+        "ADD_ROW": "Thêm dữ liệu",
+        "REMOVE_ROW": "Xoá dòng",
+        "API_ENDPOINT": "API endpoint",
+        "API_EMPTY": "Chưa chọn API ở Thông tin chung",
+        "COL_API_FIELD": "Trường dữ liệu API",
+        "CONDITION_EMPTY": "Chưa cài điều kiện ở Thông tin chung",
+        "OPERATORS": {
+          "EQ": "= (Bằng)",
+          "GTE": ">= (Lớn hơn hoặc bằng)",
+          "LTE": "<= (Nhỏ hơn hoặc bằng)",
+          "GT": "> (Lớn hơn)",
+          "LT": "< (Nhỏ hơn)",
+          "NEQ": "!= (Khác)"
+        },
+        "COL_FIXED_VALUE": "Giá trị cố định"
+      }
     },
     "CONDITION_MODAL": {
       "TITLE": "Điều kiện",

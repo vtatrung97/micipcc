@@ -1,9 +1,7 @@
-// ============================================================================
-// Token thiết kế ProcessX (Figma: "ProcessX - Design System")
+// Token thiết kế ProcessX.
 // Dùng: @use '<đường dẫn tương đối>/shared/styles/processx-tokens' as px;
-// ============================================================================
 
-// Color/*
+// Màu
 $white: #ffffff;
 $primary-700: #d7002b;
 $primary-600: #ed0231;
@@ -21,12 +19,12 @@ $neutral-300: #e3e3e3;
 $neutral-200: #f2f2f2;
 $neutral-100: #f5f5f5;
 $warning: #faad14;
-$red-400: #f10e0e;     // Color/Actions/Red/400: mục nguy hiểm (Xóa) trong menu
-$blue-300: #0080ff;    // Color/Actions/Blue/300: link "Thêm điều kiện"
-$green-300: #16cf73;   // Color/Actions/Green/300: badge "Đang ban hành"
-$bg-table: #f7f7f7;    // Color/Background/Table: hàng bảng xen kẽ
+$red-400: #f10e0e;     // mục nguy hiểm (Xóa) trong menu
+$blue-300: #0080ff;    // link "Thêm điều kiện"
+$green-300: #16cf73;   // badge "Đang ban hành"
+$bg-table: #f7f7f7;    // hàng bảng xen kẽ
 
-// Space/*
+// Khoảng cách
 $space-2: 2px;
 $space-4: 4px;
 $space-6: 6px;
@@ -41,7 +39,7 @@ $space-32: 32px;
 $radius-sm: 6px;   // checkbox, menu item
 $radius-md: 8px;   // field size xs / ô tìm kiếm trong dropdown
 $radius-lg: 12px;  // field size sm (mặc định), dropdown panel
-$radius-xl: 16px;  // card bảng (Table_view)
+$radius-xl: 16px;  // card bảng
 
 // Typography (Inter)
 $font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -84,13 +82,11 @@ $font-weight-control: 400;
   font-weight: 600;
 }
 
-// Effect "Effect menu": bóng của dropdown panel
+// Bóng của dropdown panel
 $shadow-menu: 0 0 14px -4px rgba(0, 0, 0, 0.05), 0 32px 48px -8px rgba(0, 0, 0, 0.1);
 
-// ============================================================================
-// Kích thước control dùng chung: small | middle (mặc định, = Figma "sm") | large
-// Chiều cao tính cả viền (border-box), như Figma vẽ viền nằm trong khung.
-// ============================================================================
+// ===== Kích thước control: small | middle (mặc định) | large =====
+// Chiều cao tính cả viền (border-box).
 $field-sizes: (
   small:  (height: 40px, radius: $radius-md, padding-x: $space-12, font-size: 14px, line-height: 20px),
   middle: (height: 48px, radius: $radius-lg, padding-x: $space-12, font-size: 16px, line-height: 24px),

@@ -1,6 +1,6 @@
 @use '../../../../shared/styles/processx-tokens' as px;
 
-// Builder body (Figma 264:42075): nền Neutral/100, padding 24/48, các card cách 16, căn giữa
+// Thân tab: các card xếp dọc, căn giữa
 :host {
   display: block;
   height: 100%;
@@ -16,7 +16,7 @@
   padding: px.$space-24 48px;
 }
 
-// Card form: rộng 800, padding 24, radius 16, viền Neutral/300, các khối cách 16
+// Card form: rộng 800, các khối cách 16
 .info-card {
   display: flex;
   flex-direction: column;
@@ -30,7 +30,6 @@
   box-sizing: border-box;
 }
 
-// Body/lg/SemiBold 18/28
 .info-card-title {
   margin: 0;
   font-family: px.$font-family;
@@ -40,7 +39,7 @@
   color: px.$neutral-900;
 }
 
-// Nhãn radio "Loại kích hoạt": Body/sm/Medium (radio dùng chung mặc định 400)
+// Nhãn radio "Loại kích hoạt" đậm hơn radio dùng chung (400)
 :host ::ng-deep .info-card .px-radio-label {
   font-weight: 500;
 }
@@ -69,7 +68,7 @@
   gap: 10px;
 }
 
-// Điều kiện kích hoạt (Figma 364:24387): khung trắng radius 12, padding 16; danh sách + nút thêm cách 12
+// Điều kiện kích hoạt: khung trắng chứa danh sách + nút thêm
 .condition-box {
   display: flex;
   flex-direction: column;
@@ -95,7 +94,7 @@
   gap: px.$space-8;
 }
 
-// Header cột: Body/md/Medium Neutral/900
+// Header cột
 .condition-head {
   @include px.body-md-medium;
   color: px.$neutral-900;
@@ -123,7 +122,7 @@
   }
 }
 
-// Buttons Link: icon + chữ Actions/Blue/300, Body/md/Medium, gap 4
+// Nút link thêm điều kiện: icon + chữ
 .condition-add {
   display: inline-flex;
   align-items: center;

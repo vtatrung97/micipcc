@@ -14,11 +14,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 const ICON_BASE = 'assets/icons/processx';
 
 /**
- * Checkbox theo Figma ProcessX Design System (node 90:3095).
- * - Không có label/nội dung → chỉ ô vuông (Type=Base).
- * - Có label (+ description) → Type=Label.
- * - type="drag" → hàng có padding, nền xám khi hover (Type=Drag).
- * Trạng thái: default · hover · focused · disabled · readonly; checked / indeterminate.
+ * Checkbox dùng chung: không có label/nội dung → chỉ ô vuông; có label (+ description) → kèm chữ;
+ * type="drag" → hàng có padding, nền xám khi hover. Hỗ trợ checked / indeterminate / disabled / readonly.
  */
 @Component({
   selector: 'ant-checkbox',
@@ -34,11 +31,11 @@ const ICON_BASE = 'assets/icons/processx';
 })
 export class AntCheckboxComponent implements ControlValueAccessor, AfterViewInit {
   @Input() label?: string;
-  /** Dòng mô tả phụ dưới label (Support text) */
+  /** Dòng mô tả phụ dưới label */
   @Input() description?: string;
   @Input() type: 'label' | 'drag' = 'label';
   @Input() disabled: boolean = false;
-  /** Chỉ hiển thị, không cho đổi (State=Read only) */
+  /** Chỉ hiển thị, không cho đổi */
   @Input() readonly: boolean = false;
   @Input() indeterminate: boolean = false;
 
@@ -55,7 +52,7 @@ export class AntCheckboxComponent implements ControlValueAccessor, AfterViewInit
 
   constructor(private cdr: ChangeDetectorRef) {}
 
-  /** Không có label/description/nội dung → chỉ hiển thị ô vuông (Type=Base) */
+  /** Không có label/description/nội dung → chỉ hiển thị ô vuông */
   get hasText(): boolean {
     return !!(this.label || this.description || this.hasProjected);
   }

@@ -35,7 +35,7 @@
   }
 }
 
-// Menu (_Text field search dropdown): radius 12, viền Neutral/300, Effect menu, list padding 4/0
+// Menu: radius 12, viền Neutral/300, đổ bóng menu, list padding 4/0
 .px-action-panel {
   position: fixed;
   z-index: 1060;
@@ -52,7 +52,7 @@
   animation: pxActionMenuIn 0.15s ease;
 }
 
-// Item (Figma 435:38658): khung ngoài 2/6, nội dung 10, radius 6, Body/md/Medium 16/24, icon 20 cách chữ 8
+// Item: khung ngoài 2/6, nội dung 10, radius 6, 16/24 Medium, icon 20 cách chữ 8
 .px-action-item {
   @include px.body-md-medium;
   display: flex;
@@ -80,7 +80,7 @@
     cursor: not-allowed;
   }
 
-  // Mục nguy hiểm (Xóa): chữ Actions/Red/400
+  // Mục nguy hiểm (Xóa): chữ đỏ
   &.px-action-item-danger:not(:disabled) {
     color: px.$red-400;
   }

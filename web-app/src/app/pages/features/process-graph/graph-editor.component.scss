@@ -1,13 +1,6 @@
 @use '../../../shared/styles/processx-tokens' as px;
 
-/* ============================================================================
-   CALL FLOW / IVR BUILDER STUDIO - EXACT MINIMAL THEME
-   Bám sát 100% hình ảnh mẫu Call Flow Builder:
-   - Palette thanh dọc 44px, icon SVG 22-24px màu #73777A, hover tooltip đen
-   - Node 142px × 44px với icon box pastel, tên bước, ID, cổng (+)
-   - Start Node hình tròn mảnh với cổng (+)
-   - Floating Toolbar bo góc góc dưới: [🧹] [-] [+] [↺] [⤢] | [Xoá] [Huỷ] [Lưu]
-   ============================================================================ */
+/* Canvas Builder: toolbar, stepper, Thư viện bước, canvas X6 và drawer cấu hình. */
 
 :host {
   display: block;
@@ -26,12 +19,7 @@
   color: #1e293b;
 }
 
-/* ============================================================================
-   1. TOPBAR & CALL FLOW TABS
-   ============================================================================ */
-/* ============================================================================
-   1. BUILDER TOOLBAR (Figma 264:42054): cao 72, padding 0/24, viền dưới Neutral/300
-   ============================================================================ */
+/* ===== 1. Builder toolbar ===== */
 .studio-topbar {
   height: 72px;
   min-height: 72px;
@@ -53,7 +41,7 @@
   min-width: 0;
 }
 
-// Back Button 20px
+// Nút quay lại
 .back-btn {
   display: flex;
   flex-shrink: 0;
@@ -67,7 +55,7 @@
   }
 }
 
-// Line dọc 24px Neutral/300
+// Vạch ngăn dọc
 .topbar-divider-vertical {
   flex-shrink: 0;
   width: 1px;
@@ -82,7 +70,6 @@
   min-width: 0;
 }
 
-// Body/lg/SemiBold 18/28
 .process-title-text {
   margin: 0;
   max-width: 480px;
@@ -96,7 +83,7 @@
   text-overflow: ellipsis;
 }
 
-// _Text field dropdown: padding 12, radius 12, viền Neutral/300; "Phiên bản n" Body/md/Medium + badge + chevron 24
+// Ô chọn phiên bản: "Phiên bản n" + badge + chevron
 .version-dropdown-badge {
   display: inline-flex;
   flex-shrink: 0;
@@ -119,7 +106,7 @@
     white-space: nowrap;
   }
 
-  // Badge "Nháp": nền Neutral/200, chữ Neutral/600, 12/18 SemiBold, radius 4
+  // Badge trạng thái "Nháp"
   .draft-tag {
     padding: px.$space-4 px.$space-8;
     border-radius: px.$space-4;
@@ -143,7 +130,7 @@
   gap: px.$space-16;
 }
 
-// Buttons: cao 44, padding 8/16, radius 8, Body/md/SemiBold
+// Nút hành động trên toolbar
 .topbar-btn {
   display: inline-flex;
   align-items: center;
@@ -160,7 +147,7 @@
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease;
 
-  // Hủy: không nền, chữ Neutral/800
+  // Hủy: không nền
   &.text-btn {
     background: transparent;
     color: px.$neutral-800;
@@ -170,7 +157,7 @@
     }
   }
 
-  // Lưu nháp: viền Primary/400, chữ Primary/600
+  // Lưu nháp: nền trắng, viền đỏ
   &.outline-btn {
     background: px.$white;
     border-color: px.$primary-400;
@@ -182,7 +169,7 @@
     }
   }
 
-  // Ban hành: nền Primary/600
+  // Ban hành: nút primary
   &.primary-red-btn {
     background: px.$primary-600;
     color: px.$white;
@@ -193,9 +180,7 @@
   }
 }
 
-/* ============================================================================
-   2. STEPPER (Figma 388:30528): padding 16/24, progress rộng 600 ở giữa, nút bên phải
-   ============================================================================ */
+/* ===== 2. Stepper: progress ở giữa, nút bên phải ===== */
 .sub-header-tabs {
   position: relative;
   display: flex;
@@ -232,7 +217,7 @@
     background: transparent;
     cursor: pointer;
 
-    // Bước chưa tới: tròn Neutral/300, chữ Neutral/400
+    // Bước chưa tới: màu xám
     .stepper-index {
       display: flex;
       align-items: center;
@@ -255,7 +240,7 @@
       white-space: nowrap;
     }
 
-    // Bước hiện tại: tròn + chữ Primary/600
+    // Bước hiện tại: màu primary
     &.active {
       .stepper-index {
         background: px.$primary-600;
@@ -274,7 +259,12 @@
     background: px.$neutral-300;
   }
 
-  // "Tiếp theo": nền Neutral/100, chữ Neutral/800, padding 8/16, radius 8
+  // "Quay lại" (bước 2): cùng kiểu nút "Tiếp theo", nằm sát trái
+  .stepper-back-btn {
+    margin-right: auto;
+  }
+
+  // "Tiếp theo": nền xám nhạt
   .stepper-next-btn {
     padding: px.$space-8 px.$space-16;
     border: none;
@@ -296,551 +286,122 @@
     display: flex;
     align-items: center;
     gap: 8px;
-
-    .sample-dropdown-btn {
-      height: 28px;
-      padding: 0 10px;
-      border-radius: 6px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: #334155;
-      font-size: 12px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-
-      .sample-btn-icon {
-        color: #f59e0b;
-        font-size: 13px;
-      }
-
-      .sample-chevron {
-        color: #94a3b8;
-        transition: transform 0.15s ease;
-      }
-
-      &:hover {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
-        color: #0f172a;
-      }
-    }
   }
 }
 
-::ng-deep .sample-flow-menu {
-  min-width: 320px;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
-  border: 1px solid #e2e8f0 !important;
-  padding: 6px !important;
-
-  .sample-menu-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 4px 2px;
-
-    .sample-badge {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      white-space: nowrap;
-      margin-top: 1px;
-
-      &.badge-basic {
-        background: #ecfdf5;
-        color: #059669;
-        border: 1px solid #a7f3d0;
-      }
-
-      &.badge-medium {
-        background: #eff6ff;
-        color: #2563eb;
-        border: 1px solid #bfdbfe;
-      }
-
-      &.badge-complex {
-        background: #fdf2f8;
-        color: #db2777;
-        border: 1px solid #fbcfe8;
-      }
-
-      &.badge-default {
-        background: #f8fafc;
-        color: #475569;
-        border: 1px solid #e2e8f0;
-      }
-    }
-
-    .sample-menu-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-
-      .sample-menu-title {
-        font-size: 12.5px;
-        font-weight: 600;
-        color: #0f172a;
-      }
-
-      .sample-menu-sub {
-        font-size: 11px;
-        color: #64748b;
-      }
-    }
-  }
-}
-
-/* ============================================================================
-   3. WORKSPACE & THƯ VIỆN BƯỚC PALETTE
-   ============================================================================ */
+/* ===== 3. Workspace & Thư viện bước ===== */
 .studio-workspace {
   display: flex;
   flex: 1;
   position: relative;
   overflow: hidden;
-  height: calc(100% - 90px);
+  min-height: 0;
 }
 
-.figma-node-palette {
-  width: 250px;
-  min-width: 250px;
-  max-width: 250px;
-  height: 100%;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+// Thư viện bước: cột trái rộng 300
+.node-palette {
   display: flex;
   flex-direction: column;
-  z-index: 10;
-  user-select: none;
-  transition: width 0.2s ease, min-width 0.2s ease;
-
-  &.collapsed {
-    width: 0;
-    min-width: 0;
-    overflow: hidden;
-    border-right: none;
-  }
-}
-
-.palette-header {
-  padding: 18px 16px 12px;
-
-  .palette-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    .palette-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: #18181b;
-      margin: 0;
-      letter-spacing: -0.2px;
-    }
-
-    .collapse-palette-btn {
-      background: transparent;
-      border: none;
-      color: #a1a1aa;
-      cursor: pointer;
-      padding: 2px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.15s ease;
-
-      &:hover {
-        color: #18181b;
-      }
-    }
-  }
-
-  .palette-subtitle {
-    font-size: 12.5px;
-    line-height: 1.45;
-    color: #71717a;
-    margin: 8px 0 0;
-  }
-}
-
-.palette-search-box {
-  padding: 4px 16px 16px;
-
-  .search-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      color: #71717a;
-      pointer-events: none;
-    }
-
-    .palette-search-input {
-      width: 100%;
-      height: 40px;
-      padding: 0 32px 0 40px;
-      font-size: 13.5px;
-      border: 1.2px solid #e4e4e7;
-      border-radius: 10px;
-      background: #ffffff;
-      outline: none;
-      color: #18181b;
-      transition: border-color 0.15s ease;
-
-      &::placeholder {
-        color: #a1a1aa;
-      }
-
-      &:focus {
-        border-color: #71717a;
-      }
-    }
-
-    .clear-search-btn {
-      position: absolute;
-      right: 10px;
-      background: none;
-      border: none;
-      color: #a1a1aa;
-      font-size: 16px;
-      cursor: pointer;
-      line-height: 1;
-
-      &:hover {
-        color: #18181b;
-      }
-    }
-  }
-}
-
-.palette-scroll-content {
-  flex: 1;
+  gap: px.$space-16;
+  flex: 0 0 300px;
+  width: 300px;
+  padding: px.$space-24;
   overflow-y: auto;
-  padding: 0 16px 20px;
-
-  .palette-group {
-    &.condition-group {
-      margin-bottom: 20px;
-
-      .group-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: #3f3f46;
-        margin-bottom: 12px;
-      }
-
-      .condition-tree-line {
-        border-left: 1.5px solid #e4e4e7;
-        margin-left: 19px;
-        padding-left: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-    }
-
-    &.functional-group {
-      .functional-items-list {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-    }
-  }
+  background: px.$white;
+  border-right: 1px solid px.$neutral-300;
+  box-sizing: border-box;
+  font-family: px.$font-family;
 }
 
-.palette-item-row {
+.node-palette-head {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-4;
+}
+
+.node-palette-title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-900;
+}
+
+.node-palette-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: px.$neutral-500;
+}
+
+.node-palette-list {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-4;
+}
+
+// Một bước: icon 40 (nền theo loại) + nhãn
+.palette-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: px.$space-12;
+  padding: px.$space-8;
+  border-radius: px.$radius-lg;
   cursor: grab;
   user-select: none;
-  background: transparent;
-  border: none;
-  padding: 0;
-  transition: opacity 0.15s ease;
+  transition: background-color 0.15s ease;
 
   &:hover {
-    .palette-item-label {
-      color: #000000;
-    }
-    .palette-icon-box {
-      transform: scale(1.02);
-    }
+    background: px.$neutral-100;
   }
 
   &:active {
     cursor: grabbing;
   }
+}
 
-  .palette-icon-box {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    position: relative;
-    transition: transform 0.15s ease;
+// Tiêu đề nhóm "Điều kiện": không kéo thả
+.palette-row-group {
+  cursor: default;
 
-    &.condition-box {
-      background: #f4f4f5;
-    }
-
-    &.box-task {
-      background: #ecfdf5;
-    }
-
-    &.box-action {
-      background: #eff6ff;
-    }
-
-    &.box-notification {
-      background: #fdf2f8;
-    }
-
-    &.box-sub_process {
-      background: #fffbeb;
-    }
-
-    &.box-end {
-      background: #fef2f2;
-    }
-  }
-
-  .palette-item-label {
-    font-size: 14px;
-    font-weight: 450;
-    color: #18181b;
-    letter-spacing: -0.1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  &:hover {
+    background: transparent;
   }
 }
 
-/* Collaborator Badges on palette items matching Figma */
-.collaborator-badge-bubble {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #0284c7;
-  color: #ffffff;
-  width: 19px;
-  height: 19px;
-  border-radius: 9px 9px 9px 2px;
-  font-size: 10px;
-  font-weight: 700;
+.palette-icon {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.4);
-  z-index: 5;
-  pointer-events: none;
-
-  &.bottom-badge {
-    top: auto;
-    bottom: -3px;
-    right: -4px;
-    border-radius: 9px 9px 2px 9px;
-  }
+  width: 40px;
+  height: 40px;
+  border-radius: px.$radius-md;
 }
 
-/* ============================================================================
-   4. CANVAS AREA HOST
-   ============================================================================ */
+.palette-label {
+  @include px.body-sm-regular;
+  color: px.$neutral-900;
+}
+
+// 3 loại điều kiện: thụt vào, có đường kẻ trái
+.palette-sublist {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-4;
+  margin: 0 px.$space-8;
+  padding-left: px.$space-8;
+  border-left: 1px solid px.$neutral-300;
+}
+
+/* ===== 4. Canvas ===== */
 .canvas-area-host {
   flex: 1;
   position: relative;
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: #f8fafc;
-}
-
-// Nút nổi mở lại Thư viện bước (hiện khi sidebar đã thu gọn)
-.expand-palette-btn {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 20;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px 8px 16px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
-  color: #18181b;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-
-  svg {
-    color: #a1a1aa;
-  }
-
-  &:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
-
-    svg {
-      color: #52525b;
-    }
-  }
-}
-
-.floating-presence-tab.right-dock-avatar {
-  position: absolute;
-  right: 0;
-  top: 100px;
-  background: #0284c7;
-  color: #ffffff;
-  width: 22px;
-  height: 28px;
-  border-radius: 6px 0 0 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  z-index: 15;
-  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.1);
-  user-select: none;
-}
-
-.floating-studio-toolbar {
-  position: absolute;
-  bottom: 20px;
-  right: 24px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  z-index: 20;
-
-  .tool-btn {
-    height: 28px;
-    min-width: 28px;
-    padding: 0 5px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: #64748b;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: #f1f5f9;
-      color: #0f172a;
-    }
-
-    &.active-tool {
-      background: #eff6ff;
-      color: #0284c7;
-    }
-
-    &.icon-only {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    &.delete-btn:hover {
-      background: #fee2e2;
-      color: #dc2626;
-    }
-  }
-
-  .ask-to-edit-btn {
-    height: 26px;
-    padding: 0 10px;
-    border-radius: 13px;
-    background: #0284c7;
-    color: #ffffff;
-    border: none;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease;
-    margin: 0 2px;
-
-    &:hover {
-      background: #0369a1;
-    }
-  }
-
-  .toolbar-divider {
-    height: 16px;
-    width: 1px;
-    background: #e2e8f0;
-    margin: 0 3px;
-  }
-
-  .zoom-pct-label {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: #475569;
-    padding: 0 4px;
-    min-width: 38px;
-    text-align: center;
-    user-select: none;
-  }
-}
-
-.canvas-copyright-footer {
-  position: absolute;
-  bottom: 16px;
-  left: 20px;
-  display: flex;
-  align-items: center;
-  z-index: 10;
-  pointer-events: none;
-  user-select: none;
-
-  .process-text {
-    font-size: 13px;
-    font-weight: 800;
-    color: #0f172a;
-  }
-
-  .x-text {
-    font-size: 13px;
-    font-weight: 900;
-    color: #dc2626;
-    margin-right: 6px;
-  }
-
-  .copy-desc {
-    font-size: 11px;
-    color: #64748b;
-    font-weight: 400;
-  }
+  background: px.$neutral-100;
 }
 
 .x6-graph-container {
@@ -849,203 +410,72 @@
   outline: none;
 }
 
-/* ============================================================================
-   5. CỤM PHÍM NỔI ĐIỀU KHIỂN CANVAS (GÓC DƯỚI BÊN TRÁI)
-   ============================================================================ */
-.floating-studio-toolbar {
+// Toolbar canvas: nổi ở góc dưới trái
+.canvas-toolbar {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
-  background: #ffffff;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  padding: 4px 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  left: px.$space-24;
+  bottom: px.$space-24;
+  z-index: 10;
   display: flex;
   align-items: center;
-  gap: 5px;
-  z-index: 20;
+  gap: px.$space-2;
+  padding: px.$space-4 px.$space-8;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
 }
 
-.pill-tool-btn {
-  border: none;
-  background: transparent;
-  min-width: 28px;
-  height: 28px;
-  padding: 0 6px;
-  border-radius: 4px;
-  font-size: 0.88rem;
-  color: #595959;
-  cursor: pointer;
-  display: inline-flex;
+// Nút icon trên toolbar
+.canvas-tool-btn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  transition: all 0.15s ease;
+  padding: px.$space-8;
+  border: none;
+  border-radius: px.$radius-md;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: px.$neutral-100;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 }
 
-.pill-tool-btn:hover:not(:disabled) {
-  background: #f5f5f5;
-  color: #1890ff;
-}
-
-.pill-tool-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.pill-tool-btn.icon-only {
-  width: 28px;
-  padding: 0;
-}
-
-.pill-tool-btn.debug-btn {
-  background: #f9f0ff;
-  border: 1px solid #d3adf7;
-  color: #531dab;
-  font-weight: 500;
-  font-size: 0.8rem;
-}
-
-.pill-tool-btn.debug-btn:hover {
-  background: #f0d8ff;
-  border-color: #b37feb;
-}
-
-.pill-tool-btn.validate-btn {
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
-  color: #389e0d;
-  font-weight: 500;
-  font-size: 0.8rem;
-}
-
-.pill-tool-btn.validate-btn:hover {
-  background: #d9f7be;
-  border-color: #95de64;
-}
-
-.zoom-level-btn {
-  font-family: monospace;
-  font-size: 0.78rem;
+// Mức thu phóng; bấm để về 100%
+.canvas-zoom-btn {
+  width: 52px;
+  height: 32px;
+  padding: 1px 6px;
+  border: none;
+  border-radius: px.$radius-sm;
+  background: transparent;
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
-  color: #595959;
+  color: px.$neutral-900;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-100;
+  }
 }
 
-.zoom-pct {
-  font-size: 0.78rem;
-}
-
-.auto-layout-btn {
-  font-size: 0.8rem;
-  color: #166534;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-}
-
-.auto-layout-btn:hover {
-  background: #dcfce7;
-}
-
-.pill-tool-btn.minimap-btn {
-  font-size: 0.8rem;
-  color: #0958d9;
-  background: #e6f4ff;
-  border: 1px solid #91caff;
-  transition: all 0.2s ease;
-}
-
-.pill-tool-btn.minimap-btn:hover {
-  background: #bae0ff;
-  border-color: #69b1ff;
-}
-
-.pill-tool-btn.minimap-btn.active-tool {
-  background: #1677ff;
-  color: #ffffff;
-  border-color: #1677ff;
-}
-
-.symbol-btn {
-  font-size: 1.15rem;
-  line-height: 1;
-  font-weight: 600;
-}
-
-.toolbar-divider {
+// Vạch ngăn giữa các nhóm nút
+.canvas-tool-divider {
   width: 1px;
-  height: 18px;
-  background: #e8e8e8;
-  margin: 0 4px;
+  height: 20px;
+  margin: 0 px.$space-2;
+  background: #dcdfe7;
 }
 
-/* Nút Xoá (Outline đỏ như trong ảnh) */
-.action-btn-red {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border: 1px solid #ff4d4f;
-  background: #fff1f0;
-  color: #cf1322;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.action-btn-red:hover {
-  background: #ffccc7;
-}
-
-/* Nút Huỷ (Xám) */
-.action-btn-gray {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border: 1px solid #d9d9d9;
-  background: #ffffff;
-  color: #595959;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.action-btn-gray:hover {
-  background: #f5f5f5;
-  color: #262626;
-}
-
-/* Nút Lưu (Filled Blue) */
-.action-btn-blue {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 14px;
-  border: 1px solid #1890ff;
-  background: #1890ff;
-  color: #ffffff;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.action-btn-blue:hover {
-  background: #096dd9;
-  border-color: #096dd9;
-}
-
-
-
-/* ============================================================================
-   6. SIDE DRAWER BÊN PHẢI (CHI TIẾT THUỘC TÍNH)
-   ============================================================================ */
+/* ===== 5. Drawer bên phải (chi tiết thuộc tính) ===== */
 .properties-side-drawer {
   position: absolute;
   top: 0;
@@ -1304,9 +734,7 @@
   background: #096dd9;
 }
 
-/* ============================================================================
-   ACTION (SERVICE TASK) & CONDITION (EXCLUSIVE GW) DRAWER STYLES
-   ============================================================================ */
+/* ===== 6. Drawer Action (Service Task) & Condition (Exclusive GW) ===== */
 
 /* ACTION SOURCE TOGGLE */
 .action-source-toggle {
@@ -1644,13 +1072,7 @@
 
 
 
-/* ============================================================================
-   X6 CANVAS - ANTV X6 MINIMALIST / MONOCHROME CARD (ANT DESIGN STYLE)
-   - Đồng bộ toàn bộ node: nền #ffffff, viền #e2e8f0, đổ bóng 0 1px 3px rgba(0,0,0,0.05)
-   - Hover / Active node: viền đổi sang #1677ff
-   - Ports: r: 4, fill: #94a3b8, viền #ffffff, mặc định ẩn (opacity: 0), hiện khi hover node
-   - Edges & Labels: stroke #94a3b8, badge nền #ffffff, viền #e2e8f0, chữ #475569
-   ============================================================================ */
+/* ===== 7. X6: hover node / cổng / dây, luôn hiện cổng, ẩn nhãn trên dây ===== */
 :host ::ng-deep .x6-node,
 .x6-node {
   cursor: pointer;

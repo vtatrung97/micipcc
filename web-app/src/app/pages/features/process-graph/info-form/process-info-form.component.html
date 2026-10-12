@@ -27,7 +27,7 @@
                     [maxLength]="1000"></ant-textarea>
     </app-form-field>
 
-    <!-- Thời hạn xử lý (SLA): số + đơn vị (rộng 200) — cuối card "Thông tin cơ bản" (Figma 264:42075) -->
+    <!-- Thời hạn xử lý (SLA): số + đơn vị, cuối card "Thông tin cơ bản" -->
     <app-form-field [label]="'PROCESS_GRAPH.INFO.SLA' | translate" [required]="true" [error]="error('sla')" [spacing]="0">
       <div class="sla-row">
         <ant-input class="sla-value" [(ngModel)]="slaText" [maxLength]="4"
@@ -60,7 +60,7 @@
               <ant-select [(ngModel)]="info.auto.apiId" [options]="apiOptions"
                           [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
             </app-form-field>
-            <!-- Điều kiện kích hoạt (Figma 364:24387): bảng Tham số · Kiểu so sánh · Giá trị so sánh;
+            <!-- Điều kiện kích hoạt: bảng Tham số · Kiểu so sánh · Giá trị so sánh;
                  từ dòng thứ 2 có nút xoá ở cuối, luôn còn ít nhất 1 dòng -->
             <app-form-field [label]="'PROCESS_GRAPH.INFO.TRIGGER_CONDITION' | translate" [required]="true"
                             [error]="error('autoConditions')" [spacing]="0">
@@ -98,19 +98,19 @@
             </app-form-field>
           </div>
 
-          <!-- Lặp lịch (Figma 237:11006) -->
+          <!-- Lặp lịch -->
           <div *ngIf="isTrigger(option, 'SCHEDULE')" class="trigger-extra">
             <app-radio-group direction="horizontal" [(ngModel)]="info.schedule.mode" [options]="scheduleModeOptions"></app-radio-group>
             <div class="trigger-divider"></div>
 
-            <!-- Lặp lại (Figma 243:12389): chọn chu kỳ → chọn xong hiện Giờ chạy (Figma 248:13116) -->
+            <!-- Lặp lại: chọn chu kỳ → chọn xong hiện Giờ chạy -->
             <ng-container *ngIf="info.schedule.mode === 'REPEAT'">
               <app-form-field [label]="'PROCESS_GRAPH.INFO.REPEAT' | translate" [required]="true"
                               [error]="error('repeat')" [spacing]="0">
                 <ant-select [(ngModel)]="info.schedule.repeat" [options]="repeatOptions"
                             [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
               </app-form-field>
-              <!-- Hàng tháng (Figma 264:13710): Ngày trong tháng (lưới 1–31, mở sẵn) + Giờ chạy -->
+              <!-- Hàng tháng: Ngày trong tháng (lưới 1–31, mở sẵn) + Giờ chạy -->
               <div class="schedule-fields schedule-fields-repeat" *ngIf="info.schedule.repeat === 'MONTHLY'">
                 <app-form-field class="schedule-date" [label]="'PROCESS_GRAPH.INFO.MONTH_DAYS' | translate" [required]="true"
                                 [error]="error('monthDays')" [spacing]="0">
@@ -120,7 +120,7 @@
                 </app-form-field>
                 <ng-container *ngTemplateOutlet="runTimeField"></ng-container>
               </div>
-              <!-- Hàng tuần (Figma 264:15184): Ngày trong tuần (dropdown checkbox, mở sẵn) + Giờ chạy -->
+              <!-- Hàng tuần: Ngày trong tuần (dropdown checkbox, mở sẵn) + Giờ chạy -->
               <div class="schedule-fields schedule-fields-repeat" *ngIf="info.schedule.repeat === 'WEEKLY'">
                 <app-form-field class="schedule-date" [label]="'PROCESS_GRAPH.INFO.WEEK_DAYS_LABEL' | translate" [required]="true"
                                 [error]="error('weekDays')" [spacing]="0">
@@ -163,7 +163,7 @@
             </ng-template>
           </div>
 
-          <!-- Hybrid (Figma 264:16237) -->
+          <!-- Hybrid -->
           <div *ngIf="isTrigger(option, 'HYBRID')" class="trigger-extra trigger-extra-compact">
             <app-form-field [label]="'PROCESS_GRAPH.INFO.API' | translate" [required]="true" [error]="error('apiId')" [spacing]="0">
               <ant-select [(ngModel)]="info.hybrid.apiId" [options]="apiOptions"

@@ -32,7 +32,7 @@
   background: currentColor;
 }
 
-/* Status variants */
+/* Màu theo trạng thái */
 .ant-tag[data-status="active"],
 .ant-tag[data-status="published"],
 .ant-tag[data-status="completed"],
@@ -86,7 +86,7 @@
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
-/* Badge Fill (Figma ProcessX "Badge": Fill Gray / Green / Gray-500) */
+/* Badge nền đặc (appearance="fill") */
 .px-badge {
   display: inline-flex;
   align-items: center;

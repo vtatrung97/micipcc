@@ -15,8 +15,14 @@ import {
   ProcessTemplateItem,
 } from '@core/services/template.service';
 import { NodeType, isGatewayType } from './models/node-type';
-import { PaletteItem } from './models/node-property.model';
-import { PALETTE_ITEMS } from './config/palette.config';
+import {
+  NODE_CARD_HEIGHT,
+  NODE_CARD_WIDTH,
+  NODE_ICON_BG,
+  NODE_ICON_SRC,
+  PALETTE_CONDITION_ICON_SRC,
+  PALETTE_END_ICON_SRC,
+} from './config/node-view.config';
 import { GraphEditorStore } from './state/graph-editor.store';
 import { GraphBridgeService } from './services/graph-bridge.service';
 import { GraphCanvasService } from './services/graph-canvas.service';
@@ -42,9 +48,8 @@ export * from './models/node-property.model';
 export type { NodeType } from './models/node-type';
 
 /**
- * Màn Canvas Builder. Component chỉ điều phối: nhận sự kiện từ template / drawer / router
- * và gọi service theo nghiệp vụ. State dùng chung nằm ở GraphEditorStore.
- * Cấu trúc chi tiết xem README.md cùng thư mục.
+ * Màn Canvas Builder: chỉ điều phối sự kiện từ template / drawer / router sang service.
+ * State dùng chung nằm ở GraphEditorStore; cấu trúc chi tiết xem README.md.
  */
 @Component({
   selector: 'app-graph-editor',
@@ -71,8 +76,6 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   // State riêng của giao diện màn hình
   public activeTab: 'flow' | 'info' | 'notify' = 'flow';
   public activeSubTab: 'info' | 'design' = 'design';
-  public searchQuery: string = '';
-  public isPaletteCollapsed: boolean = false;
   /** Đã bấm Lưu nháp / Ban hành ít nhất 1 lần → bắt đầu hiện lỗi tab Thông tin chung */
   private infoSubmitted = false;
   private routeSub = new Subscription();
@@ -100,9 +103,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translate.instant('PROCESS_GRAPH.' + key, params);
   }
 
-  // ---------------------------------------------------------------------------
-  // State hiển thị trên template (đọc từ store)
-  // ---------------------------------------------------------------------------
+  // ----- State hiển thị trên template (đọc từ store) -----
   public get currentTemplate(): ProcessTemplateItem {
     return this.store.currentTemplate;
   }
@@ -126,7 +127,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   public get headerStatus(): 'Draft' | 'Published' | 'Inactive' {
     return this.store.isCreateMode ? 'Draft' : (this.store.currentTemplate?.status || 'Draft');
   }
-  /** Lỗi tab Thông tin chung — chỉ hiện sau lần bấm Lưu nháp / Ban hành đầu tiên, sau đó cập nhật theo từng lần gõ */
+  /** Lỗi tab Thông tin chung: chỉ hiện sau lần Lưu nháp / Ban hành đầu tiên, rồi cập nhật theo từng lần gõ */
   public get processInfoErrors(): ProcessInfoErrors {
     return this.infoSubmitted ? this.collectInfoErrors() : {};
   }
@@ -140,31 +141,20 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.store.currentZoom;
   }
 
-  /** Thư viện bước – nhóm Điều kiện (lọc theo ô tìm kiếm) */
-  public get conditionPaletteItems(): PaletteItem[] {
-    return this.filterPalette('condition');
+  // Thư viện bước: thứ tự Giao việc · Tác vụ hệ thống · Điều kiện (3 loại) · Gửi thông báo · Quy trình con · Kết thúc
+  public readonly paletteGatewayTypes: NodeType[] = ['GATEWAY_EXCLUSIVE', 'GATEWAY_PARALLEL', 'GATEWAY_INCLUSIVE'];
+  public readonly paletteBottomTypes: NodeType[] = ['NOTIFICATION', 'SUB_PROCESS', 'END'];
+  public readonly paletteConditionIcon = PALETTE_CONDITION_ICON_SRC;
+
+  public paletteIconSrc(type: NodeType): string {
+    return type === 'END' ? PALETTE_END_ICON_SRC : NODE_ICON_SRC[type];
   }
 
-  /** Thư viện bước – các bước thường (lọc theo ô tìm kiếm) */
-  public get generalPaletteItems(): PaletteItem[] {
-    return this.filterPalette('general');
+  public paletteIconBg(type: NodeType): string {
+    return type === 'END' ? '#fff0f3' : NODE_ICON_BG[type];
   }
 
-  private filterPalette(category: 'condition' | 'general'): PaletteItem[] {
-    const q = (this.searchQuery || '').trim().toLowerCase();
-    // Tìm theo tên / tooltip đã dịch (ngôn ngữ hiện tại)
-    return PALETTE_ITEMS.filter((p) => {
-      if (p.category !== category) return false;
-      if (!q) return true;
-      const title = this.t(`PALETTE.ITEMS.${p.type}.TITLE`).toLowerCase();
-      const tooltip = this.t(`PALETTE.ITEMS.${p.type}.TOOLTIP`).toLowerCase();
-      return title.includes(q) || tooltip.includes(q);
-    });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Hành động trên template → service
-  // ---------------------------------------------------------------------------
+  // ----- Hành động trên template → service -----
   public undo(): void {
     this.history.undo();
   }
@@ -180,8 +170,13 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   public resetZoom(): void {
     this.canvas.resetZoom();
   }
+  public zoomToFit(): void {
+    this.canvas.zoomToFit();
+  }
+  /** Nút "Sắp xếp lại quy trình": xếp lại các bước theo luồng rồi căn vừa màn hình */
   public autoLayout(): void {
     this.layout.autoLayout();
+    this.canvas.zoomToFit();
   }
   public clearCanvas(): void {
     this.editor.clearCanvas();
@@ -206,9 +201,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dialogs.onValidateGraphClick();
   }
 
-  // ---------------------------------------------------------------------------
-  // Vòng đời & sự kiện
-  // ---------------------------------------------------------------------------
+  // ----- Vòng đời & sự kiện -----
 
   ngOnInit(): void {
     // 1. Lắng nghe cập nhật từ NodeConfigDrawer qua Bridge Service
@@ -352,7 +345,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (initType === 'blank') {
       this.samples.createBlankWorkflowSample();
     } else {
-      this.samples.createCompactWorkflowSample();
+      this.samples.loadSampleFlow('default');
     }
     this.store.graph.getEdges()?.forEach((e: any) => e.setLabels([]));
   }
@@ -380,9 +373,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.activeSubTab = tab;
   }
 
-  // ---------------------------------------------------------------------------
-  // Tab "Thông tin chung"
-  // ---------------------------------------------------------------------------
+  // ----- Tab "Thông tin chung" -----
 
   /** Validate form + (tạo mới) kiểm tra trùng mã */
   private collectInfoErrors(): ProcessInfoErrors {
@@ -447,9 +438,6 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     return true;
   }
 
-  public togglePaletteCollapse(): void {
-    this.isPaletteCollapsed = !this.isPaletteCollapsed;
-  }
 
   // Thêm Node từ Palette
   public addStandardNode(type: NodeType): void {
@@ -488,7 +476,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       ? this.store.graph.clientToLocal({ x: event.clientX, y: event.clientY })
       : { x: event.clientX - rect.left, y: event.clientY - rect.top };
 
-    const node = this.factory.createCompactCardNode(type, p.x - 84, p.y - 24);
+    const node = this.factory.createCompactCardNode(type, p.x - NODE_CARD_WIDTH / 2, p.y - NODE_CARD_HEIGHT / 2);
     if (node && isGatewayType(type)) {
       this.gatewayJoin.createJoinForGateway(node);
     }
@@ -508,7 +496,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.store.currentTemplate.graphData) {
         this.persistence.loadGraphData(this.store.currentTemplate.graphData);
       } else {
-        this.samples.createCompactWorkflowSample();
+        this.samples.loadSampleFlow('default');
       }
       this.store.selectedCellInfo = this.t('STATUS.REVERTED');
     }

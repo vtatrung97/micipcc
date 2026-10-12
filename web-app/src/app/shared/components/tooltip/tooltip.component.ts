@@ -3,9 +3,8 @@ import { ChangeDetectionStrategy, Component, ElementRef } from '@angular/core';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 /**
- * Bong bóng tooltip theo Figma ProcessX "Tooltip" (node 107:17046):
- * nền Neutral/900, padding 4/8, radius 4, chữ trắng 14/20, mũi tên 12x6.
- * Không dùng trực tiếp — được tạo bởi directive `[appTooltip]` và gắn vào <body>.
+ * Bong bóng tooltip: nền Neutral/900, chữ trắng 14/20, mũi tên 12x6.
+ * Không dùng trực tiếp, được tạo bởi directive `[appTooltip]` và gắn vào <body>.
  */
 @Component({
   selector: 'app-tooltip',

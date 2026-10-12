@@ -11,7 +11,6 @@ import { ProcessInfo, ProcessInfoErrors, processInfoFromTemplate } from '../mode
  */
 @Injectable()
 export class GraphEditorStore {
-  /** Instance X6 Graph */
   public graph: any = null;
 
   // Node / edge đang chọn và dữ liệu drawer

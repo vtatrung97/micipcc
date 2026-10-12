@@ -11,9 +11,8 @@ import { ProcessInfo, ProcessInfoErrors, ProcessTriggerType, createEmptyConditio
 import { ConditionRuleItem } from '../models/node-property.model';
 
 /**
- * Tab "Thông tin chung" của Canvas Builder (Figma 264:42051):
- * card "Thông tin cơ bản" + card "Cấu hình quy trình" (Loại kích hoạt, SLA).
- * Ghi thẳng vào `info` (store.processInfo); validate do GraphEditorComponent gọi khi Lưu nháp / Ban hành.
+ * Tab "Thông tin chung": card Thông tin cơ bản + card Cấu hình quy trình (kích hoạt, SLA).
+ * Ghi thẳng vào `info` (store.processInfo); GraphEditorComponent validate khi Lưu nháp / Ban hành.
  */
 @Component({
   selector: 'app-process-info-form',
@@ -90,7 +89,7 @@ export class ProcessInfoFormComponent implements OnDestroy {
     this.info.code = (value || '').toUpperCase().replace(/\s+/g, '_');
   }
 
-  // ===== Điều kiện kích hoạt (Kích hoạt tự động, Figma 364:24387) =====
+  // ===== Điều kiện kích hoạt (Kích hoạt tự động) =====
   /** Thêm một dòng điều kiện trống */
   addConditionRule(): void {
     this.info.auto.conditions.rules.push(createEmptyConditionRule());

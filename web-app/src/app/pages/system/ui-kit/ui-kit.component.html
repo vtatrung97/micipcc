@@ -409,7 +409,7 @@
     <section class="kit-section" id="radio">
       <ng-container *ngTemplateOutlet="sectionHead; context: { $implicit: section('radio') }"></ng-container>
 
-      <!-- Dựng lại đúng frame Figma 237:11006 -->
+      <!-- Demo Radio -->
       <div class="radio-demo">
         <app-radio-group [(ngModel)]="triggerType" [options]="triggerOptions">
           <ng-template appRadioExtra let-option>
@@ -430,7 +430,7 @@
               </div>
             </div>
 
-            <!-- Hybrid: chọn API + biểu mẫu dữ liệu đầu vào (Figma 264:16237) -->
+            <!-- Hybrid: chọn API + biểu mẫu dữ liệu đầu vào -->
             <div *ngIf="option.value === 'hybrid'" class="hybrid-box">
               <app-form-field label="API" [required]="true" [spacing]="0">
                 <ant-select [(ngModel)]="hybridApi" [options]="hybridApiOptions" placeholder="Chọn tại đây"></ant-select>

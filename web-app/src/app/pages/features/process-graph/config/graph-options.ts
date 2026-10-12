@@ -59,6 +59,6 @@ export const DEFAULT_GRAPH_OPTIONS = {
     zoomAtMousePosition: true,
     modifiers: 'ctrl',
     minScale: 0.5,
-    maxScale: 2
+    maxScale: 5
   }
 };

@@ -1,15 +1,7 @@
 /**
- * Quản lý chọn nhiều hàng trong bảng (checkbox từng hàng + checkbox "chọn tất cả" ở header).
- *
- * - Lưu theo khoá (`keyFn`) nên chuyển trang / lọc lại vẫn giữ các hàng đã chọn.
- * - "Chọn tất cả" chỉ áp dụng cho các hàng đang hiển thị (`rows` truyền vào, thường là trang hiện tại),
- *   giống hành vi của antd Table.
- * - Header: `isAllSelected(rows)` → checked, `isSomeSelected(rows)` → indeterminate (dấu –).
- *
- * Dùng trong template:
- *   <ant-checkbox [ngModel]="selection.isAllSelected(rows)" [indeterminate]="selection.isSomeSelected(rows)"
- *                 (checkedChange)="selection.toggleAll(rows, $event)"></ant-checkbox>
- *   <ant-checkbox [ngModel]="selection.isSelected(row)" (checkedChange)="selection.toggle(row, $event)"></ant-checkbox>
+ * Chọn nhiều hàng trong bảng, lưu theo khoá (`keyFn`) nên chuyển trang / lọc lại vẫn giữ lựa chọn.
+ * "Chọn tất cả" chỉ áp dụng cho `rows` đang hiển thị (thường là trang hiện tại), giống antd Table.
+ * Checkbox header: `isAllSelected(rows)` → checked, `isSomeSelected(rows)` → indeterminate.
  */
 export class TableSelection<T, K = string> {
   private readonly selected = new Set<K>();

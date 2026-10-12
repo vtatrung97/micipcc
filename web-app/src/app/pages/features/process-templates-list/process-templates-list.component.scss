@@ -1,6 +1,6 @@
 @use '../../../shared/styles/processx-tokens' as px;
 
-// Figma ProcessX "Danh sách quy trình" (node 243:11241)
+// Màn "Danh sách quy trình"
 
 :host {
   display: block;
@@ -17,7 +17,7 @@
   min-width: 0;
 }
 
-// 1. Tiêu đề (Display/xs/SemiBold 24/32) + nút primary
+// 1. Tiêu đề (24/32 SemiBold) + nút primary
 .process-list-header {
   display: flex;
   align-items: center;
@@ -56,7 +56,7 @@
   gap: px.$space-16;
 }
 
-// Thao tác hàng loạt: "Đã chọn n" (Body/sm/Medium Neutral/600) + nút viền đỏ, cách nhau 16
+// Thao tác hàng loạt: "Đã chọn n" (14/20 Medium Neutral/600) + nút viền đỏ, cách nhau 16
 .bulk-actions {
   display: flex;
   align-items: center;
@@ -69,7 +69,7 @@
   white-space: nowrap;
 }
 
-// Buttons Secondary (viền Primary/400, chữ Primary/600): pad 8/16, radius 8, 16/24 SemiBold
+// Nút secondary (viền Primary/400, chữ Primary/600): pad 8/16, radius 8, 16/24 SemiBold
 .px-btn-outline-primary {
   display: inline-flex;
   align-items: center;
@@ -92,7 +92,7 @@
   }
 }
 
-// _Text field search dropdown (Figma 435:29888): chữ/placeholder Body/md/Medium (control mặc định là 400)
+// Ô tìm kiếm: chữ/placeholder 16/24 Medium (control mặc định là 400)
 :host ::ng-deep .process-list-search .px-input {
   font-weight: 500;
 }
@@ -101,7 +101,7 @@
   width: 320px;
 }
 
-// Buttons Primary md: h48, pad 12/24, radius 12, 16/24 SemiBold, gap icon 8
+// Nút primary: h48, pad 12/24, radius 12, 16/24 SemiBold, gap icon 8
 .px-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -129,7 +129,7 @@
   }
 }
 
-// Buttons Link Primary: 16/24 Medium, icon trước, gap 4
+// Nút link primary: 16/24 Medium, icon trước, gap 4
 .px-btn-link {
   display: inline-flex;
   align-items: center;
@@ -159,7 +159,7 @@
   text-align: center;
 }
 
-// Buttons Secondary xs (Sắp xếp): viền Neutral/300, pad 8/16, radius 8, 16/24 SemiBold
+// Nút "Sắp xếp": viền Neutral/300, pad 8/16, radius 8, 16/24 SemiBold
 .px-btn-outline {
   display: inline-flex;
   align-items: center;
@@ -218,7 +218,7 @@
   box-sizing: border-box;
 }
 
-// 3. Độ rộng cột theo design (cột Tên quy trình co giãn)
+// 3. Độ rộng cột (cột Tên quy trình co giãn)
 .col-index { width: 120px; }
 .col-name { min-width: 240px; }
 .col-code,

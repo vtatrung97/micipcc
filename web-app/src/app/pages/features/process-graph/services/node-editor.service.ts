@@ -4,6 +4,7 @@ import { EDGE_COLOR } from '../config/edge-style.config';
 import { ConditionBranch } from '../models/node-property.model';
 import { isGatewayType, normalizeNodeType } from '../models/node-type';
 import { getNodePortItems, TranslateFn } from '../config/ports.config';
+import { NODE_CARD_WIDTH } from '../config/node-view.config';
 import { GraphEditorStore } from '../state/graph-editor.store';
 import { NodeFactoryService } from './node-factory.service';
 import { GraphHistoryService } from './graph-history.service';
@@ -61,7 +62,7 @@ export class NodeEditorService {
       isDefault: false,
     };
 
-    // Ensure default branch is always present and stays at the END (dưới cùng)
+    // Nhánh Mặc định luôn có và nằm cuối (dưới cùng)
     const defIdx = this.store.selectedNodeProps.branches.findIndex(
       (b) => b.isDefault,
     );
@@ -106,15 +107,12 @@ export class NodeEditorService {
       branches: this.store.selectedNodeProps.branches,
     });
     const branches = this.store.selectedNodeProps.branches || [];
+    this.factory.refreshCardView(this.store.selectedNode);
     branches.forEach((br, idx) => {
       const displayText =
         br.isDefault
             ? this.t('CANVAS.DEFAULT_BRANCH')
             : br.name || br.defaultLabel || this.t('CANVAS.BRANCH_N', { index: idx + 1 });
-      this.store.selectedNode.attr(
-        `rowText_${idx}/text`,
-        this.factory.truncateLabel(displayText, 18),
-      );
       const portId =
         br.id || (br.isDefault ? 'out-default' : `out-branch-${idx}`);
       if (this.store.selectedNode.portProp) {
@@ -140,7 +138,7 @@ export class NodeEditorService {
       ? [...this.store.selectedNodeProps.branches]
       : [];
 
-    // Ensure default branch is always present and stays at the END (dưới cùng)
+    // Nhánh Mặc định luôn có và nằm cuối (dưới cùng)
     const defaultIdx = branches.findIndex((b) => b.isDefault);
     if (defaultIdx === -1) {
       branches.push({
@@ -158,49 +156,13 @@ export class NodeEditorService {
     }
     this.store.selectedNodeProps.branches = branches;
 
-    const count = branches.length;
-    // 64 cho Header + Tiêu đề phụ 'Định tuyến', 22px cho mỗi nhánh (Nhánh 1..N, Mặc định), 8px padding
-    const targetHeight = 64 + count * 22 + 8;
-    this.store.selectedNode.resize(168, targetHeight);
-
-    const hasLabel = !!(
-      this.store.selectedNodeProps.label && this.store.selectedNodeProps.label.trim()
-    );
-    this.store.selectedNode.attr('typeTitle/refY', hasLabel ? 16 : 22);
-    this.store.selectedNode.attr('nameText/refY', 32);
-    this.store.selectedNode.attr('iconBox/refY', 7);
-    this.store.selectedNode.attr('iconImg/refY', 14);
-    this.store.selectedNode.attr('divider/display', 'block');
-    this.store.selectedNode.attr('sectionHeader/display', 'block');
-    this.store.selectedNode.attr('sectionHeader/text', this.t('CANVAS.ROUTING'));
-    this.store.selectedNode.attr('sectionHeader/refY', 58);
-    this.store.selectedNode.attr('sectionHeader/refX', 14);
-
-    // Update row texts starting at y = 78 (Nhánh 1, Nhánh 2... và Mặc định ở dưới cùng)
-    for (let i = 0; i < 16; i++) {
-      if (i < count) {
-        const br = branches[i];
-        const displayText =
-          br.isDefault
-            ? this.t('CANVAS.DEFAULT_BRANCH')
-            : br.name || br.defaultLabel || this.t('CANVAS.BRANCH_N', { index: i + 1 });
-        this.store.selectedNode.attr(`rowText_${i}/display`, 'block');
-        this.store.selectedNode.attr(
-          `rowText_${i}/text`,
-          this.factory.truncateLabel(displayText, 18),
-        );
-        this.store.selectedNode.attr(`rowText_${i}/refY`, 78 + i * 22);
-        this.store.selectedNode.attr(`rowText_${i}/refX`, 14);
-        this.store.selectedNode.attr(`rowText_${i}/fill`, '#475569');
-      } else {
-        this.store.selectedNode.attr(`rowText_${i}/display`, 'none');
-      }
-    }
+    // Vẽ lại card theo danh sách nhánh mới (chiều cao + dòng nhánh), rồi đồng bộ cổng ra bên dưới
+    this.factory.refreshCardView(this.store.selectedNode, { ...this.store.selectedNodeProps, branches });
 
     const expectedPortItems = getNodePortItems(
       this.store.selectedNodeProps.type,
       { branches },
-      168,
+      NODE_CARD_WIDTH,
       this.tFn,
     );
 
@@ -254,48 +216,13 @@ export class NodeEditorService {
     if (!this.store.selectedNode || this.store.selectedNodeProps.type !== 'USER_TASK')
       return;
     const isApproval = !!this.store.selectedNodeProps.isApprovalStep;
-    const targetHeight = isApproval ? 96 : 48;
-    this.store.selectedNode.resize(168, targetHeight);
-
-    const hasLabel = !!(
-      this.store.selectedNodeProps.label && this.store.selectedNodeProps.label.trim()
-    );
-    const centerY = isApproval ? 22 : Math.round(targetHeight / 2);
-    const iconBoxY = isApproval ? 7 : Math.round((targetHeight - 32) / 2);
-
-    this.store.selectedNode.attr('typeTitle/refY', hasLabel ? 16 : centerY);
-    this.store.selectedNode.attr('nameText/refY', 32);
-    this.store.selectedNode.attr('iconBox/refY', iconBoxY);
-    this.store.selectedNode.attr('iconImg/refY', iconBoxY + 7);
-
-    // Toggle multi-row visuals like Node Action: 'Đồng ý' & 'Từ chối'
-    this.store.selectedNode.attr('divider/display', isApproval ? 'block' : 'none');
-    this.store.selectedNode.attr('rowText_0/ref', 'body');
-    this.store.selectedNode.attr('rowText_0/refX', 14);
-    this.store.selectedNode.attr('rowText_0/refY', 60);
-    this.store.selectedNode.attr('rowText_0/text', this.t('CANVAS.APPROVE'));
-    this.store.selectedNode.attr('rowText_0/fontSize', 11);
-    this.store.selectedNode.attr('rowText_0/fontWeight', 500);
-    this.store.selectedNode.attr('rowText_0/fill', '#475569');
-    this.store.selectedNode.attr('rowText_0/textAnchor', 'start');
-    this.store.selectedNode.attr('rowText_0/textVerticalAnchor', 'middle');
-    this.store.selectedNode.attr('rowText_0/display', isApproval ? 'block' : 'none');
-
-    this.store.selectedNode.attr('rowText_1/ref', 'body');
-    this.store.selectedNode.attr('rowText_1/refX', 14);
-    this.store.selectedNode.attr('rowText_1/refY', 82);
-    this.store.selectedNode.attr('rowText_1/text', this.t('CANVAS.REJECT'));
-    this.store.selectedNode.attr('rowText_1/fontSize', 11);
-    this.store.selectedNode.attr('rowText_1/fontWeight', 500);
-    this.store.selectedNode.attr('rowText_1/fill', '#475569');
-    this.store.selectedNode.attr('rowText_1/textAnchor', 'start');
-    this.store.selectedNode.attr('rowText_1/textVerticalAnchor', 'middle');
-    this.store.selectedNode.attr('rowText_1/display', isApproval ? 'block' : 'none');
+    // Vẽ lại card: bật duyệt → thêm 2 dòng Đồng ý / Từ chối (mỗi dòng 1 cổng ra)
+    this.factory.refreshCardView(this.store.selectedNode, { ...this.store.selectedNodeProps, isApprovalStep: isApproval });
 
     const expectedPortItems = getNodePortItems(
       'USER_TASK',
       { isApprovalStep: isApproval },
-      168,
+      NODE_CARD_WIDTH,
       this.tFn,
     );
 
@@ -363,6 +290,7 @@ export class NodeEditorService {
     const nodeType = normalizeNodeType(data.type, data.gatewayType);
     const itemDef = this.factory.getPaletteDef(nodeType);
     const textAttr =
+      node.attr('nameText/textWrap/text') ||
       node.attr('nameText/text') ||
       node.attr('titleText/text') ||
       node.attr('label/text') ||
@@ -477,7 +405,7 @@ export class NodeEditorService {
     this.store.selectedCellInfo = `[${this.store.selectedNodeProps.label}] ${this.store.selectedNodeProps.typeTitle}`;
     this.bridgeService.selectNode(node, this.store.selectedNodeProps);
 
-    // Highlight selected node with rose/red outline (as in Figma screenshot)
+    // Viền đỏ cho node đang chọn
     if (this.store.graph) {
       this.store.graph.getNodes().forEach((n: any) => {
         if (n.id === node.id) {
@@ -516,27 +444,12 @@ export class NodeEditorService {
     if (!this.store.selectedNode) return;
     const label = this.store.selectedNodeProps.label || '';
     const hasLabel = !!label.trim();
-    const type = this.store.selectedNodeProps.type;
-
-    if (type === 'START' || type === 'END') {
-      this.store.selectedNode.attr(
-        'nameText/text',
-        label ? this.factory.truncateLabel(label, 20) : '',
-      );
-    } else {
-      const truncated = this.factory.truncateLabel(label, 16);
-      const isMultiRow =
-        type === 'SYSTEM_TASK' ||
-        isGatewayType(type) ||
-        (type === 'USER_TASK' && !!this.store.selectedNodeProps.isApprovalStep);
-      const size = this.store.selectedNode.size();
-      const nodeHeight = size?.height || 48;
-      const centerY = isMultiRow ? 22 : Math.round(nodeHeight / 2);
-
-      this.store.selectedNode.attr('nameText/text', truncated);
-      this.store.selectedNode.attr('typeTitle/refY', hasLabel ? 15 : centerY);
-      this.store.selectedNode.attr('typeTitle/fontSize', hasLabel ? 11 : 12);
-    }
+    // Tên dài tự cắt "…" theo bề rộng card (textWrap trong node-view.config)
+    this.factory.refreshCardView(this.store.selectedNode, {
+      ...(this.store.selectedNode.getData() || {}),
+      ...this.store.selectedNodeProps,
+      label,
+    });
 
     const data = this.store.selectedNode.getData() || {};
     this.store.selectedNode.setData({ ...data, label: this.store.selectedNodeProps.label });
@@ -552,6 +465,21 @@ export class NodeEditorService {
     this.store.selectedNode.setData({ ...data, ...this.store.selectedNodeProps });
   }
 
+
+  /** Nút × trên card: xoá đúng node đó (chọn node rồi dùng chung luật xoá của deleteSelectedNode) */
+  public deleteNode(node: any): void {
+    if (!node || !this.store.graph?.hasCell(node.id)) return;
+    const previous = this.store.selectedNode;
+    const wasDrawerOpen = this.store.isDrawerOpen;
+    if (previous !== node) this.selectNode(node);
+    this.deleteSelectedNode();
+    // Xoá node khác node đang mở drawer → giữ nguyên drawer của node đang mở
+    if (previous && previous !== node && wasDrawerOpen && this.store.graph.hasCell(previous.id)) {
+      this.selectNode(previous);
+      this.store.isDrawerOpen = true;
+      this.bridgeService.selectNode(previous, this.store.selectedNodeProps);
+    }
+  }
 
   public deleteSelectedNode(): void {
     if (!this.store.selectedNode) return;
@@ -571,6 +499,8 @@ export class NodeEditorService {
     this.store.selectedNode.remove();
     this.store.selectedNode = null;
     this.store.isDrawerOpen = false;
+    // Đóng drawer cấu hình đang mở cho node vừa xoá (dù xoá bằng nút ×, phím Delete hay nút trong drawer)
+    this.bridgeService.clearSelection();
     this.store.selectedCellInfo = this.t('STATUS.NODE_DELETED', { name });
     this.store.updateCounts();
   }

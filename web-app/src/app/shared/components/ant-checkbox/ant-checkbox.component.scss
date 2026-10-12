@@ -1,10 +1,10 @@
 @use '../../styles/processx-tokens' as px;
 
-// Theo Figma ProcessX Design System "Checkbox" (node 90:3095).
-// Ô 20x20 radius 6; label Inter 16/24 + mô tả 14/20 Neutral/600; Type=Drag: padding 8/12, radius 12, hover nền Neutral/100.
+// Ô 20x20 radius 6; label 16/24 + mô tả 14/20 Neutral/600.
+// Kiểu drag: padding 8/12, radius 12, hover nền Neutral/100.
 
-// inline-flex (không dùng inline-block): label nằm trên line box của host thì chiều cao host phụ thuộc
-// baseline của ô vuông — khi hiện icon check baseline đổi → host cao 27px ↔ 24px, hàng bảng bị giật.
+// inline-flex thay vì inline-block: nếu không, chiều cao host phụ thuộc baseline ô vuông,
+// hiện icon check làm host đổi 27px ↔ 24px khiến hàng bảng bị giật.
 :host {
   display: inline-flex;
   vertical-align: middle;
@@ -26,7 +26,7 @@
   }
 }
 
-// ===== Type=Drag =====
+// ===== Kiểu drag =====
 .px-cb-drag {
   align-items: center;
   padding: px.$space-8 px.$space-12;
@@ -43,7 +43,7 @@
 }
 
 // ===== Ô vuông =====
-// "Checkbox Container" pt 2px để ô 20px canh giữa dòng chữ 24px
+// pt 2px để ô 20px canh giữa dòng chữ 24px
 .px-cb-control {
   position: relative;
   display: inline-flex;

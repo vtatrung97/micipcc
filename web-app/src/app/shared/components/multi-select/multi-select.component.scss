@@ -18,7 +18,7 @@
   align-items: center;
   gap: px.$space-8;
   width: 100%;
-  // Figma tính viền 1px nằm trong khung 48px → chốt height (border-box), không dùng padding 12 + viền = 50px
+  // Viền 1px nằm trong khung 48px → chốt height (border-box), không dùng padding 12 + viền = 50px
   @include px.field-size(middle);
   cursor: pointer;
   outline: none;
@@ -29,7 +29,7 @@
   }
 }
 
-// Có tag: lề trái 6px như design (tag cao 36 nằm giữa khung 48)
+// Có tag: lề trái 6px (tag cao 36 nằm giữa khung 48)
 .ms-has-value .ms-trigger {
   padding: 0 px.$space-12 0 px.$space-6;
 }
@@ -182,7 +182,7 @@
   padding: px.$space-4 0;
   overflow-y: auto;
 
-  // Thanh cuộn mảnh theo design (_Scroll bar: 8px, Neutral/300, bo 8)
+  // Thanh cuộn mảnh: 8px, Neutral/300, bo 8
   scrollbar-width: thin;
   scrollbar-color: px.$neutral-300 transparent;
 
@@ -247,7 +247,7 @@
   color: px.$neutral-500;
 }
 
-// ===== Checkbox (Checkbox / Base) =====
+// ===== Checkbox =====
 .ms-checkbox {
   display: flex;
   align-items: center;

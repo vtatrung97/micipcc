@@ -1,7 +1,5 @@
 <div class="x6-editor-wrapper">
-  <!-- ==================================================================== -->
-  <!-- 1. BUILDER TOOLBAR (Figma 264:42054): ← · Tên · [Phiên bản n · Nháp ⌄] · Hủy · Lưu nháp · Ban hành -->
-  <!-- ==================================================================== -->
+  <!-- ===== 1. Toolbar: ← · Tên · Phiên bản · Hủy · Lưu nháp · Ban hành ===== -->
   <header class="studio-topbar">
     <div class="topbar-left-section">
       <a class="back-btn" routerLink="/process/templates-list" [title]="'PROCESS_GRAPH.HEADER.BACK_TITLE' | translate">
@@ -13,7 +11,7 @@
       <div class="process-title-group">
         <h1 class="process-title-text" [title]="headerTitle">{{ headerTitle }}</h1>
 
-        <!-- _Text field dropdown: "Phiên bản n" + badge trạng thái + chevron -->
+        <!-- "Phiên bản n" + badge trạng thái + chevron -->
         <div class="version-dropdown-badge" [title]="'PROCESS_GRAPH.HEADER.VERSION_TITLE' | translate">
           <span class="version-name">{{ 'PROCESS_GRAPH.HEADER.VERSION' | translate: { version: headerVersion } }}</span>
           <span class="draft-tag" *ngIf="headerStatus === 'Draft'">{{ 'PROCESS_GRAPH.HEADER.DRAFT_TAG' | translate }}</span>
@@ -44,11 +42,13 @@
     </div>
   </header>
 
-  <!-- ==================================================================== -->
-  <!-- 2. STEPPER (Figma "Quản lý quy trình stepper" 388:30528):             -->
-  <!--    ① Thông tin chung ── ② Thiết kế quy trình (giữa) · nút bên phải     -->
-  <!-- ==================================================================== -->
+  <!-- ===== 2. Stepper: ① Thông tin chung ── ② Thiết kế quy trình · nút bên phải ===== -->
   <div class="sub-header-tabs">
+    <!-- Bước 2: "Quay lại" bên trái, về bước 1 -->
+    <button *ngIf="activeSubTab === 'design'" type="button" class="stepper-next-btn stepper-back-btn" (click)="setSubTab('info')">
+      {{ 'PROCESS_GRAPH.TABS.BACK' | translate }}
+    </button>
+
     <div class="process-stepper">
       <button type="button" class="stepper-item" [class.active]="activeSubTab === 'info'" (click)="setSubTab('info')">
         <span class="stepper-index">1</span>
@@ -65,315 +65,101 @@
       <button *ngIf="activeSubTab === 'info'" type="button" class="stepper-next-btn" (click)="setSubTab('design')">
         {{ 'PROCESS_GRAPH.TABS.NEXT' | translate }}
       </button>
-      <button *ngIf="activeSubTab === 'design'" nz-dropdown [nzDropdownMenu]="sampleMenu" nzPlacement="bottomRight" class="sample-dropdown-btn" [title]="'PROCESS_GRAPH.SAMPLES.BUTTON_TITLE' | translate">
-        <span class="sample-btn-icon">⚡</span>
-        <span class="sample-btn-text">{{ 'PROCESS_GRAPH.SAMPLES.BUTTON' | translate }}</span>
-        <svg class="sample-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </button>
-      <nz-dropdown-menu #sampleMenu="nzDropdownMenu">
-        <ul nz-menu class="sample-flow-menu">
-          <li nz-menu-item (click)="loadSampleFlow('basic')">
-            <div class="sample-menu-row">
-              <span class="sample-badge badge-basic">{{ 'PROCESS_GRAPH.SAMPLES.BASIC.BADGE' | translate }}</span>
-              <div class="sample-menu-meta">
-                <span class="sample-menu-title">{{ 'PROCESS_GRAPH.SAMPLES.BASIC.TITLE' | translate }}</span>
-                <span class="sample-menu-sub">{{ 'PROCESS_GRAPH.SAMPLES.BASIC.SUB' | translate }}</span>
-              </div>
-            </div>
-          </li>
-          <li nz-menu-item (click)="loadSampleFlow('medium')">
-            <div class="sample-menu-row">
-              <span class="sample-badge badge-medium">{{ 'PROCESS_GRAPH.SAMPLES.MEDIUM.BADGE' | translate }}</span>
-              <div class="sample-menu-meta">
-                <span class="sample-menu-title">{{ 'PROCESS_GRAPH.SAMPLES.MEDIUM.TITLE' | translate }}</span>
-                <span class="sample-menu-sub">{{ 'PROCESS_GRAPH.SAMPLES.MEDIUM.SUB' | translate }}</span>
-              </div>
-            </div>
-          </li>
-          <li nz-menu-item (click)="loadSampleFlow('complex')">
-            <div class="sample-menu-row">
-              <span class="sample-badge badge-complex">{{ 'PROCESS_GRAPH.SAMPLES.COMPLEX.BADGE' | translate }}</span>
-              <div class="sample-menu-meta">
-                <span class="sample-menu-title">{{ 'PROCESS_GRAPH.SAMPLES.COMPLEX.TITLE' | translate }}</span>
-                <span class="sample-menu-sub">{{ 'PROCESS_GRAPH.SAMPLES.COMPLEX.SUB' | translate }}</span>
-              </div>
-            </div>
-          </li>
-          <li nz-menu-divider></li>
-          <li nz-menu-item (click)="loadSampleFlow('default')">
-            <div class="sample-menu-row">
-              <span class="sample-badge badge-default">{{ 'PROCESS_GRAPH.SAMPLES.DEFAULT.BADGE' | translate }}</span>
-              <div class="sample-menu-meta">
-                <span class="sample-menu-title">{{ 'PROCESS_GRAPH.SAMPLES.DEFAULT.TITLE' | translate }}</span>
-                <span class="sample-menu-sub">{{ 'PROCESS_GRAPH.SAMPLES.DEFAULT.SUB' | translate }}</span>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </nz-dropdown-menu>
     </div>
   </div>
 
-  <!-- ==================================================================== -->
-  <!-- 3. WORKSPACE AREA (THƯ VIỆN BƯỚC + CANVAS + TOOLBAR)                 -->
-  <!-- ==================================================================== -->
+  <!-- ===== 3. Vùng làm việc: Thư viện bước + canvas + toolbar ===== -->
   <div class="studio-workspace">
 
-    <!-- THƯ VIỆN BƯỚC (Sidebar chuẩn Figma) -->
-    <aside class="figma-node-palette" [class.collapsed]="isPaletteCollapsed" [attr.aria-label]="'PROCESS_GRAPH.PALETTE.TITLE' | translate">
-      <div class="palette-header">
-        <div class="palette-title-row">
-          <h2 class="palette-title">{{ 'PROCESS_GRAPH.PALETTE.TITLE' | translate }}</h2>
-          <button type="button" class="collapse-palette-btn" (click)="togglePaletteCollapse()"
-            [title]="'PROCESS_GRAPH.PALETTE.TOGGLE_TITLE' | translate">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="11 17 6 12 11 7"></polyline>
-              <polyline points="18 17 13 12 18 7"></polyline>
-            </svg>
-          </button>
-        </div>
-        <p class="palette-subtitle">{{ 'PROCESS_GRAPH.PALETTE.SUBTITLE' | translate }}</p>
+    <!-- THƯ VIỆN BƯỚC -->
+    <aside class="node-palette" [attr.aria-label]="'PROCESS_GRAPH.PALETTE.TITLE' | translate">
+      <div class="node-palette-head">
+        <h2 class="node-palette-title">{{ 'PROCESS_GRAPH.PALETTE.TITLE' | translate }}</h2>
+        <p class="node-palette-desc">{{ 'PROCESS_GRAPH.PALETTE.SUBTITLE' | translate }}</p>
       </div>
 
-      <!-- Search input: Tìm bước -->
-      <div class="palette-search-box">
-        <div class="search-input-wrapper">
-          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" [(ngModel)]="searchQuery" [placeholder]="'PROCESS_GRAPH.PALETTE.SEARCH' | translate" class="palette-search-input" />
-          <button *ngIf="searchQuery" type="button" class="clear-search-btn" (click)="searchQuery = ''">×</button>
-        </div>
-      </div>
+      <div class="node-palette-list">
+        <ng-container *ngTemplateOutlet="paletteRow; context: { $implicit: 'USER_TASK' }"></ng-container>
+        <ng-container *ngTemplateOutlet="paletteRow; context: { $implicit: 'SYSTEM_TASK' }"></ng-container>
 
-      <!-- Palette Items Body -->
-      <div class="palette-scroll-content">
-        <!-- NHÓM: Điều kiện -->
-        <div class="palette-group condition-group" *ngIf="conditionPaletteItems.length > 0">
-          <div class="group-title">{{ 'PROCESS_GRAPH.PALETTE.CONDITION_GROUP' | translate }}</div>
-          <!-- Vertical tree line connecting condition items -->
-          <div class="condition-tree-line">
-            <div *ngFor="let item of conditionPaletteItems" class="palette-item-row" draggable="true"
-              (dragstart)="onPaletteDragStart($event, item.type)" (click)="addStandardNode(item.type)"
-              [title]="'PROCESS_GRAPH.PALETTE.ITEMS.' + item.type + '.TOOLTIP' | translate">
-              <div class="palette-icon-box condition-box">
-                <!-- SVG Icon for Condition / Split -->
-                <svg *ngIf="item.type === 'GATEWAY_EXCLUSIVE'" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                  stroke="#52525b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
-                  <line x1="9.5" y1="9.5" x2="14.5" y2="14.5"></line>
-                  <line x1="14.5" y1="9.5" x2="9.5" y2="14.5"></line>
-                </svg>
-                <svg *ngIf="item.type === 'GATEWAY_PARALLEL'" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                  stroke="#52525b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
-                  <line x1="12" y1="8" x2="12" y2="16"></line>
-                  <line x1="8" y1="12" x2="16" y2="12"></line>
-                </svg>
-                <svg *ngIf="item.type === 'GATEWAY_INCLUSIVE'" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                  stroke="#52525b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
-                  <circle cx="12" cy="12" r="3.2"></circle>
-                </svg>
-              </div>
-              <span class="palette-item-label">{{ 'PROCESS_GRAPH.PALETTE.ITEMS.' + item.type + '.TITLE' | translate }}</span>
-            </div>
-          </div>
+        <!-- Nhóm Điều kiện: tiêu đề + 3 loại gateway thụt vào, có đường kẻ trái -->
+        <div class="palette-row palette-row-group">
+          <span class="palette-icon" [style.background]="'#f5f5f5'">
+            <img [src]="paletteConditionIcon" width="24" height="24" alt="" />
+          </span>
+          <span class="palette-label">{{ 'PROCESS_GRAPH.PALETTE.CONDITION_GROUP' | translate }}</span>
+        </div>
+        <div class="palette-sublist">
+          <ng-container *ngFor="let type of paletteGatewayTypes">
+            <ng-container *ngTemplateOutlet="paletteRow; context: { $implicit: type }"></ng-container>
+          </ng-container>
         </div>
 
-        <!-- NHÓM: Các bước chức năng -->
-        <div class="palette-group functional-group" *ngIf="generalPaletteItems.length > 0">
-          <div class="functional-items-list">
-            <div *ngFor="let item of generalPaletteItems" class="palette-item-row" draggable="true"
-              (dragstart)="onPaletteDragStart($event, item.type)" (click)="addStandardNode(item.type)"
-              [title]="'PROCESS_GRAPH.PALETTE.ITEMS.' + item.type + '.TOOLTIP' | translate">
-
-              <!-- Icon Container -->
-              <div class="palette-icon-box" [ngClass]="'box-' + item.type">
-                <!-- User Task -->
-                <svg *ngIf="item.type === 'USER_TASK'" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-
-                <!-- Action / System -->
-                <svg *ngIf="item.type === 'SYSTEM_TASK'" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="16 18 22 12 16 6"></polyline>
-                  <polyline points="8 6 2 12 8 18"></polyline>
-                </svg>
-
-                <!-- Notification -->
-                <svg *ngIf="item.type === 'NOTIFICATION'" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="#db2777" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-
-                <!-- SubProcess -->
-                <svg *ngIf="item.type === 'SUB_PROCESS'" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="6" cy="6" r="2.5"></circle>
-                  <circle cx="6" cy="18" r="2.5"></circle>
-                  <circle cx="18" cy="18" r="2.5"></circle>
-                  <path d="M8.5 6h3a4 4 0 0 1 4 4v5.5"></path>
-                  <line x1="6" y1="8.5" x2="6" y2="15.5"></line>
-                </svg>
-
-                <!-- End -->
-                <svg *ngIf="item.type === 'END'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="4" y="4" width="16" height="16" rx="4"></rect>
-                </svg>
-              </div>
-
-              <!-- Text Label -->
-              <span class="palette-item-label">{{ 'PROCESS_GRAPH.PALETTE.ITEMS.' + item.type + '.TITLE' | translate }}</span>
-            </div>
-          </div>
-        </div>
+        <ng-container *ngFor="let type of paletteBottomTypes">
+          <ng-container *ngTemplateOutlet="paletteRow; context: { $implicit: type }"></ng-container>
+        </ng-container>
       </div>
     </aside>
 
+    <!-- Một bước trên Thư viện: kéo thả vào canvas hoặc bấm để thêm -->
+    <ng-template #paletteRow let-type>
+      <div class="palette-row" draggable="true"
+        (dragstart)="onPaletteDragStart($event, type)" (click)="addStandardNode(type)"
+        [appTooltip]="'PROCESS_GRAPH.PALETTE.ITEMS.' + type + '.TOOLTIP' | translate" tooltipPlacement="right">
+        <span class="palette-icon" [style.background]="paletteIconBg(type)">
+          <img [src]="paletteIconSrc(type)" width="24" height="24" alt="" />
+        </span>
+        <span class="palette-label">{{ 'PROCESS_GRAPH.PALETTE.ITEMS.' + type + '.TITLE' | translate }}</span>
+      </div>
+    </ng-template>
+
     <!-- CANVAS HOST -->
     <main class="canvas-area-host" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)">
-      <!-- AntV X6 Canvas Container -->
       <div #container class="x6-graph-container"></div>
 
-      <!-- Nút mở lại Thư viện bước khi đã thu gọn -->
-      <button type="button" class="expand-palette-btn" *ngIf="isPaletteCollapsed" (click)="togglePaletteCollapse()"
-        [title]="'PROCESS_GRAPH.PALETTE.OPEN_TITLE' | translate">
-        <span>{{ 'PROCESS_GRAPH.PALETTE.TITLE' | translate }}</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="13 17 18 12 13 7"></polyline>
-          <polyline points="6 17 11 12 6 7"></polyline>
-        </svg>
-      </button>
-
-      <!-- 3. CỤM PHÍM NỔI ĐIỀU KHIỂN CANVAS -->
-      <div class="floating-studio-toolbar" role="toolbar" [attr.aria-label]="'PROCESS_GRAPH.TOOLBAR.ARIA' | translate">
-
-        <!-- Cụm Undo / Redo (FR-02) -->
-        <button type="button" class="pill-tool-btn icon-only" (click)="undo()" [disabled]="!canUndo"
-          [title]="'PROCESS_GRAPH.TOOLBAR.UNDO_TITLE' | translate">
-          <span class="symbol-btn">↶</span>
+      <!-- Toolbar: Hoàn tác · Làm lại | Thu nhỏ · % · Phóng to | Căn vừa màn hình · Sắp xếp lại -->
+      <div class="canvas-toolbar" role="toolbar" [attr.aria-label]="'PROCESS_GRAPH.TOOLBAR.ARIA' | translate">
+        <button type="button" class="canvas-tool-btn" (click)="undo()" [disabled]="!canUndo"
+          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.UNDO_TITLE' | translate">
+          <img src="assets/icons/processx/flow/toolbar-undo.svg" width="20" height="20" alt="" />
+        </button>
+        <button type="button" class="canvas-tool-btn" (click)="redo()" [disabled]="!canRedo"
+          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.REDO_TITLE' | translate">
+          <img src="assets/icons/processx/flow/toolbar-redo.svg" width="20" height="20" alt="" />
         </button>
 
-        <button type="button" class="pill-tool-btn icon-only" (click)="redo()" [disabled]="!canRedo"
-          [title]="'PROCESS_GRAPH.TOOLBAR.REDO_TITLE' | translate">
-          <span class="symbol-btn">↷</span>
+        <span class="canvas-tool-divider"></span>
+
+        <button type="button" class="canvas-tool-btn" (click)="zoomOut()"
+          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.ZOOM_OUT_TITLE' | translate">
+          <img src="assets/icons/processx/flow/toolbar-minus.svg" width="20" height="20" alt="" />
+        </button>
+        <button type="button" class="canvas-zoom-btn" (click)="resetZoom()"
+          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.ZOOM_RESET_TITLE' | translate">
+          {{ currentZoom }}%
+        </button>
+        <button type="button" class="canvas-tool-btn" (click)="zoomIn()"
+          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.ZOOM_IN_TITLE' | translate">
+          <img src="assets/icons/processx/flow/toolbar-plus.svg" width="20" height="20" alt="" />
         </button>
 
-        <!-- Nút Debug (Xem JSON Payload) -->
-        <button type="button" class="pill-tool-btn debug-btn" (click)="toggleJsonPreview()"
-          [title]="'PROCESS_GRAPH.TOOLBAR.DEBUG_TITLE' | translate">
-          <span class="btn-icon">🐞</span>
-          <span class="btn-text">{{ 'PROCESS_GRAPH.TOOLBAR.DEBUG' | translate }}</span>
+        <span class="canvas-tool-divider"></span>
+
+        <button type="button" class="canvas-tool-btn" (click)="zoomToFit()"
+          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.FIT_TITLE' | translate">
+          <img src="assets/icons/processx/flow/toolbar-fit.svg" width="20" height="20" alt="" />
         </button>
-
-        <!-- Nút Kiểm tra luồng (Validate BPMN) -->
-        <button type="button" class="pill-tool-btn validate-btn" (click)="onValidateGraphClick()"
-          [title]="'PROCESS_GRAPH.TOOLBAR.VALIDATE_TITLE' | translate">
-          <span class="btn-icon">🛡️</span>
-          <span class="btn-text">{{ 'PROCESS_GRAPH.TOOLBAR.VALIDATE' | translate }}</span>
+        <button type="button" class="canvas-tool-btn" (click)="autoLayout()"
+          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.AUTO_TITLE' | translate">
+          <img src="assets/icons/processx/flow/toolbar-layout.svg" width="20" height="20" alt="" />
         </button>
-
-        <div class="toolbar-divider"></div>
-
-        <!-- Nút Erase / Làm sạch -->
-        <button type="button" class="pill-tool-btn icon-only" (click)="clearCanvas()"
-          [title]="'PROCESS_GRAPH.TOOLBAR.CLEAR_TITLE' | translate">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M7 21L20 8l-4-4L3 17l4 4z"></path>
-            <path d="M14 6l4 4"></path>
-          </svg>
-        </button>
-
-        <!-- Cụm Zoom: Minus -->
-        <button type="button" class="pill-tool-btn icon-only" (click)="zoomOut()" [title]="'PROCESS_GRAPH.TOOLBAR.ZOOM_OUT_TITLE' | translate">
-          <span class="symbol-btn">−</span>
-        </button>
-
-        <!-- Nút Reset 100% (Circular arrow) -->
-        <button type="button" class="pill-tool-btn zoom-level-btn" (click)="resetZoom()" [title]="'PROCESS_GRAPH.TOOLBAR.ZOOM_RESET_TITLE' | translate">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-          </svg>
-          <span class="zoom-pct">{{ currentZoom }}%</span>
-        </button>
-
-        <!-- Cụm Zoom: Plus -->
-        <button type="button" class="pill-tool-btn icon-only" (click)="zoomIn()" [title]="'PROCESS_GRAPH.TOOLBAR.ZOOM_IN_TITLE' | translate">
-          <span class="symbol-btn">+</span>
-        </button>
-
-        <!-- Nút Auto-layout (Magic wand) -->
-        <button type="button" class="pill-tool-btn auto-layout-btn" (click)="autoLayout()"
-          [title]="'PROCESS_GRAPH.TOOLBAR.AUTO_TITLE' | translate">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 4V2m0 16v-2m-8-6h2m10 0h2M7.5 7.5L9 9m9 9l-1.5-1.5m0-9L15 9m-6 9l1.5-1.5"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <span class="btn-text">{{ 'PROCESS_GRAPH.TOOLBAR.AUTO' | translate }}</span>
-        </button>
-
-        <div class="toolbar-divider"></div>
-
-        <!-- Nút Xoá (Outline đỏ) -->
-        <button type="button" class="action-btn-red" (click)="deleteOrClear()" [title]="'PROCESS_GRAPH.TOOLBAR.DELETE_TITLE' | translate">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-          <span>{{ 'PROCESS_GRAPH.TOOLBAR.DELETE' | translate }}</span>
-        </button>
-
-        <!-- Nút Huỷ (Outline xám) -->
-        <button type="button" class="action-btn-gray" (click)="revertChanges()" [title]="'PROCESS_GRAPH.TOOLBAR.REVERT_TITLE' | translate">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-          <span>{{ 'PROCESS_GRAPH.TOOLBAR.REVERT' | translate }}</span>
-        </button>
-
-        <!-- Nút Lưu (Filled blue) -->
-        <button type="button" class="action-btn-blue" (click)="saveProcessTemplate()" [title]="'PROCESS_GRAPH.TOOLBAR.SAVE_TITLE' | translate">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          <span>{{ 'PROCESS_GRAPH.TOOLBAR.SAVE' | translate }}</span>
-        </button>
-
       </div>
-
-      <!-- COPYRIGHT FOOTER (Bottom-left: ProcessX Copy right 2026 Viettel Customer Service, Inc) -->
-      <footer class="canvas-copyright-footer">
-        <span class="process-text">Process</span><span class="x-text">X</span>
-        <span class="copy-desc">{{ 'PROCESS_GRAPH.FOOTER.COPYRIGHT' | translate }}</span>
-      </footer>
     </main>
 
-    <!-- RIGHT SIDE CONFIG DRAWER -->
+    <!-- DRAWER CẤU HÌNH BƯỚC (BÊN PHẢI) -->
     <app-node-config-drawer></app-node-config-drawer>
 
-    <!-- TAB "THÔNG TIN CHUNG" (Figma 264:42051): phủ lên canvas, canvas vẫn giữ nguyên trong DOM -->
+    <!-- TAB "THÔNG TIN CHUNG": phủ lên canvas, canvas vẫn giữ nguyên trong DOM -->
     <app-process-info-form
       *ngIf="activeSubTab === 'info'"
       class="info-tab-panel"

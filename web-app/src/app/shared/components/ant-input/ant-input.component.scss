@@ -1,7 +1,7 @@
 @use '../../styles/processx-tokens' as px;
 
-// Theo Figma ProcessX "Text field": size sm (mặc định) cao 48 (viền 1px nằm trong 48), radius 12, Inter Medium 16/24.
-// Figma tính viền nằm trong khung, nên chốt cứng height (border-box) thay vì padding 12 + viền = 50px.
+// Mặc định cao 48, radius 12, 16/24 Medium.
+// Viền nằm trong khung nên chốt cứng height (border-box) thay vì padding 12 + viền = 50px.
 
 :host {
   display: inline-block;
@@ -28,7 +28,7 @@
     outline: 0;
   }
 
-  // Disabled / readonly: nền xám, chữ Neutral/800 (như "Mã bước" trong design)
+  // Disabled / readonly: nền xám, chữ Neutral/800
   &.px-input-affix-wrapper-disabled,
   &.px-input-affix-wrapper-readonly {
     background: px.$neutral-100;

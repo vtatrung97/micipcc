@@ -5,6 +5,8 @@ import { NodeFactoryService } from './node-factory.service';
 import { GatewayJoinService } from './gateway-join.service';
 import { NodeEditorService } from './node-editor.service';
 import { GraphHistoryService } from './graph-history.service';
+import { GraphLayoutService } from './graph-layout.service';
+import { GraphCanvasService } from './graph-canvas.service';
 
 /** Các flow mẫu (mặc định, cơ bản, điều kiện + API, phức tạp, trống). */
 @Injectable()
@@ -14,11 +16,13 @@ export class SampleFlowService {
     private factory: NodeFactoryService,
     private gatewayJoin: GatewayJoinService,
     private editor: NodeEditorService,
-    private history: GraphHistoryService
+    private history: GraphHistoryService,
+    private layout: GraphLayoutService,
+    private canvas: GraphCanvasService
   ) {}
 
 
-  // WORKFLOW SAMPLE CHUẨN (KHỚP 100% THIẾT KẾ VIETTEL TRONG ẢNH CHỤP)
+  // FLOW MẪU MẶC ĐỊNH
   // ▶ -> [◇ Tên bước quy trình] -> (Đủ thông tin -> </> Trả lời sơ bộ) & (Mặc định -> 👤 Bổ sung thông tin)
   //   -> ⤹ Tất cả nhánh đến -> 👤 Xác minh khiếu nại -> </> Cập nhật & đóng PAKN -> ⏹
   public createCompactWorkflowSample(): void {
@@ -202,7 +206,7 @@ export class SampleFlowService {
   }
 
 
-  // CÁC MẪU QUY TRÌNH CHUẨN DOANH NGHIỆP TỪ JSON BACKEND SPECIFICATION
+  // CÁC MẪU QUY TRÌNH KHÁC (theo JSON spec của BE)
 
   /**
    * MẪU 1: LUỒNG CƠ BẢN (LINEAR BASIC FLOW)
@@ -756,5 +760,9 @@ export class SampleFlowService {
     else if (type === 'medium') this.loadSampleConditionApiFlow();
     else if (type === 'complex') this.loadSampleComplexEnterpriseFlow();
     else this.createCompactWorkflowSample();
+    // Toạ độ trong các mẫu tính cho card cũ → xếp lại theo kích thước card mới (240 × 72)
+    this.layout.autoLayout(true);
+    // Hiện trọn luồng trong khung nhìn (đợi container có kích thước khi vừa khởi tạo)
+    setTimeout(() => this.canvas.zoomToFit());
   }
 }

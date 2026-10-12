@@ -89,6 +89,7 @@ export interface NodePropertyModel {
   endFormTemplate?: string;
   triggerType?: string;
   triggerFormSchedule?: string;
+  startVariables?: StartVariableRow[];
   channelNotification?: boolean;
   channelEmail?: boolean;
 
@@ -131,3 +132,16 @@ export interface PaletteItem {
   avatarBg?: string;
 }
 
+/** Một dòng "Khởi tạo biến quy trình" của node Bắt đầu */
+export interface StartVariableRow {
+  /** Biến quy trình, vd: ticket_type */
+  variable: string;
+  /** Trường nguồn gán giá trị cho biến: trường biểu mẫu (thủ công) hoặc trường dữ liệu API (tự động) */
+  formField: string | null;
+  /** Tên hiển thị của biến */
+  displayName: string;
+  /** Giá trị cố định gán cho biến (kích hoạt Lập lịch) */
+  fixedValue?: string;
+  /** Trường dữ liệu API (kích hoạt Hybrid — dùng cùng formField là trường biểu mẫu) */
+  apiField?: string | null;
+}

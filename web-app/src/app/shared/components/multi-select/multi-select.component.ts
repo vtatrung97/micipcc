@@ -17,8 +17,7 @@ const ICON_BASE = 'assets/icons/processx';
 
 /**
  * Ô chọn nhiều có checkbox + tìm kiếm + "Chọn tất cả", hiển thị giá trị dạng tag.
- * Theo Figma ProcessX: trường "Agent" / "Output từ biểu mẫu" trong drawer Giao việc.
- * Giá trị ngModel: mảng `value` của các option đã chọn (giữ thứ tự trong `options`).
+ * ngModel: mảng `value` của các option đã chọn (giữ thứ tự trong `options`).
  */
 @Component({
   selector: 'app-multi-select',

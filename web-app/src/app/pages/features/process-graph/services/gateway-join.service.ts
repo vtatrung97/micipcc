@@ -34,7 +34,7 @@ export class GatewayJoinService {
     const pos = gateway.getPosition();
     const join = this.factory.createCompactCardNode(
       'JOIN',
-      pos.x + 300,
+      pos.x + 360,
       pos.y,
       this.t(`JOIN_LABELS.${type}`),
     );

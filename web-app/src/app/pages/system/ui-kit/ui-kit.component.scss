@@ -174,7 +174,7 @@ code {
   word-break: break-all;
 }
 
-// Khung mô phỏng drawer "Giao việc" (rộng nội dung 452px như Figma)
+// Khung mô phỏng drawer "Giao việc" (rộng nội dung 452px)
 .drawer-preview {
   width: 500px;
   max-width: 100%;
@@ -337,7 +337,7 @@ code {
   gap: 16px;
 }
 
-// Demo Radio: dựng lại frame Figma 237:11006 (rộng ~750)
+// Demo Radio (rộng ~750)
 .radio-demo {
   max-width: 760px;
 }
@@ -387,7 +387,7 @@ code {
   }
 }
 
-// Hybrid: 2 ô chọn xếp dọc, cách 10 (Figma 264:16237)
+// Hybrid: 2 ô chọn xếp dọc, cách 10
 .hybrid-box {
   display: flex;
   flex-direction: column;

@@ -33,7 +33,7 @@ export class NodeConfigDrawerComponent implements OnInit, OnDestroy {
     errorFlow: true
   };
 
-  // Condition Modal (Image 4)
+  // Modal điều kiện
   public isConditionModalVisible: boolean = false;
   public editingBranch: ConditionBranch | null = null;
   public editingRules: ConditionRuleItem[] = [];

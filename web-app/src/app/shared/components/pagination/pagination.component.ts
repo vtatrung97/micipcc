@@ -10,8 +10,7 @@ interface PageItem {
 }
 
 /**
- * Phân trang theo Figma ProcessX (component "Pagination", node 65:8419):
- * trái: "Số dòng hiển thị" + dropdown, "1 - 10 / 1080 kết quả"; phải: ‹ 1 2 3 … 88 89 90 ›
+ * Phân trang. Trái: "Số dòng hiển thị" + dropdown, "1 - 10 / 1080 kết quả"; phải: ‹ 1 2 3 … 88 89 90 ›
  */
 @Component({
   selector: 'app-pagination',
@@ -66,11 +65,8 @@ export class PaginationComponent implements OnChanges {
   }
 
   /**
-   * Dãy số trang:
-   * - ≤ 7 trang: hiện hết.
-   * - Trang hiện tại ở 3 trang đầu / cuối: 1 2 3 … n-2 n-1 n (như design).
-   * - Ở giữa: 1 … p-1 p p+1 … n.
-   * Khoảng trống chỉ thiếu đúng 1 số thì hiện số đó thay cho "…".
+   * Dãy số trang: ≤ 7 trang hiện hết; trang hiện tại ở 3 trang đầu / cuối: 1 2 3 … n-2 n-1 n;
+   * ở giữa: 1 … p-1 p p+1 … n. Khoảng trống chỉ thiếu đúng 1 số thì hiện số đó thay cho "…".
    */
   private buildItems(): void {
     const total = this.totalPages;

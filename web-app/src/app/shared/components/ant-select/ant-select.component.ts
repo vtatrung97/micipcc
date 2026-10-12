@@ -9,6 +9,7 @@ import {
   ChangeDetectorRef,
   ViewChild,
   OnChanges,
+  OnDestroy,
   SimpleChanges
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -36,7 +37,7 @@ export interface SelectOption<T = any> {
     }
   ]
 })
-export class AntSelectComponent implements ControlValueAccessor, OnChanges {
+export class AntSelectComponent implements ControlValueAccessor, OnChanges, OnDestroy {
   @Input() options: (SelectOption | string)[] = [];
   @Input() placeholder: string = 'Vui lòng chọn';
   @Input() allowClear: boolean = false;
@@ -45,6 +46,15 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges {
   @Input() loading: boolean = false;
   @Input() size: 'small' | 'middle' | 'large' = 'middle';
   @Input() prefixIcon?: string;
+  /**
+   * Dropdown dùng position: fixed theo toạ độ màn hình (không bị cắt khi ô nằm trong vùng cuộn,
+   * vd: bảng cuộn ngang trong drawer). Cuộn bất kỳ vùng nào khi đang mở sẽ đóng dropdown.
+   */
+  @Input() fixedPanel: boolean = false;
+  /** Toạ độ dropdown khi `fixedPanel` */
+  panelTop: number | null = null;
+  panelLeft: number | null = null;
+  panelWidth: number | null = null;
 
   @Output() valueChange = new EventEmitter<any>();
 
@@ -141,8 +151,31 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges {
     if (!this.isOpen) return;
     const height = this.dropdownRef?.nativeElement.offsetHeight || 0;
     this.dropUp = shouldDropUp(this.elRef.nativeElement, height);
+    if (this.fixedPanel) this.placeFixedPanel(height);
     this.measuring = false;
     this.cdr.markForCheck();
+  }
+
+  private placeFixedPanel(height: number): void {
+    const rect = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect();
+    const gap = 8;
+    this.panelWidth = Math.max(rect.width, 160);
+    this.panelLeft = Math.max(gap, Math.min(rect.left, window.innerWidth - this.panelWidth - gap));
+    this.panelTop = this.dropUp ? Math.max(gap, rect.top - height - gap) : rect.bottom + gap;
+    document.addEventListener('scroll', this.onAnyScroll, true);
+  }
+
+  private onAnyScroll = (event: Event): void => {
+    if (this.dropdownRef?.nativeElement.contains(event.target as Node)) return;
+    document.removeEventListener('scroll', this.onAnyScroll, true);
+    if (this.isOpen) {
+      this.isOpen = false;
+      this.cdr.markForCheck();
+    }
+  };
+
+  ngOnDestroy(): void {
+    document.removeEventListener('scroll', this.onAnyScroll, true);
   }
 
   selectOption(option: SelectOption, event?: MouseEvent): void {
@@ -207,7 +240,7 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges {
     }
   }
 
-  // --- ControlValueAccessor Methods ---
+  // ===== ControlValueAccessor =====
   writeValue(val: any): void {
     this.innerValue = val;
     this.cdr.markForCheck();

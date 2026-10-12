@@ -9,14 +9,13 @@
   [class.px-select-lg]="size === 'large'"
   [class.has-prefix]="!!prefixIcon">
   
-  <!-- Selection trigger box -->
+  <!-- Ô trigger -->
   <div class="px-select-selector" (click)="toggleDropdown($event)">
-    <!-- Prefix Icon if provided -->
     <span class="px-select-prefix" *ngIf="prefixIcon">
       <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
     </span>
 
-    <!-- Search input when showSearch is active and dropdown is open -->
+    <!-- Ô tìm kiếm khi bật showSearch và dropdown đang mở -->
     <span class="px-select-selection-search" *ngIf="showSearch && isOpen">
       <input 
         #searchInput
@@ -28,7 +27,6 @@
         [placeholder]="selectedOption ? selectedOption.label : placeholder" />
     </span>
 
-    <!-- Selected item text display -->
     <span class="px-select-selection-item" *ngIf="selectedOption && (!showSearch || !isOpen)">
       <span 
         class="option-dot" 
@@ -47,12 +45,10 @@
       <span class="selection-item-text" [appTooltip]="selectedOption.label" [tooltipOnlyTruncated]="true">{{ selectedOption.label }}</span>
     </span>
 
-    <!-- Placeholder when nothing selected -->
     <span class="px-select-selection-placeholder" [appTooltip]="placeholder" [tooltipOnlyTruncated]="true" *ngIf="!selectedOption && (!showSearch || !isOpen || !searchQuery)">
       {{ placeholder }}
     </span>
 
-    <!-- Clear Button -->
     <span 
       class="px-select-clear" 
       *ngIf="allowClear && selectedOption && !disabled" 
@@ -61,18 +57,21 @@
       <ant-icon name="close-circle-fill" [size]="14"></ant-icon>
     </span>
 
-    <!-- Dropdown Arrow -->
     <span class="px-select-arrow" [class.px-select-arrow-loading]="loading">
       <img *ngIf="!loading" [src]="isOpen ? 'assets/icons/processx/chevron-up-active.svg' : 'assets/icons/processx/chevron-down.svg'" width="24" height="24" alt="" />
       <ant-icon *ngIf="loading" name="sync" [size]="18" [spin]="true"></ant-icon>
     </span>
   </div>
 
-  <!-- Dropdown Popup Menu -->
+  <!-- Dropdown -->
   <div 
     #dropdown
     class="px-select-dropdown"
     [class.px-select-dropdown-up]="dropUp"
+    [class.px-select-dropdown-fixed]="fixedPanel"
+    [style.top.px]="fixedPanel ? panelTop : null"
+    [style.left.px]="fixedPanel ? panelLeft : null"
+    [style.width.px]="fixedPanel ? panelWidth : null"
     [style.visibility]="measuring ? 'hidden' : null" 
     *ngIf="isOpen" 
     (click)="$event.stopPropagation()">
@@ -112,7 +111,6 @@
       </div>
     </div>
 
-    <!-- Empty state -->
     <div class="px-select-empty" *ngIf="filteredOptions.length === 0">
       <ant-icon name="inbox" [size]="28" color="#d9d9d9"></ant-icon>
       <span class="empty-text">Không có dữ liệu</span>

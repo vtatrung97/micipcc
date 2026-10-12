@@ -1,9 +1,7 @@
 import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-/**
- * Ô nhập nhiều dòng theo Figma ProcessX "Text Area" (cao mặc định 140px, radius 12).
- */
+/** Ô nhập nhiều dòng (cao mặc định 140px, radius 12) */
 @Component({
   selector: 'ant-textarea',
   templateUrl: './ant-textarea.component.html',
@@ -22,7 +20,7 @@ export class AntTextareaComponent implements ControlValueAccessor {
   @Input() readonly: boolean = false;
   @Input() maxLength?: number;
   @Input() showCount: boolean = false;
-  /** Chiều cao ô (px). Mặc định 140 theo design */
+  /** Chiều cao ô (px), mặc định 140 */
   @Input() height: number = 140;
   /** Cho phép người dùng kéo giãn chiều cao */
   @Input() resizable: boolean = true;

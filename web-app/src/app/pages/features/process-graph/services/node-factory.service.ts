@@ -4,6 +4,16 @@ import { NodePropertyModel, ConditionBranch, PaletteItem } from '../models/node-
 import { NodeType, isGatewayType } from '../models/node-type';
 import { PALETTE_ITEMS } from '../config/palette.config';
 import { BPMN_PORT_GROUPS, getNodePortItems, TranslateFn } from '../config/ports.config';
+import {
+  NODE_CARD_WIDTH,
+  NODE_CIRCLE_SIZE,
+  nodeCardAttrs,
+  nodeCardHeight,
+  nodeCardMarkup,
+  nodeCircleView,
+  nodeLabelAttrs,
+  nodeRowAttrs,
+} from '../config/node-view.config';
 import { GraphEditorStore } from '../state/graph-editor.store';
 
 /** Dựng card node (giao diện, cổng) theo type, sinh mã bước, icon. */
@@ -125,7 +135,46 @@ export class NodeFactoryService {
   }
 
 
-  // 2. MINI COMPACT CARD NODE FACTORY (CHUẨN GIAO DIỆN 168px x 48px - 2 DÒNG PHÂN CẤP)
+  /**
+   * Dòng nhánh dưới phần đầu card, mỗi dòng 1 cổng ra ở mép phải: gateway → tên nhánh (+ Mặc định);
+   * Giao việc có duyệt → Đồng ý / Từ chối; Tác vụ hệ thống có cổng lỗi → Thành công / Thất bại.
+   */
+  public getCardRows(type: NodeType, data: any): string[] {
+    if (isGatewayType(type)) {
+      return (data?.branches || []).map((br: ConditionBranch, i: number) =>
+        br.isDefault
+          ? this.t('CANVAS.DEFAULT_BRANCH')
+          : br.name || br.defaultLabel || this.t('CANVAS.BRANCH_N', { index: i + 1 }),
+      );
+    }
+    if (type === 'USER_TASK' && data?.isApprovalStep) {
+      return [this.t('CANVAS.APPROVE'), this.t('CANVAS.REJECT')];
+    }
+    if (type === 'SYSTEM_TASK' && data?.hasExceptionPort) {
+      return [this.t('CANVAS.SUCCESS'), this.t('CANVAS.FAILURE')];
+    }
+    return [];
+  }
+
+  /**
+   * Vẽ lại phần nội dung card theo data hiện tại của node (tên, loại, dòng nhánh, chiều cao).
+   * Gọi sau khi đổi tên bước / thêm-bớt nhánh / bật-tắt duyệt. Không đụng tới cổng.
+   */
+  public refreshCardView(node: any, data: any = node?.getData?.() || {}): void {
+    if (!node) return;
+    const type = data.type as NodeType;
+    if (type === 'START' || type === 'END') {
+      node.attr('nameText/text', data.label || '');
+      node.attr('nameText/display', data.label ? 'block' : 'none');
+      return;
+    }
+    const rows = this.getCardRows(type, data);
+    const typeTitle = data.typeTitle || this.getPaletteDef(type).typeTitle;
+    node.resize(NODE_CARD_WIDTH, nodeCardHeight(rows.length));
+    node.setAttrs({ ...nodeRowAttrs(rows), ...nodeLabelAttrs(typeTitle, data.label || '') });
+  }
+
+  // 2. CARD NODE FACTORY (240 × 72, thêm dòng nhánh nếu có)
   public createCompactCardNode(
     type: NodeType,
     x: number,
@@ -143,72 +192,21 @@ export class NodeFactoryService {
           ? customData.label
           : '';
 
-    // 1. TRIGGER BPMN EVENT: Circle 42px, subtle shadow, red inner circle with white play triangle, single out port on right
-    if (type === 'START') {
-      const portItems = getNodePortItems('START', customData, 42, this.tFn);
+    // 1. START / END: hình tròn 56 với icon 24
+    if (type === 'START' || type === 'END') {
+      const view = nodeCircleView(type, nodeLabel);
       const node = this.store.graph.addNode({
         id: customData?.id,
         shape: 'rect',
         x,
         y,
-        width: 42,
-        height: 42,
-        markup: [
-          { tagName: 'circle', selector: 'shadowCircle' },
-          { tagName: 'circle', selector: 'body' },
-          { tagName: 'circle', selector: 'innerCircle' },
-          { tagName: 'polygon', selector: 'playTriangle' },
-          { tagName: 'text', selector: 'nameText' },
-        ],
-        attrs: {
-          shadowCircle: {
-            cx: 21,
-            cy: 21,
-            r: 20,
-            fill: '#ffffff',
-            stroke: '#e2e8f0',
-            strokeWidth: 1.5,
-            cursor: 'pointer',
-          },
-          body: {
-            cx: 21,
-            cy: 21,
-            r: 18,
-            fill: '#ffffff',
-            stroke: 'none',
-            cursor: 'pointer',
-          },
-          innerCircle: {
-            cx: 21,
-            cy: 21,
-            r: 12,
-            fill: '#ef4444',
-            stroke: 'none',
-            cursor: 'pointer',
-          },
-          playTriangle: {
-            points: '18,15 18,27 27,21',
-            fill: '#ffffff',
-            cursor: 'pointer',
-          },
-          nameText: {
-            ref: 'shadowCircle',
-            refX: 21,
-            refY: '100%',
-            refY2: 6,
-            text: nodeLabel || '',
-            fontSize: 11,
-            fontWeight: 500,
-            fill: '#475569',
-            textAnchor: 'middle',
-            textVerticalAnchor: 'top',
-            cursor: 'pointer',
-            display: nodeLabel ? 'block' : 'none',
-          },
-        },
+        width: NODE_CIRCLE_SIZE,
+        height: NODE_CIRCLE_SIZE,
+        markup: view.markup,
+        attrs: view.attrs,
         ports: {
           groups: BPMN_PORT_GROUPS,
-          items: portItems,
+          items: getNodePortItems(type, customData, NODE_CIRCLE_SIZE, this.tFn),
         },
       });
       const initialData: NodePropertyModel = {
@@ -217,98 +215,11 @@ export class NodeFactoryService {
         type,
         typeTitle: itemDef.typeTitle,
         label: nodeLabel,
-        icon: '▶',
+        icon: type === 'START' ? '▶' : '⏹',
         description: customData?.description || '',
-        triggerEvent:
-          customData?.triggerEvent || 'Inbound Call (Tổng đài 1800xxxx)',
-        ...customData,
-      };
-      node.setData(initialData);
-      return node;
-    }
-
-    // 2. END BPMN EVENT: Circle 42px, red ring with red stop square, single in port on left
-    if (type === 'END') {
-      const portItems = getNodePortItems('END', customData, 42, this.tFn);
-      const node = this.store.graph.addNode({
-        id: customData?.id,
-        shape: 'rect',
-        x,
-        y,
-        width: 42,
-        height: 42,
-        markup: [
-          { tagName: 'circle', selector: 'shadowCircle' },
-          { tagName: 'circle', selector: 'body' },
-          { tagName: 'circle', selector: 'innerRing' },
-          { tagName: 'rect', selector: 'centerSquare' },
-          { tagName: 'text', selector: 'nameText' },
-        ],
-        attrs: {
-          shadowCircle: {
-            cx: 21,
-            cy: 21,
-            r: 20,
-            fill: '#ffffff',
-            stroke: '#e2e8f0',
-            strokeWidth: 1.5,
-            cursor: 'pointer',
-          },
-          body: {
-            cx: 21,
-            cy: 21,
-            r: 18,
-            fill: '#ffffff',
-            stroke: 'none',
-            cursor: 'pointer',
-          },
-          innerRing: {
-            cx: 21,
-            cy: 21,
-            r: 12,
-            fill: '#ffffff',
-            stroke: '#ef4444',
-            strokeWidth: 2,
-            cursor: 'pointer',
-          },
-          centerSquare: {
-            x: 16,
-            y: 16,
-            width: 10,
-            height: 10,
-            rx: 2,
-            fill: '#ef4444',
-            stroke: 'none',
-            cursor: 'pointer',
-          },
-          nameText: {
-            ref: 'shadowCircle',
-            refX: 21,
-            refY: '100%',
-            refY2: 6,
-            text: nodeLabel || '',
-            fontSize: 11,
-            fontWeight: 500,
-            fill: '#475569',
-            textAnchor: 'middle',
-            textVerticalAnchor: 'top',
-            cursor: 'pointer',
-            display: nodeLabel ? 'block' : 'none',
-          },
-        },
-        ports: {
-          groups: BPMN_PORT_GROUPS,
-          items: portItems,
-        },
-      });
-      const initialData: NodePropertyModel = {
-        id: node.id,
-        nodeKey: customData?.nodeKey || this.generateNodeKey(type, nodeLabel),
-        type,
-        typeTitle: itemDef.typeTitle,
-        label: nodeLabel,
-        icon: '⏹',
-        description: customData?.description || '',
+        ...(type === 'START'
+          ? { triggerEvent: customData?.triggerEvent || 'Inbound Call (Tổng đài 1800xxxx)' }
+          : {}),
         ...customData,
       };
       node.setData(initialData);
@@ -360,197 +271,15 @@ export class NodeFactoryService {
       }
     }
 
-    const cardWidth = 180;
-    const nodeHeight = isCondition
-      ? 44 + branches.length * 20 + 6
-      : isApprovalTask || isActionException
-        ? 90
-        : 48;
-
-    // Dynamic SVG markup
-    const markup: any[] = [
-      { tagName: 'rect', selector: 'body' },
-      { tagName: 'rect', selector: 'iconBox' },
-      { tagName: 'image', selector: 'iconImg' },
-      { tagName: 'text', selector: 'nameText' },
-      { tagName: 'circle', selector: 'warningBg' },
-      { tagName: 'text', selector: 'warningText' },
-      { tagName: 'text', selector: 'moreBtn' },
-    ];
-
-    // Pre-declare rowText_0 through rowText_15 for multi-row nodes
-    for (let i = 0; i < 16; i++) {
-      markup.push({ tagName: 'text', selector: `rowText_${i}` });
-    }
-
-    const attrs: any = {
-      body: {
-        refWidth: '100%',
-        refHeight: '100%',
-        rx: 10,
-        ry: 10,
-        fill: '#ffffff',
-        stroke: '#e2e8f0',
-        strokeWidth: 1.2,
-        cursor: 'pointer',
-      },
-      iconBox: {
-        ref: 'body',
-        refX: 9,
-        refY: isCondition ? 7 : 9,
-        width: 30,
-        height: 30,
-        rx: 7,
-        ry: 7,
-        fill: isCondition ? '#f8fafc' : itemDef.bg,
-        stroke: isCondition ? '#e2e8f0' : itemDef.border || '#e2e8f0',
-        strokeWidth: 1,
-      },
-      iconImg: {
-        ref: 'body',
-        refX: 15,
-        refY: isCondition ? 13 : 15,
-        width: 18,
-        height: 18,
-        'xlink:href': this.getNodeSvgDataUri(type),
-        href: this.getNodeSvgDataUri(type),
-      },
-      nameText: {
-        ref: 'body',
-        refX: 46,
-        refY: isCondition ? 22 : 24,
-        text: this.truncateLabel(
-          nodeLabel || itemDef.typeTitle,
-          isCondition ? 15 : 20,
-        ),
-        fontSize: isCondition ? 12 : 12.5,
-        fontWeight: isCondition ? 600 : 500,
-        fill: '#1e293b',
-        textAnchor: 'start',
-        textVerticalAnchor: 'middle',
-      },
-      warningBg: {
-        ref: 'body',
-        refX: cardWidth - 28,
-        refY: 16,
-        r: 6,
-        fill: '#eab308',
-        stroke: 'none',
-        display: isCondition ? 'block' : 'none',
-      },
-      warningText: {
-        ref: 'body',
-        refX: cardWidth - 28,
-        refY: 16,
-        text: '!',
-        fontSize: 9,
-        fontWeight: 800,
-        fill: '#ffffff',
-        textAnchor: 'middle',
-        textVerticalAnchor: 'middle',
-        display: isCondition ? 'block' : 'none',
-      },
-      moreBtn: {
-        ref: 'body',
-        refX: cardWidth - 14,
-        refY: isCondition ? 16 : 24,
-        text: '⋮',
-        fontSize: 16,
-        fontWeight: 700,
-        fill: '#94a3b8',
-        textAnchor: 'middle',
-        textVerticalAnchor: 'middle',
-        cursor: 'pointer',
-      },
-    };
-
-    for (let i = 0; i < 16; i++) {
-      if (isCondition) {
-        if (i < branches.length) {
-          const br = branches[i];
-          const displayText =
-            br.isDefault
-            ? this.t('CANVAS.DEFAULT_BRANCH')
-            : br.name || br.defaultLabel || this.t('CANVAS.BRANCH_N', { index: i + 1 });
-          attrs[`rowText_${i}`] = {
-            ref: 'body',
-            refX: cardWidth - 14,
-            refY: 48 + i * 20,
-            text: this.truncateLabel(displayText, 18),
-            fontSize: 11,
-            fontWeight: 400,
-            fill: '#64748b',
-            textAnchor: 'end',
-            textVerticalAnchor: 'middle',
-            display: 'block',
-          };
-        } else {
-          attrs[`rowText_${i}`] = {
-            ref: 'body',
-            refX: 14,
-            refY: 48 + i * 20,
-            fontSize: 11,
-            fontWeight: 400,
-            fill: '#64748b',
-            textAnchor: 'start',
-            textVerticalAnchor: 'middle',
-            display: 'none',
-          };
-        }
-      } else if (isActionException) {
-        if (i === 0) {
-          attrs[`rowText_${i}`] = {
-            ref: 'body',
-            refX: cardWidth - 14,
-            refY: 60,
-            text: this.t('CANVAS.SUCCESS'),
-            fontSize: 11,
-            fontWeight: 400,
-            fill: '#64748b',
-            textAnchor: 'end',
-            textVerticalAnchor: 'middle',
-            display: 'block',
-          };
-        } else if (i === 1) {
-          attrs[`rowText_${i}`] = {
-            ref: 'body',
-            refX: cardWidth - 14,
-            refY: 82,
-            text: this.t('CANVAS.FAILURE'),
-            fontSize: 11,
-            fontWeight: 400,
-            fill: '#64748b',
-            textAnchor: 'end',
-            textVerticalAnchor: 'middle',
-            display: 'block',
-          };
-        } else {
-          attrs[`rowText_${i}`] = {
-            ref: 'body',
-            refX: 14,
-            refY: 60 + i * 22,
-            fontSize: 11,
-            fontWeight: 400,
-            fill: '#475569',
-            textAnchor: 'start',
-            textVerticalAnchor: 'middle',
-            display: 'none',
-          };
-        }
-      } else {
-        attrs[`rowText_${i}`] = {
-          ref: 'body',
-          refX: 14,
-          refY: 60 + i * 22,
-          fontSize: 11,
-          fontWeight: 400,
-          fill: '#475569',
-          textAnchor: 'start',
-          textVerticalAnchor: 'middle',
-          display: 'none',
-        };
-      }
-    }
+    const cardWidth = NODE_CARD_WIDTH;
+    const rows = this.getCardRows(type, {
+      branches,
+      isApprovalStep: isApprovalTask,
+      hasExceptionPort: isActionException,
+    });
+    const nodeHeight = nodeCardHeight(rows.length);
+    const markup = nodeCardMarkup();
+    const attrs = nodeCardAttrs(type, itemDef.typeTitle, nodeLabel, rows);
 
     const portItems = getNodePortItems(
       type,

@@ -15,7 +15,7 @@ export interface ActionMenuItem {
   label: string;
   /** Đường dẫn icon 20px đặt trước nhãn (vd: 'assets/icons/processx/copy.svg') */
   icon?: string;
-  /** Mục nguy hiểm (vd: Xóa) → chữ đỏ Actions/Red/400 */
+  /** Mục nguy hiểm (vd: Xóa) → chữ đỏ */
   danger?: boolean;
   disabled?: boolean;
 }
@@ -24,7 +24,7 @@ const PANEL_GAP = 4;
 const VIEWPORT_MARGIN = 8;
 
 /**
- * Nút "⋮" mở menu hành động (Figma ProcessX: Buttons "Dot vertical" 197:25236 + "_Text field search dropdown" 364:25166).
+ * Nút "⋮" mở menu hành động.
  * Menu dùng position: fixed để không bị cắt bởi vùng cuộn ngang của bảng (`app-data-table`).
  */
 @Component({
