@@ -15,6 +15,10 @@
     <name>integration-service</name>
     <description>Ticket Flow integration service: external systems, connections, operations</description>
 
+    <properties>
+        <jsonata.version>0.9.8</jsonata.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.lifesup.ticketflow</groupId>
@@ -70,6 +74,13 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream-binder-kafka</artifactId>
+        </dependency>
+
+        <!-- Kiểm tra biểu thức JSONata (requestMapping / responseMapping) của API -->
+        <dependency>
+            <groupId>com.dashjoin</groupId>
+            <artifactId>jsonata</artifactId>
+            <version>${jsonata.version}</version>
         </dependency>
 
         <!-- Health check, metrics -->

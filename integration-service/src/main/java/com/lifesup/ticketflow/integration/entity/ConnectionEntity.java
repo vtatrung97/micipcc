@@ -52,10 +52,6 @@ public class ConnectionEntity extends BaseEntity {
     @Column(name = "auth_config", columnDefinition = "longtext")
     String authConfig;
 
-    /** Tham chiếu secret trong Vault, không chứa giá trị secret. */
-    @Column(name = "secret_ref", length = 500)
-    String secretRef;
-
     @Column(name = "timeout_ms", nullable = false)
     Integer timeoutMs;
 

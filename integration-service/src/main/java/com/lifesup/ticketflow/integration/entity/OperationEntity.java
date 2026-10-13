@@ -56,6 +56,14 @@ public class OperationEntity extends BaseEntity {
     @Column(name = "query_params", columnDefinition = "longtext")
     String queryParams;
 
+    /** Tham số đầu vào (JSON array của OperationInputParam). */
+    @Column(name = "input_params", columnDefinition = "longtext")
+    String inputParams;
+
+    /** Giá trị đầu ra cho Flow (JSON array của OperationOutputParam). */
+    @Column(name = "output_params", columnDefinition = "longtext")
+    String outputParams;
+
     @Column(name = "request_schema", columnDefinition = "longtext")
     String requestSchema;
 

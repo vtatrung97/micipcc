@@ -18,7 +18,8 @@ import java.util.Locale;
 public record AppProperties(
         @Valid @NotNull ApiKey apiKey,
         @Valid @NotNull I18n i18n,
-        @NotNull Cors cors) {
+        @NotNull Cors cors,
+        @Valid @NotNull Credential credential) {
 
     /**
      * @param headerName tên header chứa API key
@@ -29,4 +30,10 @@ public record AppProperties(
     public record I18n(@NotNull Locale defaultLocale, @NotEmpty List<Locale> supportedLocales) {}
 
     public record Cors(List<String> allowedOrigins) {}
+
+    /**
+     * @param masterKey master key mã hoá secret của connection (CREDENTIAL_MASTER_KEY): base64 của 32 byte.
+     *                  Bắt buộc, không có giá trị mặc định.
+     */
+    public record Credential(@NotBlank String masterKey) {}
 }
