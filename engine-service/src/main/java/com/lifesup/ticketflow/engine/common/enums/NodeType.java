@@ -2,7 +2,7 @@ package com.lifesup.ticketflow.engine.common.enums;
 
 import java.util.Optional;
 
-/** Các loại node Canvas được converter hỗ trợ. */
+/** Các loại node Canvas được converter hỗ trợ. Tên enum trùng giá trị {@code type} FE gửi. */
 public enum NodeType {
     START,
     GATEWAY_EXCLUSIVE,
@@ -23,5 +23,14 @@ public enum NodeType {
         } catch (IllegalArgumentException exception) {
             return Optional.empty();
         }
+    }
+
+    public boolean isGateway() {
+        return this == GATEWAY_EXCLUSIVE || this == GATEWAY_PARALLEL || this == GATEWAY_INCLUSIVE;
+    }
+
+    /** Gateway rẽ nhánh theo điều kiện (exclusive / inclusive), khác parallel chạy mọi nhánh. */
+    public boolean isConditionalGateway() {
+        return this == GATEWAY_EXCLUSIVE || this == GATEWAY_INCLUSIVE;
     }
 }

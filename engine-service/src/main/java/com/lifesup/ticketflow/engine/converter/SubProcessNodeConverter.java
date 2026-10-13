@@ -1,49 +1,50 @@
 package com.lifesup.ticketflow.engine.converter;
 
+import com.lifesup.ticketflow.engine.bpmn.BpmnExpressions;
+import com.lifesup.ticketflow.engine.common.constants.WorkflowVariables;
 import com.lifesup.ticketflow.engine.common.enums.NodeType;
+import com.lifesup.ticketflow.engine.dto.canvas.model.SubProcessNodeConfig;
+import com.lifesup.ticketflow.engine.dto.canvas.model.SubProcessOutputMapping;
 import com.lifesup.ticketflow.engine.dto.workflow.WorkflowNode;
-import java.util.List;
-import java.util.Map;
 import org.flowable.bpmn.model.CallActivity;
-import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.IOParameter;
 import org.springframework.stereotype.Component;
 
-/** Chuyển SUB_PROCESS thành call activity. */
+/**
+ * SUB_PROCESS → call activity gọi process key = subProcessId (mã template của quy trình con).
+ * Flowable lấy phiên bản deploy mới nhất của quy trình con tại thời điểm gọi.
+ *
+ * <ul>
+ *   <li>Vào: một tham số {@code __input} = map {subField: giá trị biến} (START của quy trình con map tiếp).</li>
+ *   <li>Ra: mỗi output đọc {@code __output[subField]} của quy trình con ghi vào biến của quy trình cha.</li>
+ * </ul>
+ */
 @Component
 public final class SubProcessNodeConverter extends AbstractNodeConverter {
-    @Override public NodeType supports() { return NodeType.SUB_PROCESS; }
 
     @Override
-    public FlowElement convert(WorkflowNode node) {
-        CallActivity activity = named(new CallActivity(), node);
-        String subProcessId = String.valueOf(node.getConfig().get("subProcessId"));
-        activity.setCalledElement("${subProcessResolver.resolve('" + subProcessId + "')}");
-        mappings(node, "inputMapping").forEach(mapping -> activity.addInParameter(inputParameter(mapping)));
-        mappings(node, "outputMapping").forEach(mapping -> activity.addOutParameter(outputParameter(mapping)));
-        return activity;
+    public NodeType supports() {
+        return NodeType.SUB_PROCESS;
     }
 
-    private static IOParameter inputParameter(Map<String, Object> mapping) {
-        IOParameter parameter = new IOParameter();
-        parameter.setSource(string(mapping.get("output")));
-        parameter.setTarget(string(mapping.get("input")));
-        return parameter;
-    }
+    @Override
+    public ConvertedNode convert(WorkflowNode node, ConversionContext context) {
+        SubProcessNodeConfig config = node.config(SubProcessNodeConfig.class);
+        CallActivity activity = init(new CallActivity(), node, context);
+        activity.setCalledElement(config.getSubProcessId());
+        activity.setInheritBusinessKey(true);
 
-    private static IOParameter outputParameter(Map<String, Object> mapping) {
-        IOParameter parameter = new IOParameter();
-        parameter.setSource(string(mapping.get("input")));
-        parameter.setTarget(string(mapping.get("output")));
-        return parameter;
-    }
+        IOParameter input = new IOParameter();
+        input.setSourceExpression(BpmnExpressions.subProcessInput(activity.getId()));
+        input.setTarget(WorkflowVariables.INPUT);
+        activity.getInParameters().add(input);
 
-    @SuppressWarnings("unchecked")
-    private static List<Map<String, Object>> mappings(WorkflowNode node, String key) {
-        Object value = node.getConfig().get(key);
-        if (!(value instanceof List<?> list)) return List.of();
-        return list.stream().filter(Map.class::isInstance).map(item -> (Map<String, Object>) item).toList();
+        for (SubProcessOutputMapping mapping : config.getOutputs()) {
+            IOParameter output = new IOParameter();
+            output.setSourceExpression(BpmnExpressions.subProcessOutput(mapping.getSubField()));
+            output.setTarget(mapping.getVariable());
+            activity.getOutParameters().add(output);
+        }
+        return ConvertedNode.single(activity);
     }
-
-    private static String string(Object value) { return value instanceof String text ? text : null; }
 }

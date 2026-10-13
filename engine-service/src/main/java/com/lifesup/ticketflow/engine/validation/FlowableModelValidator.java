@@ -8,21 +8,28 @@ import org.flowable.validation.ProcessValidator;
 import org.flowable.validation.ProcessValidatorFactory;
 import org.springframework.stereotype.Component;
 
-/** Adapter chuyển lỗi ProcessValidator sang lỗi validation của ứng dụng. */
+/** Lớp kiểm tra cuối: chạy bộ validator của Flowable trên BPMN đã sinh, chỉ chặn lỗi (bỏ qua cảnh báo). */
 @Component
 public final class FlowableModelValidator {
     private final ProcessValidator validator;
 
-    public FlowableModelValidator() { this(new ProcessValidatorFactory().createDefaultProcessValidator()); }
-    public FlowableModelValidator(ProcessValidator validator) { this.validator = validator; }
+    public FlowableModelValidator() {
+        this(new ProcessValidatorFactory().createDefaultProcessValidator());
+    }
 
-    /** Validate model và chỉ chặn các lỗi Flowable không phải warning. */
+    public FlowableModelValidator(ProcessValidator validator) {
+        this.validator = validator;
+    }
+
     public void validate(BpmnModel model) {
         List<WorkflowValidationError> errors = validator.validate(model).stream()
                 .filter(error -> !error.isWarning())
-                .map(error -> new WorkflowValidationError("FLOWABLE_MODEL_INVALID", error.getActivityId(), null,
+                .map(error -> new WorkflowValidationError(ValidationCode.FLOWABLE_MODEL_INVALID.name(),
+                        error.getActivityId(), null,
                         error.getDefaultDescription() == null ? error.getProblem() : error.getDefaultDescription()))
                 .toList();
-        if (!errors.isEmpty()) throw new WorkflowValidationException(errors);
+        if (!errors.isEmpty()) {
+            throw new WorkflowValidationException(errors);
+        }
     }
 }
