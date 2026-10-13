@@ -41,3 +41,26 @@ Trong CI/CD, thay bước cài local bằng publish `common-parent`, `common-cor
 cd core-service && ./mvnw clean package
 cd ../engine-service && ./mvnw clean package
 ```
+
+## Database migration (Flyway)
+
+Các service dùng Flyway, script migration nằm trong `src/main/resources/db/table_setup` (cấu trúc bảng) và `db/data_setup` (dữ liệu).
+
+### Quy ước đặt tên file
+
+```
+V1_<yyyyMMdd>_<HHmmss>__<mo_ta>.sql
+```
+
+- `yyyyMMdd_HHmmss`: thời điểm tạo file (giờ Việt Nam), luôn đủ 8 + 6 chữ số.
+- `__` (2 dấu gạch dưới) ngăn cách version và mô tả; mô tả viết thường, các từ nối bằng `_`.
+- Flyway đổi `_` trong phần version thành `.` → `V1_20261013_100000__add_xxx.sql` có version `1.20261013.100000`, nên thứ tự chạy trùng với thứ tự tên file.
+- Ví dụ: `V1_20261013_100000__add_ticket_priority.sql`
+
+### Lưu ý
+
+- File `V1__<datetime>_init.sql` là migration gốc đã chạy trên các môi trường, **giữ nguyên tên**, không đổi theo quy ước trên.
+- **Không sửa hoặc đổi tên** file đã chạy trên bất kỳ môi trường nào (Flyway kiểm tra version, mô tả và checksum). Cần thay đổi thì tạo file migration mới.
+- Datetime của file mới phải lớn hơn mọi file đã có; file có datetime cũ hơn version đã chạy sẽ bị Flyway bỏ qua (trừ khi bật `spring.flyway.out-of-order=true`).
+- Không dùng tiền tố `V2_`, `V3_`... (version lớn hơn toàn bộ `V1_*`), trừ khi có chủ đích tạo mốc baseline mới.
+
