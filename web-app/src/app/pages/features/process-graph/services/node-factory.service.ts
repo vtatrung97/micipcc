@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { branchDisplayName, withFixedBranches } from '../models/gateway-branch';
 import { TranslateService } from '@ngx-translate/core';
 import { NodePropertyModel, ConditionBranch, PaletteItem } from '../models/node-property.model';
 import { NodeType, isGatewayType } from '../models/node-type';
@@ -16,6 +17,7 @@ import {
 } from '../config/node-view.config';
 import { GraphEditorStore } from '../state/graph-editor.store';
 import { NodeIconService } from './node-icon.service';
+import { toNodeKey, uniqueNodeKey } from '../models/node-key';
 
 /** Dựng card node (giao diện, cổng) theo type, sinh mã bước, icon. */
 @Injectable()
@@ -122,18 +124,10 @@ export class NodeFactoryService {
       SUB_PROCESS: 'SUB',
       END: 'END',
     };
-    const prefix = prefixMap[type] || 'STEP';
-    const cleanLabel = (label || '')
-      .toUpperCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^A-Z0-9]/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '')
-      .slice(0, 15);
-    return cleanLabel
-      ? `${prefix}_${cleanLabel}`
-      : `${prefix}_${Math.floor(1000 + Math.random() * 9000)}`;
+    // Tên trống thì lấy tên loại bước (vd: "giao_viec"); thêm _2, _3… nếu trùng bước khác
+    const base = toNodeKey(label) || toNodeKey(this.t(`NODE_TYPES.${type}`)) || prefixMap[type].toLowerCase();
+    const existing = (this.store.graph?.getNodes() || []).map((n: any) => n.getData()?.nodeKey).filter(Boolean);
+    return uniqueNodeKey(base, existing);
   }
 
 
@@ -141,13 +135,18 @@ export class NodeFactoryService {
    * Dòng nhánh dưới phần đầu card, mỗi dòng 1 cổng ra ở mép phải: gateway → tên nhánh (+ Mặc định);
    * Giao việc có duyệt → Đồng ý / Từ chối; Tác vụ hệ thống có cổng lỗi → Thành công / Thất bại.
    */
+  /** Nhãn nhánh cố định + "Nhánh n" theo ngôn ngữ hiện tại */
+  private branchLabels() {
+    return {
+      defaultName: this.t('CANVAS.DEFAULT_BRANCH'),
+      errorName: this.t('CANVAS.ERROR_BRANCH'),
+      branchN: (i: number) => this.t('CANVAS.BRANCH_N', { index: i }),
+    };
+  }
+
   public getCardRows(type: NodeType, data: any): string[] {
     if (isGatewayType(type)) {
-      return (data?.branches || []).map((br: ConditionBranch, i: number) =>
-        br.isDefault
-          ? this.t('CANVAS.DEFAULT_BRANCH')
-          : br.name || br.defaultLabel || this.t('CANVAS.BRANCH_N', { index: i + 1 }),
-      );
+      return (data?.branches || []).map((br: ConditionBranch, i: number) => branchDisplayName(br, i, this.branchLabels()));
     }
     if (type === 'USER_TASK' && data?.isApprovalStep) {
       return [this.t('CANVAS.APPROVE'), this.t('CANVAS.REJECT')];
@@ -256,22 +255,7 @@ export class NodeFactoryService {
           ]
       : [];
 
-    if (isCondition) {
-      const defaultIdx = branches.findIndex((b) => b.isDefault);
-      if (defaultIdx === -1) {
-        branches.push({
-          id: 'br-default',
-          name: this.t('CANVAS.DEFAULT_BRANCH'),
-          value: 'default',
-          expression: 'default',
-          variableSource: 'flow.variables',
-          isDefault: true,
-        });
-      } else if (defaultIdx !== branches.length - 1) {
-        const [defBr] = branches.splice(defaultIdx, 1);
-        branches.push(defBr);
-      }
-    }
+    if (isCondition) branches = withFixedBranches(branches, this.branchLabels());
 
     const cardWidth = NODE_CARD_WIDTH;
     const rows = this.getCardRows(type, {
@@ -351,21 +335,8 @@ export class NodeFactoryService {
           ? customData?.circuitBreakerTimeoutMs
           : 3000,
 
-      // Condition fields (Exclusive Gateway - Multi-branch)
-      branches:
-        customData?.branches ||
-        (isCondition
-          ? [
-              {
-                id: 'br-default',
-                name: this.t('CANVAS.DEFAULT_BRANCH'),
-                value: 'default',
-                expression: 'default',
-                variableSource: 'flow.variables',
-                isDefault: true,
-              },
-            ]
-          : undefined),
+      // Điều kiện: lưu đúng danh sách nhánh đã dùng để vẽ dòng nhánh + cổng ra
+      branches: isCondition ? branches : customData?.branches,
       servicePivotSource: customData?.servicePivotSource || 'flow.variables',
       conditionVariable: customData?.conditionVariable || 'flow.variables.cuoc',
       conditionRule: customData?.conditionRule || 'cuoc_phat_sinh > 500000',

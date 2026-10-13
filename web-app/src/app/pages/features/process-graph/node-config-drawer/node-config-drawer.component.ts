@@ -1,20 +1,33 @@
-import { Component, DoCheck, OnInit, OnDestroy } from '@angular/core';
+import { Component, DoCheck, Input, OnInit, OnDestroy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { GraphBridgeService } from '../services/graph-bridge.service';
-import { NodePropertyModel, ActionLibraryItem, ConditionBranch, ConditionRuleItem } from '../models/node-property.model';
-import { isGatewayType } from '../models/node-type';
+import { NodePropertyModel } from '../models/node-property.model';
+import { NodeType, isGatewayType } from '../models/node-type';
+import { withFixedBranches } from '../models/gateway-branch';
+import { SelectOption } from '@shared/components/ant-select/ant-select.component';
+import { NodeFactoryService } from '../services/node-factory.service';
 import { NODE_ICON_BG } from '../config/node-view.config';
 import { NodeIconService } from '../services/node-icon.service';
 import { GraphEditorStore } from '../state/graph-editor.store';
-import { NodeFieldErrors, hasNodeErrors, validateNodeProps } from '../models/node-validation';
+import { ProcessVariableService } from '../services/process-variable.service';
+import { NodeFieldErrors, hasNodeErrors, otherNodeKeys, validateNodeProps } from '../models/node-validation';
 
 /** Trạng thái node lúc mở drawer — dùng để hoàn tác khi bấm Hủy */
 interface NodeSnapshot {
   nodeId: string;
   node: any;
   edges: any[];
+  /** Node Gộp nhánh đi kèm (đổi loại điều kiện sẽ đổi tên của nó) */
+  join: { id: string; data: any; attrs: any } | null;
 }
+
+const GATEWAY_TYPES: NodeType[] = ['GATEWAY_EXCLUSIVE', 'GATEWAY_PARALLEL', 'GATEWAY_INCLUSIVE'];
+const GATEWAY_KIND: Record<string, 'exclusive' | 'parallel' | 'inclusive'> = {
+  GATEWAY_EXCLUSIVE: 'exclusive',
+  GATEWAY_PARALLEL: 'parallel',
+  GATEWAY_INCLUSIVE: 'inclusive',
+};
 
 @Component({
   selector: 'app-node-config-drawer',
@@ -22,24 +35,16 @@ interface NodeSnapshot {
   styleUrls: ['./node-config-drawer.component.scss']
 })
 export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
+  /** Chỉ xem (popup xem quy trình): khoá ô nhập, ẩn Hủy / Lưu, không đổi icon */
+  @Input() readonly: boolean = false;
+
   public isVisible: boolean = false;
   public selectedNode: any = null;
   public nodeProps: NodePropertyModel | null = null;
 
-  // Accordion open/close states
-  public accordions: Record<string, boolean> = {
-    general: true,
-    notification: true,
-    cases: true,
-    defaultFlow: true,
-    errorFlow: true
-  };
 
-  // Modal điều kiện
-  public isConditionModalVisible: boolean = false;
-  public editingBranch: ConditionBranch | null = null;
-  public editingRules: ConditionRuleItem[] = [];
-  public editingLogicOperator: 'AND' | 'OR' = 'AND';
+  /** Lựa chọn loại điều kiện trên header drawer */
+  public gatewayTypeOptions: SelectOption[] = [];
 
   /** Đã bấm Lưu mà còn thiếu trường bắt buộc → bắt đầu hiện lỗi */
   public isSubmitted: boolean = false;
@@ -52,7 +57,11 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
     private translate: TranslateService,
     private icons: NodeIconService,
     private store: GraphEditorStore,
-  ) {}
+    private factory: NodeFactoryService,
+    private variables: ProcessVariableService,
+  ) {
+    this.gatewayTypeOptions = GATEWAY_TYPES.map((type) => ({ value: type, label: this.t(`NODE_TYPES.${type}`) }));
+  }
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
   private t(key: string, params?: Record<string, any>): string {
@@ -75,16 +84,22 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
       })
     );
 
+    // Mở từ danh sách lỗi (Lưu nháp / Ban hành) → hiện lỗi ngay
+    this.sub.add(
+      this.bridgeService.showErrors$.subscribe(() => {
+        this.isSubmitted = true;
+      })
+    );
+
     this.sub.add(
       this.bridgeService.selectedNodeProps$.subscribe(props => {
         this.nodeProps = props ? { ...props } : null;
         if (this.nodeProps && isGatewayType(this.nodeProps.type)) {
-          if (!this.nodeProps.branches || this.nodeProps.branches.length === 0) {
-            this.nodeProps.branches = [
-              { id: 'br-1', name: this.t('CANVAS.DEFAULT_CASE_NAME'), value: 'valid', expression: '.priority == "Cao"', rules: [{ param: '.priority', operator: 'EQ', value: 'Cao' }] },
-              { id: 'br-default', name: this.t('CANVAS.DEFAULT_BRANCH'), value: 'default', expression: 'default', isDefault: true, rules: [] }
-            ];
-          }
+          // Mặc định + Lỗi luôn có trong danh sách nhánh
+          this.nodeProps.branches = withFixedBranches(this.nodeProps.branches, {
+            defaultName: this.t('CANVAS.DEFAULT_BRANCH'),
+            errorName: this.t('CANVAS.ERROR_BRANCH'),
+          });
         }
       })
     );
@@ -94,7 +109,7 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
   public errors: NodeFieldErrors = {};
 
   ngDoCheck(): void {
-    const next = this.isSubmitted && this.nodeProps ? validateNodeProps(this.nodeProps) : {};
+    const next = this.isSubmitted && this.nodeProps ? this.validate(this.nodeProps) : {};
     if (JSON.stringify(next) !== JSON.stringify(this.errors)) this.errors = next;
   }
 
@@ -102,17 +117,35 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
   public onSave(): void {
     if (!this.nodeProps) return;
     this.isSubmitted = true;
-    if (hasNodeErrors(validateNodeProps(this.nodeProps))) {
+    if (hasNodeErrors(this.validate(this.nodeProps))) {
       setTimeout(() => document.querySelector('.properties-side-drawer .has-error, .properties-side-drawer .field-error')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
       return;
+    }
+    // Lưu thành công lần đầu → bước đã cấu hình xong
+    if (this.nodeProps.isUnconfigured) {
+      this.nodeProps.isUnconfigured = false;
+      this.onPropChange('isUnconfigured');
     }
     this.finish();
   }
 
-  /** Hủy / nút X: trả node về trạng thái lúc mở drawer rồi đóng */
+  /**
+   * Hủy / nút X: trả node về trạng thái lúc mở drawer rồi đóng.
+   * Bước vừa thêm mà chưa Lưu lần nào → xoá luôn khỏi canvas.
+   */
   public onClose(): void {
+    const unconfiguredId = !this.readonly && this.snapshot?.node?.data?.isUnconfigured ? this.snapshot.nodeId : null;
     this.restoreSnapshot();
+    if (unconfiguredId) this.bridgeService.requestDeleteNode(unconfiguredId);
     this.finish();
+  }
+
+  private validate(props: NodePropertyModel): NodeFieldErrors {
+    return validateNodeProps(props, {
+      otherNodeKeys: otherNodeKeys(this.store.graph, props.id),
+      otherVariableNames: this.variables.otherDeclaredNames(props.id),
+      triggerType: this.store.processInfo?.triggerType,
+    });
   }
 
   private finish(): void {
@@ -128,7 +161,10 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
       nodeId: node.id,
       node: node.toJSON(),
       edges: (graph?.getConnectedEdges(node) || []).map((e: any) => e.toJSON()),
+      join: null,
     };
+    const join = node.getData()?.joinNodeId && graph?.getCellById(node.getData().joinNodeId);
+    if (join) this.snapshot.join = { id: join.id, data: { ...join.getData() }, attrs: JSON.parse(JSON.stringify(join.getAttrs())) };
   }
 
   /** Khôi phục data, hình, cổng của node và các cạnh nối vào cổng đã bị xoá */
@@ -145,6 +181,12 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
     node.removePorts();
     node.addPorts(snap.node.ports?.items || []);
 
+    if (snap.join) {
+      const join = graph.getCellById(snap.join.id);
+      join?.setData(snap.join.data, { overwrite: true });
+      join?.setAttrs(snap.join.attrs, { overwrite: true });
+    }
+
     const portIds = new Set((snap.node.ports?.items || []).map((p: any) => p.id));
     graph.getConnectedEdges(node).forEach((edge: any) => {
       const end = edge.getSourceCellId() === node.id ? edge.getSource() : edge.getTarget();
@@ -155,10 +197,6 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
       .forEach((e) => graph.addEdge(e));
   }
 
-  public onLabelChange(): void {
-    if (!this.nodeProps) return;
-    this.bridgeService.updateNodeLabel(this.nodeProps.id, this.nodeProps.label, this.nodeProps);
-  }
 
   public onPropChange(field?: keyof NodePropertyModel | 'all'): void {
     if (!this.nodeProps) return;
@@ -166,9 +204,6 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
     this.bridgeService.updateNodeProp(this.nodeProps.id, field || 'all', value, this.nodeProps);
   }
 
-  public toggleAccordion(key: string): void {
-    this.accordions[key] = !this.accordions[key];
-  }
 
   public isGateway(type: string | undefined): boolean {
     return isGatewayType(type);
@@ -186,72 +221,29 @@ export class NodeConfigDrawerComponent implements OnInit, DoCheck, OnDestroy {
 
   public getDrawerTitle(): string {
     if (!this.nodeProps) return this.t('DRAWER.DEFAULT_TITLE');
-    if (isGatewayType(this.nodeProps.type)) {
-      return this.t('DRAWER.GATEWAY_TITLE', { type: this.t(`NODE_TYPES.${this.nodeProps.type}`) });
-    }
+    if (isGatewayType(this.nodeProps.type)) return this.t('PALETTE.CONDITION_GROUP');
     return this.t(`NODE_TYPES.${this.nodeProps.type}`);
   }
 
-  // Condition cases helpers
-  public addCase(): void {
-    if (!this.nodeProps) return;
-    if (!this.nodeProps.branches) this.nodeProps.branches = [];
-    const count = this.nodeProps.branches.filter(b => !b.isDefault).length + 1;
-    const newBranch: ConditionBranch = {
-      id: `br-${Date.now()}`,
-      name: this.t('DRAWER.NEW_CASE', { index: count }),
-      value: `case_${count}`,
-      expression: '',
-      isDefault: false,
-      rules: [{ param: '.priority', operator: 'EQ', value: 'Cao' }],
-      logicOperator: 'AND'
-    };
+  /** Đổi loại điều kiện: cập nhật data, icon, tên loại trên card và tên node Gộp nhánh đi kèm (cổng ra giữ nguyên) */
+  public changeGatewayType(type: NodeType): void {
+    const graph = this.store.graph;
+    const node = this.nodeProps && graph?.getCellById(this.nodeProps.id);
+    if (!this.nodeProps || !node || type === this.nodeProps.type) return;
+    const typeTitle = this.t(`NODE_TYPES.${type}`);
+    const changes = { type, typeTitle, gatewayType: GATEWAY_KIND[type] };
+    this.nodeProps = { ...this.nodeProps, ...changes };
+    node.setData({ ...node.getData(), ...changes });
+    const src = this.icons.getIconSrc(type);
+    node.setAttrs({ iconImg: { href: src, 'xlink:href': src } });
+    this.factory.refreshCardView(node);
 
-    const defaultIdx = this.nodeProps.branches.findIndex(b => b.isDefault);
-    if (defaultIdx !== -1) {
-      this.nodeProps.branches.splice(defaultIdx, 0, newBranch);
-    } else {
-      this.nodeProps.branches.push(newBranch);
+    const join = node.getData().joinNodeId && graph.getCellById(node.getData().joinNodeId);
+    if (join) {
+      join.setData({ ...join.getData(), label: this.t(`JOIN_LABELS.${type}`) });
+      this.factory.refreshCardView(join);
     }
-    this.onPropChange('branches');
-  }
-
-  public removeCase(index: number): void {
-    if (!this.nodeProps?.branches) return;
-    this.nodeProps.branches.splice(index, 1);
-    this.onPropChange('branches');
-  }
-
-  public openConditionModal(branch: ConditionBranch): void {
-    this.editingBranch = branch;
-    this.editingRules = branch.rules && branch.rules.length > 0
-      ? JSON.parse(JSON.stringify(branch.rules))
-      : [{ param: '.priority', operator: 'EQ', value: 'Cao' }];
-    this.editingLogicOperator = branch.logicOperator || 'AND';
-    this.isConditionModalVisible = true;
-  }
-
-  public closeConditionModal(): void {
-    this.isConditionModalVisible = false;
-    this.editingBranch = null;
-  }
-
-  public saveConditionModal(): void {
-    if (this.editingBranch) {
-      this.editingBranch.rules = [...this.editingRules];
-      this.editingBranch.logicOperator = this.editingLogicOperator;
-      this.onPropChange('branches');
-    }
-    this.isConditionModalVisible = false;
-    this.editingBranch = null;
-  }
-
-  public addRule(): void {
-    this.editingRules.push({ param: '.priority', operator: 'EQ', value: '' });
-  }
-
-  public removeRule(index: number): void {
-    this.editingRules.splice(index, 1);
+    this.store.selectedNodeProps = { ...this.nodeProps };
   }
 
   public deleteNode(): void {

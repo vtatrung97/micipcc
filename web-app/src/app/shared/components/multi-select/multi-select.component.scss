@@ -182,9 +182,7 @@
   padding: px.$space-4 0;
   overflow-y: auto;
 
-  // Thanh cuộn mảnh: 8px, Neutral/300, bo 8
-  scrollbar-width: thin;
-  scrollbar-color: px.$neutral-300 transparent;
+  // Thanh cuộn mảnh, ẩn nút mũi tên (không đặt scrollbar-color vì Chrome sẽ bỏ qua ::-webkit-scrollbar)
 
   &::-webkit-scrollbar {
     width: 16px;
@@ -198,6 +196,10 @@
 
   &::-webkit-scrollbar-track {
     background: transparent;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none;
   }
 }
 

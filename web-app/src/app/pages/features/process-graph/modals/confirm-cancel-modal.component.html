@@ -1,0 +1,21 @@
+<ng-container *ngIf="visible">
+  <div class="confirm-mask" (click)="closed.emit()"></div>
+  <div class="confirm-wrap" (click)="closed.emit()">
+    <section class="confirm-box" role="alertdialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="confirm-head">
+        <img class="confirm-icon" src="assets/icons/processx/alert-circle-warning.svg" width="24" height="24" alt="" />
+        <div class="confirm-text">
+          <span class="confirm-title">{{ titleKey | translate }}</span>
+          <p class="confirm-message">{{ messageKey | translate }}</p>
+        </div>
+        <button type="button" class="confirm-close" (click)="closed.emit()" [attr.aria-label]="'PROCESS_GRAPH.COMMON.CLOSE' | translate">
+          <img src="assets/icons/processx/close-modal.svg" width="24" height="24" alt="" />
+        </button>
+      </div>
+      <div class="confirm-actions">
+        <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
+        <button type="button" class="px-btn px-btn-primary" (click)="confirmed.emit()">{{ 'PROCESS_GRAPH.CANCEL_CONFIRM.CONFIRM' | translate }}</button>
+      </div>
+    </section>
+  </div>
+</ng-container>

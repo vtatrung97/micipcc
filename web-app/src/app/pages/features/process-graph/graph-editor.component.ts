@@ -6,6 +6,7 @@ import {
   ViewChild,
   OnDestroy,
   HostListener,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -105,6 +106,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     private persistence: FlowPersistenceService,
     private dialogs: GraphDialogService,
     private translate: TranslateService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -184,8 +186,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   /** Nút "Sắp xếp lại quy trình": xếp lại các bước theo luồng rồi căn vừa màn hình */
   public autoLayout(): void {
-    this.layout.autoLayout();
-    this.canvas.zoomToFit();
+    if (this.layout.autoLayout()) this.canvas.zoomToFit();
   }
   public clearCanvas(): void {
     this.editor.clearCanvas();
@@ -200,11 +201,11 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   public saveDraft(): void {
     if (!this.commitProcessInfo()) return;
-    this.persistence.saveDraft();
+    if (this.persistence.saveDraft()) this.markClean();
   }
   public saveProcessTemplate(): void {
     if (!this.commitProcessInfo()) return;
-    this.persistence.saveProcessTemplate();
+    if (this.persistence.saveProcessTemplate()) this.markClean();
   }
   public onValidateGraphClick(): void {
     this.dialogs.onValidateGraphClick();
@@ -253,6 +254,9 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
             this.editor.removeBranch(index);
           } else if (action === 'change') {
             this.editor.onBranchChange(index);
+          } else if (action === 'sync') {
+            // Danh sách nhánh đã được sửa ở drawer → đồng bộ card + cổng ra
+            this.editor.updateConditionNodePorts();
           }
         },
       ),
@@ -335,6 +339,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.canvas.initGraph(this.containerRef.nativeElement);
     this.addStep.attach();
     this.loadInitialFlow();
+    // Nạp flow đổi trạng thái hoàn tác / số node ngay trong vòng kiểm tra đầu → cập nhật lại view
+    this.cdr.detectChanges();
   }
 
   /** Nạp flow khi mở màn hình: bản nháp đã lưu → dữ liệu canvas cũ → flow mẫu */
@@ -344,24 +350,54 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     const initType = this.route.snapshot.queryParams['initType'];
     if (templateCode && this.persistence.loadSavedDraft(templateCode)) {
       // Đã vẽ lại từ bản nháp (FLOW_SCHEMA)
+    } else if (this.store.currentTemplate.flowDefinition) {
+      // Quy trình mẫu: thiết kế lưu sẵn dạng FlowDefinition
+      this.persistence.renderFlowDefinition(this.store.currentTemplate.flowDefinition);
     } else if (this.store.currentTemplate.graphData) {
       this.persistence.loadGraphData(this.store.currentTemplate.graphData);
-    } else if (templateCode === 'PRC_BASIC_CSAT_FEEDBACK') {
-      this.samples.loadSampleBasicFlow();
-    } else if (templateCode === 'PRC_BILLING_DISPUTE_REVERSAL') {
-      this.samples.loadSampleConditionApiFlow();
-    } else if (templateCode === 'PRC_VIP_ENTERPRISE_INCIDENT') {
-      this.samples.loadSampleComplexEnterpriseFlow();
     } else if (initType === 'blank') {
       this.samples.createBlankWorkflowSample();
     } else {
       this.samples.loadSampleFlow('default');
     }
     this.store.graph.getEdges()?.forEach((e: any) => e.setLabels([]));
+    // Mở canvas luôn ở 100% (chạy sau mọi lệnh căn vừa màn hình của flow mẫu)
+    setTimeout(() => this.canvas.resetZoom());
+    this.markClean();
   }
 
+  /** Popup xác nhận Hủy (chỉ hiện khi đã có thay đổi so với lúc mở / lần lưu gần nhất) */
+  public isCancelConfirmOpen: boolean = false;
+  private cleanSnapshot: string = '';
+
+  /** Hủy: chưa thay đổi gì thì về danh sách luôn, có thay đổi thì hỏi xác nhận */
   public cancelEdit(): void {
+    if (this.cleanSnapshot && this.takeSnapshot() !== this.cleanSnapshot) {
+      this.isCancelConfirmOpen = true;
+      return;
+    }
+    this.leaveEditor();
+  }
+
+  public leaveEditor(): void {
+    this.isCancelConfirmOpen = false;
     this.router.navigate(['/process/templates-list']);
+  }
+
+  /** Dấu vân tay của Thông tin chung + canvas (node, vị trí, cấu hình, edge) để so thay đổi */
+  private takeSnapshot(): string {
+    const graph = this.store.graph;
+    const cells = graph
+      ? graph.getCells().map((c: any) => c.isNode()
+          ? [c.id, c.getPosition(), c.getData()]
+          : [c.id, c.getSourceCellId(), c.getSourcePortId(), c.getTargetCellId(), c.getData()])
+      : [];
+    return JSON.stringify([this.store.processInfo, cells]);
+  }
+
+  /** Mốc "chưa thay đổi": sau khi nạp xong màn hình và sau mỗi lần lưu */
+  private markClean(): void {
+    setTimeout(() => (this.cleanSnapshot = this.takeSnapshot()));
   }
 
   /**
@@ -388,9 +424,16 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Validate form + (tạo mới) kiểm tra trùng mã */
   private collectInfoErrors(): ProcessInfoErrors {
     const errors = validateProcessInfo(this.store.processInfo);
-    const code = this.store.processInfo.code.trim().toUpperCase();
-    if (!errors.code && this.store.isCreateMode && this.templateService.getTemplateByCode(code)) {
+    // Mã quy trình không trùng (không phân biệt hoa thường)
+    const code = this.store.processInfo.code.trim().toLowerCase();
+    if (!errors.code && this.store.isCreateMode && this.templateService.getTemplates().some((t) => (t.code || '').toLowerCase() === code)) {
       errors.code = 'CODE_EXISTS';
+    }
+    // Tên quy trình không trùng quy trình khác (khi sửa thì bỏ qua chính nó)
+    const name = this.store.processInfo.name.trim().toLowerCase();
+    const selfCode = this.store.isCreateMode ? '' : this.store.currentTemplate?.code;
+    if (!errors.name && name && this.templateService.getTemplates().some((t) => t.code !== selfCode && (t.name || '').trim().toLowerCase() === name)) {
+      errors.name = 'NAME_EXISTS';
     }
     return errors;
   }
@@ -503,7 +546,9 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       target &&
       (target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
-        target.isContentEditable)
+        target.isContentEditable ||
+        // Đang mở popup (vd: xem quy trình con) → không xoá / hoàn tác trên canvas chính
+        document.querySelector('.modal-wrap, .ant-modal-wrap'))
     ) {
       return;
     }

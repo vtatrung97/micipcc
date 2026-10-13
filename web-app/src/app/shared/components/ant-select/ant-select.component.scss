@@ -211,9 +211,7 @@
   box-sizing: border-box;
   animation: antSelectSlideDown 0.18s cubic-bezier(0.23, 1, 0.32, 1);
 
-  // Thanh cuộn mảnh
-  scrollbar-width: thin;
-  scrollbar-color: px.$neutral-300 transparent;
+  // Thanh cuộn mảnh, ẩn nút mũi tên (không đặt scrollbar-color vì Chrome sẽ bỏ qua ::-webkit-scrollbar)
 
   &::-webkit-scrollbar {
     width: 16px;
@@ -227,6 +225,10 @@
 
   &::-webkit-scrollbar-track {
     background: transparent;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none;
   }
 }
 
@@ -331,4 +333,73 @@
     @include px.body-sm-regular;
     color: px.$neutral-500;
   }
+}
+
+// Có ô tìm kiếm / chân dropdown: 2 phần này dính trên / dưới, chỉ danh sách cuộn
+.px-select-dropdown.has-panel-extra {
+  padding-top: 0;
+  padding-bottom: 0;
+
+  // Danh sách cách ô tìm kiếm / chân 4; nội dung item 16/24 Medium
+  .dropdown-options-list {
+    padding: px.$space-4 0;
+  }
+
+  .px-select-item {
+    font-weight: 500;
+  }
+}
+
+.px-select-panel-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: px.$space-8;
+  margin: 0;
+  padding: px.$space-8 px.$space-8 0;
+  background: px.$white;
+
+  // Ô tìm kiếm cao 40, viền Neutral/300, bo 8
+  &::before {
+    content: '';
+    position: absolute;
+    inset: px.$space-8 px.$space-8 0;
+    border: 1px solid px.$neutral-300;
+    border-radius: px.$radius-md;
+    pointer-events: none;
+  }
+
+  img {
+    margin-left: px.$space-12;
+    opacity: 0.6;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    padding: 0 px.$space-12 0 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: px.$font-family;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    color: px.$neutral-900;
+
+    &::placeholder {
+      color: px.$neutral-500;
+    }
+  }
+}
+
+.px-select-panel-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  border-top: 1px solid px.$neutral-300;
+  background: px.$white;
 }

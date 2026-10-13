@@ -5,6 +5,9 @@ import { GraphEditorStore } from '../state/graph-editor.store';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NodeEditorService } from './node-editor.service';
 import { GraphBridgeService } from './graph-bridge.service';
+import { ProcessVariableService } from './process-variable.service';
+import { hasNodeErrors, otherNodeKeys, validateNodeProps } from '../models/node-validation';
+import { normalizeNodeType } from '../models/node-type';
 import { TemplateInfoModalComponent, NotifyConfigModalComponent, JsonPreviewModalComponent, ValidationModalComponent } from '../modals';
 
 /** Validate đồ thị và các modal (validate, thông tin chung, thông báo, JSON). */
@@ -16,6 +19,7 @@ export class GraphDialogService {
     private modalService: NzModalService,
     private editor: NodeEditorService,
     public bridgeService: GraphBridgeService,
+    private variables: ProcessVariableService,
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -30,6 +34,29 @@ export class GraphDialogService {
   // 5. GRAPH VALIDATION (BPMN 2.0 STANDARD COMPLIANCE) & DYNAMIC MODALS
   public validateGraph(): GraphValidationResult {
     const result = validateBpmnGraph(this.store.graph, this.tFn);
+    // Bước còn thiếu / sai trường bắt buộc trong drawer
+    (this.store.graph?.getNodes() || []).forEach((node: any) => {
+      const data = node.getData() || {};
+      const type = normalizeNodeType(data.type, data.gatewayType);
+      const errors = validateNodeProps({ ...data, type }, {
+        otherNodeKeys: otherNodeKeys(this.store.graph, node.id),
+        otherVariableNames: this.variables.otherDeclaredNames(node.id),
+        triggerType: this.store.processInfo?.triggerType,
+      });
+      if (!hasNodeErrors(errors)) return;
+      const label = data.label || this.t(`NODE_TYPES.${type}`);
+      result.errors.push({
+        nodeId: node.id,
+        nodeKey: data.nodeKey,
+        nodeLabel: label,
+        type,
+        code: 'NODE_FIELDS_INVALID',
+        message: this.t('VALIDATION.NODE_FIELDS_INVALID', { label }),
+        severity: 'error',
+      });
+    });
+    result.isValid = result.errors.length === 0;
+    result.summary = this.t(result.isValid ? 'VALIDATION.SUMMARY_VALID' : 'VALIDATION.SUMMARY_INVALID', { count: result.errors.length });
     this.store.validationResult = result;
     return result;
   }
@@ -71,6 +98,7 @@ export class GraphDialogService {
       this.store.graph.centerCell(node);
       this.store.isDrawerOpen = true;
       this.bridgeService.selectNode(node, this.store.selectedNodeProps);
+      this.bridgeService.showErrors$.next();
     }
   }
 

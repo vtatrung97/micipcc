@@ -26,6 +26,8 @@ export interface ConditionBranch {
   expression: string;
   variableSource?: string;
   isDefault?: boolean;
+  /** Nhánh Lỗi cố định (bên cạnh Mặc định) */
+  isError?: boolean;
   rules?: ConditionRuleItem[];
   logicOperator?: 'AND' | 'OR';
 }
@@ -80,6 +82,10 @@ export interface NodePropertyModel {
   notificationRecipient?: string;
   notificationTitle?: string;
   notificationContent?: string;
+  /** Nguồn người nhận: 'VARIABLE' (biến quy trình) | 'USER' (người dùng hệ thống) */
+  notificationSource?: string;
+  /** Người nhận khi nguồn là người dùng hệ thống (nhiều tài khoản) */
+  notificationRecipients?: string[];
 
   // Sub-process specific
   subProcessTemplateId?: string;
@@ -89,8 +95,14 @@ export interface NodePropertyModel {
 
   // Viettel Customer Service Node Config fields
   department?: string;
+  /** @deprecated dữ liệu cũ (chọn 1) — dùng teams */
   team?: string;
+  /** @deprecated dữ liệu cũ (chọn 1) — dùng agents */
   agent?: string;
+  /** Nhóm thực hiện (chọn nhiều, trống = tất cả nhóm của phòng ban) */
+  teams?: string[];
+  /** Agent thực hiện (chọn nhiều, bắt buộc ≥1) */
+  agents?: string[];
   slaWarning?: boolean;
   formTemplate?: string;
   endFormTemplate?: string;
@@ -121,6 +133,9 @@ export interface NodePropertyModel {
   // Quy trình con: đầu vào quy trình con ← biến quy trình; biến quy trình con → biến quy trình
   subProcessInputs?: SubProcessInputRow[];
   subProcessOutputs?: SubProcessOutputRow[];
+
+  /** Bước vừa thêm, chưa bấm Lưu lần nào: Hủy ở drawer sẽ xoá bước khỏi canvas */
+  isUnconfigured?: boolean;
 
   // Cặp Gateway ⇄ JOIN tự sinh
   joinNodeId?: string;

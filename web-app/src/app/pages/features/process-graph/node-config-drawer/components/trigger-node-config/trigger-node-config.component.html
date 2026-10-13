@@ -246,6 +246,9 @@
                     class="cell-input"
                     [(ngModel)]="row.variable"
                     (ngModelChange)="save()"
+                    [appInputFilter]="variableNameFilter"
+                    [maxlength]="varLimits.name"
+                    [class.is-invalid]="errors.variableRows?.[i]?.variable"
                     [placeholder]="
                       'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate
                     "
@@ -260,6 +263,7 @@
                       [fixedPanel]="true"
                       [(ngModel)]="row.apiField"
                       (ngModelChange)="save()"
+                      [class.is-invalid]="errors.variableRows?.[i]?.source && !row.apiField"
                       [options]="apiFieldOptions"
                       [placeholder]="
                         'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate
@@ -273,6 +277,7 @@
                       [fixedPanel]="true"
                       [(ngModel)]="row.formField"
                       (ngModelChange)="save()"
+                      [class.is-invalid]="errors.variableRows?.[i]?.source && !row.formField"
                       [options]="formFieldOptions"
                       [placeholder]="
                         'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate
@@ -287,6 +292,8 @@
                       class="cell-input"
                       [(ngModel)]="row.fixedValue"
                       (ngModelChange)="save()"
+                      [maxlength]="varLimits.fixedValue"
+                      [class.is-invalid]="errors.variableRows?.[i]?.source"
                       [placeholder]="
                         'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate
                       "
@@ -298,6 +305,7 @@
                         [fixedPanel]="true"
                         [(ngModel)]="row.formField"
                         (ngModelChange)="save()"
+                        [class.is-invalid]="errors.variableRows?.[i]?.source"
                         [options]="sourceFieldOptions"
                         [placeholder]="
                           'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate
@@ -311,6 +319,8 @@
                     class="cell-input"
                     [(ngModel)]="row.displayName"
                     (ngModelChange)="save()"
+                    [maxlength]="varLimits.displayName"
+                    [class.is-invalid]="errors.variableRows?.[i]?.displayName"
                     [placeholder]="
                       'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate
                     "
@@ -351,6 +361,7 @@
           </button>
         </div>
       </div>
+      <span class="table-error" *ngIf="errors.startVariables">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.startVariables | translate }}</span>
     </section>
   </ng-container>
 </div>

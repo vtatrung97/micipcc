@@ -1,0 +1,19 @@
+<app-modal [visible]="visible" [title]="template?.name || ''" [width]="1600" (closed)="closed.emit()">
+  <ng-container *ngIf="visible && template && info">
+    <div class="preview-tabs" role="tablist">
+      <button type="button" role="tab" class="preview-tab" [class.active]="activeTab === 'info'"
+              [attr.aria-selected]="activeTab === 'info'" (click)="activeTab = 'info'">
+        {{ 'PROCESS_GRAPH.TABS.GENERAL' | translate }}
+      </button>
+      <button type="button" role="tab" class="preview-tab" [class.active]="activeTab === 'design'"
+              [attr.aria-selected]="activeTab === 'design'" (click)="activeTab = 'design'">
+        {{ 'PROCESS_GRAPH.TABS.DESIGN' | translate }}
+      </button>
+    </div>
+
+    <div class="preview-panel">
+      <app-process-info-form *ngIf="activeTab === 'info'" [info]="info" [readonly]="true" [codeEditable]="false"></app-process-info-form>
+      <app-process-viewer *ngIf="activeTab === 'design'" [template]="template"></app-process-viewer>
+    </div>
+  </ng-container>
+</app-modal>

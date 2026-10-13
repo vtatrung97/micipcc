@@ -3,6 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { normalizeNodeType } from '../models/node-type';
 import { GraphEditorStore } from '../state/graph-editor.store';
 import { GraphHistoryService } from './graph-history.service';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { NODE_CARD_HEIGHT, NODE_CARD_WIDTH, NODE_HEADER_CENTER_Y } from '../config/node-view.config';
 
 /** Khoảng cách giữa các cột (bước nối tiếp) và giữa các node cùng cột (nhánh song song) */
@@ -28,7 +29,8 @@ export class GraphLayoutService {
   constructor(
     private translate: TranslateService,
     private store: GraphEditorStore,
-    private history: GraphHistoryService
+    private history: GraphHistoryService,
+    private message: NzMessageService
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -36,12 +38,20 @@ export class GraphLayoutService {
     return this.translate.instant('PROCESS_GRAPH.' + key, params);
   }
 
-  /** @param silent true: không ghi lịch sử / không đổi dòng trạng thái (dùng khi vừa dựng flow mẫu) */
-  public autoLayout(silent: boolean = false): void {
+  /**
+   * "Làm đẹp quy trình". Người dùng bấm: chỉ chạy khi mọi bước nằm trên luồng từ Bắt đầu tới Kết thúc,
+   * không thì báo và giữ nguyên bố cục. Trả về true nếu đã sắp xếp.
+   * @param silent true: dựng flow mẫu — bỏ kiểm tra, không ghi lịch sử
+   */
+  public autoLayout(silent: boolean = false): boolean {
     const graph = this.store.graph;
-    if (!graph) return;
+    if (!graph) return false;
     const nodes: any[] = graph.getNodes();
-    if (nodes.length === 0) return;
+    if (nodes.length === 0) return false;
+    if (!silent && !this.isFlowConnected(graph, nodes)) {
+      this.message.warning(this.t('MESSAGES.AUTO_LAYOUT_INVALID'));
+      return false;
+    }
 
     // Bỏ điểm bẻ cong thủ công để router tính lại đường nối
     graph.getEdges().forEach((edge: any) => edge.setVertices([]));
@@ -125,9 +135,43 @@ export class GraphLayoutService {
     }
 
     graph.centerContent();
-    if (silent) return;
+    if (silent) return true;
     this.history.pushHistorySnapshot();
     this.store.selectedCellInfo = this.t('STATUS.AUTO_LAYOUT');
+    return true;
+  }
+
+  /** Mọi bước đi tới được từ Bắt đầu và đi tiếp tới được một Kết thúc (không có bước cô lập / cụt) */
+  private isFlowConnected(graph: any, nodes: any[]): boolean {
+    const out = new Map<string, string[]>();
+    const back = new Map<string, string[]>();
+    graph.getEdges().forEach((e: any) => {
+      const s = e.getSourceCellId();
+      const t = e.getTargetCellId();
+      if (!s || !t) return;
+      out.set(s, [...(out.get(s) || []), t]);
+      back.set(t, [...(back.get(t) || []), s]);
+    });
+    const typeOf = (n: any) => normalizeNodeType(n.getData()?.type, n.getData()?.gatewayType);
+    const starts = nodes.filter((n) => typeOf(n) === 'START').map((n) => n.id);
+    const ends = nodes.filter((n) => typeOf(n) === 'END').map((n) => n.id);
+    if (!starts.length || !ends.length) return false;
+    const reach = (from: string[], adj: Map<string, string[]>) => {
+      const seen = new Set<string>(from);
+      const queue = [...from];
+      while (queue.length) {
+        (adj.get(queue.shift()!) || []).forEach((next) => {
+          if (!seen.has(next)) {
+            seen.add(next);
+            queue.push(next);
+          }
+        });
+      }
+      return seen;
+    };
+    const fromStart = reach(starts, out);
+    const toEnd = reach(ends, back);
+    return nodes.every((n) => fromStart.has(n.id) && toEnd.has(n.id));
   }
 
   /** Y (trong node) của cổng: cổng đặt tuyệt đối dùng args.y, còn lại ở giữa chiều cao */

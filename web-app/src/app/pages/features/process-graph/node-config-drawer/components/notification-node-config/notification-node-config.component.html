@@ -1,54 +1,78 @@
-<div class="notification-config-container" *ngIf="nodeProps">
-  <div class="drawer-section-heading mt-4">
-    <ant-icon name="bell" [size]="14" style="margin-right: 6px;"></ant-icon>
-    <span>CẤU HÌNH THÔNG BÁO TỰ ĐỘNG</span>
-  </div>
+<div class="notify-config" *ngIf="nodeProps">
+  <!-- ===== Thông tin chung ===== -->
+  <section class="notify-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
+    <ng-container *ngIf="isOpen('general')">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="error('label')" [required]="true" [spacing]="0">
+        <ant-input [ngModel]="nodeProps.label" (ngModelChange)="onLabelChange($event)" [maxLength]="limits.label"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
 
-  <!-- Kênh thông báo -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Kênh thông báo</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.notificationChannel" (ngModelChange)="onPropChange('notificationChannel')"
-        name="notificationChannel">
-        <nz-option *ngFor="let ch of channelOptions" [nzValue]="ch.value" [nzLabel]="ch.label"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+      <!-- Mã bước: tự sinh từ tên bước, cho sửa (chữ, số, "_") -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0"
+                      [error]="errors.nodeKey ? (('PROCESS_GRAPH.DRAWER.VALIDATION.' + (errors.nodeKey === true ? 'REQUIRED' : errors.nodeKey)) | translate) : ''">
+        <ant-input class="step-code" [(ngModel)]="nodeProps.nodeKey" (ngModelChange)="save('nodeKey')"
+                   [inputFilter]="nodeKeyFilter" [maxLength]="limits.nodeKey"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
 
-  <!-- Đối tượng nhận thông báo -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Người nhận</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.notificationRecipient" (ngModelChange)="onPropChange('notificationRecipient')"
-        name="notificationRecipient">
-        <nz-option *ngFor="let rec of recipientOptions" [nzValue]="rec.value" [nzLabel]="rec.label"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')" [maxLength]="limits.description"
+                      [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
+      </app-form-field>
+    </ng-container>
+  </section>
 
-  <!-- Tiêu đề thông báo -->
-  <nz-form-item>
-    <nz-form-label>Tiêu đề thông báo</nz-form-label>
-    <nz-form-control>
-      <input nz-input [(ngModel)]="nodeProps.notificationTitle" (ngModelChange)="onPropChange('notificationTitle')"
-        name="notificationTitle" placeholder="VD: Thông báo cập nhật tiến độ giải quyết cước..." />
-    </nz-form-control>
-  </nz-form-item>
+  <div class="notify-divider"></div>
 
-  <!-- Nội dung thông báo -->
-  <nz-form-item>
-    <div class="template-header-wrap">
-      <nz-form-label nzRequired>Nội dung thông báo</nz-form-label>
-      <div class="variable-chips-row">
-        <button type="button" class="chip-btn" (click)="insertVariable('customer_name')">+ Tên KH</button>
-        <button type="button" class="chip-btn" (click)="insertVariable('ticket_code')">+ Mã phiếu</button>
-        <button type="button" class="chip-btn" (click)="insertVariable('sla_time')">+ Hạn SLA</button>
-      </div>
-    </div>
-    <nz-form-control>
-      <textarea nz-input rows="4" [(ngModel)]="nodeProps.notificationContent"
-        (ngModelChange)="onPropChange('notificationContent')" name="notificationContent"
-        placeholder="Nhập nội dung tin nhắn. Bạn có thể chèn các tham số như {customer_name}, {ticket_code}..."></textarea>
-    </nz-form-control>
-  </nz-form-item>
+  <!-- ===== Thông báo ===== -->
+  <section class="notify-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'notification', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.NOTIFICATION' }"></ng-container>
+    <ng-container *ngIf="isOpen('notification')">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.NOTIFICATION.CHANNEL' | translate" [error]="error('notificationChannel')" [required]="true" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.notificationChannel" (ngModelChange)="save('notificationChannel')" [options]="channelOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.NOTIFICATION.SOURCE' | translate" [error]="error('notificationSource')" [required]="true" [spacing]="0">
+        <ant-select [(ngModel)]="nodeProps.notificationSource" (ngModelChange)="onSourceChange()" [options]="sourceOptions"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      </app-form-field>
+
+      <!-- Người nhận: 1 biến quy trình, hoặc nhiều người dùng hệ thống -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.NOTIFICATION.RECIPIENT' | translate" [required]="true" [spacing]="0"
+                      [error]="error(isUserSource ? 'notificationRecipients' : 'notificationRecipient')">
+        <app-multi-select *ngIf="isUserSource; else singleRecipient" [(ngModel)]="nodeProps.notificationRecipients"
+                          (ngModelChange)="save('notificationRecipients')" [options]="userOptions"
+                          [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"
+                          [searchPlaceholder]="'PROCESS_GRAPH.INFO.SEARCH_PLACEHOLDER' | translate"
+                          [selectAllLabel]="'PROCESS_GRAPH.INFO.SELECT_ALL' | translate"
+                          [status]="error('notificationRecipients') ? 'error' : ''"></app-multi-select>
+        <ng-template #singleRecipient>
+          <ant-select [(ngModel)]="nodeProps.notificationRecipient" (ngModelChange)="save('notificationRecipient')"
+                      [options]="variableOptions" [disabled]="!isVariableSource" [showSearch]="true"
+                      [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+        </ng-template>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.NOTIFICATION.TITLE' | translate" [error]="error('notificationTitle')" [required]="true" [spacing]="0">
+        <ant-input [(ngModel)]="nodeProps.notificationTitle" (ngModelChange)="save('notificationTitle')" [maxLength]="notifyLimits.title"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
+
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.NOTIFICATION.CONTENT' | translate" [error]="error('notificationContent')" [required]="true" [spacing]="0">
+        <ant-textarea [(ngModel)]="nodeProps.notificationContent" (ngModelChange)="save('notificationContent')" [maxLength]="notifyLimits.content"
+                      [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
+      </app-form-field>
+    </ng-container>
+  </section>
 </div>
+
+<!-- Tiêu đề khối + chevron thu gọn -->
+<ng-template #sectionHead let-key="key" let-title="title">
+  <button type="button" class="section-head" (click)="toggleSection(key)" [attr.aria-expanded]="isOpen(key)">
+    <span>{{ title | translate }}</span>
+    <img class="section-chevron" [class.collapsed]="!isOpen(key)"
+         src="assets/icons/processx/chevron-up.svg" width="24" height="24" alt="" />
+  </button>
+</ng-template>

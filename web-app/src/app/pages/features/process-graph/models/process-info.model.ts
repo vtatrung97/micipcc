@@ -4,8 +4,18 @@ import { ConditionRuleItem } from './node-property.model';
 /** Loại kích hoạt quy trình (tab "Thông tin chung" › Cấu hình quy trình) */
 export type ProcessTriggerType = 'MANUAL' | 'AUTO' | 'SCHEDULE' | 'HYBRID';
 
-/** Đơn vị SLA — cùng bộ giá trị với `slaUnit` của node USER_TASK (FLOW_SCHEMA mục 4) */
-export type ProcessSlaUnit = 'Ngày' | 'Giờ' | 'Phút';
+/** Đơn vị thời hạn xử lý: Giờ / Ngày / Tuần / Tháng (mặc định Ngày) */
+export type ProcessSlaUnit = 'Giờ' | 'Ngày' | 'Tuần' | 'Tháng';
+export const PROCESS_SLA_UNITS: ProcessSlaUnit[] = ['Giờ', 'Ngày', 'Tuần', 'Tháng'];
+
+/** Giới hạn độ dài / giá trị các ô của tab Thông tin chung */
+export const PROCESS_INFO_LIMITS = {
+  name: 255,
+  code: 255,
+  description: 500,
+  slaMax: 99999,
+  conditionValue: 255,
+};
 
 /** Kích hoạt thủ công: biểu mẫu dữ liệu đầu vào */
 export interface ProcessManualConfig {
@@ -124,12 +134,12 @@ export function processInfoFromTemplate(t: ProcessTemplateItem | null | undefine
 
   if (t.slaValue != null) {
     info.slaValue = t.slaValue;
-    info.slaUnit = (t.slaUnit as ProcessSlaUnit) || 'Ngày';
+    info.slaUnit = PROCESS_SLA_UNITS.includes(t.slaUnit as ProcessSlaUnit) ? (t.slaUnit as ProcessSlaUnit) : 'Ngày';
   } else {
     const m = /^(\d+)\s*([hdm])/i.exec(t.sla || '');
     if (m) {
       info.slaValue = +m[1];
-      info.slaUnit = m[2].toLowerCase() === 'd' ? 'Ngày' : m[2].toLowerCase() === 'm' ? 'Phút' : 'Giờ';
+      info.slaUnit = m[2].toLowerCase() === 'h' ? 'Giờ' : 'Ngày';
     }
   }
   return info;
@@ -147,28 +157,33 @@ export function validateProcessInfo(info: ProcessInfo): ProcessInfoErrors {
   if (info.triggerType === 'MANUAL' && !info.manual.inputFormId) errors.manualFormId = 'REQUIRED';
   // Điều kiện kích hoạt: mọi dòng phải đủ Tham số + Kiểu so sánh + Giá trị
   if (info.triggerType === 'AUTO' && !info.auto.apiId) errors.autoApiId = 'REQUIRED';
-  if (info.triggerType === 'AUTO' && !isConditionRulesComplete(info.auto.conditions.rules)) errors.autoConditions = 'REQUIRED';
+  const autoRuleError = info.triggerType === 'AUTO' ? conditionRulesError(info.auto.conditions.rules) : null;
+  if (autoRuleError) errors.autoConditions = autoRuleError;
 
   if (info.triggerType === 'SCHEDULE') {
-    const validTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(info.schedule.runTime);
+    // Giờ chạy: giờ bắt buộc (00–23), phút để trống = 00
+    const timeError = runTimeError(info.schedule.runTime);
     if (info.schedule.mode === 'REPEAT') {
-      // Lặp lại: chọn chu kỳ → chọn xong mới hiện + bắt buộc Giờ chạy
+      // Lặp lại: chọn tần suất → chọn xong mới hiện + bắt buộc Giờ chạy
       if (!info.schedule.repeat) errors.repeat = 'REQUIRED';
       else if (info.schedule.repeat === 'WEEKLY' && !info.schedule.weekDays?.length) errors.weekDays = 'REQUIRED';
       else if (info.schedule.repeat === 'MONTHLY' && !info.schedule.monthDays?.length) errors.monthDays = 'REQUIRED';
-      else if (!validTime) errors.runTime = 'TIME_FORMAT';
+      else if (timeError) errors.runTime = timeError;
     } else {
       if (!info.schedule.runDate) errors.runDate = 'REQUIRED';
-      if (!validTime) errors.runTime = 'TIME_FORMAT';
+      if (timeError) errors.runTime = timeError;
     }
   }
   if (info.triggerType === 'HYBRID') {
     if (!info.hybrid.apiId) errors.apiId = 'REQUIRED';
-    if (!isConditionRulesComplete(info.hybrid.conditions.rules)) errors.hybridConditions = 'REQUIRED';
+    const hybridRuleError = conditionRulesError(info.hybrid.conditions.rules);
+    if (hybridRuleError) errors.hybridConditions = hybridRuleError;
     if (!info.hybrid.inputFormId) errors.inputFormId = 'REQUIRED';
   }
 
-  if (info.slaValue == null || !(info.slaValue > 0)) errors.sla = 'SLA_POSITIVE';
+  // Thời hạn xử lý: bắt buộc, số nguyên 1 – 99999
+  if (info.slaValue == null) errors.sla = 'REQUIRED';
+  else if (!Number.isInteger(info.slaValue) || info.slaValue < 1 || info.slaValue > PROCESS_INFO_LIMITS.slaMax) errors.sla = 'SLA_RANGE';
   return errors;
 }
 
@@ -182,7 +197,7 @@ export function toProcessInfoPayload(info: ProcessInfo) {
       info.triggerType === 'MANUAL' ? { manual: { ...info.manual } }
       : info.triggerType === 'AUTO'
         ? { auto: { apiId: info.auto.apiId, conditions: { ...info.auto.conditions, rules: [...info.auto.conditions.rules] } } }
-      : info.triggerType === 'SCHEDULE' ? { schedule: { ...info.schedule } }
+      : info.triggerType === 'SCHEDULE' ? { schedule: { ...info.schedule, runTime: normalizeRunTime(info.schedule.runTime) } }
       : info.triggerType === 'HYBRID'
         ? { hybrid: { ...info.hybrid, conditions: { ...info.hybrid.conditions, rules: [...info.hybrid.conditions.rules] } } }
       : null,
@@ -204,12 +219,23 @@ export function createEmptyConditionRule(): ConditionRuleItem {
   return { param: '', operator: 'EQ', value: '' };
 }
 
-/** Một dòng đã nhập đủ Tham số + Kiểu so sánh + Giá trị */
-export function isConditionRuleComplete(rule: ConditionRuleItem): boolean {
-  return !!(rule.param && rule.operator && String(rule.value ?? '').trim());
+/** Điều kiện kích hoạt: Tham số + Kiểu so sánh bắt buộc, Giá trị so sánh không bắt buộc */
+export function conditionRulesError(rules: ConditionRuleItem[]): string | null {
+  if (!rules.length || rules.some(r => !r.param)) return 'PARAM_REQUIRED';
+  if (rules.some(r => !r.operator)) return 'OPERATOR_REQUIRED';
+  return null;
 }
 
-/** Có ít nhất 1 dòng và mọi dòng đều nhập đủ */
-export function isConditionRulesComplete(rules: ConditionRuleItem[]): boolean {
-  return rules.length > 0 && rules.every(isConditionRuleComplete);
+/** Lỗi giờ chạy "H:m": thiếu giờ → REQUIRED, ngoài 0–23 / 0–59 → TIME_FORMAT */
+function runTimeError(runTime: string): string | null {
+  const [h = '', m = ''] = (runTime || '').split(':');
+  if (!h) return 'REQUIRED';
+  if (+h > 23 || (m !== '' && +m > 59)) return 'TIME_FORMAT';
+  return null;
+}
+
+/** Chuẩn hoá giờ chạy về HH:mm (phút trống = 00) */
+export function normalizeRunTime(runTime: string): string {
+  const [h = '', m = ''] = (runTime || '').split(':');
+  return h ? `${h.padStart(2, '0')}:${(m || '0').padStart(2, '0')}` : '';
 }
