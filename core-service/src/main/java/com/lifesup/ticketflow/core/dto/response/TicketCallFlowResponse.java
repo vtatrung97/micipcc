@@ -17,7 +17,8 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Chi tiết quy trình, kèm JSON canvas để FE vẽ lại.
- * flowJson là bản đang sửa: bản nháp nếu có, không thì bản đang hiệu lực.
+ * flowJson là phiên bản vừa thao tác (lưu / ban hành / tạo); xem chi tiết quy trình thì là bản đang ban hành,
+ * chưa có thì là phiên bản mới nhất.
  */
 @Data
 @Builder
@@ -31,8 +32,6 @@ public class TicketCallFlowResponse {
     Long id;
     String code;
     String name;
-    /** Tiền tố mã hồ sơ, VD "PAKN". */
-    String caseCodePrefix;
     String category;
     String description;
     TicketCallFlowStatus status;
@@ -42,20 +41,22 @@ public class TicketCallFlowResponse {
     SlaUnit slaUnit;
     /** Chuỗi JSON canvas, đúng nguyên văn như FE đã gửi lên. */
     String flowJson;
+    /** templateVersionId của flowJson ở trên, dùng cho lưu / ban hành / xoá / nhân bản phiên bản. */
+    @JsonSerialize(using = ToStringSerializer.class)
+    @Schema(type = "string", example = "702305427898417153")
+    Long flowJsonVersionId;
     /** Số phiên bản của flowJson ở trên. */
     Integer flowJsonVersionNo;
-    /** Trạng thái phiên bản của flowJson ở trên (DRAFT hoặc PUBLISHED). */
+    /** Trạng thái phiên bản của flowJson ở trên. */
     TicketCallFlowVersionStatus flowJsonVersionStatus;
-    /** Bản đang hiệu lực, null = chưa publish lần nào. */
+    /** Bản đang ban hành, null = chưa có. */
     TicketCallFlowVersionSummaryResponse publishedVersion;
-    /** Bản nháp, null = không có bản nháp. */
-    TicketCallFlowVersionSummaryResponse draftVersion;
     /** Epoch millis. */
     Long createdAt;
     String createdBy;
     /** Epoch millis. */
     Long updatedAt;
     String updatedBy;
-    /** Gửi lại khi cập nhật / publish / huỷ bản nháp để chống lưu đè. */
+    /** Gửi lại khi lưu / ban hành để chống lưu đè. */
     Long rowVersion;
 }

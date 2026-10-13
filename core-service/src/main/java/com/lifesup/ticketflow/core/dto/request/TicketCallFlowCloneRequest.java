@@ -13,7 +13,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-/** Nhân bản quy trình: bản sao giữ nguyên flowJson của bản gốc, luôn ở trạng thái DRAFT. */
 @Data
 @Builder
 @NoArgsConstructor
@@ -33,13 +32,6 @@ public class TicketCallFlowCloneRequest {
     @Size(max = 255, message = "{validation.ticketCallFlow.name.size}")
     @JsonDeserialize(using = StringTrimDeserializer.class)
     String name;
-
-    @Schema(description = "Tiền tố mã hồ sơ: chữ in hoa không dấu và số, không đổi sau khi tạo", example = "PAKN")
-    @NotBlank(message = "{validation.ticketCallFlow.caseCodePrefix.required}")
-    @Size(max = 20, message = "{validation.ticketCallFlow.caseCodePrefix.size}")
-    @Pattern(regexp = "^[A-Z0-9]+$", message = "{validation.ticketCallFlow.caseCodePrefix.pattern}")
-    @JsonDeserialize(using = StringTrimDeserializer.class)
-    String caseCodePrefix;
 
     @Schema(description = "Để trống thì lấy mô tả của bản gốc")
     @Size(max = 1000, message = "{validation.ticketCallFlow.description.size}")
