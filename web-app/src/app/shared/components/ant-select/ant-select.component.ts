@@ -8,6 +8,7 @@ import {
   HostListener,
   ChangeDetectorRef,
   ViewChild,
+  TemplateRef,
   OnChanges,
   OnDestroy,
   SimpleChanges
@@ -51,6 +52,19 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges, OnDe
    * vd: bảng cuộn ngang trong drawer). Cuộn bất kỳ vùng nào khi đang mở sẽ đóng dropdown.
    */
   @Input() fixedPanel: boolean = false;
+  /** Ô tìm kiếm nằm đầu dropdown (thay cho tìm ngay trên ô chọn) */
+  @Input() panelSearch: boolean = false;
+  @Input() panelSearchPlaceholder: string = 'Tìm kiếm';
+  /**
+   * Nội dung chân dropdown (vd: nút "Thêm mới").
+   * Context: `$implicit` = từ khoá đang tìm, `close` = hàm đóng dropdown.
+   */
+  @Input() footerTemplate?: TemplateRef<any>;
+  /**
+   * Tự vẽ nội dung từng option (thay nhãn + dấu tích mặc định).
+   * Context: `$implicit` = option, `selected` = đang chọn.
+   */
+  @Input() optionTemplate?: TemplateRef<any>;
   /** Toạ độ dropdown khi `fixedPanel` */
   panelTop: number | null = null;
   panelLeft: number | null = null;
@@ -59,6 +73,14 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges, OnDe
   @Output() valueChange = new EventEmitter<any>();
 
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('panelSearchInput') panelSearchInput?: ElementRef<HTMLInputElement>;
+
+  /** Đóng dropdown từ nội dung chân (footerTemplate) */
+  readonly closePanel = (): void => {
+    this.isOpen = false;
+    this.searchQuery = '';
+    this.cdr.markForCheck();
+  };
   @ViewChild('container') container?: ElementRef<HTMLDivElement>;
 
   isOpen: boolean = false;
@@ -136,9 +158,7 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges, OnDe
       this.searchQuery = '';
       this.activeHoverIndex = this.normalizedOptions.findIndex(o => o.value === this.innerValue);
       setTimeout(() => {
-        if (this.searchInput) {
-          this.searchInput.nativeElement.focus();
-        }
+        (this.panelSearchInput || this.searchInput)?.nativeElement.focus();
       }, 50);
     } else {
       this.onTouched();
@@ -230,7 +250,8 @@ export class AntSelectComponent implements ControlValueAccessor, OnChanges, OnDe
     }
   }
 
-  @HostListener('document:click', ['$event'])
+  /** mousedown thay vì click: modal / drawer chặn click lan ra document nên dropdown bên trong không đóng được */
+  @HostListener('document:mousedown', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (this.isOpen && !this.elRef.nativeElement.contains(event.target)) {
       this.isOpen = false;

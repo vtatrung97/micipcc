@@ -6,7 +6,9 @@ import {
   SystemTaskInputRow,
   SystemTaskOutputRow,
 } from '../../../models/node-property.model';
-import { NodeFieldErrors } from '../../../models/node-validation';
+import { NODE_NUMBER_LIMITS, NodeFieldErrors } from '../../../models/node-validation';
+import { PROCESS_VARIABLE_LIMITS, variableNameFilter } from '../../../models/process-variable';
+import { NODE_TEXT_LIMITS, applyLabelChange, nodeKeyFilter } from '../../../models/node-key';
 import { SYSTEM_APIS, SYSTEM_KEYS, SystemApiDef } from '../../../config/system-task.config';
 import { GraphBridgeService } from '../../../services/graph-bridge.service';
 import { ProcessVariableOption, ProcessVariableService } from '../../../services/process-variable.service';
@@ -23,6 +25,12 @@ export class ActionNodeConfigComponent implements OnChanges {
   @Input() nodeProps!: NodePropertyModel;
   /** Lỗi trường bắt buộc do drawer kiểm tra khi bấm Lưu */
   @Input() errors: NodeFieldErrors = {};
+  readonly varLimits = PROCESS_VARIABLE_LIMITS;
+  readonly numberLimits = NODE_NUMBER_LIMITS;
+  readonly variableNameFilter = variableNameFilter;
+
+  readonly limits = NODE_TEXT_LIMITS;
+  readonly nodeKeyFilter = nodeKeyFilter;
 
   openSections: Record<SectionKey, boolean> = {
     general: true,
@@ -50,7 +58,8 @@ export class ActionNodeConfigComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['nodeProps'] || !this.nodeProps) return;
-    this.variableOptions = this.variables.getVariables();
+    // Biến của các bước đứng trước bước này
+    this.variableOptions = this.variables.getVariables(this.nodeProps.id);
     this.connectionStatus = null;
     this.refreshApiOptions();
     let changed = false;
@@ -142,7 +151,9 @@ export class ActionNodeConfigComponent implements OnChanges {
     }
   }
 
-  onLabelChange(): void {
+  /** Đổi tên bước; mã bước còn tự sinh thì sinh lại theo tên mới */
+  onLabelChange(label: string): void {
+    applyLabelChange(this.nodeProps, label);
     this.bridgeService.updateNodeLabel(this.nodeProps.id, this.nodeProps.label, this.nodeProps);
   }
 

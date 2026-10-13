@@ -15,12 +15,14 @@ export type ProcessColumnKey =
 export interface ProcessColumn {
   key: ProcessColumnKey;
   label: string;
+  /** Luôn hiện, không cho ẩn (ô tích bị khoá) */
+  locked?: boolean;
 }
 
-/** Thứ tự cột trong bảng và trong panel ẩn/hiện */
+/** Thứ tự trong panel ẩn/hiện; Mã + Tên quy trình luôn hiện */
 export const PROCESS_COLUMNS: ProcessColumn[] = [
-  { key: 'name', label: 'Tên quy trình' },
-  { key: 'code', label: 'Mã' },
+  { key: 'code', label: 'Mã quy trình', locked: true },
+  { key: 'name', label: 'Tên quy trình', locked: true },
   { key: 'version', label: 'Phiên bản' },
   { key: 'status', label: 'Trạng thái' },
   { key: 'category', label: 'Nhóm quy trình' },

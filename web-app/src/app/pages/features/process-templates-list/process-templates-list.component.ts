@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { TemplateService, ProcessTemplateItem } from '@core/services/template.service';
-import { PROCESS_CATEGORIES } from '@core/services/process-category.constant';
+import { ProcessCategoryService } from '@core/services/process-category.service';
 import { RbacService } from '@core/rbac/services/rbac.service';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
 import { ActionMenuItem } from '@shared/components/action-menu/action-menu.component';
@@ -100,7 +100,8 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     private templateService: TemplateService,
     private rbacService: RbacService,
     private router: Router,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private categoryService: ProcessCategoryService
   ) {}
 
   ngOnInit(): void {
@@ -149,6 +150,9 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   }
 
   // ===== Ẩn / hiện cột (nút "Sắp xếp") =====
+  /** Cột cho phép ẩn (bỏ Mã + Tên quy trình) */
+  private readonly hideableKeys: ProcessColumnKey[] = PROCESS_COLUMNS.filter(c => !c.locked).map(c => c.key);
+
   isColumnVisible(key: ProcessColumnKey): boolean {
     return !this.hiddenColumns.has(key);
   }
@@ -158,23 +162,24 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   }
 
   get isSomeColumnsVisible(): boolean {
-    return this.hiddenColumns.size > 0 && this.hiddenColumns.size < this.columns.length;
+    return this.hiddenColumns.size > 0 && this.hiddenColumns.size < this.hideableKeys.length;
   }
 
   toggleColumn(key: ProcessColumnKey, visible: boolean): void {
+    if (!this.hideableKeys.includes(key)) return;
     visible ? this.hiddenColumns.delete(key) : this.hiddenColumns.add(key);
     this.saveHiddenColumns();
   }
 
   toggleAllColumns(visible: boolean): void {
-    this.hiddenColumns = visible ? new Set() : new Set(this.columns.map(c => c.key));
+    this.hiddenColumns = visible ? new Set() : new Set(this.hideableKeys);
     this.saveHiddenColumns();
   }
 
   private loadHiddenColumns(): Set<ProcessColumnKey> {
     try {
       const raw = JSON.parse(localStorage.getItem(PROCESS_HIDDEN_COLUMNS_STORAGE_KEY) || '[]');
-      const known = new Set(this.columns.map(c => c.key));
+      const known = new Set(PROCESS_COLUMNS.filter(c => !c.locked).map(c => c.key));
       return new Set((Array.isArray(raw) ? raw : []).filter((k: ProcessColumnKey) => known.has(k)));
     } catch {
       return new Set();
@@ -196,7 +201,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
         .sort((a, b) => a.localeCompare(b, 'vi'))
         .map(v => ({ value: v, label: v }));
     return {
-      categories: PROCESS_CATEGORIES.map(c => ({ value: c, label: c })),
+      categories: this.categoryService.categories.map(c => ({ value: c, label: c })),
       triggers: Object.entries(TRIGGER_LABELS).map(([value, label]) => ({ value, label })),
       creators: toOptions(this.allTemplates.map(t => this.creatorOf(t))),
       updaters: toOptions(this.allTemplates.map(t => this.updaterOf(t)))

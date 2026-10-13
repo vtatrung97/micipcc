@@ -33,14 +33,9 @@ export class FlowPersistenceService {
   }
 
 
-  public saveProcessTemplate(): void {
-    if (!this.store.graph) return;
-    const result = this.dialogs.validateGraph();
-    if (!result.isValid) {
-      this.dialogs.openValidationModal(result);
-      this.store.selectedCellInfo = this.t('STATUS.CANNOT_SAVE', { count: result.errors.length });
-      return;
-    }
+  /** Ban hành: hợp lệ thì lưu, sai thì mở danh sách lỗi. Trả về true nếu đã lưu. */
+  public saveProcessTemplate(): boolean {
+    if (!this.store.graph || !this.ensureValid()) return false;
 
     const graphData = this.store.graph.toJSON();
     this.templateService.saveGraphData(this.store.currentTemplate.code, graphData);
@@ -48,6 +43,16 @@ export class FlowPersistenceService {
     alert(
       this.t('MESSAGES.PUBLISH_SUCCESS', { code: this.store.currentTemplate.code, name: this.store.currentTemplate.name }),
     );
+    return true;
+  }
+
+  /** Kiểm tra trường bắt buộc + nguyên tắc nối bước; sai thì mở danh sách lỗi (bấm để tới bước lỗi) */
+  private ensureValid(): boolean {
+    const result = this.dialogs.validateGraph();
+    if (result.isValid) return true;
+    this.dialogs.openValidationModal(result);
+    this.store.selectedCellInfo = this.t('STATUS.CANNOT_SAVE', { count: result.errors.length });
+    return false;
   }
 
 
@@ -62,7 +67,7 @@ export class FlowPersistenceService {
         description: this.store.processInfo.description,
         ...toProcessInfoPayload(this.store.processInfo),
         versionName: this.store.currentTemplate.version
-          ? `Phiên bản ${this.store.currentTemplate.version}`
+          ? `Phiên bản ${String(this.store.currentTemplate.version).replace(/^v/i, '')}`
           : undefined,
         rowVersion: this.store.draftRowVersion,
       },
@@ -72,11 +77,14 @@ export class FlowPersistenceService {
   }
 
 
-  public saveDraft(): void {
-    if (!this.store.graph) return;
+  /** Lưu nháp: kiểm tra như Ban hành; trả về true nếu đã gửi lưu */
+  public saveDraft(): boolean {
+    if (!this.store.graph || !this.ensureValid()) return false;
     const { payload, definition } = this.buildSaveDraftPayload();
-    console.log('[Lưu nháp] Payload gửi BE:', payload);
-    console.log('[Lưu nháp] flowJson (đã parse):', definition);
+    // Payload đúng như gửi BE (flowJson là chuỗi) — copy từ console để gửi BE làm mẫu
+    console.log('[Lưu nháp] Payload gửi BE (PUT /api/v1/ticket-call-flows/{id}):\n' + JSON.stringify(payload, null, 2));
+    // Bản dễ đọc: flowJson dạng object
+    console.log('[Lưu nháp] Payload dễ đọc (flowJson dạng object):\n' + JSON.stringify({ ...payload, flowJson: definition }, null, 2));
 
     this.flowDraftService
       .saveDraft(this.store.currentTemplate.code, payload)
@@ -94,6 +102,7 @@ export class FlowPersistenceService {
           alert(this.t('MESSAGES.SAVE_DRAFT_FAILED', { error: err?.message || err }));
         },
       });
+    return true;
   }
 
 

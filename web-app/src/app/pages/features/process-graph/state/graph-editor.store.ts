@@ -32,6 +32,8 @@ export class GraphEditorStore {
   public nodeCount = 0;
   public edgeCount = 0;
   public currentZoom = 100;
+  /** Chế độ chỉ xem (popup xem quy trình): không kéo / nối / xoá node */
+  public isReadonly = false;
   public hasLocalData = false;
   public canvasMode: 'select' | 'pan' = 'select';
 

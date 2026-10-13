@@ -5,6 +5,7 @@
  */
 
 import { NodeType, isGatewayType } from '../models/node-type';
+import { branchDisplayName, withFixedBranches } from '../models/gateway-branch';
 import { NODE_HEADER_CENTER_Y, nodeRowCenterY } from './node-view.config';
 export type { NodeType } from '../models/node-type';
 
@@ -294,20 +295,13 @@ export function getNodePortItems(
         ];
       }
 
-      // Nhánh Mặc định luôn có và nằm cuối (dưới cùng)
-      const defaultIdx = branches.findIndex((b: any) => b.isDefault);
-      if (defaultIdx === -1) {
-        branches.push({
-          id: 'br-default',
-          name: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'),
-          value: 'default',
-          expression: 'default',
-          isDefault: true,
-        });
-      } else if (defaultIdx !== branches.length - 1) {
-        const [defBr] = branches.splice(defaultIdx, 1);
-        branches.push(defBr);
-      }
+      // Mặc định + Lỗi luôn có và nằm cuối
+      const labels = {
+        defaultName: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'),
+        errorName: t('PROCESS_GRAPH.CANVAS.ERROR_BRANCH'),
+        branchN: (i: number) => t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: i }),
+      };
+      branches = withFixedBranches(branches, labels);
 
       return [
         {
@@ -319,15 +313,7 @@ export function getNodePortItems(
           id: b.id || (b.isDefault ? 'out-default' : `out-branch-${idx}`),
           group: 'outCondition',
           args: { x: cardWidth, y: nodeRowCenterY(idx) },
-          attrs: {
-            portTitle: {
-              text: b.isDefault
-                ? t(P + 'DEFAULT_BRANCH')
-                : b.name ||
-                  b.defaultLabel ||
-                  t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 }),
-            },
-          },
+          attrs: { portTitle: { text: branchDisplayName(b, idx, labels) } },
         })),
       ];
     }
@@ -737,8 +723,8 @@ export function validateBpmnGraph(
       });
     }
 
-    // Condition: Cần tối thiểu 2 nhánh rẽ
-    if (branches.length < 2) {
+    // Condition: Cần tối thiểu 2 nhánh rẽ (không tính nhánh Lỗi)
+    if (branches.filter((b: any) => !b.isError).length < 2) {
       errors.push({
         nodeId: condNode.id,
         nodeKey: data.nodeKey,
@@ -753,7 +739,7 @@ export function validateBpmnGraph(
       });
     }
 
-    // Từng cổng nhánh rẽ phải được nối dây ra ngoài
+    // Mọi nhánh (kể cả Mặc định và Lỗi) đều phải nối tới một bước
     branches.forEach((br: any, idx: number) => {
       const portId =
         br.id || (br.isDefault ? 'out-default' : `out-branch-${idx}`);
@@ -765,37 +751,21 @@ export function validateBpmnGraph(
           (br.isDefault && (p === 'out-default' || p === 'br-default'))
         );
       });
-      if (!isConnected) {
-        if (br.isDefault) {
-          warnings.push({
-            nodeId: condNode.id,
-            nodeKey: data.nodeKey,
-            nodeLabel: label,
-            type: data.type,
-            code: 'CONDITION_DEFAULT_UNCONNECTED',
-            message: t(V + 'CONDITION_DEFAULT_UNCONNECTED', {
-              branch: t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH'),
-              label,
-            }),
-            severity: 'warning',
-          });
-        } else {
-          errors.push({
-            nodeId: condNode.id,
-            nodeKey: data.nodeKey,
-            nodeLabel: label,
-            type: data.type,
-            code: 'CONDITION_BRANCH_UNCONNECTED',
-            message: t(V + 'CONDITION_BRANCH_UNCONNECTED', {
-              branch:
-                br.name ||
-                t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 }),
-              label,
-            }),
-            severity: 'error',
-          });
-        }
-      }
+      if (isConnected) return;
+      const branch = br.isDefault
+        ? t('PROCESS_GRAPH.CANVAS.DEFAULT_BRANCH')
+        : br.isError
+          ? t('PROCESS_GRAPH.CANVAS.ERROR_BRANCH')
+          : br.name || t('PROCESS_GRAPH.CANVAS.BRANCH_N', { index: idx + 1 });
+      errors.push({
+        nodeId: condNode.id,
+        nodeKey: data.nodeKey,
+        nodeLabel: label,
+        type: data.type,
+        code: 'CONDITION_BRANCH_UNCONNECTED',
+        message: t(V + 'CONDITION_BRANCH_UNCONNECTED', { branch, label }),
+        severity: 'error',
+      });
     });
   });
 

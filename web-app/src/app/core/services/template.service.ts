@@ -74,6 +74,8 @@ export interface ProcessTemplateItem {
   slaUnit?: string;
   versions?: TemplateVersionItem[];
   graphData?: any;
+  /** Thiết kế quy trình dạng FlowDefinition (FLOW_SCHEMA.md) — dùng vẽ canvas khi chưa có bản nháp */
+  flowDefinition?: any;
 }
 
 @Injectable({
@@ -81,8 +83,8 @@ export interface ProcessTemplateItem {
 })
 export class TemplateService {
   private readonly endpoint = '/templates';
-  // v2: thêm dữ liệu giả "Đang ban hành" / "Dừng ban hành" vào preset → đổi key để bỏ cache cũ
-  private readonly STORAGE_KEY = 'ipcc_process_templates_store_v2';
+  // v5: 4 quy trình mẫu (4 loại kích hoạt), nhánh Lỗi có bước Báo lỗi xử lý → đổi key để bỏ cache cũ
+  private readonly STORAGE_KEY = 'ipcc_process_templates_store_v5';
   private readonly EXPERIMENT_KEY = 'ipcc_template_experiments_store';
   
   private templatesSubject = new BehaviorSubject<ProcessTemplateItem[]>([]);

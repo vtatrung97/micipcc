@@ -35,6 +35,8 @@ export class AntInputComponent implements ControlValueAccessor {
   @Input() showCount: boolean = false;
   @Input() size: 'small' | 'middle' | 'large' = 'middle';
   @Input() status: 'error' | 'warning' | '' = '';
+  /** Lọc ký tự ngay khi gõ (vd: chỉ cho số) — ô hiển thị luôn khớp giá trị đã lọc */
+  @Input() inputFilter?: (value: string) => string;
 
   @Output() onEnter = new EventEmitter<string>();
   @Output() valueChange = new EventEmitter<string>();
@@ -65,6 +67,14 @@ export class AntInputComponent implements ControlValueAccessor {
 
   onInput(event: Event): void {
     const input = event.target as HTMLInputElement;
+    if (this.inputFilter) {
+      const filtered = this.inputFilter(input.value);
+      if (filtered !== input.value) {
+        const caret = Math.max(0, (input.selectionStart ?? filtered.length) - (input.value.length - filtered.length));
+        input.value = filtered;
+        input.setSelectionRange(caret, caret);
+      }
+    }
     this.value = input.value;
     this.onChange(this.value);
     this.valueChange.emit(this.value);

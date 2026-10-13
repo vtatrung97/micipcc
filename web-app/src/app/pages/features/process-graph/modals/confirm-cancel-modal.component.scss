@@ -1,0 +1,125 @@
+@use '../../../../shared/styles/processx-tokens' as px;
+
+// Cùng lớp với app-modal: trên drawer (z 1000/1001)
+.confirm-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.confirm-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-24;
+}
+
+.confirm-box {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-24;
+  width: 480px;
+  max-width: 100%;
+  padding: px.$space-24;
+  background: px.$white;
+  border-radius: px.$radius-xl;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+// Icon cảnh báo · tiêu đề + mô tả · nút đóng
+.confirm-head {
+  display: flex;
+  align-items: flex-start;
+  gap: px.$space-12;
+}
+
+.confirm-icon {
+  flex-shrink: 0;
+  margin-top: px.$space-2;
+}
+
+.confirm-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: px.$space-4;
+  min-width: 0;
+}
+
+.confirm-title {
+  font-family: px.$font-family;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 700;
+  color: px.$neutral-900;
+}
+
+.confirm-message {
+  margin: 0;
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: px.$neutral-600;
+}
+
+.confirm-close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8;
+  border: none;
+  border-radius: 112px;
+  background: px.$neutral-100;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-300;
+  }
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: px.$space-12;
+}
+
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 px.$space-16;
+  border: 1px solid transparent;
+  border-radius: px.$radius-md;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.px-btn-default {
+  background: px.$white;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &:hover {
+    border-color: px.$neutral-800;
+  }
+}
+
+.px-btn-primary {
+  background: px.$primary-600;
+  color: px.$white;
+
+  &:hover {
+    background: px.$primary-500;
+  }
+}

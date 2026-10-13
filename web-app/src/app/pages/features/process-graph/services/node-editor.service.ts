@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { branchDisplayName, isFixedBranch, withFixedBranches } from '../models/gateway-branch';
 import { TranslateService } from '@ngx-translate/core';
 import { EDGE_COLOR } from '../config/edge-style.config';
 import { ConditionBranch } from '../models/node-property.model';
@@ -9,6 +10,8 @@ import { GraphEditorStore } from '../state/graph-editor.store';
 import { NodeFactoryService } from './node-factory.service';
 import { GraphHistoryService } from './graph-history.service';
 import { GraphBridgeService } from './graph-bridge.service';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { declaredVariables, removeVariableReferences } from '../models/process-variable';
 
 /** Chọn / bỏ chọn node, sửa thuộc tính từ drawer, nhánh điều kiện & cổng, xoá node, làm sạch canvas. */
 @Injectable()
@@ -18,7 +21,8 @@ export class NodeEditorService {
     private store: GraphEditorStore,
     private factory: NodeFactoryService,
     private history: GraphHistoryService,
-    public bridgeService: GraphBridgeService
+    public bridgeService: GraphBridgeService,
+    private message: NzMessageService
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -40,6 +44,14 @@ export class NodeEditorService {
     this.store.selectedCell = null;
   }
 
+
+  private branchLabels() {
+    return {
+      defaultName: this.t('CANVAS.DEFAULT_BRANCH'),
+      errorName: this.t('CANVAS.ERROR_BRANCH'),
+      branchN: (i: number) => this.t('CANVAS.BRANCH_N', { index: i }),
+    };
+  }
 
   public addBranch(): void {
     if (!this.store.selectedNodeProps.branches) {
@@ -88,7 +100,7 @@ export class NodeEditorService {
   public removeBranch(index: number): void {
     if (!this.store.selectedNodeProps.branches) return;
     const br = this.store.selectedNodeProps.branches[index];
-    if (br?.isDefault) {
+    if (isFixedBranch(br)) {
       alert(this.t('MESSAGES.DEFAULT_BRANCH_LOCKED'));
       return;
     }
@@ -109,10 +121,7 @@ export class NodeEditorService {
     const branches = this.store.selectedNodeProps.branches || [];
     this.factory.refreshCardView(this.store.selectedNode);
     branches.forEach((br, idx) => {
-      const displayText =
-        br.isDefault
-            ? this.t('CANVAS.DEFAULT_BRANCH')
-            : br.name || br.defaultLabel || this.t('CANVAS.BRANCH_N', { index: idx + 1 });
+      const displayText = branchDisplayName(br, idx, this.branchLabels());
       const portId =
         br.id || (br.isDefault ? 'out-default' : `out-branch-${idx}`);
       if (this.store.selectedNode.portProp) {
@@ -138,22 +147,8 @@ export class NodeEditorService {
       ? [...this.store.selectedNodeProps.branches]
       : [];
 
-    // Nhánh Mặc định luôn có và nằm cuối (dưới cùng)
-    const defaultIdx = branches.findIndex((b) => b.isDefault);
-    if (defaultIdx === -1) {
-      branches.push({
-        id: 'br-default',
-        name: this.t('CANVAS.DEFAULT_BRANCH'),
-        value: 'default',
-        expression: 'default',
-        variableSource:
-          this.store.selectedNodeProps.conditionVariable || 'flow.variables',
-        isDefault: true,
-      });
-    } else if (defaultIdx !== branches.length - 1) {
-      const [defBr] = branches.splice(defaultIdx, 1);
-      branches.push(defBr);
-    }
+    // Mặc định + Lỗi luôn có và nằm cuối
+    branches = withFixedBranches(branches, this.branchLabels());
     this.store.selectedNodeProps.branches = branches;
 
     // Vẽ lại card theo danh sách nhánh mới (chiều cao + dòng nhánh), rồi đồng bộ cổng ra bên dưới
@@ -377,8 +372,8 @@ export class NodeEditorService {
       triggerEvent: data.triggerEvent || 'Inbound Call (Tổng đài 1800xxxx)',
 
       // Notification fields
-      notificationChannel: data.notificationChannel || 'SMS',
-      notificationRecipient: data.notificationRecipient || 'CUSTOMER',
+      notificationChannel: data.notificationChannel,
+      notificationRecipient: data.notificationRecipient,
       notificationTitle: data.notificationTitle || '',
       notificationContent: data.notificationContent || '',
 
@@ -475,6 +470,11 @@ export class NodeEditorService {
     if (!this.store.selectedNode) return;
     const name = this.store.selectedNodeProps.label;
     const data = this.store.selectedNode.getData() || {};
+    // Mỗi quy trình luôn có đúng 1 node Bắt đầu
+    if (data.type === 'START') {
+      this.message.warning(this.t('MESSAGES.START_DELETE_BLOCKED'));
+      return;
+    }
     if (
       data.type === 'JOIN' &&
       data.gatewayNodeId &&
@@ -486,8 +486,10 @@ export class NodeEditorService {
     if (isGatewayType(data.type) && data.joinNodeId) {
       this.store.graph.getCellById(data.joinNodeId)?.remove();
     }
+    const declared = declaredVariables(data).map((v) => v.name);
     this.store.selectedNode.remove();
     this.store.selectedNode = null;
+    this.removeOrphanVariableMappings(declared);
     this.store.isDrawerOpen = false;
     // Đóng drawer cấu hình đang mở cho node vừa xoá (dù xoá bằng nút ×, phím Delete hay nút trong drawer)
     this.bridgeService.clearSelection();
@@ -495,6 +497,25 @@ export class NodeEditorService {
     this.store.updateCounts();
   }
 
+
+  /**
+   * Biến do bước vừa xoá khai báo (và không bước nào khác khai báo) → bỏ ánh xạ dùng biến đó ở mọi bước còn lại.
+   */
+  private removeOrphanVariableMappings(names: string[]): void {
+    const graph = this.store.graph;
+    if (!graph || !names.length) return;
+    const stillDeclared = new Set<string>(graph.getNodes().flatMap((n: any) => declaredVariables(n.getData() || {}).map((v) => v.name)));
+    const removed = new Set(names.filter((n) => !stillDeclared.has(n)));
+    if (!removed.size) return;
+    let total = 0;
+    graph.getNodes().forEach((node: any) => {
+      const { data, count } = removeVariableReferences(node.getData() || {}, removed);
+      if (!count) return;
+      total += count;
+      node.setData(data, { overwrite: true });
+    });
+    if (total) this.message.info(this.t('MESSAGES.VARIABLE_MAPPINGS_REMOVED', { count: total, names: [...removed].join(', ') }));
+  }
 
   public deleteOrClear(): void {
     if (this.store.selectedNode) {
