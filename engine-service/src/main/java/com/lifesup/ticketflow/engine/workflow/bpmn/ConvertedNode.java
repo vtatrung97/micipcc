@@ -10,7 +10,8 @@ import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.FlowNode;
 
 /**
- * Kết quả chuyển một node Canvas: có thể là một hoặc nhiều phần tử BPMN.
+ * Kết quả chuyển một node Canvas. Một node Canvas luôn cho đúng một ConvertedNode, bên trong có thể gồm một
+ * hoặc nhiều phần tử BPMN (VD SYSTEM_TASK / GATEWAY có nhánh error).
  *
  * <pre>
  *  edge vào ──► entry ... mainExit ──► edge ra (next / success / caseId / default)
@@ -21,9 +22,16 @@ import org.flowable.bpmn.model.FlowNode;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ConvertedNode {
+
+    /*
+     * Khi chuyển sang BPMN, một node Canvas có thể thành nhiều phần tử
+     *  (kiểu như SYSTEM_TASK, GATEWAY có nhánh err)
+     * -> có thể là một hoặc nhiều phần tử BPMN.
+     */
+
     /** Phần tử nhận edge đi vào. */
     FlowNode entry;
-    /** Phần tử phát edge đi ra mặc định. */
+    /** Phần tử phát edge đi ra (mặc định). */
     FlowNode mainExit;
     /** Phần tử phát edge cho handle riêng (VD error → boundary event). */
     Map<String, FlowNode> handleExits;

@@ -1,10 +1,10 @@
 package com.lifesup.ticketflow.engine.workflow.bpmn;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lifesup.ticketflow.engine.workflow.NodeHandlers;
-import com.lifesup.ticketflow.engine.workflow.WorkflowDefinition;
-import com.lifesup.ticketflow.engine.workflow.WorkflowEdge;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandlers;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowDefinition;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowEdge;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -41,6 +41,7 @@ public class BpmnModelBuilder {
         ConversionContext context = new ConversionContext(workflow, objectMapper);
         Map<String, ConvertedNode> converted = new HashMap<>();
         for (WorkflowNode node : workflow.getNodes()) {
+            // một node Canvas luôn cho ra đúng một ConvertedNode, dù bên trong nó có bao nhiêu phần tử BPMN.
             ConvertedNode result = handlers.of(node).toBpmn(node, node.getConfig(), context);
             result.getElements().forEach(process::addFlowElement);
             converted.put(node.getId(), result);

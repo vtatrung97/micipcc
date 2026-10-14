@@ -10,7 +10,7 @@ import com.lifesup.ticketflow.engine.dto.response.TaskDetailResponse;
 import com.lifesup.ticketflow.engine.dto.response.TaskResponse;
 import com.lifesup.ticketflow.engine.node.usertask.UserTaskNodeConfig;
 import com.lifesup.ticketflow.engine.service.UserTaskService;
-import com.lifesup.ticketflow.engine.workflow.NodeConfigReader;
+import com.lifesup.ticketflow.engine.workflow.runtime.NodeConfigReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;

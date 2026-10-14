@@ -3,7 +3,7 @@ package com.lifesup.ticketflow.engine.node.usertask;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.lifesup.ticketflow.engine.workflow.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;

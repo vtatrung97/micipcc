@@ -1,4 +1,4 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.canvas;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;

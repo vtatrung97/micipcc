@@ -1,6 +1,6 @@
 package com.lifesup.ticketflow.engine.node.gateway;
 
-import com.lifesup.ticketflow.engine.workflow.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;

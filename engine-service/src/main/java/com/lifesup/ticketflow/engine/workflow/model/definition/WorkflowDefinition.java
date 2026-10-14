@@ -1,4 +1,4 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.model.definition;
 
 import java.util.List;
 import java.util.Optional;

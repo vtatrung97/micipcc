@@ -7,7 +7,7 @@ import com.lifesup.ticketflow.engine.dto.request.StartInstanceRequest;
 import com.lifesup.ticketflow.engine.dto.response.ProcessInstanceResponse;
 import com.lifesup.ticketflow.engine.dto.response.ProcessInstanceResponse.Status;
 import com.lifesup.ticketflow.engine.service.ProcessInstanceService;
-import com.lifesup.ticketflow.engine.workflow.WorkflowVariables;
+import com.lifesup.ticketflow.engine.workflow.model.WorkflowVariables;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;

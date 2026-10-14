@@ -2,11 +2,11 @@ package com.lifesup.ticketflow.engine.workflow.validation;
 
 import static com.lifesup.ticketflow.engine.workflow.validation.Identifiers.isBlank;
 
-import com.lifesup.ticketflow.engine.workflow.NodeHandlers;
-import com.lifesup.ticketflow.engine.workflow.NodeType;
-import com.lifesup.ticketflow.engine.workflow.WorkflowDefinition;
-import com.lifesup.ticketflow.engine.workflow.WorkflowEdge;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandlers;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowDefinition;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowEdge;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;

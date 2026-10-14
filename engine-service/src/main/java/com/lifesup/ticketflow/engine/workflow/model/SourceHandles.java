@@ -1,4 +1,4 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.model;
 
 /**
  * Giá trị {@code sourceHandle} của edge, tức cổng ra của node nguồn.

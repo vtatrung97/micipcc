@@ -1,5 +1,7 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.model.definition;
 
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

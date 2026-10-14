@@ -1,7 +1,8 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.runtime;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
 import com.lifesup.ticketflow.engine.workflow.bpmn.BpmnExtensions;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

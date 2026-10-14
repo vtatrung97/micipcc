@@ -1,4 +1,4 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.model;
 
 /**
  * Tên biến nội bộ của engine (tiền tố {@value #INTERNAL_PREFIX}), không trùng với biến người dùng khai báo.
