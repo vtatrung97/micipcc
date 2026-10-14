@@ -68,6 +68,10 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   @Input() fixedPanel: boolean = false;
   /** Ngày nhỏ nhất được chọn (YYYY-MM-DD); ngày trước đó bị khoá. Vd: không cho chọn ngày quá khứ */
   @Input() minDate?: string;
+  /** Ngày lớn nhất được chọn (YYYY-MM-DD); ngày sau đó bị khoá. Vd: không cho chọn ngày tương lai */
+  @Input() maxDate?: string;
+  /** Range: cho phép chỉ chọn 1 đầu (từ ngày hoặc đến ngày), đầu còn lại để trống = không giới hạn */
+  @Input() allowOpenRange: boolean = false;
 
   @Output() dateChange = new EventEmitter<any>();
 
@@ -135,7 +139,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   }
 
   get canApply(): boolean {
-    return !!this.draftStart && !!this.draftEnd;
+    return this.allowOpenRange ? !!(this.draftStart || this.draftEnd) : !!this.draftStart && !!this.draftEnd;
   }
 
   pane(key: PaneKey): CalendarPane {
@@ -160,6 +164,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   /** Range: lịch bắt đầu khoá ngày sau ngày kết thúc, lịch kết thúc khoá ngày trước ngày bắt đầu */
   isDisabled(key: PaneKey, cell: CalendarCell): boolean {
     if (this.minDate && cell.iso < this.minDate) return true;
+    if (this.maxDate && cell.iso > this.maxDate) return true;
     if (!this.isRange) return false;
     if (key === 'start') return !!this.draftEnd && cell.iso > this.draftEnd;
     return !!this.draftStart && cell.iso < this.draftStart;

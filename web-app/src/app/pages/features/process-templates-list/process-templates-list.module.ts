@@ -6,6 +6,7 @@ import { ProcessTemplatesListComponent } from './process-templates-list.componen
 import { ProcessTemplatesListRoutingModule } from './process-templates-list-routing.module';
 import { AdvancedFilterDrawerComponent } from './components/advanced-filter-drawer/advanced-filter-drawer.component';
 import { ProcessActionModalComponent } from './components/process-action-modal/process-action-modal.component';
+import { ProcessCloneModalComponent } from './components/process-clone-modal/process-clone-modal.component';
 
 // ng-zorro
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -16,7 +17,8 @@ import { NzMessageModule } from 'ng-zorro-antd/message';
   declarations: [
     ProcessTemplatesListComponent,
     AdvancedFilterDrawerComponent,
-    ProcessActionModalComponent
+    ProcessActionModalComponent,
+    ProcessCloneModalComponent
   ],
   imports: [
     CommonModule,

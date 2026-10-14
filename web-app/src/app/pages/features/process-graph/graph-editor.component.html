@@ -26,19 +26,28 @@
       </div>
     </div>
 
+    <!-- Đang ban hành: chỉ có "Dừng ban hành" (sửa: bấm được, mở popup xác nhận; xem: khoá).
+         Còn lại: sửa / tạo mới có Hủy · Lưu nháp · Ban hành; xem không có nút -->
     <div class="topbar-actions-container">
-      <button type="button" class="topbar-btn text-btn" (click)="cancelEdit()" [title]="'PROCESS_GRAPH.HEADER.CANCEL_TITLE' | translate">
+      <button *ngIf="showEditActions" type="button" class="topbar-btn text-btn" (click)="cancelEdit()" [title]="'PROCESS_GRAPH.HEADER.CANCEL_TITLE' | translate">
         <span>{{ 'PROCESS_GRAPH.HEADER.CANCEL' | translate }}</span>
       </button>
 
-      <button type="button" class="topbar-btn outline-btn" (click)="saveDraft()" [title]="'PROCESS_GRAPH.HEADER.SAVE_DRAFT_TITLE' | translate">
-        <span>{{ 'PROCESS_GRAPH.HEADER.SAVE_DRAFT' | translate }}</span>
+      <button *ngIf="!isCreateMode && headerStatus === 'Published'" type="button" class="topbar-btn stop-btn"
+        [disabled]="isReadonly" (click)="isStopConfirmOpen = true">
+        <span>{{ 'PROCESS_GRAPH.HEADER.STOP_PUBLISH' | translate }}</span>
       </button>
 
-      <button type="button" class="topbar-btn primary-red-btn" (click)="saveProcessTemplate()"
-        [title]="'PROCESS_GRAPH.HEADER.PUBLISH_TITLE' | translate">
-        <span>{{ 'PROCESS_GRAPH.HEADER.PUBLISH' | translate }}</span>
-      </button>
+      <ng-container *ngIf="showEditActions">
+        <button type="button" class="topbar-btn outline-btn" (click)="saveDraft()" [title]="'PROCESS_GRAPH.HEADER.SAVE_DRAFT_TITLE' | translate">
+          <span>{{ 'PROCESS_GRAPH.HEADER.SAVE_DRAFT' | translate }}</span>
+        </button>
+
+        <button type="button" class="topbar-btn primary-red-btn" (click)="saveProcessTemplate()"
+          [title]="'PROCESS_GRAPH.HEADER.PUBLISH_TITLE' | translate">
+          <span>{{ 'PROCESS_GRAPH.HEADER.PUBLISH' | translate }}</span>
+        </button>
+      </ng-container>
     </div>
   </header>
 
@@ -72,7 +81,7 @@
   <div class="studio-workspace">
 
     <!-- THƯ VIỆN BƯỚC -->
-    <aside class="node-palette" [attr.aria-label]="'PROCESS_GRAPH.PALETTE.TITLE' | translate">
+    <aside class="node-palette" [class.is-readonly]="isReadonly" [attr.inert]="isReadonly ? '' : null" [attr.aria-label]="'PROCESS_GRAPH.PALETTE.TITLE' | translate">
       <div class="node-palette-head">
         <h2 class="node-palette-title">{{ 'PROCESS_GRAPH.PALETTE.TITLE' | translate }}</h2>
         <p class="node-palette-desc">{{ 'PROCESS_GRAPH.PALETTE.SUBTITLE' | translate }}</p>
@@ -103,7 +112,7 @@
 
     <!-- Một bước trên Thư viện: kéo thả vào canvas hoặc bấm để thêm -->
     <ng-template #paletteRow let-type>
-      <div class="palette-row" draggable="true"
+      <div class="palette-row" [attr.draggable]="!isReadonly"
         (dragstart)="onPaletteDragStart($event, type)" (click)="addStandardNode(type)"
         [appTooltip]="'PROCESS_GRAPH.PALETTE.ITEMS.' + type + '.TOOLTIP' | translate" tooltipPlacement="right">
         <span class="palette-icon" [style.background]="paletteIconBg(type)">
@@ -117,16 +126,16 @@
     <main class="canvas-area-host" (dragover)="$event.preventDefault()" (drop)="onCanvasDrop($event)">
       <div #container class="x6-graph-container"></div>
       <!-- Nút "+ Thêm bước" sau mỗi cổng ra chưa nối -->
-      <app-add-step-overlay #addStep></app-add-step-overlay>
+      <app-add-step-overlay #addStep [style.display]="isReadonly ? 'none' : null"></app-add-step-overlay>
 
       <!-- Toolbar: Hoàn tác · Làm lại | Thu nhỏ · % · Phóng to | Căn vừa màn hình · Sắp xếp lại -->
-      <app-canvas-toolbar class="canvas-toolbar-host" [canUndo]="canUndo" [canRedo]="canRedo" [zoom]="currentZoom"
+      <app-canvas-toolbar class="canvas-toolbar-host" [canUndo]="!isReadonly && canUndo" [canRedo]="!isReadonly && canRedo" [zoom]="currentZoom"
         (undo)="undo()" (redo)="redo()" (zoomIn)="zoomIn()" (zoomOut)="zoomOut()" (resetZoom)="resetZoom()"
         (fit)="zoomToFit()" (autoLayout)="autoLayout()"></app-canvas-toolbar>
     </main>
 
     <!-- DRAWER CẤU HÌNH BƯỚC (BÊN PHẢI) -->
-    <app-node-config-drawer></app-node-config-drawer>
+    <app-node-config-drawer [readonly]="isReadonly"></app-node-config-drawer>
 
     <!-- TAB "THÔNG TIN CHUNG": phủ lên canvas, canvas vẫn giữ nguyên trong DOM -->
     <app-process-info-form
@@ -134,6 +143,7 @@
       class="info-tab-panel"
       [info]="processInfo"
       [errors]="processInfoErrors"
+      [readonly]="isReadonly"
       [codeEditable]="isCreateMode">
     </app-process-info-form>
 
@@ -142,6 +152,17 @@
       [visible]="isCancelConfirmOpen"
       (confirmed)="leaveEditor()"
       (closed)="isCancelConfirmOpen = false">
+    </app-confirm-cancel-modal>
+
+    <!-- Dừng ban hành (màn sửa bản Đang ban hành) -->
+    <app-confirm-cancel-modal
+      [visible]="isStopConfirmOpen"
+      titleKey="PROCESS_GRAPH.STOP_CONFIRM.TITLE"
+      messageKey="PROCESS_GRAPH.STOP_CONFIRM.MESSAGE"
+      iconSrc="assets/icons/processx/dialog-stop.svg"
+      [iconSize]="32"
+      (confirmed)="stopPublishing()"
+      (closed)="isStopConfirmOpen = false">
     </app-confirm-cancel-modal>
   </div>
 </div>

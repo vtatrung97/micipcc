@@ -20,7 +20,7 @@
         <!-- Chọn nhóm có ô tìm kiếm; chân dropdown có "Thêm mới" để tạo nhóm ngay tại đây -->
         <ant-select [(ngModel)]="info.category" [options]="categoryOptions" [panelSearch]="true" [fixedPanel]="true"
                     [panelSearchPlaceholder]="'PROCESS_GRAPH.INFO.SEARCH_PLACEHOLDER' | translate"
-                    [footerTemplate]="categoryFooter" (valueChange)="cancelAddCategory()"
+                    [footerTemplate]="categoryFooter"
                     [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_SELECT' | translate"></ant-select>
       </app-form-field>
     </div>
@@ -187,26 +187,16 @@
   </app-form-field>
 </ng-template>
 
-<!-- Chân dropdown Nhóm quy trình: nút "Thêm mới" → ô nhập tên nhóm mới -->
+<!-- Chân dropdown Nhóm quy trình: nút "Thêm mới" → đóng dropdown, mở popup thêm nhóm -->
 <ng-template #categoryFooter let-keyword let-close="close">
   <!-- Khung chân đệm 12/8, nút cao 40 nằm giữa -->
-  <div class="category-add-footer" *ngIf="!isAddingCategory; else addCategoryForm">
-    <button type="button" class="category-add-btn" (click)="startAddCategory(keyword)">
+  <div class="category-add-footer">
+    <button type="button" class="category-add-btn" (click)="openCategoryModal(keyword, close)">
       <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
       <span>{{ 'PROCESS_GRAPH.INFO.CATEGORY_ADD' | translate }}</span>
     </button>
   </div>
-  <ng-template #addCategoryForm>
-    <div class="category-add-form">
-      <div class="category-add-row">
-        <input #newCategoryInput class="category-add-input" [class.is-invalid]="!!newCategoryError" type="text"
-               [(ngModel)]="newCategory" [maxLength]="limits.category"
-               [placeholder]="'PROCESS_GRAPH.INFO.CATEGORY_ADD_PLACEHOLDER' | translate"
-               (keydown.enter)="saveCategory(close)" (keydown.escape)="cancelAddCategory()" />
-        <button type="button" class="category-add-action" (click)="cancelAddCategory()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
-        <button type="button" class="category-add-action primary" (click)="saveCategory(close)">{{ 'PROCESS_GRAPH.COMMON.SAVE' | translate }}</button>
-      </div>
-      <span class="category-add-error" *ngIf="newCategoryError">{{ newCategoryError }}</span>
-    </div>
-  </ng-template>
 </ng-template>
+
+<app-category-add-modal [visible]="isCategoryModalOpen" [initialName]="categoryDraftName"
+                        (saved)="onCategorySaved($event)" (closed)="isCategoryModalOpen = false"></app-category-add-modal>

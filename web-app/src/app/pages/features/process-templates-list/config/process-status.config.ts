@@ -6,8 +6,6 @@ export type ProcessStatus = ProcessTemplateItem['status'];
 export interface ProcessStatusConfig {
   /** Nhãn badge trong bảng */
   label: string;
-  /** Nhãn chip trong drawer "Bộ lọc nâng cao" */
-  filterLabel: string;
   /** Giá trị `status` truyền cho `app-status-tag appearance="fill"` → quyết định màu badge */
   badge: 'published' | 'inactive' | 'draft';
 }
@@ -17,10 +15,10 @@ export interface ProcessStatusConfig {
  * Inactive nền Neutral/500 chữ trắng; Draft nền Neutral/300 chữ Neutral/800.
  */
 export const PROCESS_STATUS_CONFIG: Record<ProcessStatus, ProcessStatusConfig> = {
-  Published: { label: 'Đang ban hành', filterLabel: 'Đang hiệu lực', badge: 'published' },
-  Inactive: { label: 'Dừng ban hành', filterLabel: 'Tạm dừng', badge: 'inactive' },
-  Draft: { label: 'Nháp', filterLabel: 'Chưa ban hành', badge: 'draft' }
+  Published: { label: 'Đang ban hành', badge: 'published' },
+  Inactive: { label: 'Dừng ban hành', badge: 'inactive' },
+  Draft: { label: 'Nháp', badge: 'draft' }
 };
 
 /** Thứ tự hiển thị trong bộ lọc */
-export const PROCESS_STATUS_ORDER: ProcessStatus[] = ['Published', 'Inactive', 'Draft'];
+export const PROCESS_STATUS_ORDER: ProcessStatus[] = ['Draft', 'Published', 'Inactive'];

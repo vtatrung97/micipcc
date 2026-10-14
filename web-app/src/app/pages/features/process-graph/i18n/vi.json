@@ -42,7 +42,9 @@
       "SAVE_DRAFT": "Lưu nháp",
       "SAVE_DRAFT_TITLE": "Lưu nháp tiến trình",
       "PUBLISH": "Ban hành",
-      "PUBLISH_TITLE": "Ban hành quy trình"
+      "PUBLISH_TITLE": "Ban hành quy trình",
+      "STOP_PUBLISH": "Dừng ban hành",
+      "STOP_PUBLISH_SUCCESS": "Đã dừng ban hành quy trình [{{code}}]"
     },
     "TABS": {
       "GENERAL": "Thông tin chung",
@@ -123,7 +125,6 @@
       "TRIGGER_PARAM": "Tham số kích hoạt",
       "MULTI_VALUE_HINT": "VD: A, B, C",
       "CATEGORY_ADD": "Thêm mới",
-      "CATEGORY_ADD_PLACEHOLDER": "Nhập tên nhóm quy trình",
       "CATEGORY_ERRORS": {
         "REQUIRED": "Tên nhóm quy trình không được để trống",
         "TOO_LONG": "Tối đa 255 ký tự",
@@ -144,7 +145,9 @@
         "weekDays": "Vào ngày không được để trống",
         "monthDays": "Vào ngày trong tháng không được để trống",
         "runTime": "Giờ chạy không được để trống"
-      }
+      },
+      "CATEGORY_MODAL_TITLE": "Thêm mới nhóm quy trình",
+      "CATEGORY_NAME": "Tên nhóm quy trình"
     },
     "SAMPLES": {
       "BUTTON": "Mẫu quy trình",
@@ -699,6 +702,10 @@
       "GTE": ">= (Lớn hơn hoặc bằng)",
       "IN": "IN (Chứa)",
       "NOT_IN": "NOT IN (Không chứa)"
+    },
+    "STOP_CONFIRM": {
+      "TITLE": "Dừng ban hành!",
+      "MESSAGE": "Bạn có chắc chắn muốn dừng ban hành quy trình này? Quy trình sẽ không thể khởi tạo phiên thực thi mới."
     },
     "CANCEL_CONFIRM": {
       "TITLE": "Xác nhận hủy!",

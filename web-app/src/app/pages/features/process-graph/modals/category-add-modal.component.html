@@ -1,0 +1,13 @@
+<app-modal [visible]="visible" [title]="'PROCESS_GRAPH.INFO.CATEGORY_MODAL_TITLE' | translate" [width]="572" (closed)="closed.emit()">
+  <ng-container *ngIf="visible">
+    <app-form-field [label]="'PROCESS_GRAPH.INFO.CATEGORY_NAME' | translate" [required]="true" [error]="error" [spacing]="0">
+      <ant-input [(ngModel)]="name" (ngModelChange)="error = ''" [maxLength]="maxLength" [status]="error ? 'error' : ''"
+                 [placeholder]="'PROCESS_GRAPH.INFO.PLACEHOLDER_INPUT' | translate" (onEnter)="save()"></ant-input>
+    </app-form-field>
+  </ng-container>
+
+  <div modal-footer class="modal-actions">
+    <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="px-btn px-btn-primary" (click)="save()">{{ 'PROCESS_GRAPH.COMMON.SAVE' | translate }}</button>
+  </div>
+</app-modal>

@@ -17,7 +17,8 @@ import {
   NodeIconModalComponent,
   BranchConditionModalComponent,
   ConfirmCancelModalComponent,
-  ProcessPreviewModalComponent
+  ProcessPreviewModalComponent,
+  CategoryAddModalComponent
 } from './modals';
 import { CanvasToolbarComponent } from './canvas-toolbar/canvas-toolbar.component';
 import { ProcessViewerComponent } from './process-viewer/process-viewer.component';
@@ -63,6 +64,7 @@ import { NzMessageModule } from 'ng-zorro-antd/message';
     BranchConditionModalComponent,
     ConfirmCancelModalComponent,
     ProcessPreviewModalComponent,
+    CategoryAddModalComponent,
     CanvasToolbarComponent,
     ProcessViewerComponent,
     InputFilterDirective,

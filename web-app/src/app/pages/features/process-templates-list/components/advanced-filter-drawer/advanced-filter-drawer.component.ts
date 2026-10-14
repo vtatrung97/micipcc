@@ -44,6 +44,11 @@ export interface AdvancedFilterOptions {
   updaters: SelectOption[];
 }
 
+function toIsoDate(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 export function hasDateRange(range: DateRange | null | undefined): boolean {
   return !!(range && (range.from || range.to));
 }
@@ -75,12 +80,17 @@ export class AdvancedFilterDrawerComponent implements OnChanges {
 
   draft: ProcessAdvancedFilter = { ...EMPTY_ADVANCED_FILTER };
 
-  readonly statusOptions: SelectOption[] = PROCESS_STATUS_ORDER.map(s => ({ value: s, label: PROCESS_STATUS_CONFIG[s].filterLabel }));
+  readonly maxLength = 255;
+  /** Hôm nay (YYYY-MM-DD): các khoảng ngày không cho chọn ngày tương lai */
+  today: string = toIsoDate(new Date());
+
+  readonly statusOptions: SelectOption[] = PROCESS_STATUS_ORDER.map(s => ({ value: s, label: PROCESS_STATUS_CONFIG[s].label }));
 
   ngOnChanges(changes: SimpleChanges): void {
     // Mỗi lần mở drawer: nạp lại bản nháp từ bộ lọc đang áp dụng
     if (changes['visible'] && this.visible) {
       this.draft = { ...EMPTY_ADVANCED_FILTER, ...this.value };
+      this.today = toIsoDate(new Date());
     }
   }
 

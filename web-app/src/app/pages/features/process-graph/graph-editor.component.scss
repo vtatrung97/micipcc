@@ -157,6 +157,23 @@
     }
   }
 
+  // Dừng ban hành (bản Đang ban hành): nền trắng, viền Neutral/300, bo 12; màn xem bị khoá
+  &.stop-btn {
+    padding: 0 px.$space-24;
+    background: px.$white;
+    border-color: px.$neutral-300;
+    border-radius: px.$radius-lg;
+    color: px.$neutral-800;
+
+    &:hover:not(:disabled) {
+      border-color: px.$neutral-800;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
   // Lưu nháp: nền trắng, viền đỏ
   &.outline-btn {
     background: px.$white;
@@ -1080,4 +1097,9 @@
   position: absolute;
   inset: 0;
   z-index: 30;
+}
+
+// Chỉ xem: thư viện bước mờ đi, không kéo / bấm được (khối bị inert)
+.node-palette.is-readonly .palette-row {
+  opacity: 0.5;
 }
