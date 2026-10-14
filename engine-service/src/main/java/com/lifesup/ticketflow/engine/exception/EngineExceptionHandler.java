@@ -1,4 +1,4 @@
-package com.lifesup.ticketflow.engine.common.exception;
+package com.lifesup.ticketflow.engine.exception;
 
 import com.lifesup.ticketflow.common.api.ApiResponse;
 import com.lifesup.ticketflow.common.exception.BaseExceptionHandler;

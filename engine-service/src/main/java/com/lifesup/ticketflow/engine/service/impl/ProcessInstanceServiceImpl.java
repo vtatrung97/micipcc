@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.engine.service.impl;
 
 import com.lifesup.ticketflow.common.exception.AppException;
-import com.lifesup.ticketflow.engine.common.exception.EngineErrorCode;
+import com.lifesup.ticketflow.engine.exception.EngineErrorCode;
 import com.lifesup.ticketflow.engine.dto.request.CancelInstanceRequest;
 import com.lifesup.ticketflow.engine.dto.request.StartInstanceRequest;
 import com.lifesup.ticketflow.engine.dto.response.ProcessInstanceResponse;
