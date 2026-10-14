@@ -13,15 +13,15 @@ VALUES
      'vcx', CAST(UNIX_TIMESTAMP(NOW(3)) * 1000 AS UNSIGNED), 'system', 0);
 
 INSERT IGNORE INTO connection
-    (id, system_id, code, name, protocol, base_url, auth_type, auth_config, secret_ref, timeout_ms,
+    (id, system_id, code, name, protocol, base_url, auth_type, auth_config, timeout_ms,
      rate_limit_per_second, circuit_breaker_config, status, deleted, realm, created_at, created_by, row_version)
 VALUES
     (900000000000000111, 900000000000000101, 'CRM_REST', 'CRM REST API', 'REST', 'https://crm-dev.vcx.vn/api',
-     'API_KEY', '{"headerName": "X-API-Key"}', 'secret/integration/crm', 5000,
+     'API_KEY', '{"headerName": "X-API-Key"}', 5000,
      50, '{"failureRateThreshold": 50, "waitDurationInOpenStateMs": 30000}', 'ACTIVE', 0,
      'vcx', CAST(UNIX_TIMESTAMP(NOW(3)) * 1000 AS UNSIGNED), 'system', 0),
     (900000000000000112, 900000000000000102, 'SMS_REST', 'SMS Gateway REST', 'REST', 'https://sms-dev.vcx.vn',
-     'BEARER', NULL, 'secret/integration/sms', 3000,
+     'BEARER', NULL, 3000,
      NULL, NULL, 'ACTIVE', 0,
      'vcx', CAST(UNIX_TIMESTAMP(NOW(3)) * 1000 AS UNSIGNED), 'system', 0);
 
