@@ -23,6 +23,7 @@ import com.lifesup.ticketflow.core.entity.TemplateVersionEntity;
 import com.lifesup.ticketflow.common.exception.AppException;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
 import com.lifesup.ticketflow.core.common.exception.CoreErrorCode;
+import static com.lifesup.ticketflow.core.common.util.QueryUtils.toLikePattern;
 import com.lifesup.ticketflow.core.repository.TemplateRepository;
 import com.lifesup.ticketflow.core.repository.TemplateVersionRepository;
 import com.lifesup.ticketflow.core.service.TicketCallFlowService;
@@ -456,15 +457,6 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
             throw new AppException(CoreErrorCode.FLOW_JSON_INVALID, e);
         }
         return flowJson;
-    }
-
-    /** Từ khoá tìm kiếm thành mẫu LIKE, escape ký tự đặc biệt % _ \ để người dùng tìm đúng chữ. */
-    private static String toLikePattern(String keyword) {
-        if (!StringUtils.hasText(keyword)) {
-            return null;
-        }
-        String escaped = keyword.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-        return "%" + escaped + "%";
     }
 
     /** Sắp xếp theo sortBy/sortDir (mặc định updatedAt giảm dần), luôn thêm id để phân trang ổn định. */
