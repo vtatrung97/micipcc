@@ -3,7 +3,7 @@
   <div class="confirm-wrap" (click)="closed.emit()">
     <section class="confirm-box" role="alertdialog" aria-modal="true" (click)="$event.stopPropagation()">
       <div class="confirm-head">
-        <img class="confirm-icon" src="assets/icons/processx/alert-circle-warning.svg" width="24" height="24" alt="" />
+        <img class="confirm-icon" [src]="iconSrc" [width]="iconSize" [height]="iconSize" alt="" />
         <div class="confirm-text">
           <span class="confirm-title">{{ titleKey | translate }}</span>
           <p class="confirm-message">{{ messageKey | translate }}</p>

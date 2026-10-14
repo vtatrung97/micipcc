@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostBinding, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, HostBinding, Input, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
@@ -55,13 +55,10 @@ export class ProcessInfoFormComponent implements OnDestroy {
   readonly today = toIsoDate(new Date());
   categoryOptions: SelectOption[] = [];
 
-  /** Đang nhập nhóm quy trình mới ở chân dropdown */
-  isAddingCategory: boolean = false;
-  newCategory: string = '';
-  newCategoryError: string = '';
-  @ViewChild('newCategoryInput') set newCategoryInput(ref: ElementRef<HTMLInputElement> | undefined) {
-    if (ref) setTimeout(() => ref.nativeElement.focus());
-  }
+  /** Popup "Thêm mới nhóm quy trình" */
+  isCategoryModalOpen: boolean = false;
+  /** Tên gợi ý cho popup = từ khoá đang tìm trong dropdown */
+  categoryDraftName: string = '';
   readonly apiOptions = PROCESS_HYBRID_API_OPTIONS;
   readonly inputFormOptions = PROCESS_INPUT_FORM_OPTIONS;
 
@@ -125,29 +122,17 @@ export class ProcessInfoFormComponent implements OnDestroy {
     return operator === 'IN' || operator === 'NOT_IN';
   }
 
-  // ===== Thêm nhóm quy trình mới (chân dropdown) =====
-  startAddCategory(keyword: string): void {
-    this.isAddingCategory = true;
-    this.newCategory = (keyword || '').trim();
-    this.newCategoryError = '';
+  // ===== Thêm nhóm quy trình mới (popup) =====
+  openCategoryModal(keyword: string, closeDropdown: () => void): void {
+    this.categoryDraftName = (keyword || '').trim();
+    closeDropdown();
+    this.isCategoryModalOpen = true;
   }
 
-  cancelAddCategory(): void {
-    this.isAddingCategory = false;
-    this.newCategory = '';
-    this.newCategoryError = '';
-  }
-
-  /** Lưu nhóm mới: hợp lệ thì thêm vào danh sách, chọn luôn và đóng dropdown */
-  saveCategory(close: () => void): void {
-    const code = this.categories.validate(this.newCategory);
-    if (code) {
-      this.newCategoryError = this.translate.instant('PROCESS_GRAPH.INFO.CATEGORY_ERRORS.' + code);
-      return;
-    }
-    this.info.category = this.categories.add(this.newCategory);
-    this.cancelAddCategory();
-    close();
+  /** Popup đã thêm nhóm → chọn luôn nhóm vừa tạo */
+  onCategorySaved(name: string): void {
+    this.info.category = name;
+    this.isCategoryModalOpen = false;
   }
 
   // ===== SLA: ô số ⇄ number =====

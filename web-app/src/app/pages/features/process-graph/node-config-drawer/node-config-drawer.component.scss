@@ -944,3 +944,15 @@
 .gateway-type-select {
   width: 196px;
 }
+
+// Chỉ xem: mọi ô nhập / chọn nền xám như trạng thái khoá
+:host ::ng-deep .properties-side-drawer.is-readonly {
+  .px-input-affix-wrapper,
+  .px-select-selector,
+  .px-textarea,
+  .px-input-number,
+  .ms-trigger {
+    background: px.$neutral-100;
+    color: px.$neutral-800;
+  }
+}

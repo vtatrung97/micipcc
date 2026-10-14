@@ -73,6 +73,7 @@
 .px-btn-outline-primary {
   display: inline-flex;
   align-items: center;
+  gap: px.$space-8;
   padding: px.$space-8 px.$space-16;
   border: 1px solid px.$primary-400;
   border-radius: px.$radius-md;
@@ -89,6 +90,30 @@
   &:hover {
     border-color: px.$primary-600;
     background: px.$primary-50;
+  }
+}
+
+// Nút primary (nền Primary/600, chữ trắng): icon 24 cách chữ 8, pad 8/16, radius 8, 16/24 SemiBold
+.px-btn-solid-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-8;
+  padding: px.$space-8 px.$space-16;
+  border: 1px solid px.$primary-600;
+  border-radius: px.$radius-md;
+  background: px.$primary-600;
+  cursor: pointer;
+  color: px.$white;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    border-color: px.$primary-500;
+    background: px.$primary-500;
   }
 }
 
@@ -227,7 +252,7 @@
 .col-status { width: 200px; }
 .col-md { width: 164px; }
 .col-person { width: 200px; }
-.col-date { width: 160px; }
+.col-date { width: 200px; }
 .col-actions {
   width: 140px;
   text-align: center;

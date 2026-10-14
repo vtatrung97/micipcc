@@ -42,7 +42,9 @@
       "SAVE_DRAFT": "Save draft",
       "SAVE_DRAFT_TITLE": "Save process draft",
       "PUBLISH": "Publish",
-      "PUBLISH_TITLE": "Publish process"
+      "PUBLISH_TITLE": "Publish process",
+      "STOP_PUBLISH": "Stop publishing",
+      "STOP_PUBLISH_SUCCESS": "Stopped publishing process [{{code}}]"
     },
     "TABS": {
       "GENERAL": "General info",
@@ -123,7 +125,6 @@
       "TRIGGER_PARAM": "Trigger parameter",
       "MULTI_VALUE_HINT": "e.g. A, B, C",
       "CATEGORY_ADD": "Add new",
-      "CATEGORY_ADD_PLACEHOLDER": "Enter process group name",
       "CATEGORY_ERRORS": {
         "REQUIRED": "Process group name is required",
         "TOO_LONG": "Up to 255 characters",
@@ -144,7 +145,9 @@
         "weekDays": "Days of week are required",
         "monthDays": "Days of month are required",
         "runTime": "Run time is required"
-      }
+      },
+      "CATEGORY_MODAL_TITLE": "Add process group",
+      "CATEGORY_NAME": "Process group name"
     },
     "SAMPLES": {
       "BUTTON": "Process samples",
@@ -699,6 +702,10 @@
       "GTE": ">= (Greater or equal)",
       "IN": "IN (In list)",
       "NOT_IN": "NOT IN (Not in list)"
+    },
+    "STOP_CONFIRM": {
+      "TITLE": "Stop publishing!",
+      "MESSAGE": "Are you sure you want to stop publishing this process? New executions can no longer be started."
     },
     "CANCEL_CONFIRM": {
       "TITLE": "Confirm cancel!",

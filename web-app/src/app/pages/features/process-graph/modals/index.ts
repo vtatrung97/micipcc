@@ -6,3 +6,4 @@ export * from './node-icon-modal.component';
 export * from './branch-condition-modal.component';
 export * from './confirm-cancel-modal.component';
 export * from './process-preview-modal.component';
+export * from './category-add-modal.component';

@@ -4,6 +4,12 @@ import { map, tap, catchError } from 'rxjs/operators';
 import { ApiService } from '@core/http/api.service';
 import { DEFAULT_PRESET_TEMPLATES } from './preset-templates.constant';
 
+/** Thời điểm dạng 'DD/MM/YYYY HH:mm:ss' (định dạng ngày giờ của danh sách quy trình) */
+function formatDateTime(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
 /**
  * Quản lý vòng đời và dữ liệu Process Template (US-01, US-02, FR-07 → FR-10, FR-25).
  * Dùng chung cho màn danh sách template và Canvas Builder.
@@ -48,9 +54,9 @@ export interface ProcessTemplateItem {
   slaStatus: 'normal' | 'warning' | 'danger' | 'overdue' | 'success';
   status: 'Published' | 'Draft' | 'Inactive';
   description: string;
-  published_at?: string; // DD/MM/YYYY HH:mm
+  published_at?: string; // DD/MM/YYYY HH:mm[:ss]
   published_by?: string;
-  created_at?: string; // DD/MM/YYYY HH:mm
+  created_at?: string; // DD/MM/YYYY HH:mm[:ss]
   created_by?: string;
   updatedAt?: string;
   updated_by?: string;
@@ -167,7 +173,7 @@ export class TemplateService {
   public createTemplate(item: Partial<ProcessTemplateItem>): ProcessTemplateItem {
     const current = this.templatesSubject.value;
     const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const formattedDate = formatDateTime(now);
     
     const newCode = (item.code || `PRC_${String(current.length + 1).padStart(3, '0')}`).toUpperCase();
     const initialVersion: TemplateVersionItem = {
@@ -209,7 +215,7 @@ export class TemplateService {
 
   public updateTemplate(code: string, updates: Partial<ProcessTemplateItem>): void {
     const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const formattedDate = formatDateTime(now);
     
     const updated = this.templatesSubject.value.map(t => {
       if (t.code.toUpperCase() === code.toUpperCase()) {
@@ -235,7 +241,7 @@ export class TemplateService {
     const finalCode = (newCode || `${original.code}_CLONE_${Math.floor(100 + Math.random() * 900)}`).toUpperCase();
     const finalName = newName || `${original.name} (Bản sao)`;
     const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const formattedDate = formatDateTime(now);
 
     const cloned = this.createTemplate({
       code: finalCode,
@@ -252,6 +258,17 @@ export class TemplateService {
       published_at: formattedDate,
       active_instances_count: 0
     });
+    // Sao chép nốt cấu hình kích hoạt, thời hạn xử lý và thiết kế quy trình
+    const copy = <T>(v: T): T => (v == null ? v : JSON.parse(JSON.stringify(v)));
+    Object.assign(cloned, {
+      triggerType: original.triggerType ?? null,
+      triggerConfig: copy(original.triggerConfig),
+      slaValue: original.slaValue ?? null,
+      slaUnit: original.slaUnit,
+      flowDefinition: copy(original.flowDefinition)
+    });
+    this.templatesSubject.next([...this.templatesSubject.value]);
+    this.saveToStorage();
     return cloned;
   }
 
