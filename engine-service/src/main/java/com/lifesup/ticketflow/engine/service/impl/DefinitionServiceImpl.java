@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.engine.service.impl;
 
 import com.lifesup.ticketflow.common.exception.AppException;
-import com.lifesup.ticketflow.engine.common.exception.EngineErrorCode;
+import com.lifesup.ticketflow.engine.exception.EngineErrorCode;
 import com.lifesup.ticketflow.engine.dto.request.DeployDefinitionRequest;
 import com.lifesup.ticketflow.engine.dto.request.ValidateDefinitionRequest;
 import com.lifesup.ticketflow.engine.dto.response.DeploymentResponse;

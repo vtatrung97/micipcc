@@ -2,7 +2,7 @@ package com.lifesup.ticketflow.engine.service.impl;
 
 import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.common.exception.AppException;
-import com.lifesup.ticketflow.engine.common.exception.EngineErrorCode;
+import com.lifesup.ticketflow.engine.exception.EngineErrorCode;
 import com.lifesup.ticketflow.engine.dto.request.ClaimTaskRequest;
 import com.lifesup.ticketflow.engine.dto.request.CompleteTaskRequest;
 import com.lifesup.ticketflow.engine.dto.request.TaskSearchRequest;

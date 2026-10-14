@@ -43,7 +43,7 @@ core ──input────► START (map biến) ─► ... node ... ─► EN
 engine/
   controller/ service/ dto/          API nội bộ cho core-service
   client/                            gọi integration-service (http / stub)
-  common/exception/                  mã lỗi 4xxx, exception handler
+  exception/                         mã lỗi 4xxx, exception handler
   workflow/                          lõi: NodeHandler (SPI), NodeHandlers, mapper, WorkflowConverter, NodeConfigReader
     validation/                      quy tắc xét cả đồ thị (id, edge, START / END, đi tới được), mã lỗi
     bpmn/                            dựng BpmnModel, phần mở rộng tf:*
