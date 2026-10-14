@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface TemplateRepository extends JpaRepository<TemplateEntity, Long> {
@@ -21,6 +22,20 @@ public interface TemplateRepository extends JpaRepository<TemplateEntity, Long> 
     long countByDeletedFalse();
 
     long countByDeletedFalseAndStatus(TicketCallFlowStatus status);
+
+    /**
+     * Nhóm quy trình (category) đang dùng ở các quy trình chưa xoá, không trùng, sắp xếp A-Z.
+     *
+     * @param keyword chuỗi LIKE đã escape; null = lấy tất cả
+     */
+    @Query("""
+            select distinct t.category from TemplateEntity t
+            where t.deleted = false
+              and t.category is not null and t.category <> ''
+              and (:keyword is null or t.category like :keyword escape '\\')
+            order by t.category
+            """)
+    List<String> findCategories(@Param("keyword") String keyword);
 
     /**
      * Danh sách phiên bản của các quy trình chưa xoá, mỗi phiên bản một dòng (quy trình 10 phiên bản = 10 dòng),

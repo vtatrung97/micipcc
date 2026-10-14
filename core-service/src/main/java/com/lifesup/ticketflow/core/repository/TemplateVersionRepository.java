@@ -2,6 +2,7 @@ package com.lifesup.ticketflow.core.repository;
 
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
+import com.lifesup.ticketflow.core.dto.response.UserOptionResponse;
 import com.lifesup.ticketflow.core.entity.TemplateVersionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,4 +44,34 @@ public interface TemplateVersionRepository extends JpaRepository<TemplateVersion
             order by v.versionNo desc
             """)
     List<TicketCallFlowVersionSummaryResponse> findSummariesByTemplateId(@Param("templateId") Long templateId);
+
+    /**
+     * Người tạo phiên bản của các quy trình chưa xoá, tìm trong user_account theo họ tên / username, sắp theo tên.
+     *
+     * @param keyword chuỗi LIKE đã escape; null = lấy tất cả
+     */
+    @Query("""
+            select distinct new com.lifesup.ticketflow.core.dto.response.UserOptionResponse(
+                u.keycloakId, coalesce(u.fullName, u.username))
+            from TemplateVersionEntity v
+            join TemplateEntity t on t.id = v.templateId
+            join UserAccountEntity u on u.keycloakId = v.createdBy
+            where t.deleted = false
+              and (:keyword is null or u.fullName like :keyword escape '\\' or u.username like :keyword escape '\\')
+            order by coalesce(u.fullName, u.username)
+            """)
+    List<UserOptionResponse> findCreators(@Param("keyword") String keyword);
+
+    /** Như {@link #findCreators} nhưng theo người cập nhật. */
+    @Query("""
+            select distinct new com.lifesup.ticketflow.core.dto.response.UserOptionResponse(
+                u.keycloakId, coalesce(u.fullName, u.username))
+            from TemplateVersionEntity v
+            join TemplateEntity t on t.id = v.templateId
+            join UserAccountEntity u on u.keycloakId = v.updatedBy
+            where t.deleted = false
+              and (:keyword is null or u.fullName like :keyword escape '\\' or u.username like :keyword escape '\\')
+            order by coalesce(u.fullName, u.username)
+            """)
+    List<UserOptionResponse> findUpdaters(@Param("keyword") String keyword);
 }

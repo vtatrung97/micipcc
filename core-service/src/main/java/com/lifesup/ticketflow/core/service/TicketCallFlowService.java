@@ -11,6 +11,7 @@ import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
+import com.lifesup.ticketflow.core.dto.response.UserOptionResponse;
 
 import java.util.List;
 
@@ -36,6 +37,15 @@ public interface TicketCallFlowService {
     PageResponse<TicketCallFlowSummaryResponse> search(TicketCallFlowSearchRequest request);
 
     TicketCallFlowStatsResponse stats();
+
+    /** Nhóm quy trình đang có trong DB, lọc tương đối theo từ khoá. */
+    List<String> searchCategories(String keyword);
+
+    /** Người tạo phiên bản quy trình, lọc tương đối theo họ tên / username. */
+    List<UserOptionResponse> searchCreators(String keyword);
+
+    /** Người cập nhật phiên bản quy trình, lọc tương đối theo họ tên / username. */
+    List<UserOptionResponse> searchUpdaters(String keyword);
 
     /** Lịch sử phiên bản, mới nhất trước. */
     List<TicketCallFlowVersionSummaryResponse> getVersions(Long id);

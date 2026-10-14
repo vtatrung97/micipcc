@@ -12,6 +12,7 @@ import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
+import com.lifesup.ticketflow.core.dto.response.UserOptionResponse;
 import com.lifesup.ticketflow.core.service.TicketCallFlowService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -51,6 +53,21 @@ public class TicketCallFlowController {
     @GetMapping("/stats")
     public ApiResponse<TicketCallFlowStatsResponse> stats() {
         return ApiResponse.success(ticketCallFlowService.stats());
+    }
+
+    @GetMapping("/categories")
+    public ApiResponse<List<String>> searchCategories(@RequestParam(required = false) String keyword) {
+        return ApiResponse.success(ticketCallFlowService.searchCategories(keyword));
+    }
+
+    @GetMapping("/creators")
+    public ApiResponse<List<UserOptionResponse>> searchCreators(@RequestParam(required = false) String keyword) {
+        return ApiResponse.success(ticketCallFlowService.searchCreators(keyword));
+    }
+
+    @GetMapping("/updaters")
+    public ApiResponse<List<UserOptionResponse>> searchUpdaters(@RequestParam(required = false) String keyword) {
+        return ApiResponse.success(ticketCallFlowService.searchUpdaters(keyword));
     }
 
     @GetMapping("/{id}")

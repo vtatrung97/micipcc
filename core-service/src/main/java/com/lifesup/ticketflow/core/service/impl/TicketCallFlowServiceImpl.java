@@ -18,6 +18,7 @@ import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
+import com.lifesup.ticketflow.core.dto.response.UserOptionResponse;
 import com.lifesup.ticketflow.core.entity.TemplateEntity;
 import com.lifesup.ticketflow.core.entity.TemplateVersionEntity;
 import com.lifesup.ticketflow.common.exception.AppException;
@@ -258,6 +259,24 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
                 .active(templateRepository.countByDeletedFalseAndStatus(TicketCallFlowStatus.ACTIVE))
                 .hasDraft(templateVersionRepository.countTemplatesHavingDraft())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> searchCategories(String keyword) {
+        return templateRepository.findCategories(toLikePattern(keyword));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserOptionResponse> searchCreators(String keyword) {
+        return templateVersionRepository.findCreators(toLikePattern(keyword));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserOptionResponse> searchUpdaters(String keyword) {
+        return templateVersionRepository.findUpdaters(toLikePattern(keyword));
     }
 
     @Override

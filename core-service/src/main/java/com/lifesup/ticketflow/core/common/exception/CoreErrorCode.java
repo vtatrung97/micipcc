@@ -22,7 +22,11 @@ public enum CoreErrorCode implements BaseErrorCode {
     TICKET_CALL_FLOW_TRIGGER_INVALID(2010, HttpStatus.BAD_REQUEST),
     TICKET_CALL_FLOW_SLA_INVALID(2011, HttpStatus.BAD_REQUEST),
     TICKET_CALL_FLOW_SORT_INVALID(2012, HttpStatus.BAD_REQUEST),
-    TICKET_CALL_FLOW_VERSION_NOT_DELETABLE(2013, HttpStatus.BAD_REQUEST);
+    TICKET_CALL_FLOW_VERSION_NOT_DELETABLE(2013, HttpStatus.BAD_REQUEST),
+
+    // App param
+    APP_PARAM_CODE_EXISTED(2014, HttpStatus.CONFLICT),
+    APP_PARAM_CODE_INVALID(2015, HttpStatus.BAD_REQUEST);
 
     private final int code;
     /** Key i18n: err.code.&lt;TÊN_ENUM&gt;. */
