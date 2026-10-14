@@ -17,3 +17,6 @@ CREATE TABLE IF NOT EXISTS agent_group (
     ipcc_ver         INT(11)      DEFAULT NULL,
     PRIMARY KEY (agent_group_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'bang cau hinh nhom agent';
+
+ALTER TABLE user_account
+    MODIFY keycloak_id VARCHAR(100) NOT NULL COMMENT 'Id user Keycloak';

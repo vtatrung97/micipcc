@@ -1,6 +1,9 @@
 package com.lifesup.ticketflow.core.service.impl;
 
+import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.request.AccountUserDto;
+import com.lifesup.ticketflow.core.dto.request.AgentSearchRequest;
+import com.lifesup.ticketflow.core.dto.response.AgentResponse;
 import com.lifesup.ticketflow.core.entity.UserAccountEntity;
 import com.lifesup.ticketflow.core.repository.UserAccountRepository;
 import com.lifesup.ticketflow.core.service.AgentService;
@@ -8,8 +11,12 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.lifesup.ticketflow.core.common.util.QueryUtils.toLikePattern;
 
 
 @Slf4j
@@ -19,6 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class AgentServiceImpl implements AgentService {
 
     UserAccountRepository userAccountRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<AgentResponse> search(AgentSearchRequest request) {
+        Sort sort = Sort.by(Sort.Order.asc("username"), Sort.Order.asc("id"));
+        PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize(), sort);
+        return new PageResponse<>(userAccountRepository.search(toLikePattern(request.getUsername()), pageable));
+    }
 
     @Override
     @Transactional

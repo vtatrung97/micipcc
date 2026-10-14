@@ -27,7 +27,7 @@ public class UserAccountEntity extends BaseEntity {
     Long id;
 
     /** Id user Keycloak. */
-    @Column(name = "keycloak_id", nullable = false, length = 36, updatable = false)
+    @Column(name = "keycloak_id", nullable = false, length = 100, updatable = false)
     String keycloakId;
 
     @Column(name = "username", length = 100)
