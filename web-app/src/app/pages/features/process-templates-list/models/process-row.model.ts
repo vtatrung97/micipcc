@@ -11,6 +11,8 @@ export interface ProcessRow {
   slaLabel: string;
   createdDate: string;
   createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
   publishedDate: string;
   publishedBy: string;
   menuItems: ActionMenuItem[];

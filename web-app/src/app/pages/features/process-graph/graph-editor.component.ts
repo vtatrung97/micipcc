@@ -11,6 +11,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import {
   TemplateService,
   ProcessTemplateItem,
@@ -107,6 +108,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     private dialogs: GraphDialogService,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef,
+    private message: NzMessageService,
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -125,6 +127,10 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   public get isCreateMode(): boolean {
     return this.store.isCreateMode;
   }
+  /** Mở từ nút Xem ở danh sách (mode=view): khoá mọi ô và mọi thao tác sửa */
+  public get isReadonly(): boolean {
+    return this.store.isReadonly;
+  }
   /** Tên trên header: theo ô "Tên quy trình" đang nhập */
   public get headerTitle(): string {
     return this.store.processInfo.name.trim()
@@ -133,6 +139,10 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Số phiên bản trên header: 'V2.1' / '4' / 'V1.0-draft' → '2.1' / '4' / '1.0'; quy trình mới → '1' */
   public get headerVersion(): string {
     return (this.store.currentTemplate?.version || '').replace(/^v/i, '').replace(/-draft$/i, '') || '1';
+  }
+  /** Hủy / Lưu nháp / Ban hành: ẩn khi chỉ xem hoặc quy trình đang ban hành */
+  public get showEditActions(): boolean {
+    return !this.store.isReadonly && this.headerStatus !== 'Published';
   }
   /** Trạng thái phiên bản trên header; quy trình mới coi như Nháp */
   public get headerStatus(): 'Draft' | 'Published' | 'Inactive' {
@@ -290,6 +300,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     this.routeSub.add(
       this.route.queryParams.subscribe((params) => {
         const templateCode = params['id'];
+        // Đặt trước khi dựng canvas: graph tắt kéo / nối / sửa khi chỉ xem
+        this.store.isReadonly = !!templateCode && params['mode'] === 'view';
         // Vào từ "Tạo mới quy trình": chưa có bản ghi → form trống, mở sẵn tab Thông tin chung
         if (!templateCode && params['mode'] === 'create') {
           this.store.isCreateMode = true;
@@ -361,6 +373,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.samples.loadSampleFlow('default');
     }
     this.store.graph.getEdges()?.forEach((e: any) => e.setLabels([]));
+    // Chỉ xem: ẩn nút × xoá bước trên card
+    if (this.store.isReadonly) this.store.graph.getNodes()?.forEach((n: any) => n.attr('closeBtn/display', 'none'));
     // Mở canvas luôn ở 100% (chạy sau mọi lệnh căn vừa màn hình của flow mẫu)
     setTimeout(() => this.canvas.resetZoom());
     this.markClean();
@@ -368,6 +382,18 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Popup xác nhận Hủy (chỉ hiện khi đã có thay đổi so với lúc mở / lần lưu gần nhất) */
   public isCancelConfirmOpen: boolean = false;
+  /** Popup xác nhận Dừng ban hành */
+  public isStopConfirmOpen: boolean = false;
+
+  /** Xác nhận Dừng ban hành: chuyển quy trình sang Dừng ban hành, header hiện lại Hủy / Lưu nháp / Ban hành */
+  public stopPublishing(): void {
+    this.isStopConfirmOpen = false;
+    const code = this.store.currentTemplate?.code;
+    if (!code) return;
+    this.templateService.updateTemplate(code, { status: 'Inactive' });
+    this.store.currentTemplate = this.templateService.getTemplateByCode(code) || { ...this.store.currentTemplate, status: 'Inactive' };
+    this.message.success(this.t('HEADER.STOP_PUBLISH_SUCCESS', { code }));
+  }
   private cleanSnapshot: string = '';
 
   /** Hủy: chưa thay đổi gì thì về danh sách luôn, có thay đổi thì hỏi xác nhận */
@@ -494,10 +520,15 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Bấm trên Thư viện bước: thêm ngay sau bước đang chọn và nối cạnh */
   public addStandardNode(type: NodeType): void {
+    if (this.store.isReadonly) return;
     this.placement.placeNodeFromPalette(type);
   }
 
   public onPaletteDragStart(event: DragEvent, type: NodeType): void {
+    if (this.store.isReadonly) {
+      event.preventDefault();
+      return;
+    }
     if (event.dataTransfer) {
       event.dataTransfer.setData('application/x6-node-type', type);
       event.dataTransfer.setData('text/plain', type);
@@ -510,7 +541,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     const type = event.dataTransfer?.getData(
       'application/x6-node-type',
     ) as NodeType;
-    if (!type || !this.store.graph) return;
+    if (!type || !this.store.graph || this.store.isReadonly) return;
 
     const rect = this.containerRef.nativeElement.getBoundingClientRect();
     const p = this.store.graph.clientToLocal
@@ -541,6 +572,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {
+    // Chỉ xem: không xoá / hoàn tác bằng phím tắt
+    if (this.store.isReadonly) return;
     const target = event.target as HTMLElement;
     if (
       target &&

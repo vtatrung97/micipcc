@@ -1,7 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 
 /**
- * Popup xác nhận rời màn hình khi còn thay đổi chưa lưu.
+ * Popup xác nhận (mặc định: rời màn hình khi còn thay đổi chưa lưu; dùng lại cho Dừng ban hành).
  * "Xác nhận" → (confirmed), "Hủy" / "X" / nền tối / Esc → (closed).
  */
 @Component({
@@ -13,6 +13,8 @@ export class ConfirmCancelModalComponent {
   @Input() visible: boolean = false;
   @Input() titleKey: string = 'PROCESS_GRAPH.CANCEL_CONFIRM.TITLE';
   @Input() messageKey: string = 'PROCESS_GRAPH.CANCEL_CONFIRM.MESSAGE';
+  @Input() iconSrc: string = 'assets/icons/processx/alert-circle-warning.svg';
+  @Input() iconSize: number = 24;
 
   @Output() confirmed = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();

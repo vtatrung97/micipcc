@@ -1,50 +1,23 @@
-<app-modal [visible]="!!action && processes.length > 0" [title]="title" (closed)="closed.emit()">
-  <!-- ng-content của app-modal luôn được dựng (kể cả khi modal đóng) → chỉ render khi có dữ liệu -->
-  <ng-container *ngIf="processes.length > 0">
-  <!-- 1 quy trình: tên in đậm trong câu mô tả -->
-  <ng-container *ngIf="!isBulk; else bulkContent">
-    <p class="action-desc">{{ text.before }}<strong>{{ processes[0].item.name }}</strong>{{ text.after }}</p>
-    <div class="process-list">
-      <ng-container *ngTemplateOutlet="processRow; context: { $implicit: processes[0], index: null }"></ng-container>
-    </div>
-  </ng-container>
-
-  <!-- Nhiều quy trình: danh sách đánh số trong một khung -->
-  <ng-template #bulkContent>
-    <p class="action-desc">{{ text.bulk }}</p>
-    <div class="action-list">
-      <span class="action-list-label">{{ text.listLabel }} ({{ processes.length }})</span>
-      <!-- grouped: chung một khung · cards: mỗi quy trình một khung riêng -->
-      <div class="process-list" [class.process-list-cards]="text.bulkLayout === 'cards'">
-        <ng-container *ngFor="let row of processes; let i = index; trackBy: trackByCode">
-          <ng-container *ngTemplateOutlet="processRow; context: { $implicit: row, index: i + 1 }"></ng-container>
-        </ng-container>
+<ng-container *ngIf="visible">
+  <div class="dialog-mask" (click)="closed.emit()"></div>
+  <div class="dialog-wrap" (click)="closed.emit()">
+    <section class="dialog" role="alertdialog" aria-modal="true" [attr.aria-label]="text.title" (click)="$event.stopPropagation()">
+      <!-- Icon 32 · tiêu đề + câu xác nhận; nút đóng tròn ở góc -->
+      <div class="dialog-body">
+        <img class="dialog-icon" [src]="text.icon" width="32" height="32" alt="" />
+        <div class="dialog-text">
+          <span class="dialog-title">{{ text.title }}</span>
+          <p class="dialog-message">{{ text.message }}</p>
+        </div>
+        <button type="button" class="dialog-close" (click)="closed.emit()" aria-label="Đóng">
+          <img src="assets/icons/processx/close-modal.svg" width="24" height="24" alt="" />
+        </button>
       </div>
-    </div>
-  </ng-template>
-  </ng-container>
 
-  <div modal-footer class="action-buttons">
-    <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">Hủy</button>
-    <button
-      type="button"
-      class="px-btn"
-      [class.px-btn-primary]="text.tone === 'primary'"
-      [class.px-btn-danger]="text.tone === 'danger'"
-      (click)="confirmed.emit()">
-      {{ confirmLabel }}
-    </button>
+      <div class="dialog-actions">
+        <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">Hủy</button>
+        <button type="button" class="px-btn px-btn-primary" (click)="confirmed.emit()">{{ text.confirm }}</button>
+      </div>
+    </section>
   </div>
-</app-modal>
-
-<!-- Một hàng quy trình: [STT] · tên + "mã · phiên bản" · badge trạng thái -->
-<ng-template #processRow let-row let-index="index">
-  <div class="process-row">
-    <span class="process-index" *ngIf="index !== null">{{ index }}</span>
-    <div class="process-info">
-      <span class="process-name" [title]="row.item.name">{{ row.item.name }}</span>
-      <span class="process-meta">{{ row.item.code }} · {{ row.versionLabel }}</span>
-    </div>
-    <app-status-tag appearance="fill" [status]="row.statusKey" [text]="row.statusLabel"></app-status-tag>
-  </div>
-</ng-template>
+</ng-container>

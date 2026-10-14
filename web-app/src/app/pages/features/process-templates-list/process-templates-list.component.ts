@@ -20,6 +20,7 @@ import {
 import { PROCESS_STATUS_CONFIG } from './config/process-status.config';
 import { ProcessRow } from './models/process-row.model';
 import { ProcessAction } from './components/process-action-modal/process-action-modal.component';
+import { ProcessCloneValue } from './components/process-clone-modal/process-clone-modal.component';
 import {
   PROCESS_COLUMNS,
   PROCESS_HIDDEN_COLUMNS_STORAGE_KEY,
@@ -29,12 +30,15 @@ import {
 
 type StatusFilter = '' | 'Published' | 'Draft';
 
+/** 4 loại kích hoạt cố định (cột bảng + bộ lọc nâng cao) */
 const TRIGGER_LABELS: Record<string, string> = {
-  MANUAL: 'Kích hoạt thủ công',
-  AUTO: 'Kích hoạt tự động',
-  SCHEDULE: 'Lặp lịch',
+  MANUAL: 'Thủ công',
+  AUTO: 'Tự động',
+  SCHEDULE: 'Lập lịch',
   HYBRID: 'Hybrid'
 };
+
+const SEARCH_MAX_LENGTH = 255;
 
 const EMPTY_TEXT = '—';
 
@@ -52,6 +56,9 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
 
   searchKeyword: string = '';
+  /** Từ khoá đang áp dụng: chỉ đổi khi nhấn Enter hoặc xoá trắng ô tìm kiếm */
+  private appliedKeyword: string = '';
+  readonly searchMaxLength = SEARCH_MAX_LENGTH;
   statusFilter: StatusFilter = '';
 
   showAdvancedFilter: boolean = false;
@@ -60,9 +67,11 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   page: number = 1;
   pageSize: number = 10;
 
-  /** Modal xác nhận thao tác (nhân bản / ban hành / dừng ban hành / xóa); null = đóng */
+  /** Modal xác nhận thao tác (ban hành / dừng ban hành / xóa); null = đóng */
   modalAction: ProcessAction | null = null;
   modalRows: ProcessRow[] = [];
+  /** Quy trình đang mở popup Nhân bản */
+  cloneSource: ProcessTemplateItem | null = null;
 
   readonly selection = new TableSelection<ProcessRow>(row => row.item.code);
 
@@ -85,6 +94,8 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     // Icon trong menu ⋮ của hàng
     copy: 'assets/icons/processx/copy.svg',
     stopPublish: 'assets/icons/processx/send-cancelled.svg',
+    bulkStop: 'assets/icons/processx/btn-stop-publish.svg',
+    bulkPublish: 'assets/icons/processx/btn-publish.svg',
     delete: 'assets/icons/processx/trash-danger.svg'
   };
 
@@ -176,9 +187,14 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     this.saveHiddenColumns();
   }
 
+  /** Mỗi người dùng một cấu hình ẩn / hiện cột */
+  private get hiddenColumnsStorageKey(): string {
+    return `${PROCESS_HIDDEN_COLUMNS_STORAGE_KEY}.${this.rbacService.getCurrentUser()?.userId || 'guest'}`;
+  }
+
   private loadHiddenColumns(): Set<ProcessColumnKey> {
     try {
-      const raw = JSON.parse(localStorage.getItem(PROCESS_HIDDEN_COLUMNS_STORAGE_KEY) || '[]');
+      const raw = JSON.parse(localStorage.getItem(this.hiddenColumnsStorageKey) || '[]');
       const known = new Set(PROCESS_COLUMNS.filter(c => !c.locked).map(c => c.key));
       return new Set((Array.isArray(raw) ? raw : []).filter((k: ProcessColumnKey) => known.has(k)));
     } catch {
@@ -188,20 +204,23 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
 
   private saveHiddenColumns(): void {
     try {
-      localStorage.setItem(PROCESS_HIDDEN_COLUMNS_STORAGE_KEY, JSON.stringify(Array.from(this.hiddenColumns)));
+      localStorage.setItem(this.hiddenColumnsStorageKey, JSON.stringify(Array.from(this.hiddenColumns)));
     } catch {}
   }
 
-  // Tính lại chỉ khi danh sách đổi: getter trả mảng mới mỗi vòng change detection
-  // khiến ant-select dựng lại DOM option liên tục → click vào option không ăn
-/** Lựa chọn cho bộ lọc nâng cao: nhóm quy trình cố định, người tạo / cập nhật lấy từ dữ liệu */
+  /**
+   * Lựa chọn cho bộ lọc nâng cao, tính lại chỉ khi danh sách đổi (getter trả mảng mới làm ant-select dựng lại option).
+   * Nhóm quy trình sắp alphabet; người tạo / cập nhật lấy từ dữ liệu.
+   */
   private buildFilterOptions(): AdvancedFilterOptions {
     const toOptions = (values: string[]) =>
       Array.from(new Set(values.filter(v => v && v !== EMPTY_TEXT)))
         .sort((a, b) => a.localeCompare(b, 'vi'))
         .map(v => ({ value: v, label: v }));
     return {
-      categories: this.categoryService.categories.map(c => ({ value: c, label: c })),
+      categories: [...this.categoryService.categories]
+        .sort((a, b) => a.localeCompare(b, 'vi', { sensitivity: 'base' }))
+        .map(c => ({ value: c, label: c })),
       triggers: Object.entries(TRIGGER_LABELS).map(([value, label]) => ({ value, label })),
       creators: toOptions(this.allTemplates.map(t => this.creatorOf(t))),
       updaters: toOptions(this.allTemplates.map(t => this.updaterOf(t)))
@@ -218,9 +237,16 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     return item.updated_by || this.creatorOf(item);
   }
 
-  onSearchChange(): void {
+  /** Nhấn Enter → tìm theo từ khoá (bỏ khoảng trắng đầu / cuối, không phân biệt hoa thường) */
+  onSearch(): void {
+    this.appliedKeyword = this.searchKeyword.trim().toLowerCase();
     this.page = 1;
     this.refresh();
+  }
+
+  /** Xoá trắng ô tìm kiếm → hiện lại toàn bộ, không cần nhấn Enter */
+  onSearchChange(value: string): void {
+    if (!value && this.appliedKeyword) this.onSearch();
   }
 
   onStatusChange(): void {
@@ -256,7 +282,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   }
 
   private refresh(): void {
-    const keyword = this.searchKeyword.trim().toLowerCase();
+    const keyword = this.appliedKeyword;
     const rows = this.allTemplates
       .filter(item =>
         (!keyword || item.name.toLowerCase().includes(keyword) || item.code.toLowerCase().includes(keyword)) &&
@@ -295,11 +321,16 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
       && (!f.createdBy || this.creatorOf(item) === f.createdBy)
       && (!f.updatedBy || this.updaterOf(item) === f.updatedBy)
       && this.inRange(item.created_at || item.updatedAt, f.createdRange)
-      && this.inRange(item.updatedAt, f.updatedRange)
+      && this.inRange(this.updatedAtOf(item), f.updatedRange)
       && this.inRange(item.status !== 'Draft' ? item.published_at : undefined, f.publishedRange);
   }
 
-  /** Ngày ('DD/MM/YYYY HH:mm') nằm trong khoảng [from, to] (YYYY-MM-DD, tính cả 2 đầu) */
+  /** Chưa cập nhật lần nào thì lấy ngày tạo */
+  private updatedAtOf(item: ProcessTemplateItem): string | undefined {
+    return item.updatedAt || item.created_at || item.published_at;
+  }
+
+  /** Ngày ('DD/MM/YYYY HH:mm[:ss]') nằm trong khoảng [from, to] (YYYY-MM-DD, tính cả 2 đầu) */
   private inRange(value: string | undefined, range: DateRange | null): boolean {
     if (!hasDateRange(range)) return true;
     const iso = this.toIsoDate(value);
@@ -314,23 +345,39 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
 
     return {
       item,
-      versionLabel: `Phiên bản ${(item.version || '').replace(/^v/i, '').replace(/-draft$/i, '') || '1'}`,
+      versionLabel: this.versionLabelOf(item.version),
       statusKey: PROCESS_STATUS_CONFIG[item.status]?.badge || 'draft',
       statusLabel: PROCESS_STATUS_CONFIG[item.status]?.label || item.status,
       triggerLabel: (item.triggerType && TRIGGER_LABELS[item.triggerType]) || EMPTY_TEXT,
-      slaLabel: item.slaValue ? `${item.slaValue} ${item.slaUnit || ''}`.trim() : (item.sla || EMPTY_TEXT),
+      slaLabel: this.slaLabelOf(item),
       createdDate: this.toDisplayDate(item.created_at || item.updatedAt || item.published_at),
       createdBy: this.creatorOf(item) || EMPTY_TEXT,
+      updatedDate: this.toDisplayDate(this.updatedAtOf(item)),
+      updatedBy: this.updaterOf(item) || EMPTY_TEXT,
       publishedDate: isPublishedOnce ? this.toDisplayDate(item.published_at) : EMPTY_TEXT,
       publishedBy: isPublishedOnce ? (item.published_by || activeVersion?.created_by || EMPTY_TEXT) : EMPTY_TEXT,
       menuItems: this.buildMenuItems(item)
     };
   }
 
-  /** 'DD/MM/YYYY HH:mm' → 'DD/MM/YYYY' */
+  /** Thời hạn xử lý dạng "5 ngày" (số + đơn vị viết thường) */
+  private slaLabelOf(item: ProcessTemplateItem): string {
+    if (item.slaValue) return `${item.slaValue} ${(item.slaUnit || '').toLowerCase()}`.trim();
+    const sla = item.sla || '';
+    return /^\d+\s+\p{L}+$/u.test(sla) ? sla.toLowerCase() : (sla || EMPTY_TEXT);
+  }
+
+  /** Phiên bản gốc (V1 hoặc chưa có) → "Gốc"; bản nâng từ bản gốc → "Phiên bản N" (V2 = phiên bản 1) */
+  private versionLabelOf(version?: string): string {
+    const major = parseInt((version || '').replace(/^v/i, ''), 10);
+    return !major || major <= 1 ? 'Gốc' : `Phiên bản ${major - 1}`;
+  }
+
+  /** 'DD/MM/YYYY HH:mm[:ss]' → 'DD/MM/YYYY HH:mm:ss' (thiếu giây thì :00) */
   private toDisplayDate(value?: string): string {
-    const m = /^(\d{2}\/\d{2}\/\d{4})/.exec(value || '');
-    return m ? m[1] : EMPTY_TEXT;
+    const m = /^(\d{2}\/\d{2}\/\d{4})(?:\s+(\d{2}:\d{2})(?::(\d{2}))?)?/.exec(value || '');
+    if (!m) return EMPTY_TEXT;
+    return `${m[1]} ${m[2] || '00:00'}:${m[3] || '00'}`;
   }
 
   /** 'DD/MM/YYYY HH:mm' → 'YYYY-MM-DD' */
@@ -340,8 +387,8 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   }
 
   private toTimestamp(value?: string): number {
-    const m = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/.exec(value || '');
-    return m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)).getTime() : 0;
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(value || '');
+    return m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime() : 0;
   }
 
   // ===== Hành động =====
@@ -354,29 +401,39 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/process/graph'], { queryParams: { id: row.item.code } });
   }
 
+  /** Xem: mở màn thiết kế ở chế độ chỉ xem (khoá mọi ô, không thao tác) */
   openView(row: ProcessRow): void {
-    this.router.navigate(['/process/graph'], { queryParams: { id: row.item.code, version: row.item.version } });
+    this.router.navigate(['/process/graph'], { queryParams: { id: row.item.code, mode: 'view' } });
   }
 
+  /**
+   * Menu ⋮ luôn 3 mục cố định: Nhân bản · Dừng ban hành · Xóa.
+   * Mục không áp dụng thì mờ đi: Dừng ban hành chỉ khi Đang ban hành, Xóa chỉ khi Nháp (hoặc thiếu quyền).
+   * Ban hành chỉ làm hàng loạt bằng nút trên thanh công cụ.
+   */
   private buildMenuItems(item: ProcessTemplateItem): ActionMenuItem[] {
-    const items: ActionMenuItem[] = [];
-    if (this.canCreate) {
-      items.push({ key: 'clone', label: 'Nhân bản', icon: this.icons.copy });
-    }
-    if (this.canEdit) {
-      items.push(item.status === 'Published'
-        ? { key: 'stop', label: 'Dừng ban hành', icon: this.icons.stopPublish }
-        : { key: 'publish', label: 'Ban hành' });
-    }
-    if (this.canDelete) {
-      items.push({ key: 'delete', label: 'Xóa', icon: this.icons.delete, danger: true });
-    }
-    return items;
+    return [
+      { key: 'clone', label: 'Nhân bản', icon: this.icons.copy, disabled: !this.canCreate },
+      { key: 'stop', label: 'Dừng ban hành', icon: this.icons.stopPublish, disabled: !this.canEdit || item.status !== 'Published' },
+      { key: 'delete', label: 'Xóa', icon: this.icons.delete, danger: true, disabled: !this.canDelete || item.status !== 'Draft' },
+    ];
   }
 
-  /** Menu ⋮ của một hàng → mở modal xác nhận tương ứng */
+  /** Menu ⋮ của một hàng → Nhân bản mở popup nhập Tên / Mã, còn lại mở modal xác nhận */
   onRowAction(key: string, row: ProcessRow): void {
+    if (key === 'clone') {
+      this.cloneSource = row.item;
+      return;
+    }
     this.openActionModal(key as ProcessAction, [row]);
+  }
+
+  /** Lưu bản sao trạng thái Nháp với Tên / Mã người dùng nhập */
+  confirmClone(value: ProcessCloneValue): void {
+    if (!this.cloneSource) return;
+    const cloned = this.templateService.cloneTemplate(this.cloneSource.code, value.code, value.name);
+    if (cloned) this.message.success(`Đã nhân bản thành bản nháp [${cloned.code}].`);
+    this.cloneSource = null;
   }
 
   // ===== Thao tác hàng loạt (thanh "Đã chọn n" khi tích chọn) =====
@@ -410,11 +467,6 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   confirmActionModal(): void {
     const codes = this.modalRows.map(r => r.item.code);
     switch (this.modalAction) {
-      case 'clone': {
-        const cloned = this.templateService.cloneTemplate(codes[0]);
-        if (cloned) this.message.success(`Đã nhân bản thành bản nháp [${cloned.code}].`);
-        break;
-      }
       case 'publish': {
         const now = this.formatNow();
         codes.forEach(code => this.templateService.updateTemplate(code, { status: 'Published', published_at: now }));
@@ -440,10 +492,10 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     this.closeActionModal();
   }
 
-  /** 'DD/MM/YYYY HH:mm' của thời điểm hiện tại */
+  /** 'DD/MM/YYYY HH:mm:ss' của thời điểm hiện tại */
   private formatNow(): string {
     const d = new Date();
     const p = (n: number) => String(n).padStart(2, '0');
-    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   }
 }

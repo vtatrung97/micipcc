@@ -5,12 +5,14 @@ export type ProcessColumnKey =
   | 'version'
   | 'status'
   | 'category'
-  | 'trigger'
-  | 'sla'
-  | 'createdBy'
-  | 'publishedBy'
   | 'createdDate'
-  | 'publishedDate';
+  | 'createdBy'
+  | 'updatedBy'
+  | 'updatedDate'
+  | 'publishedDate'
+  | 'publishedBy'
+  | 'trigger'
+  | 'sla';
 
 export interface ProcessColumn {
   key: ProcessColumnKey;
@@ -19,20 +21,22 @@ export interface ProcessColumn {
   locked?: boolean;
 }
 
-/** Thứ tự trong panel ẩn/hiện; Mã + Tên quy trình luôn hiện */
+/** Đúng thứ tự cột trong bảng (panel ẩn/hiện liệt kê theo thứ tự này); Tên + Mã quy trình luôn hiện */
 export const PROCESS_COLUMNS: ProcessColumn[] = [
-  { key: 'code', label: 'Mã quy trình', locked: true },
   { key: 'name', label: 'Tên quy trình', locked: true },
+  { key: 'code', label: 'Mã quy trình', locked: true },
   { key: 'version', label: 'Phiên bản' },
   { key: 'status', label: 'Trạng thái' },
   { key: 'category', label: 'Nhóm quy trình' },
-  { key: 'trigger', label: 'Loại kích hoạt' },
-  { key: 'sla', label: 'SLA' },
-  { key: 'createdBy', label: 'Người tạo' },
-  { key: 'publishedBy', label: 'Người ban hành' },
   { key: 'createdDate', label: 'Ngày tạo' },
-  { key: 'publishedDate', label: 'Ngày ban hành' }
+  { key: 'createdBy', label: 'Người tạo' },
+  { key: 'updatedBy', label: 'Người cập nhật' },
+  { key: 'updatedDate', label: 'Ngày cập nhật' },
+  { key: 'publishedDate', label: 'Ngày ban hành' },
+  { key: 'publishedBy', label: 'Người ban hành' },
+  { key: 'trigger', label: 'Loại kích hoạt' },
+  { key: 'sla', label: 'Thời hạn xử lý' }
 ];
 
-/** Key localStorage lưu các cột đang ẩn (chỉ là tiện ích theo trình duyệt) */
+/** Tiền tố key localStorage lưu các cột đang ẩn, nối thêm mã người dùng để lưu riêng từng người */
 export const PROCESS_HIDDEN_COLUMNS_STORAGE_KEY = 'process-templates-list.hidden-columns';

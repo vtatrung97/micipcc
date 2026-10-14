@@ -22,8 +22,10 @@
         prefixSrc="assets/icons/processx/search.svg"
         placeholder="Tìm theo tên hoặc mã quy trình"
         [allowClear]="true"
+        [maxLength]="searchMaxLength"
         [(ngModel)]="searchKeyword"
-        (valueChange)="onSearchChange()">
+        (onEnter)="onSearch()"
+        (valueChange)="onSearchChange($event)">
       </ant-input>
 
       <app-quick-filter
@@ -43,19 +45,22 @@
       <!-- Thao tác hàng loạt: hiện khi tích chọn record -->
       <div class="bulk-actions" *ngIf="selectedRows.length > 0">
         <span class="bulk-count">Đã chọn {{ selectedRows.length }}</span>
-        <button
-          *ngIf="canEdit && publishableSelected.length > 0"
-          type="button"
-          class="px-btn-outline-primary"
-          (click)="openActionModal('publish', publishableSelected)">
-          Ban hành<ng-container *ngIf="publishableSelected.length !== selectedRows.length"> ({{ publishableSelected.length }})</ng-container>
-        </button>
+        <!-- Dừng ban hành: viền đỏ · Ban hành: nền đỏ; chỉ hiện khi có bản ghi đúng trạng thái -->
         <button
           *ngIf="canEdit && stoppableSelected.length > 0"
           type="button"
           class="px-btn-outline-primary"
           (click)="openActionModal('stop', stoppableSelected)">
-          Dừng ban hành<ng-container *ngIf="stoppableSelected.length !== selectedRows.length"> ({{ stoppableSelected.length }})</ng-container>
+          <img [src]="icons.bulkStop" width="24" height="24" alt="" />
+          <span>Dừng ban hành</span>
+        </button>
+        <button
+          *ngIf="canEdit && publishableSelected.length > 0"
+          type="button"
+          class="px-btn-solid-primary"
+          (click)="openActionModal('publish', publishableSelected)">
+          <img [src]="icons.bulkPublish" width="24" height="24" alt="" />
+          <span>Ban hành</span>
         </button>
       </div>
 
@@ -118,16 +123,18 @@
             </div>
           </th>
           <th class="col-name" *ngIf="isColumnVisible('name')">Tên quy trình</th>
-          <th class="col-code" *ngIf="isColumnVisible('code')">Mã</th>
+          <th class="col-code" *ngIf="isColumnVisible('code')">Mã quy trình</th>
           <th class="col-version" *ngIf="isColumnVisible('version')">Phiên bản</th>
           <th class="col-status" *ngIf="isColumnVisible('status')">Trạng thái</th>
           <th class="col-md" *ngIf="isColumnVisible('category')">Nhóm quy trình</th>
-          <th class="col-md" *ngIf="isColumnVisible('trigger')">Loại kích hoạt</th>
-          <th class="col-md" *ngIf="isColumnVisible('sla')">SLA</th>
-          <th class="col-person" *ngIf="isColumnVisible('createdBy')">Người tạo</th>
-          <th class="col-person" *ngIf="isColumnVisible('publishedBy')">Người ban hành</th>
           <th class="col-date" *ngIf="isColumnVisible('createdDate')">Ngày tạo</th>
+          <th class="col-person" *ngIf="isColumnVisible('createdBy')">Người tạo</th>
+          <th class="col-person" *ngIf="isColumnVisible('updatedBy')">Người cập nhật</th>
+          <th class="col-date" *ngIf="isColumnVisible('updatedDate')">Ngày cập nhật</th>
           <th class="col-date" *ngIf="isColumnVisible('publishedDate')">Ngày ban hành</th>
+          <th class="col-person" *ngIf="isColumnVisible('publishedBy')">Người ban hành</th>
+          <th class="col-md" *ngIf="isColumnVisible('trigger')">Loại kích hoạt</th>
+          <th class="col-md" *ngIf="isColumnVisible('sla')">Thời hạn xử lý</th>
           <th class="col-actions">Hành động</th>
         </tr>
       </thead>
@@ -149,12 +156,14 @@
             <app-status-tag appearance="fill" [status]="row.statusKey" [text]="row.statusLabel"></app-status-tag>
           </td>
           <td *ngIf="isColumnVisible('category')">{{ row.item.category || '—' }}</td>
+          <td *ngIf="isColumnVisible('createdDate')">{{ row.createdDate }}</td>
+          <td *ngIf="isColumnVisible('createdBy')">{{ row.createdBy }}</td>
+          <td *ngIf="isColumnVisible('updatedBy')">{{ row.updatedBy }}</td>
+          <td *ngIf="isColumnVisible('updatedDate')">{{ row.updatedDate }}</td>
+          <td *ngIf="isColumnVisible('publishedDate')">{{ row.publishedDate }}</td>
+          <td *ngIf="isColumnVisible('publishedBy')">{{ row.publishedBy }}</td>
           <td *ngIf="isColumnVisible('trigger')">{{ row.triggerLabel }}</td>
           <td *ngIf="isColumnVisible('sla')">{{ row.slaLabel }}</td>
-          <td *ngIf="isColumnVisible('createdBy')">{{ row.createdBy }}</td>
-          <td *ngIf="isColumnVisible('publishedBy')">{{ row.publishedBy }}</td>
-          <td *ngIf="isColumnVisible('createdDate')">{{ row.createdDate }}</td>
-          <td *ngIf="isColumnVisible('publishedDate')">{{ row.publishedDate }}</td>
           <td>
             <div class="px-cell-actions">
               <button
@@ -190,10 +199,17 @@
   (closed)="showAdvancedFilter = false">
 </app-advanced-filter-drawer>
 
-<!-- Modal xác nhận: nhân bản / ban hành / dừng ban hành / xóa (1 hoặc nhiều quy trình) -->
+<!-- Modal xác nhận: ban hành / dừng ban hành / xóa (1 hoặc nhiều quy trình) -->
 <app-process-action-modal
   [action]="modalAction"
   [processes]="modalRows"
   (confirmed)="confirmActionModal()"
   (closed)="closeActionModal()">
 </app-process-action-modal>
+
+<!-- Popup nhân bản: nhập Tên + Mã cho bản sao -->
+<app-process-clone-modal
+  [source]="cloneSource"
+  (confirmed)="confirmClone($event)"
+  (closed)="cloneSource = null">
+</app-process-clone-modal>

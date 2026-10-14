@@ -1,10 +1,10 @@
 <app-drawer [visible]="visible" title="Bộ lọc nâng cao" (closed)="cancel()">
   <app-form-field label="Tên quy trình" [spacing]="0">
-    <ant-input [(ngModel)]="draft.name" placeholder="Nhập tại đây"></ant-input>
+    <ant-input [(ngModel)]="draft.name" [maxLength]="maxLength" placeholder="Nhập tại đây"></ant-input>
   </app-form-field>
 
   <app-form-field label="Mã quy trình" [spacing]="0">
-    <ant-input [(ngModel)]="draft.code" placeholder="Nhập tại đây"></ant-input>
+    <ant-input [(ngModel)]="draft.code" [maxLength]="maxLength" placeholder="Nhập tại đây"></ant-input>
   </app-form-field>
 
   <app-form-field label="Nhóm quy trình" [spacing]="0">
@@ -28,7 +28,7 @@
   </app-form-field>
 
   <app-form-field label="Ngày tạo" [spacing]="0">
-    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.createdRange"
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [maxDate]="today" [allowOpenRange]="true" [(ngModel)]="draft.createdRange"
                      placeholder="dd/mm/yyyy-dd/mm/yyyy"></app-date-picker>
   </app-form-field>
 
@@ -38,12 +38,12 @@
   </app-form-field>
 
   <app-form-field label="Ngày cập nhật" [spacing]="0">
-    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.updatedRange"
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [maxDate]="today" [allowOpenRange]="true" [(ngModel)]="draft.updatedRange"
                      placeholder="dd/mm/yyyy-dd/mm/yyyy"></app-date-picker>
   </app-form-field>
 
   <app-form-field label="Ngày ban hành" [spacing]="0">
-    <app-date-picker [isRange]="true" [fixedPanel]="true" [(ngModel)]="draft.publishedRange"
+    <app-date-picker [isRange]="true" [fixedPanel]="true" [maxDate]="today" [allowOpenRange]="true" [(ngModel)]="draft.publishedRange"
                      placeholder="dd/mm/yyyy-dd/mm/yyyy"></app-date-picker>
   </app-form-field>
 

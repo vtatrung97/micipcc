@@ -78,6 +78,10 @@
   &:disabled {
     color: px.$neutral-500;
     cursor: not-allowed;
+
+    .px-action-item-icon {
+      opacity: 0.4;
+    }
   }
 
   // Mục nguy hiểm (Xóa): chữ đỏ

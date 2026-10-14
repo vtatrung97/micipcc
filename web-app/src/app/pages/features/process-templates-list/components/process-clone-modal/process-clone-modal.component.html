@@ -1,0 +1,17 @@
+<app-modal [visible]="visible" title="Nhân bản quy trình" [width]="572" (closed)="closed.emit()">
+  <div *ngIf="visible" class="clone-fields">
+    <app-form-field label="Tên quy trình" [required]="true" [error]="nameError" [spacing]="0">
+      <ant-input [(ngModel)]="name" (ngModelChange)="nameError = ''" [maxLength]="maxLength"
+                 [status]="nameError ? 'error' : ''" placeholder="Nhập tại đây" (onEnter)="submit()"></ant-input>
+    </app-form-field>
+    <app-form-field label="Mã quy trình" [required]="true" [error]="codeError" [spacing]="0">
+      <ant-input [(ngModel)]="code" (ngModelChange)="codeError = ''" [maxLength]="maxLength" [inputFilter]="codeFilter"
+                 [status]="codeError ? 'error' : ''" placeholder="Nhập tại đây" (onEnter)="submit()"></ant-input>
+    </app-form-field>
+  </div>
+
+  <div modal-footer class="modal-actions">
+    <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">Hủy</button>
+    <button type="button" class="px-btn px-btn-primary" (click)="submit()">Nhân bản</button>
+  </div>
+</app-modal>

@@ -33,6 +33,9 @@ const VIEWPORT_MARGIN = 8;
   styleUrls: ['./action-menu.component.scss']
 })
 export class ActionMenuComponent implements OnDestroy {
+  /** Menu đang mở trên trang — mở menu khác thì đóng menu này (nút ⋮ chặn click nên document:click không tới) */
+  private static openMenu: ActionMenuComponent | null = null;
+
   @Input() items: ActionMenuItem[] = [];
   @Input() disabled: boolean = false;
   /** Tooltip / aria-label của nút ⋮ */
@@ -88,6 +91,7 @@ export class ActionMenuComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (ActionMenuComponent.openMenu === this) ActionMenuComponent.openMenu = null;
     document.removeEventListener('scroll', this.onAnyScroll, true);
   }
 
@@ -101,6 +105,8 @@ export class ActionMenuComponent implements OnDestroy {
   };
 
   private open(): void {
+    if (ActionMenuComponent.openMenu && ActionMenuComponent.openMenu !== this) ActionMenuComponent.openMenu.close();
+    ActionMenuComponent.openMenu = this;
     this.isOpen = true;
     document.addEventListener('scroll', this.onAnyScroll, true);
     this.measured = false;
@@ -109,6 +115,7 @@ export class ActionMenuComponent implements OnDestroy {
   }
 
   private close(): void {
+    if (ActionMenuComponent.openMenu === this) ActionMenuComponent.openMenu = null;
     this.isOpen = false;
     document.removeEventListener('scroll', this.onAnyScroll, true);
   }
