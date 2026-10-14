@@ -23,6 +23,10 @@ public class TicketCallFlowVersionResponse {
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(type = "string", example = "702305427898417152")
     Long flowId;
+    /** templateVersionId. */
+    @JsonSerialize(using = ToStringSerializer.class)
+    @Schema(type = "string", example = "702305427898417153")
+    Long id;
     Integer versionNo;
     TicketCallFlowVersionStatus status;
     String versionName;

@@ -52,6 +52,8 @@ export class NodePlacementService {
     if (!graph) return null;
     const node = this.factory.createCompactCardNode(type, x, y);
     if (!node) return null;
+    // Bước mới: Hủy ở drawer trước khi Lưu lần đầu sẽ xoá bước
+    node.setData({ ...node.getData(), isUnconfigured: true });
     if (isGatewayType(type)) this.gatewayJoin.createJoinForGateway(node);
 
     if (source && graph.getCellById(source.nodeId)) {

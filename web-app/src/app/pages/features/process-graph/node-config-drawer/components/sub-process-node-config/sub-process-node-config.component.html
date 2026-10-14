@@ -4,16 +4,20 @@
     <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
     <ng-container *ngIf="isOpen('general')">
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="errors.label ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
-        <ant-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()"
+        <ant-input [ngModel]="nodeProps.label" (ngModelChange)="onLabelChange($event)" [maxLength]="limits.label"
                    [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
       </app-form-field>
 
-      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0">
-        <ant-input class="step-code" [readonly]="true" [ngModel]="nodeProps.nodeKey || 'ma_buoc'"></ant-input>
+      <!-- Mã bước: tự sinh từ tên bước, cho sửa (chữ, số, "_") -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0"
+                      [error]="errors.nodeKey ? (('PROCESS_GRAPH.DRAWER.VALIDATION.' + (errors.nodeKey === true ? 'REQUIRED' : errors.nodeKey)) | translate) : ''">
+        <ant-input class="step-code" [(ngModel)]="nodeProps.nodeKey" (ngModelChange)="save('nodeKey')"
+                   [inputFilter]="nodeKeyFilter" [maxLength]="limits.nodeKey"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
       </app-form-field>
 
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
-        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')"
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')" [maxLength]="limits.description"
                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
       </app-form-field>
     </ng-container>
@@ -25,9 +29,13 @@
   <section class="action-section">
     <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'subProcess', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.SUB_PROCESS' }"></ng-container>
     <div class="sub-process-field" *ngIf="isOpen('subProcess')">
-      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.SUB_PROCESS' | translate" [spacing]="0">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.SUB_PROCESS' | translate" [required]="true" [spacing]="0"
+                      [error]="errors.subProcessTemplateId ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''">
+        <!-- Mỗi dòng: tên + badge phiên bản, mã quy trình bên dưới -->
         <ant-select [(ngModel)]="nodeProps.subProcessTemplateId" (ngModelChange)="onProcessChange()" [options]="processOptions"
-                    [showSearch]="true" [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+                    [panelSearch]="true" [fixedPanel]="true" [optionTemplate]="processOption"
+                    [panelSearchPlaceholder]="'PROCESS_GRAPH.INFO.SEARCH_PLACEHOLDER' | translate"
+                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
       </app-form-field>
       <!-- Mở quy trình con đã chọn ở tab mới -->
       <button *ngIf="nodeProps.subProcessTemplateId" type="button" class="view-process-btn" (click)="viewProcess()">
@@ -56,12 +64,14 @@
             <tr *ngFor="let row of inputs; let i = index; trackBy: trackByIndex">
               <td>
                 <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.subField"
+                            [class.is-invalid]="errors.inputRows?.[i]?.['subField']"
                             (ngModelChange)="save('subProcessInputs')" [options]="subInputOptions"
                             [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
               </td>
               <td>
                 <div class="var-cell">
                   <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                              [class.is-invalid]="errors.inputRows?.[i]?.['variable']"
                               (ngModelChange)="save('subProcessInputs')" [options]="variableOptions"
                               [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
                   <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
@@ -77,6 +87,7 @@
       </div>
       <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'input' }"></ng-container>
     </div>
+    <span class="table-error" *ngIf="errors.subProcessInputs">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.subProcessInputs | translate }}</span>
   </section>
 
   <div class="action-divider"></div>
@@ -99,15 +110,18 @@
             <tr *ngFor="let row of outputs; let i = index; trackBy: trackByIndex">
               <td>
                 <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.subField"
+                            [class.is-invalid]="errors.variableRows?.[i]?.source"
                             (ngModelChange)="save('subProcessOutputs')" [options]="subOutputOptions"
                             [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
               </td>
               <td>
-                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('subProcessOutputs')"
+                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('subProcessOutputs')" [appInputFilter]="variableNameFilter" [maxlength]="varLimits.name"
+                       [class.is-invalid]="errors.variableRows?.[i]?.variable"
                        [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
               </td>
               <td>
-                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('subProcessOutputs')"
+                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('subProcessOutputs')" [maxlength]="varLimits.displayName"
+                       [class.is-invalid]="errors.variableRows?.[i]?.displayName"
                        [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
               </td>
               <td class="col-action">
@@ -119,6 +133,7 @@
       </div>
       <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'output' }"></ng-container>
     </div>
+    <span class="table-error" *ngIf="errors.subProcessOutputs">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.subProcessOutputs | translate }}</span>
   </section>
 </div>
 
@@ -146,3 +161,15 @@
     </button>
   </div>
 </ng-template>
+
+<ng-template #processOption let-opt>
+  <div class="process-option">
+    <div class="process-option-head">
+      <span class="process-option-name" [appTooltip]="opt.label" [tooltipOnlyTruncated]="true">{{ opt.label }}</span>
+      <span class="process-option-badge" *ngIf="opt.badge">{{ opt.badge }}</span>
+    </div>
+    <span class="process-option-code">{{ opt.value }}</span>
+  </div>
+</ng-template>
+
+<app-process-preview-modal [visible]="!!previewTemplate" [template]="previewTemplate" (closed)="previewTemplate = null"></app-process-preview-modal>

@@ -1,44 +1,55 @@
-.notification-config-container {
+@use '../../../../../../shared/styles/processx-tokens' as px;
+
+:host {
+  display: block;
+}
+
+// Các khối cách 24, ngăn bằng đường kẻ
+.notify-config {
   display: flex;
   flex-direction: column;
+  gap: px.$space-24;
+  font-family: px.$font-family;
 }
 
-.drawer-section-heading {
+.notify-section {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-16;
+}
+
+.notify-divider {
+  height: 1px;
+  background: px.$neutral-300;
+}
+
+// Tiêu đề khối + chevron thu gọn
+.section-head {
   display: flex;
   align-items: center;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #1e293b;
-  margin-bottom: 14px;
-}
-
-.template-header-wrap {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.variable-chips-row {
-  display: flex;
-  gap: 4px;
-}
-
-.chip-btn {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 2px 6px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  color: #475569;
-  transition: all 0.15s ease;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-900;
+  text-align: left;
+}
 
-  &:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-    border-color: #94a3b8;
+.section-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+
+  &.collapsed {
+    transform: rotate(180deg);
   }
+}
+
+:host ::ng-deep .step-code .px-input-affix-wrapper {
+  color: px.$neutral-800;
 }

@@ -29,6 +29,7 @@
               <td>
                 <div class="var-cell">
                   <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                              [class.is-invalid]="errors.inputRows?.[i]?.['variable']"
                               (ngModelChange)="save('endResults')" [options]="variableOptions"
                               [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
                   <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
@@ -37,6 +38,7 @@
               </td>
               <td>
                 <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.formField"
+                            [class.is-invalid]="errors.inputRows?.[i]?.['formField']"
                             (ngModelChange)="save('endResults')" [options]="formFieldOptions"
                             [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
               </td>
@@ -58,5 +60,6 @@
         </button>
       </div>
     </div>
+    <span class="table-error" *ngIf="errors.endResults">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.endResults | translate }}</span>
   </section>
 </div>

@@ -13,11 +13,14 @@ import {
 import {
   PROCESS_API_ENDPOINTS,
   PROCESS_API_FIELD_OPTIONS,
+  PROCESS_API_INPUT_OPTIONS,
   PROCESS_FORM_FIELD_OPTIONS,
   PROCESS_HYBRID_API_OPTIONS,
   PROCESS_INPUT_FORM_OPTIONS,
 } from '../../../config/process-info.config';
 import { GraphBridgeService } from '../../../services/graph-bridge.service';
+import { NodeFieldErrors } from '../../../models/node-validation';
+import { PROCESS_VARIABLE_LIMITS, variableNameFilter } from '../../../models/process-variable';
 import { GraphEditorStore } from '../../../state/graph-editor.store';
 
 @Component({
@@ -27,6 +30,11 @@ import { GraphEditorStore } from '../../../state/graph-editor.store';
 })
 export class TriggerNodeConfigComponent implements OnChanges {
   @Input() nodeProps!: NodePropertyModel;
+  /** Lỗi do drawer kiểm tra khi bấm Lưu */
+  @Input() errors: NodeFieldErrors = {};
+
+  readonly varLimits = PROCESS_VARIABLE_LIMITS;
+  readonly variableNameFilter = variableNameFilter;
 
   /** Mở / thu gọn khối "Khởi tạo biến quy trình" */
   isVariablesOpen: boolean = true;
@@ -116,9 +124,19 @@ export class TriggerNodeConfigComponent implements OnChanges {
     return this.triggerType === 'HYBRID';
   }
 
+  /** Trường dữ liệu API = tham số request + trường response của API (bỏ trùng); cache theo API */
   get apiFieldOptions(): SelectOption[] {
-    return (this.apiId && PROCESS_API_FIELD_OPTIONS[this.apiId]) || [];
+    const id = this.apiId;
+    if (id !== this.apiFieldsFor) {
+      this.apiFieldsFor = id;
+      const all = [...((id && PROCESS_API_INPUT_OPTIONS[id]) || []), ...((id && PROCESS_API_FIELD_OPTIONS[id]) || [])];
+      this.apiFieldsCache = all.filter((o, i) => all.findIndex((x) => x.value === o.value) === i);
+    }
+    return this.apiFieldsCache;
   }
+
+  private apiFieldsFor: string | null = null;
+  private apiFieldsCache: SelectOption[] = [];
 
   /** Lịch chạy của kích hoạt Lập lịch (chọn ở tab Thông tin chung, chỉ xem) */
   get schedule(): ProcessScheduleConfig | null {

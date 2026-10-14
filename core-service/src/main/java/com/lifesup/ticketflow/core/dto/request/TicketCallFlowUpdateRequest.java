@@ -55,12 +55,12 @@ public class TicketCallFlowUpdateRequest {
     @NotBlank(message = "{validation.ticketCallFlow.flowJson.required}")
     String flowJson;
 
-    @Schema(description = "Tên phiên bản (bản nháp). Không truyền thì giữ nguyên", example = "Bổ sung bước xác minh")
+    @Schema(description = "Tên phiên bản. Không truyền thì giữ nguyên", example = "Bổ sung bước xác minh")
     @Size(max = 255, message = "{validation.ticketCallFlow.versionName.size}")
     @JsonDeserialize(using = StringTrimDeserializer.class)
     String versionName;
 
-    @Schema(description = "Mô tả thay đổi của phiên bản (bản nháp). Không truyền thì giữ nguyên",
+    @Schema(description = "Mô tả thay đổi của phiên bản. Không truyền thì giữ nguyên",
             example = "Thêm bước Bổ sung thông tin cho PAKN thiếu dữ liệu.")
     @Size(max = 1000, message = "{validation.ticketCallFlow.versionDescription.size}")
     String versionDescription;

@@ -198,13 +198,14 @@
 }
 
 .column-panel-all {
-  padding: px.$space-4;
+  padding: px.$space-4 0;
   border-bottom: 1px solid px.$neutral-300;
 }
 
 .column-panel-list {
   display: flex;
   flex-direction: column;
+  gap: px.$space-4;
   max-height: 320px;
   padding: px.$space-4;
   overflow-y: auto;

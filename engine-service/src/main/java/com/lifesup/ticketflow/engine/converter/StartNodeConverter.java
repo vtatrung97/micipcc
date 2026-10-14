@@ -1,26 +1,26 @@
 package com.lifesup.ticketflow.engine.converter;
 
+import com.lifesup.ticketflow.engine.bpmn.BpmnExpressions;
 import com.lifesup.ticketflow.engine.common.enums.NodeType;
 import com.lifesup.ticketflow.engine.dto.workflow.WorkflowNode;
-import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.StartEvent;
+import org.flowable.engine.delegate.ExecutionListener;
 import org.springframework.stereotype.Component;
 
-/** Chuyển trigger thành none start event. */
+/** START → none start event; listener khởi tạo biến từ dữ liệu đầu vào theo START.variables. */
 @Component
 public final class StartNodeConverter extends AbstractNodeConverter {
-    @Override public NodeType supports() { return NodeType.START; }
-    @Override public FlowElement convert(WorkflowNode node) {
-        StartEvent event = named(new StartEvent(), node);
-        String triggerType = stringConfig(node, "triggerType");
-        String triggerRefId = stringConfig(node, "triggerRefId");
-        if (triggerType != null || triggerRefId != null)
-            event.setDocumentation("triggerType=" + triggerType + ", triggerRefId=" + triggerRefId);
-        return event;
+
+    @Override
+    public NodeType supports() {
+        return NodeType.START;
     }
 
-    private static String stringConfig(WorkflowNode node, String key) {
-        Object value = node.getConfig().get(key);
-        return value instanceof String text ? text : null;
+    @Override
+    public ConvertedNode convert(WorkflowNode node, ConversionContext context) {
+        StartEvent event = init(new StartEvent(), node, context);
+        event.getExecutionListeners().add(
+                listener(ExecutionListener.EVENTNAME_START, BpmnExpressions.BEAN_START_VARIABLE_LISTENER));
+        return ConvertedNode.single(event);
     }
 }

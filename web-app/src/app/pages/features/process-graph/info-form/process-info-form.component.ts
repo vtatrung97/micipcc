@@ -1,14 +1,36 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, ElementRef, HostBinding, Input, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
 import {
-  PROCESS_CATEGORY_OPTIONS,
+  PROCESS_API_INPUT_OPTIONS,
   PROCESS_HYBRID_API_OPTIONS,
   PROCESS_INPUT_FORM_OPTIONS
 } from '../config/process-info.config';
-import { ProcessInfo, ProcessInfoErrors, ProcessTriggerType, createEmptyConditionRule } from '../models/process-info.model';
+import { ProcessCategoryService } from '@core/services/process-category.service';
+import { PROCESS_CATEGORY_MAX_LENGTH } from '@core/services/process-category.constant';
+import {
+  PROCESS_INFO_LIMITS,
+  PROCESS_SLA_UNITS,
+  ProcessInfo,
+  ProcessInfoErrors,
+  ProcessTriggerType,
+  createEmptyConditionRule
+} from '../models/process-info.model';
 import { ConditionRuleItem } from '../models/node-property.model';
+
+const EMPTY_OPTIONS: SelectOption[] = [];
+/** Kiểu so sánh của điều kiện kích hoạt (thứ tự theo tài liệu) */
+export const CONDITION_OPERATORS = ['EQ', 'NEQ', 'LT', 'GT', 'LTE', 'GTE', 'IN', 'NOT_IN'];
+
+function clampDigits(value: string, max: number): string {
+  const digits = value.replace(/\D/g, '').slice(0, 2);
+  return digits && +digits > max ? String(max) : digits;
+}
+
+function toIsoDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 /**
  * Tab "Thông tin chung": card Thông tin cơ bản + card Cấu hình quy trình (kích hoạt, SLA).
@@ -24,8 +46,22 @@ export class ProcessInfoFormComponent implements OnDestroy {
   @Input() errors: ProcessInfoErrors = {};
   /** Mã quy trình chỉ sửa được khi tạo mới */
   @Input() codeEditable: boolean = true;
+  /** Chỉ xem (popup xem quy trình): khoá mọi ô, nền xám */
+  @HostBinding('class.is-readonly')
+  @Input() readonly: boolean = false;
 
-  readonly categoryOptions = PROCESS_CATEGORY_OPTIONS;
+  readonly limits = { ...PROCESS_INFO_LIMITS, category: PROCESS_CATEGORY_MAX_LENGTH };
+  /** Hôm nay (YYYY-MM-DD) — "Chạy một lần" không cho chọn ngày quá khứ */
+  readonly today = toIsoDate(new Date());
+  categoryOptions: SelectOption[] = [];
+
+  /** Đang nhập nhóm quy trình mới ở chân dropdown */
+  isAddingCategory: boolean = false;
+  newCategory: string = '';
+  newCategoryError: string = '';
+  @ViewChild('newCategoryInput') set newCategoryInput(ref: ElementRef<HTMLInputElement> | undefined) {
+    if (ref) setTimeout(() => ref.nativeElement.focus());
+  }
   readonly apiOptions = PROCESS_HYBRID_API_OPTIONS;
   readonly inputFormOptions = PROCESS_INPUT_FORM_OPTIONS;
 
@@ -37,24 +73,81 @@ export class ProcessInfoFormComponent implements OnDestroy {
   weekDayOptions: SelectOption[] = [];
   slaUnitOptions: SelectOption[] = [];
   /** Tham số + kiểu so sánh của điều kiện kích hoạt (dùng chung bộ với popup Điều kiện của gateway) */
-  conditionParamOptions: SelectOption[] = [];
   conditionOperatorOptions: SelectOption[] = [];
 
   private langSub: Subscription;
+  private categorySub: Subscription;
 
-  constructor(private translate: TranslateService) {
+  constructor(
+    private translate: TranslateService,
+    private categories: ProcessCategoryService,
+  ) {
     this.buildOptions();
     this.langSub = this.translate.onLangChange.subscribe(() => this.buildOptions());
+    this.categorySub = this.categories.categories$.subscribe((list) => {
+      this.categoryOptions = list.map((c) => ({ value: c, label: c }));
+    });
   }
 
   ngOnDestroy(): void {
     this.langSub.unsubscribe();
+    this.categorySub.unsubscribe();
   }
 
-  /** Thông báo lỗi đã dịch của một field (rỗng nếu hợp lệ) */
+  /**
+   * Thông báo lỗi đã dịch của một field (rỗng nếu hợp lệ).
+   * Lỗi bỏ trống dùng câu riêng của từng trường (vd: "Tên quy trình không được để trống").
+   */
   error(field: keyof ProcessInfoErrors): string {
     const code = this.errors[field];
-    return code ? this.translate.instant('PROCESS_GRAPH.INFO.ERRORS.' + code) : '';
+    if (!code) return '';
+    const fieldKey = `PROCESS_GRAPH.INFO.REQUIRED_MESSAGES.${field}`;
+    if (code === 'REQUIRED') {
+      const message = this.translate.instant(fieldKey);
+      if (message !== fieldKey) return message;
+    }
+    return this.translate.instant('PROCESS_GRAPH.INFO.ERRORS.' + code);
+  }
+
+  /** Tham số kích hoạt = danh sách đầu vào của API đã chọn */
+  apiInputOptions(apiId: string | null): SelectOption[] {
+    return (apiId && PROCESS_API_INPUT_OPTIONS[apiId]) || EMPTY_OPTIONS;
+  }
+
+  /** Đổi API: bỏ tham số không còn thuộc API mới */
+  onApiChange(rules: ConditionRuleItem[], apiId: string | null): void {
+    const valid = new Set(this.apiInputOptions(apiId).map(o => o.value));
+    rules.forEach(r => { if (r.param && !valid.has(r.param)) r.param = ''; });
+  }
+
+  /** IN / NOT IN: nhập nhiều giá trị cách nhau bởi dấu phẩy */
+  isMultiValue(operator: string): boolean {
+    return operator === 'IN' || operator === 'NOT_IN';
+  }
+
+  // ===== Thêm nhóm quy trình mới (chân dropdown) =====
+  startAddCategory(keyword: string): void {
+    this.isAddingCategory = true;
+    this.newCategory = (keyword || '').trim();
+    this.newCategoryError = '';
+  }
+
+  cancelAddCategory(): void {
+    this.isAddingCategory = false;
+    this.newCategory = '';
+    this.newCategoryError = '';
+  }
+
+  /** Lưu nhóm mới: hợp lệ thì thêm vào danh sách, chọn luôn và đóng dropdown */
+  saveCategory(close: () => void): void {
+    const code = this.categories.validate(this.newCategory);
+    if (code) {
+      this.newCategoryError = this.translate.instant('PROCESS_GRAPH.INFO.CATEGORY_ERRORS.' + code);
+      return;
+    }
+    this.info.category = this.categories.add(this.newCategory);
+    this.cancelAddCategory();
+    close();
   }
 
   // ===== SLA: ô số ⇄ number =====
@@ -84,10 +177,13 @@ export class ProcessInfoFormComponent implements OnDestroy {
     this.setRunTime(this.runHour, value);
   }
 
-  /** Mã quy trình: viết hoa, bỏ khoảng trắng */
-  onCodeChange(value: string): void {
-    this.info.code = (value || '').toUpperCase().replace(/\s+/g, '_');
-  }
+  // ===== Lọc ký tự khi gõ =====
+  /** Mã quy trình: chỉ chữ không dấu, số, "_" và "-" */
+  readonly codeFilter = (v: string) => v.replace(/[^A-Za-z0-9_-]/g, '');
+  readonly digitFilter = (v: string) => v.replace(/\D/g, '');
+  /** Giờ 0–23, phút 0–59: gõ quá thì đưa về giá trị lớn nhất */
+  readonly hourFilter = (v: string) => clampDigits(v, 23);
+  readonly minuteFilter = (v: string) => clampDigits(v, 59);
 
   // ===== Điều kiện kích hoạt (Tự động / Hybrid) =====
   /** Thêm một dòng điều kiện trống */
@@ -100,7 +196,7 @@ export class ProcessInfoFormComponent implements OnDestroy {
     if (rules.length > 1) rules.splice(index, 1);
   }
 
-  /** Ô trống của một dòng → viền đỏ khi form đang báo lỗi điều kiện */
+  /** Tham số / kiểu so sánh còn trống → viền đỏ khi form đang báo lỗi điều kiện */
   isRuleFieldInvalid(rule: ConditionRuleItem, field: keyof ConditionRuleItem, errorKey: keyof ProcessInfoErrors): boolean {
     return !!this.errors[errorKey] && !String(rule[field] ?? '').trim();
   }
@@ -126,22 +222,11 @@ export class ProcessInfoFormComponent implements OnDestroy {
     this.repeatOptions = (['DAILY', 'WEEKLY', 'MONTHLY'] as const)
       .map(v => ({ value: v, label: t('REPEAT_OPTIONS.' + v) }));
     this.weekDayOptions = [1, 2, 3, 4, 5, 6, 7].map(v => ({ value: v, label: t('WEEK_DAYS.' + v) }));
-    const c = (key: string) => this.translate.instant('PROCESS_GRAPH.CONDITION_MODAL.' + key);
-    this.conditionParamOptions = [
-      { value: '.priority', label: c('PARAMS.PRIORITY') },
-      { value: 'paknID', label: c('PARAMS.PAKN_ID') },
-      { value: 'complaintType', label: c('PARAMS.COMPLAINT_TYPE') },
-      { value: 'code', label: c('PARAMS.CODE') },
-      { value: 'startedAt', label: c('PARAMS.STARTED_AT') }
-    ];
-    // Toán tử của điều kiện kích hoạt: =, >=, <=, >, <, !=
-    this.conditionOperatorOptions = ['EQ', 'GTE', 'LTE', 'GT', 'LT', 'NEQ']
-      .map(v => ({ value: v, label: c('OPERATORS.' + v) }));
-    // Giá trị giữ nguyên chuỗi tiếng Việt như slaUnit của node USER_TASK (FLOW_SCHEMA mục 4)
-    this.slaUnitOptions = [
-      { value: 'Ngày', label: t('SLA_UNITS.DAY') },
-      { value: 'Giờ', label: t('SLA_UNITS.HOUR') },
-      { value: 'Phút', label: t('SLA_UNITS.MINUTE') }
-    ];
+    // Kiểu so sánh theo tài liệu: = <> < > <= >= IN NOT IN
+    this.conditionOperatorOptions = CONDITION_OPERATORS
+      .map(v => ({ value: v, label: this.translate.instant('PROCESS_GRAPH.CONDITION_OPERATORS.' + v) }));
+    // Giá trị lưu là chuỗi tiếng Việt (Giờ / Ngày / Tuần / Tháng)
+    const unitKeys: Record<string, string> = { 'Giờ': 'HOUR', 'Ngày': 'DAY', 'Tuần': 'WEEK', 'Tháng': 'MONTH' };
+    this.slaUnitOptions = PROCESS_SLA_UNITS.map(u => ({ value: u, label: t('SLA_UNITS.' + unitKeys[u]) }));
   }
 }

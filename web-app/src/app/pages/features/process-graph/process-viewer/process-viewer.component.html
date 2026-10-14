@@ -1,0 +1,8 @@
+<div #container class="viewer-graph"></div>
+
+<app-canvas-toolbar class="viewer-toolbar" [canUndo]="store.canUndo" [canRedo]="store.canRedo" [zoom]="store.currentZoom"
+  (undo)="undo()" (redo)="redo()" (zoomIn)="zoomIn()" (zoomOut)="zoomOut()" (resetZoom)="resetZoom()"
+  (fit)="zoomToFit()" (autoLayout)="autoLayout()"></app-canvas-toolbar>
+
+<!-- Bấm node: drawer cấu hình ở chế độ chỉ xem -->
+<app-node-config-drawer [readonly]="true"></app-node-config-drawer>

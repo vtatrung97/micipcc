@@ -38,10 +38,6 @@ public class TemplateEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     String name;
 
-    /** Tiền tố mã hồ sơ, VD "PAKN" → hồ sơ PAKN-2026-00001. Không đổi sau khi tạo. */
-    @Column(name = "case_code_prefix", nullable = false, length = 20, updatable = false)
-    String caseCodePrefix;
-
     /** Nhóm nghiệp vụ. */
     @Column(name = "category", length = 100)
     String category;

@@ -1,13 +1,15 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
-import { TemplateService } from '@core/services/template.service';
+import { ProcessTemplateItem, TemplateService } from '@core/services/template.service';
 import {
   NodePropertyModel,
   SubProcessInputRow,
   SubProcessOutputRow,
 } from '../../../models/node-property.model';
 import { NodeFieldErrors } from '../../../models/node-validation';
+import { PROCESS_VARIABLE_LIMITS, variableNameFilter } from '../../../models/process-variable';
+import { NODE_TEXT_LIMITS, applyLabelChange, nodeKeyFilter } from '../../../models/node-key';
 import { SUB_PROCESS_INPUT_FIELDS, SUB_PROCESS_OUTPUT_FIELDS } from '../../../config/sub-process.config';
 import { GraphBridgeService } from '../../../services/graph-bridge.service';
 import { ProcessVariableOption, ProcessVariableService } from '../../../services/process-variable.service';
@@ -25,6 +27,11 @@ export class SubProcessNodeConfigComponent implements OnChanges {
   @Input() nodeProps!: NodePropertyModel;
   /** Lỗi trường bắt buộc do drawer kiểm tra khi bấm Lưu */
   @Input() errors: NodeFieldErrors = {};
+  readonly varLimits = PROCESS_VARIABLE_LIMITS;
+  readonly variableNameFilter = variableNameFilter;
+
+  readonly limits = NODE_TEXT_LIMITS;
+  readonly nodeKeyFilter = nodeKeyFilter;
 
   openSections: Record<SectionKey, boolean> = {
     general: true,
@@ -37,24 +44,32 @@ export class SubProcessNodeConfigComponent implements OnChanges {
   readonly subOutputOptions = SUB_PROCESS_OUTPUT_FIELDS;
   processOptions: SelectOption[] = [];
   variableOptions: ProcessVariableOption[] = [];
+  /** Quy trình đang mở ở popup "Xem quy trình" */
+  previewTemplate: ProcessTemplateItem | null = null;
 
   constructor(
     private bridgeService: GraphBridgeService,
     private variables: ProcessVariableService,
     private templateService: TemplateService,
     private store: GraphEditorStore,
-    private router: Router,
+    private translate: TranslateService,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['nodeProps'] || !this.nodeProps) return;
-    this.variableOptions = this.variables.getVariables();
-    // Quy trình con: mọi quy trình trừ quy trình đang thiết kế
+    // Biến của các bước đứng trước bước này
+    this.variableOptions = this.variables.getVariables(this.nodeProps.id);
+    // Quy trình con: các quy trình Đang ban hành, trừ quy trình đang thiết kế
+    // ⚠ Lọc tạm phía client, sau này lấy từ API danh sách quy trình (status = Đang ban hành)
     const currentCode = this.store.currentTemplate?.code;
     this.processOptions = this.templateService
       .getTemplates()
-      .filter((t) => t.code !== currentCode)
-      .map((t) => ({ value: t.code, label: t.name }));
+      .filter((t) => t.status === 'Published' && t.code !== currentCode)
+      .map((t) => ({
+        value: t.code,
+        label: t.name,
+        badge: this.translate.instant('PROCESS_GRAPH.DRAWER.SUB_PROCESS.VERSION', { version: (t.version || '').replace(/^v/i, '') }),
+      }));
 
     let changed = false;
     if (!this.nodeProps.subProcessInputs?.length) {
@@ -95,12 +110,11 @@ export class SubProcessNodeConfigComponent implements OnChanges {
     this.save('all');
   }
 
-  /** Mở quy trình con ở tab mới để không mất bản vẽ đang sửa */
+  /** Mở popup xem quy trình con (Thông tin chung + Thiết kế quy trình, chỉ xem) */
   viewProcess(): void {
     const code = this.nodeProps.subProcessTemplateId;
     if (!code) return;
-    const url = this.router.serializeUrl(this.router.createUrlTree(['/process/graph'], { queryParams: { id: code } }));
-    window.open(url, '_blank');
+    this.previewTemplate = this.templateService.getTemplateByCode(code) || null;
   }
 
   addRow(kind: 'input' | 'output'): void {
@@ -124,7 +138,9 @@ export class SubProcessNodeConfigComponent implements OnChanges {
     }
   }
 
-  onLabelChange(): void {
+  /** Đổi tên bước; mã bước còn tự sinh thì sinh lại theo tên mới */
+  onLabelChange(label: string): void {
+    applyLabelChange(this.nodeProps, label);
     this.bridgeService.updateNodeLabel(this.nodeProps.id, this.nodeProps.label, this.nodeProps);
   }
 

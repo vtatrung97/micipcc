@@ -1,6 +1,7 @@
 package com.lifesup.ticketflow.core.dto.request;
 
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
+import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
@@ -15,9 +16,11 @@ public class TicketCallFlowSearchRequest {
     String keyword;
     String name;
     String code;
+    /** Trạng thái quy trình. */
     TicketCallFlowStatus status;
-    Boolean hasDraft;
-    Integer publishedVersionNo;
+    /** Trạng thái phiên bản. */
+    TicketCallFlowVersionStatus versionStatus;
+    Integer versionNo;
 
     Long updatedFrom;
     Long updatedTo;

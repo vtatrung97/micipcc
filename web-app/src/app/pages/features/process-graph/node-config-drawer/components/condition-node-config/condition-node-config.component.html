@@ -1,92 +1,96 @@
-<div class="condition-config-container" *ngIf="nodeProps">
-  <div class="drawer-section-heading mt-4">
-    <ant-icon name="branches" [size]="14" style="margin-right: 6px;"></ant-icon>
-    <span>ĐỊNH TUYẾN & RẼ NHÁNH LOGIC</span>
-  </div>
+<div class="cond-config" *ngIf="nodeProps">
+  <!-- ===== Thông tin chung ===== -->
+  <section class="cond-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
+    <ng-container *ngIf="isOpen('general')">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="errors.label ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <ant-input [ngModel]="nodeProps.label" (ngModelChange)="onLabelChange($event)" [maxLength]="limits.label"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
 
-  <!-- Nguồn -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Nguồn</nz-form-label>
-    <nz-form-control>
-      <nz-select [(ngModel)]="nodeProps.servicePivotSource" (ngModelChange)="onPropChange('servicePivotSource')"
-        name="servicePivotSource">
-        <nz-option nzValue="flow.variables" nzLabel="flow.variables (Biến tiến trình)"></nz-option>
-        <nz-option nzValue="ipcc.response" nzLabel="ipcc.response (Dữ liệu IPCC 2.0)"></nz-option>
-        <nz-option nzValue="billing.cdr" nzLabel="billing.cdr (Cước viễn thông)"></nz-option>
-        <nz-option nzValue="crm.ticket" nzLabel="crm.ticket (CRM Siebel)"></nz-option>
-      </nz-select>
-    </nz-form-control>
-  </nz-form-item>
+      <!-- Mã bước: tự sinh từ tên bước, cho sửa (chữ, số, "_") -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0"
+                      [error]="errors.nodeKey ? (('PROCESS_GRAPH.DRAWER.VALIDATION.' + (errors.nodeKey === true ? 'REQUIRED' : errors.nodeKey)) | translate) : ''">
+        <ant-input class="step-code" [(ngModel)]="nodeProps.nodeKey" (ngModelChange)="save('nodeKey')"
+                   [inputFilter]="nodeKeyFilter" [maxLength]="limits.nodeKey"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+      </app-form-field>
 
-  <!-- Biến rẽ nhánh -->
-  <nz-form-item>
-    <nz-form-label nzRequired>Biến rẽ nhánh</nz-form-label>
-    <nz-form-control>
-      <input nz-input class="font-mono text-xs" [(ngModel)]="nodeProps.conditionVariable"
-        (ngModelChange)="onPropChange('conditionVariable')" name="conditionVariable"
-        placeholder="Nhập tên biến (VD: flow.variables.cuoc)" />
-    </nz-form-control>
-  </nz-form-item>
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')" [maxLength]="limits.description"
+                      [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
+      </app-form-field>
+    </ng-container>
+  </section>
 
-  <!-- Danh sách nhánh rẽ -->
-  <div class="branch-dynamic-header mb-2">
-    <div class="branch-heading-wrap">
-      <span class="branch-section-heading">Danh sách nhánh</span>
-      <span class="required">*</span>
-    </div>
-    <button type="button" class="btn-link-add-branch" (click)="addBranch()">
-      <span>+ Thêm nhánh</span>
-    </button>
-  </div>
+  <div class="cond-divider"></div>
 
-  <!-- Bảng nhánh rẽ -->
-  <div class="branch-table-container mb-3">
-    <div class="branch-table-header">
-      <div class="col-table-val">Điều kiện <span class="required">*</span></div>
-      <div class="col-table-desc">Mô tả</div>
-      <div class="col-table-act">Thao tác</div>
-    </div>
-
-    <div class="branch-table-body">
-      <!-- Cổng mặc định -->
-      <div class="branch-table-row default-branch-row" *ngIf="nodeProps.branches?.[0] as defBr">
-        <div class="col-table-val">
-          <span class="badge-default-val">Mặc định</span>
-        </div>
-        <div class="col-table-desc">
-          <input type="text" class="form-input branch-cell-input" [(ngModel)]="defBr.name"
-            (ngModelChange)="onBranchChange(0)" name="branchDesc_0" placeholder="Mặc định" />
-        </div>
-        <div class="col-table-act">
-          <span class="lock-icon" title="Cổng Mặc định cố định">
-            <ant-icon name="lock" [size]="13" color="#94a3b8"></ant-icon>
-          </span>
-        </div>
+  <!-- ===== Danh sách nhánh: Tên nhánh · Điều kiện (số điều kiện) · Hành động ===== -->
+  <section class="cond-section">
+    <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'branches', title: 'PROCESS_GRAPH.DRAWER.CONDITION.BRANCHES_TITLE' }"></ng-container>
+    <div class="branch-table" *ngIf="isOpen('branches')">
+      <div class="branch-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-name">{{ 'PROCESS_GRAPH.DRAWER.CONDITION.COL_BRANCH' | translate }}</th>
+              <th>{{ 'PROCESS_GRAPH.DRAWER.CONDITION.COL_CONDITIONS' | translate }}</th>
+              <th class="col-action">{{ 'PROCESS_GRAPH.DRAWER.CONDITION.COL_ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let branch of branches; trackBy: trackById">
+              <td class="col-name">
+                <span class="cell-text" [appTooltip]="branchName(branch)" [tooltipOnlyTruncated]="true">{{ branchName(branch) }}</span>
+              </td>
+              <td><span class="cell-text">{{ isFixed(branch) ? '' : (branch.rules?.length || 0) }}</span></td>
+              <td class="col-action">
+                <!-- Mặc định, Lỗi là nhánh cố định: không xem / sửa / xoá -->
+                <div class="row-actions" *ngIf="!isFixed(branch)">
+                  <button type="button" class="row-btn" (click)="openModal('view', branch)"
+                          [appTooltip]="'PROCESS_GRAPH.DRAWER.CONDITION.VIEW' | translate">
+                    <img src="assets/icons/processx/eye.svg" width="20" height="20" alt="" />
+                  </button>
+                  <button type="button" class="row-btn" (click)="openModal('edit', branch)"
+                          [appTooltip]="'PROCESS_GRAPH.DRAWER.CONDITION.EDIT' | translate">
+                    <img src="assets/icons/processx/edit.svg" width="20" height="20" alt="" />
+                  </button>
+                  <button type="button" class="row-btn" (click)="removeBranch(branch)"
+                          [appTooltip]="'PROCESS_GRAPH.DRAWER.CONDITION.DELETE' | translate">
+                    <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
-      <!-- Các nhánh tùy biến -->
-      <ng-container *ngFor="let br of nodeProps.branches; let idx = index">
-        <div class="branch-table-row" *ngIf="!br.isDefault">
-          <div class="col-table-val">
-            <input type="text" class="form-input branch-cell-input font-mono text-xs" [(ngModel)]="br.value"
-              (ngModelChange)="onBranchChange(idx)" name="branchVal_{{idx}}" placeholder="Nhập giá trị" />
-          </div>
-          <div class="col-table-desc">
-            <input type="text" class="form-input branch-cell-input" [(ngModel)]="br.name"
-              (ngModelChange)="onBranchChange(idx)" name="branchDesc_{{idx}}"
-              [placeholder]="br.defaultLabel || ('Nhánh ' + idx)" />
-          </div>
-          <div class="col-table-act">
-            <button type="button" class="btn-table-trash" (click)="removeBranch(idx)" title="Xoá nhánh này">
-              <ant-icon name="delete" [size]="13"></ant-icon>
-            </button>
-          </div>
-        </div>
-      </ng-container>
-
-      <div class="branch-empty-hint" *ngIf="(nodeProps.branches?.length || 0) <= 1">
-        Bấm <strong>+ Thêm nhánh</strong> để bổ sung các cổng rẽ nhánh logic.
+      <div class="branch-add">
+        <button type="button" class="branch-add-btn" (click)="openModal('create')">
+          <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+          <span>{{ 'PROCESS_GRAPH.DRAWER.CONDITION.ADD_BRANCH' | translate }}</span>
+        </button>
       </div>
     </div>
-  </div>
+  </section>
 </div>
+
+<app-branch-condition-modal
+  [visible]="!!modalMode"
+  [nodeId]="nodeProps.id"
+  [mode]="modalMode || 'create'"
+  [branch]="editingBranch"
+  [otherNames]="otherNames"
+  [suggestedName]="suggestedName"
+  (saved)="onModalSaved($event)"
+  (closed)="closeModal()">
+</app-branch-condition-modal>
+
+<!-- Tiêu đề khối + chevron thu gọn -->
+<ng-template #sectionHead let-key="key" let-title="title">
+  <button type="button" class="section-head" (click)="toggleSection(key)" [attr.aria-expanded]="isOpen(key)">
+    <span>{{ title | translate }}</span>
+    <img class="section-chevron" [class.collapsed]="!isOpen(key)"
+         src="assets/icons/processx/chevron-up.svg" width="24" height="24" alt="" />
+  </button>
+</ng-template>

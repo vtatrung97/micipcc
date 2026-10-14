@@ -70,6 +70,10 @@
     box-sizing: border-box;
     cursor: pointer;
 
+    &:disabled {
+      cursor: default;
+    }
+
     // Nền trắng (Bắt đầu / Kết thúc) thì thêm viền cho rõ ô
     &.bordered {
       border: 1px solid px.$neutral-300;
@@ -934,4 +938,9 @@
   font-family: px.$font-family;
   @include px.body-sm-regular;
   color: px.$primary-600;
+}
+
+// Ô chọn loại điều kiện cạnh tiêu đề drawer
+.gateway-type-select {
+  width: 196px;
 }

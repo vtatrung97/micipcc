@@ -13,7 +13,7 @@ import { GraphHistoryService } from './graph-history.service';
 import { Graph, Scroller } from '@antv/x6';
 
 /** Giới hạn thu phóng: 50% → 500% (nút +/−, Ctrl + cuộn chuột, căn vừa màn hình) */
-const ZOOM_MIN = 0.5;
+const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 5;
 /** "Căn vừa màn hình" không phóng quá 125% với sơ đồ nhỏ */
 const FIT_MAX = 1.25;
@@ -55,6 +55,8 @@ export class GraphCanvasService {
     this.store.graph = new GraphClass({
       container,
       autoResize: true,
+      // Chỉ xem: tắt kéo node, kéo dây, sửa edge
+      ...(this.store.isReadonly ? { interacting: false } : {}),
       // Nền canvas xám nhạt, lưới chấm
       grid: {
         size: 16,
@@ -143,6 +145,7 @@ export class GraphCanvasService {
     // Nút × trên card (attr event 'node:delete' trong node-view.config)
     this.store.graph.on('node:delete', ({ node, e }: { node: any; e: any }) => {
       e?.stopPropagation?.();
+      if (this.store.isReadonly) return;
       this.editor.deleteNode(node);
       this.highlightSelectedNode();
     });
@@ -229,6 +232,7 @@ export class GraphCanvasService {
     if (!graph) return;
     graph.getNodes().forEach((node: any) => {
       if (!isGatewayType(node.getData()?.type)) return;
+      // Mọi nhánh (kể cả Mặc định và Lỗi) đều phải nối dây
       const outPorts = (node.getPorts() || []).filter((p: any) => p.group === 'outCondition');
       const connected = new Set(
         (graph.getOutgoingEdges(node) || []).map((edge: any) => edge.getSourcePortId?.()),
@@ -240,7 +244,7 @@ export class GraphCanvasService {
 
   /**
    * "Căn vừa màn hình": chọn mức zoom để thấy trọn toàn bộ quy trình trong khung nhìn rồi đưa sơ đồ vào giữa.
-   * Tính theo kích thước khung nhìn thật (scroller), giới hạn 50% → 125% để chữ trên node vẫn đọc được.
+   * Tính theo kích thước khung nhìn thật (scroller), giới hạn 25% → 125%.
    */
   public zoomToFit(): void {
     const graph = this.store.graph;

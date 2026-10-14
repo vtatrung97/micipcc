@@ -38,13 +38,6 @@ public class TicketCallFlowCreateRequest {
     @JsonDeserialize(using = StringTrimDeserializer.class)
     String name;
 
-    @Schema(description = "Tiền tố mã hồ sơ: chữ in hoa không dấu và số, không đổi sau khi tạo", example = "PAKN")
-    @NotBlank(message = "{validation.ticketCallFlow.caseCodePrefix.required}")
-    @Size(max = 20, message = "{validation.ticketCallFlow.caseCodePrefix.size}")
-    @Pattern(regexp = "^[A-Z0-9]+$", message = "{validation.ticketCallFlow.caseCodePrefix.pattern}")
-    @JsonDeserialize(using = StringTrimDeserializer.class)
-    String caseCodePrefix;
-
     @Schema(description = "Phân loại nhóm quy trình")
     @NotBlank(message = "{validation.ticketCallFlow.category.required}")
     @Size(max = 100, message = "{validation.ticketCallFlow.category.size}")

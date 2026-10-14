@@ -2,8 +2,8 @@ package com.lifesup.ticketflow.engine.parser;
 
 import com.lifesup.ticketflow.engine.dto.canvas.CanvasDocument;
 
-/** Parser chuyển raw Canvas JSON thành DTO. */
+/** Parser chuyển flowJson thô thành DTO. */
 public interface CanvasDocumentParser {
-    /** Parse JSON và trả lỗi validation chuẩn nếu JSON không hợp lệ. */
+    /** Parse JSON; JSON rỗng hoặc sai cú pháp ném WorkflowValidationException mã CANVAS_JSON_INVALID. */
     CanvasDocument parse(String modelJson);
 }

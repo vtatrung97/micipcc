@@ -63,48 +63,42 @@ public class TicketCallFlowController {
         return ApiResponse.success(ticketCallFlowService.create(request));
     }
 
-    @PutMapping("/{id}")
-    public ApiResponse<TicketCallFlowResponse> update(
-            @PathVariable Long id, @Valid @RequestBody TicketCallFlowUpdateRequest request) {
-        return ApiResponse.success(ticketCallFlowService.update(id, request));
-    }
-
-    @PostMapping("/{id}/clone")
-    public ApiResponse<TicketCallFlowResponse> clone(
-            @PathVariable Long id, @Valid @RequestBody TicketCallFlowCloneRequest request) {
-        return ApiResponse.success(ticketCallFlowService.clone(id, request));
-    }
-
-    @PostMapping("/{id}/publish")
-    public ApiResponse<TicketCallFlowResponse> publish(
-            @PathVariable Long id, @Valid @RequestBody(required = false) TicketCallFlowPublishRequest request) {
-        return ApiResponse.success(ticketCallFlowService.publish(id, orEmpty(request)));
-    }
-
-    @PostMapping("/{id}/discard-draft")
-    public ApiResponse<TicketCallFlowResponse> discardDraft(
-            @PathVariable Long id, @Valid @RequestBody(required = false) TicketCallFlowPublishRequest request) {
-        return ApiResponse.success(ticketCallFlowService.discardDraft(id, orEmpty(request)));
-    }
-
     @GetMapping("/{id}/versions")
     public ApiResponse<List<TicketCallFlowVersionSummaryResponse>> getVersions(@PathVariable Long id) {
         return ApiResponse.success(ticketCallFlowService.getVersions(id));
     }
 
-    @GetMapping("/{id}/versions/{versionNo}")
+    @GetMapping("/{id}/versions/{versionId}")
     public ApiResponse<TicketCallFlowVersionResponse> getVersion(
-            @PathVariable Long id, @PathVariable Integer versionNo) {
-        return ApiResponse.success(ticketCallFlowService.getVersion(id, versionNo));
+            @PathVariable Long id, @PathVariable Long versionId) {
+        return ApiResponse.success(ticketCallFlowService.getVersion(id, versionId));
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Long id) {
-        ticketCallFlowService.delete(id);
+    @PutMapping("/{id}/versions/{versionId}")
+    public ApiResponse<TicketCallFlowResponse> update(
+            @PathVariable Long id, @PathVariable Long versionId,
+            @Valid @RequestBody TicketCallFlowUpdateRequest request) {
+        return ApiResponse.success(ticketCallFlowService.update(id, versionId, request));
+    }
+
+    @PostMapping("/{id}/versions/{versionId}/publish")
+    public ApiResponse<TicketCallFlowResponse> publish(
+            @PathVariable Long id, @PathVariable Long versionId,
+            @Valid @RequestBody(required = false) TicketCallFlowPublishRequest request) {
+        return ApiResponse.success(ticketCallFlowService.publish(id, versionId,
+                request != null ? request : new TicketCallFlowPublishRequest()));
+    }
+
+    @PostMapping("/{id}/versions/{versionId}/clone")
+    public ApiResponse<TicketCallFlowResponse> clone(
+            @PathVariable Long id, @PathVariable Long versionId,
+            @Valid @RequestBody TicketCallFlowCloneRequest request) {
+        return ApiResponse.success(ticketCallFlowService.clone(id, versionId, request));
+    }
+
+    @DeleteMapping("/{id}/versions/{versionId}")
+    public ApiResponse<Void> delete(@PathVariable Long id, @PathVariable Long versionId) {
+        ticketCallFlowService.delete(id, versionId);
         return ApiResponse.success();
-    }
-
-    private static TicketCallFlowPublishRequest orEmpty(TicketCallFlowPublishRequest request) {
-        return request != null ? request : new TicketCallFlowPublishRequest();
     }
 }

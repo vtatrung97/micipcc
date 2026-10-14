@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.core.repository;
 
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
-import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
+import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.entity.TemplateEntity;
 import org.springframework.data.domain.Page;
@@ -18,90 +18,65 @@ public interface TemplateRepository extends JpaRepository<TemplateEntity, Long> 
 
     boolean existsByCodeAndDeletedFalse(String code);
 
-    boolean existsByCaseCodePrefixAndDeletedFalse(String caseCodePrefix);
+    long countByDeletedFalse();
+
+    long countByDeletedFalseAndStatus(TicketCallFlowStatus status);
 
     /**
-     * Danh sách quy trình chưa xoá kèm số phiên bản hiệu lực / bản nháp, lọc theo từ khoá (mã/tên/tiền tố mã hồ sơ),
-     * tên, mã, trạng thái, có bản nháp, phiên bản hiệu lực, khoảng cập nhật / ban hành.
-     * Chỉ lấy cột tóm tắt, không đọc flow_json (có thể rất lớn).
-     * Sort dùng alias t (quy trình), p (bản hiệu lực), d (bản nháp).
+     * Danh sách phiên bản của các quy trình chưa xoá, mỗi phiên bản một dòng (quy trình 10 phiên bản = 10 dòng),
+     * lọc theo từ khoá (mã/tên), tên, mã, trạng thái quy trình, trạng thái / số phiên bản,
+     * khoảng cập nhật / ban hành của phiên bản.
+     * Chỉ lấy cột tóm tắt, không đọc model_json (có thể rất lớn).
+     * Sort dùng alias t (quy trình), v (phiên bản).
      *
-     * @param keyword  chuỗi LIKE đã escape, VD "%khieu nai%"; null = không lọc (tương tự name, code)
-     * @param hasDraft true = chỉ quy trình có bản nháp, false = chỉ quy trình không có, null = không lọc
+     * @param keyword chuỗi LIKE đã escape, VD "%khieu nai%"; null = không lọc (tương tự name, code)
      * @param updatedFrom mốc dưới, các mốc thời gian đều tính cả hai đầu
      */
     @Query(value = """
                     select new com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse(
-                        t.id, t.code, t.name, t.caseCodePrefix, t.category, t.description, t.status,
+                        t.id, v.id, t.code, t.name, t.category, t.description, t.status,
                         t.triggerType, t.slaValue, t.slaUnit,
-                        p.versionNo, p.publishedAt, d.versionNo, d.updatedAt, d.updatedBy,
-                        t.createdAt, t.createdBy, t.updatedAt, t.updatedBy, t.rowVersion)
-                    from TemplateEntity t
-                    left join TemplateVersionEntity p
-                        on p.templateId = t.id
-                        and p.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.PUBLISHED
-                    left join TemplateVersionEntity d
-                        on d.templateId = t.id
-                        and d.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.DRAFT
+                        v.versionNo, v.status, v.versionName, v.publishedAt, v.publishedBy,
+                        v.createdAt, v.createdBy, v.updatedAt, v.updatedBy, t.rowVersion)
+                    from TemplateVersionEntity v
+                    join TemplateEntity t on t.id = v.templateId
                     where t.deleted = false
                       and (:status is null or t.status = :status)
-                      and (:keyword is null or t.code like :keyword escape '\\' or t.name like :keyword escape '\\'
-                           or t.caseCodePrefix like :keyword escape '\\')
+                      and (:versionStatus is null or v.status = :versionStatus)
+                      and (:versionNo is null or v.versionNo = :versionNo)
+                      and (:keyword is null or t.code like :keyword escape '\\' or t.name like :keyword escape '\\')
                       and (:name is null or t.name like :name escape '\\')
                       and (:code is null or t.code like :code escape '\\')
-                      and (:hasDraft is null or (:hasDraft = true and d.id is not null) or (:hasDraft = false and d.id is null))
-                      and (:publishedVersionNo is null or p.versionNo = :publishedVersionNo)
-                      and (:updatedFrom is null or t.updatedAt >= :updatedFrom)
-                      and (:updatedTo is null or t.updatedAt <= :updatedTo)
-                      and (:publishedFrom is null or p.publishedAt >= :publishedFrom)
-                      and (:publishedTo is null or p.publishedAt <= :publishedTo)
+                      and (:updatedFrom is null or v.updatedAt >= :updatedFrom)
+                      and (:updatedTo is null or v.updatedAt <= :updatedTo)
+                      and (:publishedFrom is null or v.publishedAt >= :publishedFrom)
+                      and (:publishedTo is null or v.publishedAt <= :publishedTo)
                     """,
             countQuery = """
-                    select count(t) from TemplateEntity t
-                    left join TemplateVersionEntity p
-                        on p.templateId = t.id
-                        and p.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.PUBLISHED
-                    left join TemplateVersionEntity d
-                        on d.templateId = t.id
-                        and d.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.DRAFT
+                    select count(v) from TemplateVersionEntity v
+                    join TemplateEntity t on t.id = v.templateId
                     where t.deleted = false
                       and (:status is null or t.status = :status)
-                      and (:keyword is null or t.code like :keyword escape '\\' or t.name like :keyword escape '\\'
-                           or t.caseCodePrefix like :keyword escape '\\')
+                      and (:versionStatus is null or v.status = :versionStatus)
+                      and (:versionNo is null or v.versionNo = :versionNo)
+                      and (:keyword is null or t.code like :keyword escape '\\' or t.name like :keyword escape '\\')
                       and (:name is null or t.name like :name escape '\\')
                       and (:code is null or t.code like :code escape '\\')
-                      and (:hasDraft is null or (:hasDraft = true and d.id is not null) or (:hasDraft = false and d.id is null))
-                      and (:publishedVersionNo is null or p.versionNo = :publishedVersionNo)
-                      and (:updatedFrom is null or t.updatedAt >= :updatedFrom)
-                      and (:updatedTo is null or t.updatedAt <= :updatedTo)
-                      and (:publishedFrom is null or p.publishedAt >= :publishedFrom)
-                      and (:publishedTo is null or p.publishedAt <= :publishedTo)
+                      and (:updatedFrom is null or v.updatedAt >= :updatedFrom)
+                      and (:updatedTo is null or v.updatedAt <= :updatedTo)
+                      and (:publishedFrom is null or v.publishedAt >= :publishedFrom)
+                      and (:publishedTo is null or v.publishedAt <= :publishedTo)
                     """)
     Page<TicketCallFlowSummaryResponse> search(
             @Param("keyword") String keyword,
             @Param("name") String name,
             @Param("code") String code,
             @Param("status") TicketCallFlowStatus status,
-            @Param("hasDraft") Boolean hasDraft,
-            @Param("publishedVersionNo") Integer publishedVersionNo,
+            @Param("versionStatus") TicketCallFlowVersionStatus versionStatus,
+            @Param("versionNo") Integer versionNo,
             @Param("updatedFrom") Long updatedFrom,
             @Param("updatedTo") Long updatedTo,
             @Param("publishedFrom") Long publishedFrom,
             @Param("publishedTo") Long publishedTo,
             Pageable pageable);
-
-    /** Tổng số quy trình chưa xoá, số đang hiệu lực và số có bản nháp. */
-    @Query("""
-            select new com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse(
-                count(t),
-                coalesce(sum(case when t.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus.ACTIVE
-                                  then 1 else 0 end), 0),
-                count(d))
-            from TemplateEntity t
-            left join TemplateVersionEntity d
-                on d.templateId = t.id
-                and d.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.DRAFT
-            where t.deleted = false
-            """)
-    TicketCallFlowStatsResponse stats();
 }
