@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-/** Luồng chuyển tiếp chuẩn giữa hai workflow node. */
+/** Luồng chuyển tiếp giữa hai node; {@code sourceHandle} là cổng ra của node nguồn (xem SourceHandles). */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,5 +16,4 @@ public class WorkflowEdge {
     String sourceNodeId;
     String sourceHandle;
     String targetNodeId;
-    String name;
 }

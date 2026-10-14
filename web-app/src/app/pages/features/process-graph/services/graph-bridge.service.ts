@@ -11,7 +11,7 @@ export interface NodeUpdateEvent {
 
 export interface BranchUpdateEvent {
   nodeId: string;
-  action: 'add' | 'remove' | 'change';
+  action: 'add' | 'remove' | 'change' | 'sync';
   index?: number;
   props: NodePropertyModel;
 }
@@ -33,6 +33,8 @@ export class GraphBridgeService {
   public branchUpdated$ = new Subject<BranchUpdateEvent>();
   public approvalToggled$ = new Subject<{ nodeId: string; isApproval: boolean }>();
   public nodeDeleted$ = new Subject<string>();
+  /** Yêu cầu drawer hiện lỗi trường bắt buộc ngay khi mở (đi từ danh sách lỗi) */
+  public showErrors$ = new Subject<void>();
 
   // 4. Modal Dialog Requests
   public modalRequest$ = new Subject<{
@@ -76,7 +78,7 @@ export class GraphBridgeService {
     this.approvalToggled$.next({ nodeId, isApproval });
   }
 
-  public triggerBranchAction(nodeId: string, action: 'add' | 'remove' | 'change', index: number | undefined, props: NodePropertyModel): void {
+  public triggerBranchAction(nodeId: string, action: 'add' | 'remove' | 'change' | 'sync', index: number | undefined, props: NodePropertyModel): void {
     this.selectedNodeProps$.next({ ...props });
     this.branchUpdated$.next({ nodeId, action, index, props });
   }

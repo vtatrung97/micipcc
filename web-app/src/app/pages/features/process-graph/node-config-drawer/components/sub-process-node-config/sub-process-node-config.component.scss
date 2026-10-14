@@ -237,3 +237,72 @@ th {
   @include px.body-md-medium;
   color: px.$blue-300;
 }
+
+// Option chọn quy trình con: tên (16 Medium) + badge phiên bản, mã (14 Regular xám) bên dưới
+.process-option {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: px.$space-2;
+  min-width: 0;
+}
+
+.process-option-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: px.$space-8;
+}
+
+.process-option-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: px.$neutral-900;
+}
+
+.process-option-badge {
+  flex-shrink: 0;
+  padding: px.$space-4 px.$space-8;
+  border-radius: px.$space-4;
+  background: px.$neutral-200;
+  font-family: px.$font-family;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: px.$neutral-600;
+  white-space: nowrap;
+}
+
+.process-option-code {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: px.$neutral-500;
+}
+
+// Ô bảng khai báo biến bị lỗi: gạch chân đỏ; câu lỗi dưới bảng
+.cell-input.is-invalid {
+  border-bottom-color: px.$primary-600;
+}
+
+:host ::ng-deep .cell-select.is-invalid .px-select.px-select-sm .px-select-selector {
+  border-bottom-color: px.$primary-600;
+}
+
+.table-error {
+  display: block;
+  margin-top: px.$space-4;
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  color: px.$primary-600;
+}

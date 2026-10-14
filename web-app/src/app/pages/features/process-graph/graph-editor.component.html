@@ -120,42 +120,9 @@
       <app-add-step-overlay #addStep></app-add-step-overlay>
 
       <!-- Toolbar: Hoàn tác · Làm lại | Thu nhỏ · % · Phóng to | Căn vừa màn hình · Sắp xếp lại -->
-      <div class="canvas-toolbar" role="toolbar" [attr.aria-label]="'PROCESS_GRAPH.TOOLBAR.ARIA' | translate">
-        <button type="button" class="canvas-tool-btn" (click)="undo()" [disabled]="!canUndo"
-          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.UNDO_TITLE' | translate">
-          <img src="assets/icons/processx/flow/toolbar-undo.svg" width="20" height="20" alt="" />
-        </button>
-        <button type="button" class="canvas-tool-btn" (click)="redo()" [disabled]="!canRedo"
-          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.REDO_TITLE' | translate">
-          <img src="assets/icons/processx/flow/toolbar-redo.svg" width="20" height="20" alt="" />
-        </button>
-
-        <span class="canvas-tool-divider"></span>
-
-        <button type="button" class="canvas-tool-btn" (click)="zoomOut()"
-          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.ZOOM_OUT_TITLE' | translate">
-          <img src="assets/icons/processx/flow/toolbar-minus.svg" width="20" height="20" alt="" />
-        </button>
-        <button type="button" class="canvas-zoom-btn" (click)="resetZoom()"
-          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.ZOOM_RESET_TITLE' | translate">
-          {{ currentZoom }}%
-        </button>
-        <button type="button" class="canvas-tool-btn" (click)="zoomIn()"
-          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.ZOOM_IN_TITLE' | translate">
-          <img src="assets/icons/processx/flow/toolbar-plus.svg" width="20" height="20" alt="" />
-        </button>
-
-        <span class="canvas-tool-divider"></span>
-
-        <button type="button" class="canvas-tool-btn" (click)="zoomToFit()"
-          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.FIT_TITLE' | translate">
-          <img src="assets/icons/processx/flow/toolbar-fit.svg" width="20" height="20" alt="" />
-        </button>
-        <button type="button" class="canvas-tool-btn" (click)="autoLayout()"
-          [appTooltip]="'PROCESS_GRAPH.TOOLBAR.AUTO_TITLE' | translate">
-          <img src="assets/icons/processx/flow/toolbar-layout.svg" width="20" height="20" alt="" />
-        </button>
-      </div>
+      <app-canvas-toolbar class="canvas-toolbar-host" [canUndo]="canUndo" [canRedo]="canRedo" [zoom]="currentZoom"
+        (undo)="undo()" (redo)="redo()" (zoomIn)="zoomIn()" (zoomOut)="zoomOut()" (resetZoom)="resetZoom()"
+        (fit)="zoomToFit()" (autoLayout)="autoLayout()"></app-canvas-toolbar>
     </main>
 
     <!-- DRAWER CẤU HÌNH BƯỚC (BÊN PHẢI) -->
@@ -169,5 +136,12 @@
       [errors]="processInfoErrors"
       [codeEditable]="isCreateMode">
     </app-process-info-form>
+
+    <!-- Hủy khi đang có thay đổi chưa lưu -->
+    <app-confirm-cancel-modal
+      [visible]="isCancelConfirmOpen"
+      (confirmed)="leaveEditor()"
+      (closed)="isCancelConfirmOpen = false">
+    </app-confirm-cancel-modal>
   </div>
 </div>

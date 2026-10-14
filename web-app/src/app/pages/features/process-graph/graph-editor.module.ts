@@ -14,8 +14,14 @@ import {
   NotifyConfigModalComponent,
   JsonPreviewModalComponent,
   ValidationModalComponent,
-  NodeIconModalComponent
+  NodeIconModalComponent,
+  BranchConditionModalComponent,
+  ConfirmCancelModalComponent,
+  ProcessPreviewModalComponent
 } from './modals';
+import { CanvasToolbarComponent } from './canvas-toolbar/canvas-toolbar.component';
+import { ProcessViewerComponent } from './process-viewer/process-viewer.component';
+import { InputFilterDirective } from './directives/input-filter.directive';
 import {
   ActionNodeConfigComponent,
   ConditionNodeConfigComponent,
@@ -41,6 +47,7 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { NzMessageModule } from 'ng-zorro-antd/message';
 
 @NgModule({
   declarations: [
@@ -53,6 +60,12 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
     JsonPreviewModalComponent,
     ValidationModalComponent,
     NodeIconModalComponent,
+    BranchConditionModalComponent,
+    ConfirmCancelModalComponent,
+    ProcessPreviewModalComponent,
+    CanvasToolbarComponent,
+    ProcessViewerComponent,
+    InputFilterDirective,
     ActionNodeConfigComponent,
     ConditionNodeConfigComponent,
     TaskNodeConfigComponent,
@@ -80,6 +93,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
     NzCheckboxModule,
     NzDropDownModule,
     NzMenuModule,
+    NzMessageModule,
     // i18n riêng cho Canvas Builder: bản dịch nằm ở ./i18n (vi, en)
     TranslateModule.forChild({
       loader: { provide: TranslateLoader, useClass: ProcessGraphTranslateLoader },

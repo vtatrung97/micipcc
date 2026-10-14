@@ -23,13 +23,16 @@ import {
  * và FlowDefinition gửi / nhận với BE (FLOW_SCHEMA.md).
  */
 
-export const DEFAULT_BRANCH_ID = 'br-default';
-const SLA_UNITS = ['Giờ', 'Ngày', 'Tuần'];
+import { DEFAULT_BRANCH_ID, ERROR_BRANCH_ID } from '../models/gateway-branch';
+export { DEFAULT_BRANCH_ID, ERROR_BRANCH_ID };
+const SLA_UNITS = ['Giờ', 'Ngày', 'Tuần', 'Tháng'];
 
 // Nhãn kiểu so sánh cũ (trước đây lưu thẳng nhãn) → mã operator
 const LEGACY_OPERATOR_MAP: Record<string, ConditionOperator> = {
   'Bằng (=)': 'EQ',
   'Khác (!=)': 'NEQ',
+  '<>': 'NEQ',
+  '!=': 'NEQ',
   'Lớn hơn (>)': 'GT',
   'Nhỏ hơn (<)': 'LT',
   'Chứa (contains)': 'CONTAINS'
@@ -38,7 +41,7 @@ const LEGACY_OPERATOR_MAP: Record<string, ConditionOperator> = {
 export function normalizeOperator(op: string | undefined): ConditionOperator {
   if (!op) return 'EQ';
   if (LEGACY_OPERATOR_MAP[op]) return LEGACY_OPERATOR_MAP[op];
-  return (['EQ', 'NEQ', 'GT', 'LT', 'CONTAINS'].includes(op) ? op : 'EQ') as ConditionOperator;
+  return (['EQ', 'NEQ', 'GT', 'GTE', 'LT', 'LTE', 'IN', 'NOT_IN', 'CONTAINS'].includes(op) ? op : 'EQ') as ConditionOperator;
 }
 
 // ===== Port (X6) ⇄ sourceHandle (FlowEdge) =====
@@ -47,7 +50,9 @@ export function portIdToHandle(type: NodeType, portId: string | undefined, data:
   const port = portId || 'out';
   if (isGatewayType(type)) {
     const branch = (data.branches || []).find(b => b.id === port);
-    return branch?.isDefault || port === DEFAULT_BRANCH_ID ? 'default' : port;
+    if (branch?.isDefault || port === DEFAULT_BRANCH_ID) return 'default';
+    if (branch?.isError || port === ERROR_BRANCH_ID) return 'error';
+    return port;
   }
   switch (type) {
     case 'SYSTEM_TASK':
@@ -65,6 +70,9 @@ export function handleToPortId(type: NodeType, handle: string, data: Partial<Nod
   if (isGatewayType(type)) {
     if (handle === 'default') {
       return (data.branches || []).find(b => b.isDefault)?.id || DEFAULT_BRANCH_ID;
+    }
+    if (handle === 'error') {
+      return (data.branches || []).find(b => b.isError)?.id || ERROR_BRANCH_ID;
     }
     return handle;
   }
@@ -87,11 +95,9 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
   switch (type) {
     case 'START':
       return {
-        triggerType: d.triggerType || null,
-        triggerRefId: d.triggerFormSchedule || null,
         variables: (d.startVariables || [])
           .filter(v => v.variable?.trim())
-          .map(v => ({ name: v.variable.trim(), formField: v.formField || null, apiField: v.apiField || null, value: v.fixedValue ?? null, displayName: v.displayName || '' }))
+          .map(v => ({ name: v.variable.trim(), formField: v.formField || null, apiField: v.apiField || null, value: v.fixedValue?.trim() ? v.fixedValue.trim() : null, displayName: v.displayName || '' }))
       } as StartConfig;
 
     case 'GATEWAY_EXCLUSIVE':
@@ -99,7 +105,7 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
     case 'GATEWAY_INCLUSIVE':
       return {
         cases: (d.branches || [])
-          .filter(b => !b.isDefault)
+          .filter(b => !b.isDefault && !b.isError)
           .map(b => ({
             id: b.id,
             name: b.name || '',
@@ -117,8 +123,8 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
         assignType: d.assignType || 'MANUAL',
         assignStrategy: d.assignType === 'AUTO' ? d.assignStrategy || 'ROUND_ROBIN' : null,
         departmentId: d.department || null,
-        groupId: d.team || null,
-        agentId: d.agent || null,
+        groupIds: d.teams || (d.team ? [d.team] : []),
+        agentIds: d.agents || (d.agent ? [d.agent] : []),
         slaValue: d.slaSeconds ?? null,
         slaUnit: d.sla && SLA_UNITS.includes(d.sla) ? d.sla : null,
         slaWarning: !!d.slaWarning,
@@ -146,10 +152,15 @@ function buildConfig(type: NodeType, d: Partial<NodePropertyModel>): FlowNodeCon
       } as SystemTaskConfig;
 
     case 'NOTIFICATION': {
-      const channels: NotificationConfig['channels'] = [];
-      if (d.channelNotification) channels.push('NOTIFICATION');
-      if (d.channelEmail) channels.push('EMAIL');
-      return { recipientId: d.notificationRecipient || null, content: d.notificationContent || '', channels } as NotificationConfig;
+      const source = d.notificationSource === 'VARIABLE' || d.notificationSource === 'USER' ? d.notificationSource : null;
+      return {
+        channel: d.notificationChannel === 'EMAIL' || d.notificationChannel === 'SMS' ? d.notificationChannel : null,
+        recipientSource: source,
+        recipientVariable: source === 'VARIABLE' ? d.notificationRecipient || null : null,
+        recipientUserIds: source === 'USER' ? d.notificationRecipients || [] : [],
+        title: d.notificationTitle || '',
+        content: d.notificationContent || ''
+      } as NotificationConfig;
     }
 
     case 'SUB_PROCESS':
@@ -258,8 +269,6 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
     case 'START':
       return {
         ...base,
-        triggerType: c.triggerType || '',
-        triggerFormSchedule: c.triggerRefId || '',
         startVariables: (c.variables || []).map((v: any) => ({ variable: v.name || '', formField: v.formField ?? null, apiField: v.apiField ?? null, fixedValue: v.value ?? '', displayName: v.displayName || '' }))
       };
 
@@ -275,6 +284,7 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
         rules: (cs.conditions || []).map((cd: any) => ({ param: cd.field, operator: normalizeOperator(cd.operator), value: cd.value ?? '' }))
       }));
       branches.push({ id: DEFAULT_BRANCH_ID, name: 'Mặc định', expression: 'default', isDefault: true, rules: [] });
+      branches.push({ id: ERROR_BRANCH_ID, name: 'Lỗi', expression: 'error', isError: true, rules: [] });
       return { ...base, branches, joinNodeId: c.joinNodeId || undefined };
     }
 
@@ -289,8 +299,8 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
         formInputs: (c.inputs || []).map((r: any) => ({ variable: r.variable || null, mapped: !!r.formField, formField: r.formField ?? null })),
         formOutputs: (c.outputs || []).map((r: any) => ({ variable: r.variable || '', formField: r.formField ?? null, displayName: r.displayName || '' })),
         department: c.departmentId || '',
-        team: c.groupId || '',
-        agent: c.agentId || '',
+        teams: c.groupIds || (c.groupId ? [c.groupId] : []),
+        agents: c.agentIds || (c.agentId ? [c.agentId] : []),
         slaSeconds: c.slaValue ?? undefined,
         sla: c.slaUnit || '',
         slaWarning: !!c.slaWarning,
@@ -313,10 +323,12 @@ export function flowNodeToNodeData(fn: FlowNode, edges: FlowEdge[]): Partial<Nod
     case 'NOTIFICATION':
       return {
         ...base,
-        notificationRecipient: c.recipientId || '',
-        notificationContent: c.content || '',
-        channelNotification: (c.channels || []).includes('NOTIFICATION'),
-        channelEmail: (c.channels || []).includes('EMAIL')
+        notificationChannel: c.channel || undefined,
+        notificationSource: c.recipientSource || undefined,
+        notificationRecipient: c.recipientVariable || undefined,
+        notificationRecipients: c.recipientUserIds || [],
+        notificationTitle: c.title || '',
+        notificationContent: c.content || ''
       };
 
     case 'SUB_PROCESS':

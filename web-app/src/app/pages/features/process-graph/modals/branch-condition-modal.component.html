@@ -1,0 +1,87 @@
+<app-modal [visible]="visible" [title]="titleKey | translate" [width]="752" (closed)="closed.emit()">
+  <!-- ng-content của app-modal luôn được dựng → chỉ render khi mở -->
+  <ng-container *ngIf="visible">
+    <app-form-field [label]="'PROCESS_GRAPH.BRANCH_MODAL.NAME' | translate" [required]="!isReadonly" [error]="nameError" [spacing]="0">
+      <ant-input [(ngModel)]="name" [readonly]="isReadonly" [maxLength]="50"
+                 [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
+    </app-form-field>
+
+    <!-- Điều kiện: Biến quy trình · Kiểu so sánh · Giá trị so sánh · Hành động -->
+    <div class="rule-table">
+      <!-- Nhiều điều kiện thì cuộn trong bảng, popup giữ nguyên chiều cao -->
+      <div #ruleScroll class="rule-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'PROCESS_GRAPH.BRANCH_MODAL.COL_VARIABLE' | translate }}</th>
+            <th>{{ 'PROCESS_GRAPH.BRANCH_MODAL.COL_OPERATOR' | translate }}</th>
+            <th>{{ 'PROCESS_GRAPH.BRANCH_MODAL.COL_VALUE' | translate }}</th>
+            <th class="col-action" *ngIf="!isReadonly">{{ 'PROCESS_GRAPH.BRANCH_MODAL.COL_ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rule of rules; let i = index; trackBy: trackByIndex">
+            <!-- Chế độ xem: chỉ hiện chữ -->
+            <ng-container *ngIf="isReadonly; else editableRow">
+              <td>
+                <span class="cell-text">{{ rule.param || '—' }}</span>
+                <span class="var-caption" *ngIf="variableCaption(rule.param) as caption">{{ caption }}</span>
+              </td>
+              <td><span class="cell-text">{{ operatorLabel(rule.operator) }}</span></td>
+              <td><span class="cell-text">{{ rule.value || '—' }}</span></td>
+            </ng-container>
+
+            <ng-template #editableRow>
+              <td>
+                <div class="var-cell" [class.is-invalid]="isFieldInvalid(rule, 'param')">
+                  <ant-select class="cell-select" size="small" [fixedPanel]="true" [showSearch]="true"
+                              [(ngModel)]="rule.param" [options]="variableOptions"
+                              [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+                  <span class="var-caption" *ngIf="variableCaption(rule.param) as caption"
+                        [appTooltip]="caption" [tooltipOnlyTruncated]="true">{{ caption }}</span>
+                </div>
+              </td>
+              <td>
+                <ant-select class="cell-select" size="small" [fixedPanel]="true" [class.is-invalid]="isFieldInvalid(rule, 'operator')"
+                            [(ngModel)]="rule.operator" [options]="operatorOptions"
+                            [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+              </td>
+              <td>
+                <input class="cell-input" [class.is-invalid]="isFieldInvalid(rule, 'value')" [(ngModel)]="rule.value" maxlength="255"
+                       [placeholder]="(rule.operator === 'IN' || rule.operator === 'NOT_IN' ? 'PROCESS_GRAPH.BRANCH_MODAL.IN_HINT' : 'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER') | translate" />
+              </td>
+              <td class="col-action">
+                <button *ngIf="rules.length > 1" type="button" class="row-remove" (click)="removeRule(i)"
+                        [appTooltip]="'PROCESS_GRAPH.BRANCH_MODAL.REMOVE' | translate">
+                  <img src="assets/icons/processx/trash-danger.svg" width="20" height="20" alt="" />
+                </button>
+              </td>
+            </ng-template>
+          </tr>
+          <tr *ngIf="!rules.length">
+            <td class="empty-row" colspan="3">{{ 'PROCESS_GRAPH.BRANCH_MODAL.EMPTY' | translate }}</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="rule-add" *ngIf="!isReadonly">
+        <button type="button" class="rule-add-btn" (click)="addRule()">
+          <img src="assets/icons/processx/plus-blue.svg" width="24" height="24" alt="" />
+          <span>{{ 'PROCESS_GRAPH.BRANCH_MODAL.ADD_CONDITION' | translate }}</span>
+        </button>
+      </div>
+    </div>
+    <span class="rule-error" *ngIf="hasRuleError">{{ 'PROCESS_GRAPH.BRANCH_MODAL.RULES_INCOMPLETE' | translate }}</span>
+  </ng-container>
+
+  <div modal-footer class="modal-actions">
+    <ng-container *ngIf="!isReadonly; else viewFooter">
+      <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="px-btn px-btn-primary" (click)="save()">{{ 'PROCESS_GRAPH.COMMON.SAVE' | translate }}</button>
+    </ng-container>
+    <ng-template #viewFooter>
+      <button type="button" class="px-btn px-btn-default" (click)="closed.emit()">{{ 'PROCESS_GRAPH.COMMON.CLOSE' | translate }}</button>
+    </ng-template>
+  </div>
+</app-modal>

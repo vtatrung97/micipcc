@@ -66,6 +66,8 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
    * Cuộn bất kỳ vùng nào khi đang mở sẽ đóng popup.
    */
   @Input() fixedPanel: boolean = false;
+  /** Ngày nhỏ nhất được chọn (YYYY-MM-DD); ngày trước đó bị khoá. Vd: không cho chọn ngày quá khứ */
+  @Input() minDate?: string;
 
   @Output() dateChange = new EventEmitter<any>();
 
@@ -157,6 +159,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
 
   /** Range: lịch bắt đầu khoá ngày sau ngày kết thúc, lịch kết thúc khoá ngày trước ngày bắt đầu */
   isDisabled(key: PaneKey, cell: CalendarCell): boolean {
+    if (this.minDate && cell.iso < this.minDate) return true;
     if (!this.isRange) return false;
     if (key === 'start') return !!this.draftEnd && cell.iso > this.draftEnd;
     return !!this.draftStart && cell.iso < this.draftStart;
@@ -276,7 +279,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   commitTypedDate(key: PaneKey): void {
     const pane = this.panes[key];
     const iso = this.parseDisplay(pane.typed);
-    if (!iso || (this.isRange && this.isDisabledIso(key, iso))) {
+    if (!iso || this.isDisabledIso(key, iso)) {
       pane.typed = this.formatDisplay(this.selectedOf(key));
       return;
     }

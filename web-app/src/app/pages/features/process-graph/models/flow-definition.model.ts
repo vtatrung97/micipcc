@@ -21,11 +21,18 @@ export interface SaveFlowDraftPayload {
       apiId: string | null;
       conditions: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
     };
-    schedule?: { mode: 'ONCE' | 'REPEAT'; runDate: string; runTime: string };
+    schedule?: {
+      mode: 'ONCE' | 'REPEAT';
+      runDate: string;                                  // YYYY-MM-DD (ONCE)
+      runTime: string;                                  // HH:mm
+      repeat: 'DAILY' | 'WEEKLY' | 'MONTHLY' | null;    // REPEAT
+      weekDays: number[];                               // 1 = Thứ 2 … 7 = Chủ nhật (WEEKLY)
+      monthDays: number[];                              // 1–31 (MONTHLY)
+    };
     hybrid?: {
       apiId: string | null;
       inputFormId: string | null;
-      conditions?: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
+      conditions: { logicOperator: 'AND' | 'OR'; rules: { param: string; operator: string; value: string }[] };
     };
   } | null;
   slaValue?: number | null;
@@ -86,14 +93,19 @@ export interface FlowEdge {
 
 // ===== config theo từng type node =====
 
+/** Kiểu kích hoạt / biểu mẫu / API / lịch chỉ xem trên drawer — lưu ở triggerType + triggerConfig của payload */
 export interface StartConfig {
-  triggerType: string | null;      // Kiểu kích hoạt
-  triggerRefId: string | null;     // Form / Lịch được chọn
-  /** "Khởi tạo biến quy trình" (kích hoạt thủ công): biến ← trường biểu mẫu */
-  variables?: Array<{ name: string; formField: string | null; apiField?: string | null; value?: string | null; displayName: string }>;
+  /** "Khởi tạo biến quy trình" */
+  variables: Array<{
+    name: string;                  // Biến quy trình
+    formField: string | null;      // Trường biểu mẫu (Thủ công / Hybrid) hoặc trường dữ liệu API (Tự động)
+    apiField: string | null;       // Trường dữ liệu API (Hybrid)
+    value: string | null;          // Giá trị cố định (Lập lịch)
+    displayName: string;           // Tên hiển thị
+  }>;
 }
 
-export type ConditionOperator = 'EQ' | 'NEQ' | 'GT' | 'LT' | 'CONTAINS';
+export type ConditionOperator = 'EQ' | 'NEQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'IN' | 'NOT_IN' | 'CONTAINS';
 
 export interface GatewayCondition {
   field: string;                   // Tham số
@@ -121,10 +133,10 @@ export interface UserTaskConfig {
   assignType: 'MANUAL' | 'AUTO';   // Loại giao việc
   assignStrategy: 'ROUND_ROBIN' | 'LEAST_BUSY' | null; // Cơ chế giao việc (chỉ khi AUTO)
   departmentId: string | null;     // Phòng ban
-  groupId: string | null;          // Nhóm
-  agentId: string | null;          // Agent
+  groupIds: string[];              // Nhóm (nhiều, trống = tất cả)
+  agentIds: string[];              // Agent (nhiều)
   slaValue: number | null;         // SLA › Thời hạn xử lý (số)
-  slaUnit: string | null;          // SLA › Thời hạn xử lý (đơn vị: Giờ | Ngày | Tuần)
+  slaUnit: string | null;          // SLA › Thời hạn xử lý (đơn vị: Giờ | Ngày | Tuần | Tháng)
   slaWarning: boolean;             // SLA › Cảnh báo trước khi quá hạn
   formId: string | null;           // Biểu mẫu
   inputs: UserTaskInputMapping[];  // Dữ liệu đầu vào
@@ -152,9 +164,12 @@ export interface SystemTaskConfig {
 }
 
 export interface NotificationConfig {
-  recipientId: string | null;      // Người nhận
-  content: string;                 // Nội dung thông báo
-  channels: Array<'NOTIFICATION' | 'EMAIL'>; // Kênh thông báo
+  channel: 'EMAIL' | 'SMS' | null;            // Kênh thông báo
+  recipientSource: 'VARIABLE' | 'USER' | null; // Nguồn nhận thông báo
+  recipientVariable: string | null;           // Người nhận (nguồn = Biến quy trình)
+  recipientUserIds: string[];                 // Người nhận (nguồn = Người dùng)
+  title: string;                              // Tiêu đề thông báo
+  content: string;                            // Nội dung thông báo
 }
 
 export interface SubProcessConfig {

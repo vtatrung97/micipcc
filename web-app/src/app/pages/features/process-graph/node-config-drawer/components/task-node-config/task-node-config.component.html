@@ -4,23 +4,29 @@
     <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
     <ng-container *ngIf="openSections.general">
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="errors.label ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
-        <ant-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()"
+        <ant-input [ngModel]="nodeProps.label" (ngModelChange)="onLabelChange($event)" [maxLength]="limits.label"
                    [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
       </app-form-field>
 
-      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0">
-        <ant-input class="step-code" [readonly]="true" [ngModel]="nodeProps.nodeKey || 'ma_buoc'"></ant-input>
+      <!-- Mã bước: tự sinh từ tên bước, cho sửa (chữ, số, "_") -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0"
+                      [error]="errors.nodeKey ? (('PROCESS_GRAPH.DRAWER.VALIDATION.' + (errors.nodeKey === true ? 'REQUIRED' : errors.nodeKey)) | translate) : ''">
+        <ant-input class="step-code" [(ngModel)]="nodeProps.nodeKey" (ngModelChange)="save('nodeKey')"
+                   [inputFilter]="nodeKeyFilter" [maxLength]="limits.nodeKey"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
       </app-form-field>
 
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
-        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')"
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')" [maxLength]="limits.description"
                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
       </app-form-field>
 
       <!-- Thời hạn xử lý: số + đơn vị (rộng 148) -->
-      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.SLA_DURATION' | translate" [spacing]="0">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.SLA_DURATION' | translate" [required]="true" [spacing]="0"
+                      [error]="errors.slaSeconds ? ('PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.slaSeconds | translate) : ''">
         <div class="sla-row">
-          <ant-input type="number" [(ngModel)]="nodeProps.slaSeconds" (ngModelChange)="save('slaSeconds')"
+          <ant-input [(ngModel)]="slaText" [inputFilter]="digitFilter" [maxLength]="5"
+                     [status]="errors.slaSeconds ? 'error' : ''"
                      [placeholder]="'PROCESS_GRAPH.COMMON.NUMBER_PLACEHOLDER' | translate"></ant-input>
           <ant-select class="sla-unit" [(ngModel)]="nodeProps.sla" (ngModelChange)="save('sla')"
                       [options]="slaUnitOptions"></ant-select>
@@ -50,18 +56,26 @@
       </app-form-field>
 
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DEPARTMENT' | translate" [error]="errors.department ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
-        <ant-select [(ngModel)]="nodeProps.department" (ngModelChange)="save('department')" [options]="departmentOptions"
+        <ant-select [(ngModel)]="nodeProps.department" (ngModelChange)="onDepartmentChange()" [options]="departmentOptions"
                     [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
       </app-form-field>
 
+      <!-- Nhóm: chọn nhiều theo phòng ban, bỏ trống = tất cả nhóm -->
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.GROUP' | translate" [spacing]="0">
-        <ant-select [(ngModel)]="nodeProps.team" (ngModelChange)="save('team')" [options]="teamOptions"
-                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+        <app-multi-select [(ngModel)]="nodeProps.teams" (ngModelChange)="onTeamsChange()" [options]="teamOptions"
+                          [disabled]="!nodeProps.department"
+                          [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"
+                          [searchPlaceholder]="'PROCESS_GRAPH.INFO.SEARCH_PLACEHOLDER' | translate"
+                          [selectAllLabel]="'PROCESS_GRAPH.INFO.SELECT_ALL' | translate"></app-multi-select>
       </app-form-field>
 
-      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.AGENT' | translate" [error]="errors.agent ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
-        <ant-select [(ngModel)]="nodeProps.agent" (ngModelChange)="save('agent')" [options]="agentOptions"
-                    [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
+      <!-- Agent: chọn nhiều theo phòng ban + nhóm -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.AGENT' | translate" [error]="errors.agents ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+        <app-multi-select [(ngModel)]="nodeProps.agents" (ngModelChange)="save('agents')" [options]="agentOptions"
+                          [disabled]="!nodeProps.department" [status]="errors.agents ? 'error' : ''"
+                          [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"
+                          [searchPlaceholder]="'PROCESS_GRAPH.INFO.SEARCH_PLACEHOLDER' | translate"
+                          [selectAllLabel]="'PROCESS_GRAPH.INFO.SELECT_ALL' | translate"></app-multi-select>
       </app-form-field>
     </ng-container>
   </section>
@@ -77,7 +91,7 @@
                     [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
       </app-form-field>
 
-      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.USER_TASK.INPUT_DATA' | translate" [error]="errors.formInputs ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.USER_TASK.INPUT_DATA' | translate" [error]="errors.formInputs ? ('PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.formInputs | translate) : ''" [spacing]="0">
         <!-- Biến quy trình · Ánh xạ · Trường biểu mẫu · [xoá – ghim phải] -->
         <div class="map-table">
           <div class="map-scroll">
@@ -95,6 +109,7 @@
                   <td>
                     <div class="var-cell">
                       <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                                  [class.is-invalid]="errors.inputRows?.[i]?.['variable']"
                                   (ngModelChange)="save('formInputs')" [options]="variableOptions"
                                   [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
                       <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
@@ -107,6 +122,7 @@
                   <td>
                     <ant-select *ngIf="row.mapped" class="cell-select" size="small" [fixedPanel]="true"
                                 [(ngModel)]="row.formField" (ngModelChange)="save('formInputs')" [options]="formFieldOptions"
+                                [class.is-invalid]="errors.inputRows?.[i]?.['formField']"
                                 [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
                   </td>
                   <td class="col-action">
@@ -141,16 +157,19 @@
           <tbody>
             <tr *ngFor="let row of outputs; let i = index; trackBy: trackByIndex">
               <td>
-                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('formOutputs')"
+                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('formOutputs')" [appInputFilter]="variableNameFilter" [maxlength]="varLimits.name"
+                       [class.is-invalid]="errors.variableRows?.[i]?.variable"
                        [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
               </td>
               <td>
                 <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.formField"
+                            [class.is-invalid]="errors.variableRows?.[i]?.source"
                             (ngModelChange)="save('formOutputs')" [options]="formFieldOptions"
                             [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
               </td>
               <td>
-                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('formOutputs')"
+                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('formOutputs')" [maxlength]="varLimits.displayName"
+                       [class.is-invalid]="errors.variableRows?.[i]?.displayName"
                        [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
               </td>
               <td class="col-action">
@@ -162,6 +181,7 @@
       </div>
       <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'output' }"></ng-container>
     </div>
+    <span class="table-error" *ngIf="errors.formOutputs">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.formOutputs | translate }}</span>
   </section>
 </div>
 

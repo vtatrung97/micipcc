@@ -67,6 +67,13 @@ export class GraphHistoryService {
   }
 
 
+  /** Xoá lịch sử (vd: sau khi nạp xong flow ở chế độ xem) */
+  public reset(): void {
+    this.historyStack = [];
+    this.redoStack = [];
+    this.updateCanUndoRedo();
+  }
+
   public updateCanUndoRedo(): void {
     this.store.canUndo = this.historyStack.length > 0;
     this.store.canRedo = this.redoStack.length > 0;

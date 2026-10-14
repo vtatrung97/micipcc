@@ -35,7 +35,8 @@ export class EndNodeConfigComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['nodeProps'] || !this.nodeProps) return;
-    this.variableOptions = this.variables.getVariables();
+    // Biến của các bước đứng trước bước này
+    this.variableOptions = this.variables.getVariables(this.nodeProps.id);
     if (!this.nodeProps.endResults?.length) {
       this.nodeProps.endResults = [this.emptyRow()];
       this.save('endResults');

@@ -4,16 +4,20 @@
     <ng-container *ngTemplateOutlet="sectionHead; context: { key: 'general', title: 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' }"></ng-container>
     <ng-container *ngIf="isOpen('general')">
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate" [error]="errors.label ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
-        <ant-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()"
+        <ant-input [ngModel]="nodeProps.label" (ngModelChange)="onLabelChange($event)" [maxLength]="limits.label"
                    [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
       </app-form-field>
 
-      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0">
-        <ant-input class="step-code" [readonly]="true" [ngModel]="nodeProps.nodeKey || 'ma_buoc'"></ant-input>
+      <!-- Mã bước: tự sinh từ tên bước, cho sửa (chữ, số, "_") -->
+      <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate" [required]="true" [spacing]="0"
+                      [error]="errors.nodeKey ? (('PROCESS_GRAPH.DRAWER.VALIDATION.' + (errors.nodeKey === true ? 'REQUIRED' : errors.nodeKey)) | translate) : ''">
+        <ant-input class="step-code" [(ngModel)]="nodeProps.nodeKey" (ngModelChange)="save('nodeKey')"
+                   [inputFilter]="nodeKeyFilter" [maxLength]="limits.nodeKey"
+                   [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-input>
       </app-form-field>
 
       <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate" [spacing]="0">
-        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')"
+        <ant-textarea [(ngModel)]="nodeProps.description" (ngModelChange)="save('description')" [maxLength]="limits.description"
                       [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate"></ant-textarea>
       </app-form-field>
     </ng-container>
@@ -51,12 +55,12 @@
 
       <!-- Timeout (giây) · Retry -->
       <div class="exec-row">
-        <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.TIMEOUT' | translate" [error]="errors.timeoutSeconds ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
-          <ant-input-number [(ngModel)]="nodeProps.timeoutSeconds" (ngModelChange)="save('timeoutSeconds')" [min]="0"
+        <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.TIMEOUT' | translate" [error]="errors.timeoutSeconds ? ('PROCESS_GRAPH.DRAWER.VALIDATION.' + (errors.timeoutSeconds === true ? 'REQUIRED' : errors.timeoutSeconds) | translate) : ''" [required]="true" [spacing]="0">
+          <ant-input-number [(ngModel)]="nodeProps.timeoutSeconds" (ngModelChange)="save('timeoutSeconds')" [min]="1" [max]="numberLimits.timeoutMax"
                             placeholder="0" [suffix]="'PROCESS_GRAPH.DRAWER.FIELDS.SECONDS' | translate"></ant-input-number>
         </app-form-field>
-        <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.RETRY' | translate" [error]="errors.retryCount ? ('PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate) : ''" [required]="true" [spacing]="0">
-          <ant-input-number [(ngModel)]="nodeProps.retryCount" (ngModelChange)="save('retryCount')" [min]="0"
+        <app-form-field [label]="'PROCESS_GRAPH.DRAWER.FIELDS.RETRY' | translate" [error]="errors.retryCount ? ('PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.retryCount | translate) : ''" [spacing]="0">
+          <ant-input-number [(ngModel)]="nodeProps.retryCount" (ngModelChange)="save('retryCount')" [min]="1" [max]="numberLimits.retryMax"
                             placeholder="0"></ant-input-number>
         </app-form-field>
       </div>
@@ -82,12 +86,14 @@
             <tr *ngFor="let row of inputs; let i = index; trackBy: trackByIndex">
               <td>
                 <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.apiParam"
+                            [class.is-invalid]="errors.inputRows?.[i]?.['apiParam']"
                             (ngModelChange)="save('apiInputs')" [options]="requestParamOptions"
                             [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
               </td>
               <td>
                 <div class="var-cell">
                   <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.variable"
+                              [class.is-invalid]="errors.inputRows?.[i]?.['variable']"
                               (ngModelChange)="save('apiInputs')" [options]="variableOptions"
                               [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
                   <span class="var-caption" *ngIf="variableCaption(row.variable) as caption"
@@ -103,6 +109,7 @@
       </div>
       <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'input' }"></ng-container>
     </div>
+    <span class="table-error" *ngIf="errors.apiInputs">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.apiInputs | translate }}</span>
   </section>
 
   <div class="action-divider"></div>
@@ -125,15 +132,18 @@
             <tr *ngFor="let row of outputs; let i = index; trackBy: trackByIndex">
               <td>
                 <ant-select class="cell-select" size="small" [fixedPanel]="true" [(ngModel)]="row.apiField"
+                            [class.is-invalid]="errors.variableRows?.[i]?.source"
                             (ngModelChange)="save('apiOutputs')" [options]="responseFieldOptions"
                             [placeholder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate"></ant-select>
               </td>
               <td>
-                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('apiOutputs')"
+                <input class="cell-input" [(ngModel)]="row.variable" (ngModelChange)="save('apiOutputs')" [appInputFilter]="variableNameFilter" [maxlength]="varLimits.name"
+                       [class.is-invalid]="errors.variableRows?.[i]?.variable"
                        [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
               </td>
               <td>
-                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('apiOutputs')"
+                <input class="cell-input" [(ngModel)]="row.displayName" (ngModelChange)="save('apiOutputs')" [maxlength]="varLimits.displayName"
+                       [class.is-invalid]="errors.variableRows?.[i]?.displayName"
                        [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" />
               </td>
               <td class="col-action">
@@ -145,6 +155,7 @@
       </div>
       <ng-container *ngTemplateOutlet="addRowBtn; context: { kind: 'output' }"></ng-container>
     </div>
+    <span class="table-error" *ngIf="errors.apiOutputs">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.' + errors.apiOutputs | translate }}</span>
   </section>
 </div>
 

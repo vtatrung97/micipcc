@@ -411,68 +411,11 @@
 }
 
 // Toolbar canvas: nổi ở góc dưới trái
-.canvas-toolbar {
+.canvas-toolbar-host {
   position: absolute;
   left: px.$space-24;
   bottom: px.$space-24;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: px.$space-2;
-  padding: px.$space-4 px.$space-8;
-  background: px.$white;
-  border: 1px solid px.$neutral-300;
-  border-radius: px.$radius-lg;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
-}
-
-// Nút icon trên toolbar
-.canvas-tool-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: px.$space-8;
-  border: none;
-  border-radius: px.$radius-md;
-  background: transparent;
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    background: px.$neutral-100;
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-}
-
-// Mức thu phóng; bấm để về 100%
-.canvas-zoom-btn {
-  width: 52px;
-  height: 32px;
-  padding: 1px 6px;
-  border: none;
-  border-radius: px.$radius-sm;
-  background: transparent;
-  font-family: px.$font-family;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 600;
-  color: px.$neutral-900;
-  cursor: pointer;
-
-  &:hover {
-    background: px.$neutral-100;
-  }
-}
-
-// Vạch ngăn giữa các nhóm nút
-.canvas-tool-divider {
-  width: 1px;
-  height: 20px;
-  margin: 0 px.$space-2;
-  background: #dcdfe7;
 }
 
 /* ===== 5. Drawer bên phải (chi tiết thuộc tính) ===== */

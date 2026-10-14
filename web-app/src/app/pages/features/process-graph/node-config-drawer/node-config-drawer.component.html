@@ -1,15 +1,18 @@
-<aside class="properties-side-drawer" [class.open]="isVisible && !!nodeProps" [attr.aria-label]="'PROCESS_GRAPH.DRAWER.ARIA' | translate">
+<aside class="properties-side-drawer" [class.open]="isVisible && !!nodeProps" [class.is-readonly]="readonly" [attr.aria-label]="'PROCESS_GRAPH.DRAWER.ARIA' | translate">
   <!-- 1. DRAWER HEADER (Tiêu đề + Nút tròn X) -->
   <div class="drawer-header" *ngIf="nodeProps">
     <div class="drawer-title-wrap">
       <!-- Icon loại bước: bấm để đổi icon (áp dụng cho mọi bước cùng loại) -->
       <button type="button" class="drawer-node-icon" *ngIf="headerIcon as icon" [style.background]="icon.bg"
-              [class.bordered]="icon.bg === '#ffffff'" (click)="isIconModalOpen = true"
-              [appTooltip]="'PROCESS_GRAPH.ICON_MODAL.EDIT' | translate">
+              [class.bordered]="icon.bg === '#ffffff'" [disabled]="readonly" (click)="isIconModalOpen = true"
+              [appTooltip]="readonly ? '' : ('PROCESS_GRAPH.ICON_MODAL.EDIT' | translate)">
         <img [src]="icon.src" width="24" height="24" alt="" />
-        <span class="drawer-node-badge"><img src="assets/icons/processx/edit-badge.svg" width="16" height="16" alt="" /></span>
+        <span class="drawer-node-badge" *ngIf="!readonly"><img src="assets/icons/processx/edit-badge.svg" width="16" height="16" alt="" /></span>
       </button>
       <h3 class="drawer-title">{{ getDrawerTitle() }}</h3>
+      <!-- Điều kiện: đổi loại (chọn 1 / song song / chọn nhiều nhánh) ngay trên header -->
+      <ant-select *ngIf="isGateway(nodeProps.type)" class="gateway-type-select" size="small" [disabled]="readonly"
+                  [ngModel]="nodeProps.type" (ngModelChange)="changeGatewayType($event)" [options]="gatewayTypeOptions"></ant-select>
     </div>
     <button type="button" class="drawer-close-circle-btn" (click)="onClose()" [attr.aria-label]="'PROCESS_GRAPH.DRAWER.CLOSE_TITLE' | translate">
       <img src="assets/icons/processx/close-modal.svg" width="24" height="24" alt="" />
@@ -17,11 +20,13 @@
   </div>
 
   <!-- 2. SCROLLABLE FORM BODY -->
+  <!-- Chỉ xem: khoá mọi ô nhập (lớp trong, để thân drawer vẫn cuộn được) -->
   <div class="drawer-body" *ngIf="nodeProps">
+  <div [attr.inert]="readonly ? '' : null">
 
     <!-- ===== CASE 1: BẮT ĐẦU (Trigger) ===== -->
     <div class="start-drawer-section" *ngIf="nodeProps.type === 'START'">
-      <app-trigger-node-config [nodeProps]="nodeProps"></app-trigger-node-config>
+      <app-trigger-node-config [nodeProps]="nodeProps" [errors]="errors"></app-trigger-node-config>
     </div>
 
     <div class="flat-drawer-section" *ngIf="nodeProps.type === 'JOIN'">
@@ -42,70 +47,8 @@
     </div>
 
     <!-- ===== CASE 4: THÔNG BÁO (Notification) ===== -->
-    <div class="accordion-drawer-group" *ngIf="nodeProps.type === 'NOTIFICATION'">
-      <!-- Accordion 1: Thông tin chung -->
-      <div class="drawer-accordion-section">
-        <div class="accordion-header" (click)="toggleAccordion('general')">
-          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' | translate }}</span>
-          <span class="accordion-arrow" [class.collapsed]="!accordions['general']">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-          </span>
-        </div>
-        <div class="accordion-content" *ngIf="accordions['general']">
-          <div class="form-group-item">
-            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate }}</label>
-            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" [class.is-invalid]="errors.label" />
-            <span class="field-error" *ngIf="errors.label">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate }}</span>
-          </div>
-
-          <div class="form-group-item">
-            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate }}</label>
-            <input nz-input [value]="nodeProps.nodeKey || 'ma_buoc'" disabled class="readonly-pill-input" />
-          </div>
-
-          <div class="form-group-item">
-            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate }}</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Accordion 2: Thông báo -->
-      <div class="drawer-accordion-section">
-        <div class="accordion-header" (click)="toggleAccordion('notification')">
-          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.NOTIFICATION' | translate }}</span>
-          <span class="accordion-arrow" [class.collapsed]="!accordions['notification']">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-          </span>
-        </div>
-        <div class="accordion-content" *ngIf="accordions['notification']">
-          <div class="form-group-item">
-            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.RECIPIENT' | translate }}</label>
-            <nz-select [(ngModel)]="nodeProps.notificationRecipient" (ngModelChange)="onPropChange('notificationRecipient')" [nzPlaceHolder]="'PROCESS_GRAPH.COMMON.SELECT_PLACEHOLDER' | translate" class="custom-drawer-select">
-              <nz-option nzValue="customer" [nzLabel]="'PROCESS_GRAPH.OPTIONS.RECIPIENTS.CUSTOMER' | translate"></nz-option>
-              <nz-option nzValue="creator" [nzLabel]="'PROCESS_GRAPH.OPTIONS.RECIPIENTS.CREATOR' | translate"></nz-option>
-              <nz-option nzValue="manager" [nzLabel]="'PROCESS_GRAPH.OPTIONS.RECIPIENTS.MANAGER' | translate"></nz-option>
-            </nz-select>
-          </div>
-
-          <div class="form-group-item">
-            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CONTENT' | translate }}</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.notificationContent" (ngModelChange)="onPropChange('notificationContent')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
-          </div>
-
-          <div class="form-group-item">
-            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CHANNEL' | translate }}</label>
-            <div class="channel-vertical-checkbox-list">
-              <label nz-checkbox [(ngModel)]="nodeProps.channelNotification" (ngModelChange)="onPropChange('channelNotification')">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CHANNEL_NOTIFICATION' | translate }}</label>
-              <label nz-checkbox [(ngModel)]="nodeProps.channelEmail" (ngModelChange)="onPropChange('channelEmail')">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CHANNEL_EMAIL' | translate }}</label>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="start-drawer-section" *ngIf="nodeProps.type === 'NOTIFICATION'">
+      <app-notification-node-config [nodeProps]="nodeProps" [errors]="errors"></app-notification-node-config>
     </div>
 
     <!-- ===== CASE 5: QUY TRÌNH CON (Sub Process) ===== -->
@@ -119,228 +62,18 @@
     </div>
 
     <!-- ===== CASE 7: ĐIỀU KIỆN (chọn 1 nhánh / song song / chọn nhiều nhánh) — dùng chung UI ===== -->
-    <div class="accordion-drawer-group" *ngIf="isGateway(nodeProps.type)">
-      <!-- Accordion 1: Thông tin chung -->
-      <div class="drawer-accordion-section">
-        <div class="accordion-header" (click)="toggleAccordion('general')">
-          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.GENERAL' | translate }}</span>
-          <span class="accordion-arrow" [class.collapsed]="!accordions['general']">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-          </span>
-        </div>
-        <div class="accordion-content" *ngIf="accordions['general']">
-          <div class="form-group-item">
-            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_NAME' | translate }}</label>
-            <input nz-input [(ngModel)]="nodeProps.label" (ngModelChange)="onLabelChange()" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" [class.is-invalid]="errors.label" />
-            <span class="field-error" *ngIf="errors.label">{{ 'PROCESS_GRAPH.DRAWER.VALIDATION.REQUIRED' | translate }}</span>
-          </div>
-
-          <div class="form-group-item">
-            <label class="drawer-field-label required">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.STEP_CODE' | translate }}</label>
-            <input nz-input [value]="nodeProps.nodeKey || 'ma_buoc'" disabled class="readonly-pill-input" />
-          </div>
-
-          <div class="form-group-item">
-            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.DESCRIPTION' | translate }}</label>
-            <textarea nz-input rows="3" [(ngModel)]="nodeProps.description" (ngModelChange)="onPropChange('description')" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-textarea"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Accordion 2: Các trường hợp -->
-      <div class="drawer-accordion-section">
-        <div class="accordion-header" (click)="toggleAccordion('cases')">
-          <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.CASES' | translate }}</span>
-          <span class="accordion-arrow" [class.collapsed]="!accordions['cases']">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-          </span>
-        </div>
-        <div class="accordion-content" *ngIf="accordions['cases']">
-          <!-- List of Case Cards -->
-          <div class="condition-case-card" *ngFor="let branch of nodeProps.branches; let i = index">
-            <div class="case-card-header">
-              <div class="case-header-left">
-                <svg class="chevron-case" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-                <input 
-                  nz-input 
-                  [(ngModel)]="branch.name" 
-                  (ngModelChange)="onPropChange('branches')" 
-                  class="case-title-input" 
-                  [placeholder]="'PROCESS_GRAPH.DRAWER.FIELDS.CASE_NAME_PLACEHOLDER' | translate" />
-              </div>
-              <button 
-                *ngIf="!branch.isDefault" 
-                type="button" 
-                class="btn-remove-case" 
-                (click)="removeCase(i)" 
-                [title]="'PROCESS_GRAPH.DRAWER.FIELDS.REMOVE_CASE' | translate">
-                ✕
-              </button>
-            </div>
-
-            <!-- Case summary button: Điều kiện (X) & + Thêm điều kiện -->
-            <div class="case-card-body">
-              <div class="case-condition-pill" (click)="openConditionModal(branch)">
-                <span class="pill-text">{{ 'PROCESS_GRAPH.DRAWER.FIELDS.CONDITION_COUNT' | translate: { count: branch.rules?.length || (branch.isDefault ? 0 : 1) } }}</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
-
-              <button type="button" class="btn-link-add-condition" (click)="openConditionModal(branch)">
-                {{ 'PROCESS_GRAPH.DRAWER.FIELDS.ADD_CONDITION' | translate }}
-              </button>
-            </div>
-          </div>
-
-          <!-- + Thêm trường hợp button -->
-          <button type="button" class="btn-add-case-action" (click)="addCase()">
-            {{ 'PROCESS_GRAPH.DRAWER.FIELDS.ADD_CASE' | translate }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Accordion 3: Luồng mặc định (i) -->
-      <div class="drawer-accordion-section">
-        <div class="accordion-header" (click)="toggleAccordion('defaultFlow')">
-          <div class="title-with-info">
-            <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.DEFAULT_FLOW' | translate }}</span>
-            <span class="info-tooltip-icon" [title]="'PROCESS_GRAPH.DRAWER.FIELDS.DEFAULT_FLOW_HINT' | translate">ⓘ</span>
-          </div>
-          <span class="accordion-arrow" [class.collapsed]="!accordions['defaultFlow']">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-          </span>
-        </div>
-        <div class="accordion-content" *ngIf="accordions['defaultFlow']">
-          <div class="form-group-item">
-            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.COMMON.OUTPUT' | translate }}</label>
-            <nz-select [(ngModel)]="nodeProps.defaultFlowOutput" (ngModelChange)="onPropChange('defaultFlowOutput')" [nzPlaceHolder]="'PROCESS_GRAPH.DRAWER.FIELDS.SELECT_OUTPUT' | translate" class="custom-drawer-select">
-              <nz-option nzValue="default" [nzLabel]="'PROCESS_GRAPH.OPTIONS.DEFAULT_FLOW_OUTPUTS.DEFAULT' | translate"></nz-option>
-              <nz-option nzValue="tiep_tuc" [nzLabel]="'PROCESS_GRAPH.OPTIONS.DEFAULT_FLOW_OUTPUTS.CONTINUE' | translate"></nz-option>
-            </nz-select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Accordion 4: Luồng lỗi (i) -->
-      <div class="drawer-accordion-section">
-        <div class="accordion-header" (click)="toggleAccordion('errorFlow')">
-          <div class="title-with-info">
-            <span class="accordion-title">{{ 'PROCESS_GRAPH.DRAWER.SECTIONS.ERROR_FLOW' | translate }}</span>
-            <span class="info-tooltip-icon" [title]="'PROCESS_GRAPH.DRAWER.FIELDS.ERROR_FLOW_HINT' | translate">ⓘ</span>
-          </div>
-          <span class="accordion-arrow" [class.collapsed]="!accordions['errorFlow']">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-          </span>
-        </div>
-        <div class="accordion-content" *ngIf="accordions['errorFlow']">
-          <div class="form-group-item">
-            <label class="drawer-field-label">{{ 'PROCESS_GRAPH.COMMON.OUTPUT' | translate }}</label>
-            <nz-select [(ngModel)]="nodeProps.errorFlowOutput" (ngModelChange)="onPropChange('errorFlowOutput')" [nzPlaceHolder]="'PROCESS_GRAPH.DRAWER.FIELDS.SELECT_OUTPUT' | translate" class="custom-drawer-select">
-              <nz-option nzValue="error_end" [nzLabel]="'PROCESS_GRAPH.OPTIONS.ERROR_FLOW_OUTPUTS.ERROR_END' | translate"></nz-option>
-              <nz-option nzValue="retry" [nzLabel]="'PROCESS_GRAPH.OPTIONS.ERROR_FLOW_OUTPUTS.RETRY' | translate"></nz-option>
-            </nz-select>
-          </div>
-        </div>
-      </div>
+    <div class="start-drawer-section" *ngIf="isGateway(nodeProps.type)">
+      <app-condition-node-config [nodeProps]="nodeProps" [errors]="errors"></app-condition-node-config>
     </div>
 
   </div>
+  </div>
 
   <!-- 3. FOOTER cố định: Hủy (hoàn tác thay đổi) · Lưu (kiểm tra trường bắt buộc) -->
-  <div class="drawer-footer" *ngIf="nodeProps">
+  <div class="drawer-footer" *ngIf="nodeProps && !readonly">
     <button type="button" class="px-btn px-btn-default" (click)="onClose()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
     <button type="button" class="px-btn px-btn-primary" (click)="onSave()">{{ 'PROCESS_GRAPH.COMMON.SAVE' | translate }}</button>
   </div>
 </aside>
-
-<!-- ===== 3. MODAL ĐIỀU KIỆN ===== -->
-<div class="condition-modal-backdrop" *ngIf="isConditionModalVisible">
-  <div class="condition-modal-card">
-    <div class="condition-modal-header">
-      <h3 class="condition-modal-title">{{ 'PROCESS_GRAPH.CONDITION_MODAL.TITLE' | translate }}</h3>
-      <button type="button" class="modal-close-circle-btn" (click)="closeConditionModal()">✕</button>
-    </div>
-
-    <div class="condition-modal-body">
-      <div class="condition-rules-table-header">
-        <div class="col-param">{{ 'PROCESS_GRAPH.CONDITION_MODAL.PARAM' | translate }}</div>
-        <div class="col-op">{{ 'PROCESS_GRAPH.CONDITION_MODAL.OPERATOR' | translate }}</div>
-        <div class="col-val">{{ 'PROCESS_GRAPH.CONDITION_MODAL.VALUE' | translate }}</div>
-        <div class="col-action"></div>
-      </div>
-
-      <div class="condition-rules-list">
-        <div class="condition-rule-row" *ngFor="let rule of editingRules; let i = index">
-          <!-- Logic operator divider between rows (AND / OR) -->
-          <div class="logic-operator-divider" *ngIf="i > 0">
-            <nz-select [(ngModel)]="editingLogicOperator" class="operator-mini-select">
-              <nz-option nzValue="AND" nzLabel="AND"></nz-option>
-              <nz-option nzValue="OR" nzLabel="OR"></nz-option>
-            </nz-select>
-          </div>
-
-          <div class="rule-inputs-group">
-            <div class="col-param">
-              <nz-select [(ngModel)]="rule.param" [nzPlaceHolder]="'PROCESS_GRAPH.CONDITION_MODAL.PARAM_PLACEHOLDER' | translate" class="custom-drawer-select">
-                <nz-option-group [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.GROUP_TRIGGER_EVENT' | translate">
-                  <nz-option nzValue=".priority" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.PRIORITY' | translate"></nz-option>
-                  <nz-option nzValue="paknID" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.PAKN_ID' | translate"></nz-option>
-                  <nz-option nzValue="complaintType" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.COMPLAINT_TYPE' | translate"></nz-option>
-                </nz-option-group>
-                <nz-option-group [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.GROUP_CASE' | translate">
-                  <nz-option nzValue="code" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.CODE' | translate"></nz-option>
-                  <nz-option nzValue="startedAt" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.PARAMS.STARTED_AT' | translate"></nz-option>
-                </nz-option-group>
-              </nz-select>
-            </div>
-
-            <div class="col-op">
-              <nz-select [(ngModel)]="rule.operator" [nzPlaceHolder]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATOR_PLACEHOLDER' | translate" class="custom-drawer-select">
-                <nz-option nzValue="EQ" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.EQ' | translate"></nz-option>
-                <nz-option nzValue="NEQ" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.NEQ' | translate"></nz-option>
-                <nz-option nzValue="GT" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.GT' | translate"></nz-option>
-                <nz-option nzValue="LT" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.LT' | translate"></nz-option>
-                <nz-option nzValue="CONTAINS" [nzLabel]="'PROCESS_GRAPH.CONDITION_MODAL.OPERATORS.CONTAINS' | translate"></nz-option>
-              </nz-select>
-            </div>
-
-            <div class="col-val">
-              <input nz-input [(ngModel)]="rule.value" [placeholder]="'PROCESS_GRAPH.COMMON.INPUT_PLACEHOLDER' | translate" class="custom-drawer-input" />
-            </div>
-
-            <div class="col-action">
-              <button type="button" class="btn-trash-rule" (click)="removeRule(i)" [title]="'PROCESS_GRAPH.CONDITION_MODAL.REMOVE' | translate">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <button type="button" class="btn-link-add-rule" (click)="addRule()">
-        {{ 'PROCESS_GRAPH.DRAWER.FIELDS.ADD_CONDITION' | translate }}
-      </button>
-    </div>
-
-    <div class="condition-modal-footer">
-      <button type="button" class="btn-modal-cancel" (click)="closeConditionModal()">{{ 'PROCESS_GRAPH.COMMON.CANCEL' | translate }}</button>
-      <button type="button" class="btn-modal-save" (click)="saveConditionModal()">{{ 'PROCESS_GRAPH.COMMON.SAVE' | translate }}</button>
-    </div>
-  </div>
-</div>
 
 <app-node-icon-modal [visible]="isIconModalOpen" [nodeType]="nodeProps?.type || null" (closed)="isIconModalOpen = false"></app-node-icon-modal>

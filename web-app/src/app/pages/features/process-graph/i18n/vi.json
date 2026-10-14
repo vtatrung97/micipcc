@@ -65,16 +65,16 @@
       "TRIGGERS": {
         "MANUAL": "Kích hoạt thủ công",
         "AUTO": "Kích hoạt tự động",
-        "SCHEDULE": "Lặp lịch",
+        "SCHEDULE": "Lập lịch",
         "HYBRID": "Hybrid"
       },
       "SCHEDULE_MODES": {
         "ONCE": "Chạy một lần",
         "REPEAT": "Lặp lại"
       },
-      "REPEAT": "Lặp lại",
-      "MONTH_DAYS": "Ngày trong tháng",
-      "WEEK_DAYS_LABEL": "Thứ trong tuần",
+      "REPEAT": "Tần suất",
+      "MONTH_DAYS": "Vào ngày trong tháng",
+      "WEEK_DAYS_LABEL": "Vào ngày",
       "WEEK_DAYS": {
         "1": "Thứ 2",
         "2": "Thứ 3",
@@ -87,11 +87,11 @@
       "SEARCH_PLACEHOLDER": "Tìm kiếm",
       "SELECT_ALL": "Chọn tất cả",
       "REPEAT_OPTIONS": {
-        "DAILY": "Hàng ngày",
-        "WEEKLY": "Hàng tuần",
-        "MONTHLY": "Hàng tháng"
+        "DAILY": "Ngày",
+        "WEEKLY": "Tuần",
+        "MONTHLY": "Tháng"
       },
-      "RUN_DATE": "Ngày chạy",
+      "RUN_DATE": "Thời gian chạy",
       "RUN_TIME": "Giờ chạy",
       "HOUR_PLACEHOLDER": "hh",
       "MINUTE_PLACEHOLDER": "mm",
@@ -103,19 +103,48 @@
       "ADD_CONDITION": "Thêm điều kiện",
       "SLA": "Thời hạn xử lý (SLA)",
       "SLA_UNITS": {
-        "DAY": "Ngày",
         "HOUR": "Giờ",
-        "MINUTE": "Phút"
+        "DAY": "Ngày",
+        "WEEK": "Tuần",
+        "MONTH": "Tháng"
       },
       "ERRORS": {
         "REQUIRED": "Vui lòng nhập thông tin này",
         "CODE_FORMAT": "Chỉ gồm chữ không dấu, số, dấu _ hoặc -",
         "CODE_EXISTS": "Mã quy trình đã tồn tại",
-        "TIME_FORMAT": "Giờ chạy không hợp lệ (hh:mm)",
-        "SLA_POSITIVE": "Nhập số lớn hơn 0"
+        "TIME_FORMAT": "Giờ từ 00 đến 23, phút từ 00 đến 59",
+        "NAME_EXISTS": "Tên quy trình đã tồn tại",
+        "SLA_RANGE": "Nhập số nguyên từ 1 đến 99999",
+        "PARAM_REQUIRED": "Tham số kích hoạt không được để trống",
+        "OPERATOR_REQUIRED": "Kiểu so sánh không được để trống"
       },
       "STATUS_INVALID": "⚠️ Thông tin chung còn {{count}} trường chưa hợp lệ",
-      "STATUS_CREATED": "✨ Đã tạo quy trình [{{code}}]"
+      "STATUS_CREATED": "✨ Đã tạo quy trình [{{code}}]",
+      "TRIGGER_PARAM": "Tham số kích hoạt",
+      "MULTI_VALUE_HINT": "VD: A, B, C",
+      "CATEGORY_ADD": "Thêm mới",
+      "CATEGORY_ADD_PLACEHOLDER": "Nhập tên nhóm quy trình",
+      "CATEGORY_ERRORS": {
+        "REQUIRED": "Tên nhóm quy trình không được để trống",
+        "TOO_LONG": "Tối đa 255 ký tự",
+        "DUPLICATE": "Nhóm quy trình đã tồn tại"
+      },
+      "REQUIRED_MESSAGES": {
+        "name": "Tên quy trình không được để trống",
+        "code": "Mã quy trình không được để trống",
+        "category": "Nhóm quy trình không được để trống",
+        "sla": "SLA không được để trống",
+        "triggerType": "Loại kích hoạt cho quy trình không được để trống",
+        "manualFormId": "Biểu mẫu dữ liệu đầu vào không được để trống",
+        "inputFormId": "Biểu mẫu dữ liệu đầu vào không được để trống",
+        "autoApiId": "API không được để trống",
+        "apiId": "API không được để trống",
+        "runDate": "Thời gian chạy không được để trống",
+        "repeat": "Tần suất không được để trống",
+        "weekDays": "Vào ngày không được để trống",
+        "monthDays": "Vào ngày trong tháng không được để trống",
+        "runTime": "Giờ chạy không được để trống"
+      }
     },
     "SAMPLES": {
       "BUTTON": "Mẫu quy trình",
@@ -232,7 +261,8 @@
         "END_IN": "Điểm kết thúc (End)",
         "NOTIFY_DONE": "Hoàn tất gửi",
         "SUB_PROCESS_DONE": "Hoàn tất quy trình con"
-      }
+      },
+      "ERROR_BRANCH": "Lỗi"
     },
     "STATUS": {
       "READY": "Sẵn sàng",
@@ -259,7 +289,10 @@
       "CLEAR_CONFIRM": "Bạn có chắc chắn muốn làm sạch toàn bộ bản vẽ?",
       "DELETE_NODE_CONFIRM": "Bạn có chắc chắn muốn xoá bước [{{name}}]?",
       "TEST_CONNECTION_OK": "Kiểm tra kết nối: Đã kết nối thành công tới hệ thống API tích hợp!",
-      "JSON_COPIED": "Đã sao chép dữ liệu JSON vào Clipboard!"
+      "JSON_COPIED": "Đã sao chép dữ liệu JSON vào Clipboard!",
+      "START_DELETE_BLOCKED": "Không thể xoá bước Bắt đầu. Mỗi quy trình luôn có 1 bước Bắt đầu.",
+      "AUTO_LAYOUT_INVALID": "Chỉ làm đẹp được khi mọi bước đã nối thành luồng từ Bắt đầu đến Kết thúc và không có bước bị cô lập.",
+      "VARIABLE_MAPPINGS_REMOVED": "Đã bỏ {{count}} ánh xạ dùng biến quy trình đã xoá: {{names}}"
     },
     "MODALS": {
       "VALIDATION_TITLE": "🛡️ Kiểm tra tính hợp lệ đồ thị (BPMN 2.0 Graph Validation)",
@@ -372,7 +405,8 @@
       "UNITS": {
         "HOUR": "Giờ",
         "DAY": "Ngày",
-        "WEEK": "Tuần"
+        "WEEK": "Tuần",
+        "MONTH": "Tháng"
       },
       "NEW_PARAM": "Tham số mới",
       "NEW_CASE": "Trường hợp {{index}}",
@@ -435,10 +469,48 @@
       "SUB_PROCESS": {
         "VIEW": "Xem quy trình",
         "COL_SUB_INPUT": "Đầu vào quy trình con",
-        "COL_SUB_VARIABLE": "Biến quy trình con"
+        "COL_SUB_VARIABLE": "Biến quy trình con",
+        "VERSION": "Phiên bản {{version}}"
       },
       "VALIDATION": {
-        "REQUIRED": "Vui lòng nhập thông tin bắt buộc"
+        "REQUIRED": "Vui lòng nhập thông tin bắt buộc",
+        "KEY_FORMAT": "Chỉ gồm chữ không dấu, số và dấu _",
+        "KEY_DUPLICATE": "Mã bước đã tồn tại trong quy trình",
+        "VAR_REQUIRED": "Nhập đủ biến quy trình, nguồn dữ liệu và tên hiển thị cho các dòng đã khai báo",
+        "VAR_FORMAT": "Biến quy trình chỉ gồm chữ không dấu, số và dấu _, tối đa 50 ký tự",
+        "VAR_DUPLICATE": "Biến quy trình đã tồn tại trong quy trình",
+        "SLA_REQUIRED": "SLA không được để trống",
+        "SLA_RANGE": "Nhập số nguyên từ 1 đến 99999",
+        "TIMEOUT_RANGE": "Nhập số nguyên từ 1 đến 99999",
+        "RETRY_RANGE": "Nhập số nguyên từ 1 đến 99",
+        "INPUT_REQUIRED": "Nhập đủ các cột của dòng đã khai báo",
+        "INPUT_MIN_ONE": "Cần ít nhất 1 dòng dữ liệu đầu vào"
+      },
+      "CONDITION": {
+        "TYPE": "Loại điều kiện",
+        "BRANCHES_TITLE": "Danh sách nhánh điều kiện",
+        "COL_BRANCH": "Tên nhánh",
+        "COL_CONDITIONS": "Điều kiện",
+        "COL_ACTIONS": "Hành động",
+        "ADD_BRANCH": "Thêm nhánh",
+        "VIEW": "Xem chi tiết",
+        "EDIT": "Chỉnh sửa",
+        "DELETE": "Xoá nhánh"
+      },
+      "NOTIFICATION": {
+        "CHANNEL": "Kênh thông báo",
+        "SOURCE": "Nguồn nhận thông báo",
+        "RECIPIENT": "Người nhận",
+        "TITLE": "Tiêu đề thông báo",
+        "CONTENT": "Nội dung thông báo",
+        "CHANNELS": {
+          "EMAIL": "Email",
+          "SMS": "SMS"
+        },
+        "SOURCES": {
+          "VARIABLE": "Biến quy trình",
+          "USER": "Người dùng"
+        }
       }
     },
     "CONDITION_MODAL": {
@@ -478,12 +550,18 @@
       "DEPARTMENTS": {
         "CSKH": "Trung tâm Chăm sóc khách hàng",
         "KT": "Phòng Kỹ thuật & Hạ tầng",
-        "CUOC": "Phòng Cước & Đối soát"
+        "CUOC": "Phòng Cước & Đối soát",
+        "KD": "Phòng Kinh doanh",
+        "BH": "Phòng Bảo hành",
+        "QA": "Phòng Kiểm soát chất lượng"
       },
       "TEAMS": {
         "BO": "Tổ Xử lý Khiếu nại BO",
         "VIP": "Tổ Tiếp nhận Khách hàng VIP",
-        "FTTH": "Đội Kỹ thuật FTTH"
+        "FTTH": "Đội Kỹ thuật FTTH",
+        "L1": "Tổ hỗ trợ cấp 1",
+        "L2": "Tổ hỗ trợ cấp 2",
+        "OUTBOUND": "Tổ gọi ra (Outbound)"
       },
       "AGENTS": {
         "AUTO": "Tự động luân chuyển",
@@ -555,7 +633,7 @@
       "CONDITION_IN_ZERO": "Điều kiện [{{label}}] chưa nhận luồng từ bước trước (In = 1)",
       "CONDITION_BRANCH_LESS_THAN_2": "Điều kiện [{{label}}] cần tối thiểu 2 nhánh rẽ (Out >= 2, hiện có {{count}})",
       "CONDITION_DEFAULT_UNCONNECTED": "Nhánh mặc định [{{branch}}] của Điều kiện [{{label}}] chưa được nối dây (tuỳ chọn dự phòng)",
-      "CONDITION_BRANCH_UNCONNECTED": "Nhánh [{{branch}}] của Điều kiện [{{label}}] chưa được nối dây (Out >= 2)",
+      "CONDITION_BRANCH_UNCONNECTED": "Nhánh [{{branch}}] của Điều kiện [{{label}}] chưa nối tới bước nào",
       "TASK_IN_ZERO": "Giao việc [{{label}}] chưa nhận luồng từ bước trước (In = 1)",
       "TASK_APPROVAL_OUT_MISSING": "Bước duyệt [{{label}}] bắt buộc nối cả 2 cổng Duyệt và Từ chối",
       "TASK_OUT_ZERO": "Giao việc [{{label}}] chưa kết nối luồng ra bước tiếp theo (Out = 1)",
@@ -563,7 +641,8 @@
       "MERGE_IN_LESS_THAN_2": "Gộp nhánh [{{label}}] phải gom tối thiểu 2 luồng trước khi đi tiếp (In >= 2, hiện có {{count}})",
       "MERGE_OUT_ZERO": "Gộp nhánh [{{label}}] chưa có luồng ra (Out = 1)",
       "MERGE_OUT_EXCESS": "Gộp nhánh [{{label}}] chỉ được có đúng 1 luồng ra (Out = 1, hiện có {{count}})",
-      "NODE_ISOLATED": "Bước [{{label}}] đang đứng cô lập (chưa có dây nối nào)"
+      "NODE_ISOLATED": "Bước [{{label}}] đang đứng cô lập (chưa có dây nối nào)",
+      "NODE_FIELDS_INVALID": "Bước [{{label}}] chưa nhập đủ hoặc sai thông tin cấu hình"
     },
     "ICON_MODAL": {
       "TITLE": "Chọn biểu tượng",
@@ -583,6 +662,48 @@
       "SEARCH_PLACEHOLDER": "Tìm bước",
       "EMPTY": "Không tìm thấy bước phù hợp",
       "CLEAR": "Xoá từ khoá"
+    },
+    "BRANCH_MODAL": {
+      "CREATE_TITLE": "Thêm mới nhánh điều kiện",
+      "EDIT_TITLE": "Chỉnh sửa nhánh điều kiện",
+      "VIEW_TITLE": "Chi tiết nhánh điều kiện",
+      "NAME": "Tên nhánh",
+      "COL_VARIABLE": "Biến quy trình",
+      "COL_OPERATOR": "Kiểu so sánh",
+      "COL_VALUE": "Giá trị so sánh",
+      "COL_ACTIONS": "Hành động",
+      "ADD_CONDITION": "Thêm điều kiện",
+      "REMOVE": "Xoá điều kiện",
+      "EMPTY": "Chưa có điều kiện",
+      "NAME_DUPLICATE": "Tên nhánh đã tồn tại",
+      "RULES_INCOMPLETE": "Mỗi điều kiện cần chọn biến quy trình và kiểu so sánh",
+      "IN_HINT": "VD: A, B, C",
+      "OPERATORS": {
+        "EQ": "=",
+        "NEQ": "<>",
+        "GT": ">",
+        "GTE": ">=",
+        "LT": "<",
+        "LTE": "<=",
+        "IN": "IN",
+        "CONTAINS": "CONTAINS",
+        "NOT_IN": "NOT IN"
+      }
+    },
+    "CONDITION_OPERATORS": {
+      "EQ": "= (Bằng)",
+      "NEQ": "<> (Khác)",
+      "LT": "< (Nhỏ hơn)",
+      "GT": "> (Lớn hơn)",
+      "LTE": "<= (Nhỏ hơn hoặc bằng)",
+      "GTE": ">= (Lớn hơn hoặc bằng)",
+      "IN": "IN (Chứa)",
+      "NOT_IN": "NOT IN (Không chứa)"
+    },
+    "CANCEL_CONFIRM": {
+      "TITLE": "Xác nhận hủy!",
+      "MESSAGE": "Sau khi hủy, dữ liệu sẽ không được lưu, bạn có chắc chắn muốn hủy không?",
+      "CONFIRM": "Xác nhận"
     }
   }
 }

@@ -16,7 +16,7 @@
     </span>
 
     <!-- Ô tìm kiếm khi bật showSearch và dropdown đang mở -->
-    <span class="px-select-selection-search" *ngIf="showSearch && isOpen">
+    <span class="px-select-selection-search" *ngIf="showSearch && !panelSearch && isOpen">
       <input 
         #searchInput
         type="text" 
@@ -27,7 +27,7 @@
         [placeholder]="selectedOption ? selectedOption.label : placeholder" />
     </span>
 
-    <span class="px-select-selection-item" *ngIf="selectedOption && (!showSearch || !isOpen)">
+    <span class="px-select-selection-item" *ngIf="selectedOption && (!showSearch || panelSearch || !isOpen)">
       <span 
         class="option-dot" 
         *ngIf="selectedOption.dotColor" 
@@ -45,7 +45,7 @@
       <span class="selection-item-text" [appTooltip]="selectedOption.label" [tooltipOnlyTruncated]="true">{{ selectedOption.label }}</span>
     </span>
 
-    <span class="px-select-selection-placeholder" [appTooltip]="placeholder" [tooltipOnlyTruncated]="true" *ngIf="!selectedOption && (!showSearch || !isOpen || !searchQuery)">
+    <span class="px-select-selection-placeholder" [appTooltip]="placeholder" [tooltipOnlyTruncated]="true" *ngIf="!selectedOption && !(showSearch && !panelSearch && isOpen)">
       {{ placeholder }}
     </span>
 
@@ -74,8 +74,16 @@
     [style.width.px]="fixedPanel ? panelWidth : null"
     [style.visibility]="measuring ? 'hidden' : null" 
     *ngIf="isOpen" 
+    [class.has-panel-extra]="panelSearch || footerTemplate"
     (click)="$event.stopPropagation()">
-    
+
+    <!-- Ô tìm kiếm đầu dropdown -->
+    <div class="px-select-panel-search" *ngIf="panelSearch">
+      <img src="assets/icons/processx/search.svg" width="20" height="20" alt="" />
+      <input #panelSearchInput type="text" [(ngModel)]="searchQuery" (keydown)="onKeyDown($event)"
+             [placeholder]="panelSearchPlaceholder" />
+    </div>
+
     <div class="dropdown-options-list" *ngIf="filteredOptions.length > 0">
       <div 
         *ngFor="let opt of filteredOptions; let i = index; trackBy: trackByValue"
@@ -86,6 +94,11 @@
         (click)="selectOption(opt, $event)"
         (mouseenter)="activeHoverIndex = i">
         
+        <ng-container *ngIf="optionTemplate; else defaultOption">
+          <ng-container *ngTemplateOutlet="optionTemplate; context: { $implicit: opt, selected: isSelected(opt) }"></ng-container>
+        </ng-container>
+
+        <ng-template #defaultOption>
         <div class="option-content">
           <span 
             class="option-dot" 
@@ -108,12 +121,18 @@
         <span class="option-check" *ngIf="isSelected(opt)">
           <img src="assets/icons/processx/check-primary.svg" width="20" height="20" alt="" />
         </span>
+        </ng-template>
       </div>
     </div>
 
     <div class="px-select-empty" *ngIf="filteredOptions.length === 0">
       <ant-icon name="inbox" [size]="28" color="#d9d9d9"></ant-icon>
       <span class="empty-text">Không có dữ liệu</span>
+    </div>
+
+    <!-- Chân dropdown (vd: "Thêm mới") -->
+    <div class="px-select-panel-footer" *ngIf="footerTemplate">
+      <ng-container *ngTemplateOutlet="footerTemplate; context: { $implicit: searchQuery, close: closePanel }"></ng-container>
     </div>
   </div>
 </div>

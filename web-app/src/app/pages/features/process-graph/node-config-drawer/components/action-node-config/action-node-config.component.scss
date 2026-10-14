@@ -278,3 +278,21 @@ th {
   @include px.body-md-medium;
   color: px.$blue-300;
 }
+
+// Ô bảng khai báo biến bị lỗi: gạch chân đỏ; câu lỗi dưới bảng
+.cell-input.is-invalid {
+  border-bottom-color: px.$primary-600;
+}
+
+:host ::ng-deep .cell-select.is-invalid .px-select.px-select-sm .px-select-selector {
+  border-bottom-color: px.$primary-600;
+}
+
+.table-error {
+  display: block;
+  margin-top: px.$space-4;
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  color: px.$primary-600;
+}

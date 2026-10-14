@@ -72,9 +72,9 @@
         "ONCE": "Run once",
         "REPEAT": "Repeat"
       },
-      "REPEAT": "Repeat",
-      "MONTH_DAYS": "Day of month",
-      "WEEK_DAYS_LABEL": "Day of week",
+      "REPEAT": "Frequency",
+      "MONTH_DAYS": "On days of month",
+      "WEEK_DAYS_LABEL": "On days",
       "WEEK_DAYS": {
         "1": "Monday",
         "2": "Tuesday",
@@ -87,9 +87,9 @@
       "SEARCH_PLACEHOLDER": "Search",
       "SELECT_ALL": "Select all",
       "REPEAT_OPTIONS": {
-        "DAILY": "Daily",
-        "WEEKLY": "Weekly",
-        "MONTHLY": "Monthly"
+        "DAILY": "Day",
+        "WEEKLY": "Week",
+        "MONTHLY": "Month"
       },
       "RUN_DATE": "Run date",
       "RUN_TIME": "Run time",
@@ -103,19 +103,48 @@
       "ADD_CONDITION": "Add condition",
       "SLA": "Processing deadline (SLA)",
       "SLA_UNITS": {
-        "DAY": "Days",
         "HOUR": "Hours",
-        "MINUTE": "Minutes"
+        "DAY": "Days",
+        "WEEK": "Weeks",
+        "MONTH": "Months"
       },
       "ERRORS": {
         "REQUIRED": "This field is required",
         "CODE_FORMAT": "Only letters without accents, digits, _ or -",
         "CODE_EXISTS": "Process code already exists",
-        "TIME_FORMAT": "Invalid run time (hh:mm)",
-        "SLA_POSITIVE": "Enter a number greater than 0"
+        "TIME_FORMAT": "Hour 00–23, minute 00–59",
+        "NAME_EXISTS": "Process name already exists",
+        "SLA_RANGE": "Enter a whole number from 1 to 99999",
+        "PARAM_REQUIRED": "Trigger parameter is required",
+        "OPERATOR_REQUIRED": "Operator is required"
       },
       "STATUS_INVALID": "⚠️ General info has {{count}} invalid field(s)",
-      "STATUS_CREATED": "✨ Created process [{{code}}]"
+      "STATUS_CREATED": "✨ Created process [{{code}}]",
+      "TRIGGER_PARAM": "Trigger parameter",
+      "MULTI_VALUE_HINT": "e.g. A, B, C",
+      "CATEGORY_ADD": "Add new",
+      "CATEGORY_ADD_PLACEHOLDER": "Enter process group name",
+      "CATEGORY_ERRORS": {
+        "REQUIRED": "Process group name is required",
+        "TOO_LONG": "Up to 255 characters",
+        "DUPLICATE": "Process group already exists"
+      },
+      "REQUIRED_MESSAGES": {
+        "name": "Process name is required",
+        "code": "Process code is required",
+        "category": "Process group is required",
+        "sla": "SLA is required",
+        "triggerType": "Trigger type is required",
+        "manualFormId": "Input form is required",
+        "inputFormId": "Input form is required",
+        "autoApiId": "API is required",
+        "apiId": "API is required",
+        "runDate": "Run date is required",
+        "repeat": "Frequency is required",
+        "weekDays": "Days of week are required",
+        "monthDays": "Days of month are required",
+        "runTime": "Run time is required"
+      }
     },
     "SAMPLES": {
       "BUTTON": "Process samples",
@@ -232,7 +261,8 @@
         "END_IN": "End point",
         "NOTIFY_DONE": "Sent",
         "SUB_PROCESS_DONE": "Sub-process completed"
-      }
+      },
+      "ERROR_BRANCH": "Error"
     },
     "STATUS": {
       "READY": "Ready",
@@ -259,7 +289,10 @@
       "CLEAR_CONFIRM": "Are you sure you want to clear the whole canvas?",
       "DELETE_NODE_CONFIRM": "Are you sure you want to delete step [{{name}}]?",
       "TEST_CONNECTION_OK": "Connection test: successfully connected to the integrated API system!",
-      "JSON_COPIED": "JSON copied to clipboard!"
+      "JSON_COPIED": "JSON copied to clipboard!",
+      "START_DELETE_BLOCKED": "The Start step cannot be deleted. Every process always has one Start step.",
+      "AUTO_LAYOUT_INVALID": "Auto layout needs every step connected in a flow from Start to End with no isolated step.",
+      "VARIABLE_MAPPINGS_REMOVED": "Removed {{count}} mapping(s) using deleted process variables: {{names}}"
     },
     "MODALS": {
       "VALIDATION_TITLE": "🛡️ Graph validation (BPMN 2.0)",
@@ -372,7 +405,8 @@
       "UNITS": {
         "HOUR": "Hours",
         "DAY": "Days",
-        "WEEK": "Weeks"
+        "WEEK": "Weeks",
+        "MONTH": "Month"
       },
       "NEW_PARAM": "New parameter",
       "NEW_CASE": "Case {{index}}",
@@ -435,10 +469,48 @@
       "SUB_PROCESS": {
         "VIEW": "View process",
         "COL_SUB_INPUT": "Sub-process input",
-        "COL_SUB_VARIABLE": "Sub-process variable"
+        "COL_SUB_VARIABLE": "Sub-process variable",
+        "VERSION": "Version {{version}}"
       },
       "VALIDATION": {
-        "REQUIRED": "This field is required"
+        "REQUIRED": "This field is required",
+        "KEY_FORMAT": "Letters without accents, digits and _ only",
+        "KEY_DUPLICATE": "Step code already exists in this process",
+        "VAR_REQUIRED": "Fill in variable, data source and display name for every declared row",
+        "VAR_FORMAT": "Variables may only contain letters without accents, digits and _, up to 50 characters",
+        "VAR_DUPLICATE": "Process variable already exists in this process",
+        "SLA_REQUIRED": "SLA is required",
+        "SLA_RANGE": "Enter a whole number from 1 to 99999",
+        "TIMEOUT_RANGE": "Enter a whole number from 1 to 99999",
+        "RETRY_RANGE": "Enter a whole number from 1 to 99",
+        "INPUT_REQUIRED": "Fill in every column of the declared rows",
+        "INPUT_MIN_ONE": "At least one input row is required"
+      },
+      "CONDITION": {
+        "TYPE": "Condition type",
+        "BRANCHES_TITLE": "Condition branches",
+        "COL_BRANCH": "Branch name",
+        "COL_CONDITIONS": "Conditions",
+        "COL_ACTIONS": "Actions",
+        "ADD_BRANCH": "Add branch",
+        "VIEW": "View details",
+        "EDIT": "Edit",
+        "DELETE": "Delete branch"
+      },
+      "NOTIFICATION": {
+        "CHANNEL": "Notification channel",
+        "SOURCE": "Recipient source",
+        "RECIPIENT": "Recipient",
+        "TITLE": "Notification title",
+        "CONTENT": "Notification content",
+        "CHANNELS": {
+          "EMAIL": "Email",
+          "SMS": "SMS"
+        },
+        "SOURCES": {
+          "VARIABLE": "Process variable",
+          "USER": "System user"
+        }
       }
     },
     "CONDITION_MODAL": {
@@ -478,12 +550,18 @@
       "DEPARTMENTS": {
         "CSKH": "Customer Care Center",
         "KT": "Engineering & Infrastructure Dept.",
-        "CUOC": "Billing & Reconciliation Dept."
+        "CUOC": "Billing & Reconciliation Dept.",
+        "KD": "Sales Department",
+        "BH": "Warranty Department",
+        "QA": "Quality Assurance"
       },
       "TEAMS": {
         "BO": "BO Complaint Handling Team",
         "VIP": "VIP Customer Intake Team",
-        "FTTH": "FTTH Engineering Team"
+        "FTTH": "FTTH Engineering Team",
+        "L1": "Tier-1 Support",
+        "L2": "Tier-2 Support",
+        "OUTBOUND": "Outbound Team"
       },
       "AGENTS": {
         "AUTO": "Auto rotation",
@@ -555,7 +633,7 @@
       "CONDITION_IN_ZERO": "Condition [{{label}}] has no incoming flow (In = 1)",
       "CONDITION_BRANCH_LESS_THAN_2": "Condition [{{label}}] needs at least 2 branches (Out >= 2, currently {{count}})",
       "CONDITION_DEFAULT_UNCONNECTED": "Default branch [{{branch}}] of condition [{{label}}] is not connected (optional fallback)",
-      "CONDITION_BRANCH_UNCONNECTED": "Branch [{{branch}}] of condition [{{label}}] is not connected (Out >= 2)",
+      "CONDITION_BRANCH_UNCONNECTED": "Branch [{{branch}}] of condition [{{label}}] is not connected to any step",
       "TASK_IN_ZERO": "Task [{{label}}] has no incoming flow (In = 1)",
       "TASK_APPROVAL_OUT_MISSING": "Approval step [{{label}}] must connect both Approve and Reject ports",
       "TASK_OUT_ZERO": "Task [{{label}}] is not connected to a next step (Out = 1)",
@@ -563,7 +641,8 @@
       "MERGE_IN_LESS_THAN_2": "Join [{{label}}] must merge at least 2 flows (In >= 2, currently {{count}})",
       "MERGE_OUT_ZERO": "Join [{{label}}] has no outgoing flow (Out = 1)",
       "MERGE_OUT_EXCESS": "Join [{{label}}] must have exactly 1 outgoing flow (Out = 1, currently {{count}})",
-      "NODE_ISOLATED": "Step [{{label}}] is isolated (no connections)"
+      "NODE_ISOLATED": "Step [{{label}}] is isolated (no connections)",
+      "NODE_FIELDS_INVALID": "Step [{{label}}] has missing or invalid configuration"
     },
     "ICON_MODAL": {
       "TITLE": "Choose icon",
@@ -583,6 +662,48 @@
       "SEARCH_PLACEHOLDER": "Search steps",
       "EMPTY": "No matching steps",
       "CLEAR": "Clear keyword"
+    },
+    "BRANCH_MODAL": {
+      "CREATE_TITLE": "New condition branch",
+      "EDIT_TITLE": "Edit condition branch",
+      "VIEW_TITLE": "Condition branch details",
+      "NAME": "Branch name",
+      "COL_VARIABLE": "Process variable",
+      "COL_OPERATOR": "Operator",
+      "COL_VALUE": "Value",
+      "COL_ACTIONS": "Actions",
+      "ADD_CONDITION": "Add condition",
+      "REMOVE": "Remove condition",
+      "EMPTY": "No conditions",
+      "NAME_DUPLICATE": "Branch name already exists",
+      "RULES_INCOMPLETE": "Each condition needs a variable and an operator",
+      "IN_HINT": "e.g. A, B, C",
+      "OPERATORS": {
+        "EQ": "=",
+        "NEQ": "<>",
+        "GT": ">",
+        "GTE": ">=",
+        "LT": "<",
+        "LTE": "<=",
+        "IN": "IN",
+        "CONTAINS": "CONTAINS",
+        "NOT_IN": "NOT IN"
+      }
+    },
+    "CONDITION_OPERATORS": {
+      "EQ": "= (Equal)",
+      "NEQ": "<> (Not equal)",
+      "LT": "< (Less than)",
+      "GT": "> (Greater than)",
+      "LTE": "<= (Less or equal)",
+      "GTE": ">= (Greater or equal)",
+      "IN": "IN (In list)",
+      "NOT_IN": "NOT IN (Not in list)"
+    },
+    "CANCEL_CONFIRM": {
+      "TITLE": "Confirm cancel!",
+      "MESSAGE": "Your changes will not be saved. Are you sure you want to cancel?",
+      "CONFIRM": "Confirm"
     }
   }
 }

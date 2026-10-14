@@ -202,3 +202,105 @@
     width: 200px;
   }
 }
+
+// Chân dropdown Nhóm quy trình: nút "Thêm mới" căn giữa
+.category-add-footer {
+  padding: px.$space-12 px.$space-8;
+}
+
+.category-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: px.$space-8;
+  width: 100%;
+  height: 40px;
+  margin: 0;
+  padding: 0 px.$space-24;
+  border-radius: px.$radius-lg;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$blue-300;
+}
+
+// Ô nhập nhóm mới + Hủy / Lưu
+.category-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-4;
+  padding: px.$space-8;
+}
+
+.category-add-row {
+  display: flex;
+  align-items: center;
+  gap: px.$space-8;
+}
+
+.category-add-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 36px;
+  padding: 0 px.$space-12;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-md;
+  outline: none;
+  @include px.body-sm-regular;
+  color: px.$neutral-900;
+
+  &:focus {
+    border-color: px.$primary-400;
+  }
+
+  &.is-invalid {
+    border-color: px.$primary-600;
+  }
+}
+
+.category-add-action {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 px.$space-12;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-md;
+  background: px.$white;
+  cursor: pointer;
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: px.$neutral-800;
+
+  &.primary {
+    border-color: px.$primary-600;
+    background: px.$primary-600;
+    color: px.$white;
+  }
+}
+
+.category-add-error {
+  font-family: px.$font-family;
+  font-size: 12px;
+  line-height: 18px;
+  color: px.$primary-600;
+}
+
+// Chỉ xem: ô nhập / chọn nền xám, ẩn nút thêm / xoá điều kiện
+:host(.is-readonly) ::ng-deep {
+  .px-input-affix-wrapper,
+  .px-select-selector,
+  .px-textarea {
+    background: px.$neutral-100;
+    color: px.$neutral-800;
+  }
+
+  .condition-add,
+  .condition-remove {
+    display: none;
+  }
+}
