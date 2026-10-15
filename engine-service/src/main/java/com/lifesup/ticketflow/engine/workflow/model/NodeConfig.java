@@ -1,4 +1,4 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.model;
 
 /**
  * Cấu hình của một loại node, bám đúng JSON FE gửi ({@code flowJson.nodes[].config}).

@@ -1,9 +1,9 @@
 package com.lifesup.ticketflow.engine.node.usertask;
 
 import com.lifesup.ticketflow.engine.node.usertask.UserTaskNodeConfig.AssignType;
-import com.lifesup.ticketflow.engine.workflow.NodeHandler;
-import com.lifesup.ticketflow.engine.workflow.NodeType;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandler;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConversionContext;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConvertedNode;
 import com.lifesup.ticketflow.engine.workflow.validation.NodeCheck;
@@ -54,13 +54,20 @@ public class UserTaskNodeHandler extends NodeHandler<UserTaskNodeConfig> {
 
     @Override
     public ConvertedNode toBpmn(WorkflowNode node, UserTaskNodeConfig config, ConversionContext context) {
+        // User task: id, tên, mô tả và tf:config (inputs / outputs của form, cách giao việc, SLA)
         UserTask task = init(new UserTask(), node, context);
+
+        // Giá trị tĩnh, ghi thẳng vào BPMN: form hiển thị, phòng ban, nhóm / người được phép nhận việc
         task.setFormKey(config.getFormId());
         task.setCategory(config.getDepartmentId());
         task.setCandidateGroups(new ArrayList<>(config.getGroupIds()));
         task.setCandidateUsers(new ArrayList<>(config.getAgentIds()));
+
+        // Giá trị tính lúc tạo task (phụ thuộc lịch sử giao việc và thời điểm hiện tại): người được giao, hạn xử lý
         task.setAssignee("${" + UserTaskAssignment.BEAN + ".assignee(execution)}");
         task.setDueDate("${" + UserTaskAssignment.BEAN + ".dueDate(execution)}");
+
+        // Một phần tử duy nhất; task dừng chờ người dùng hoàn thành qua API rồi đi cổng next
         return ConvertedNode.single(task);
     }
 

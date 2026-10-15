@@ -1,4 +1,4 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.canvas;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -8,6 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandlers;
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowDefinition;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowEdge;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import com.lifesup.ticketflow.engine.workflow.validation.ValidationCode;
 import com.lifesup.ticketflow.engine.workflow.validation.ValidationErrors;
 import com.lifesup.ticketflow.engine.workflow.validation.WorkflowValidationException;
@@ -36,19 +42,28 @@ public class CanvasWorkflowMapper {
     }
 
     public WorkflowDefinition map(String flowJson, String processKey, String processName) {
+        // Parse Json -> CanvasDocument
         CanvasDocument document = parse(flowJson);
+
+        // Collect errors
         ValidationErrors errors = new ValidationErrors();
         List<WorkflowNode> nodes = new ArrayList<>();
+
+        // Handle CanvasDocument -> WorkflowNode
         for (CanvasDocument.Node canvasNode : document.getNodes()) {
             if (canvasNode != null) {
                 toWorkflowNode(canvasNode, errors).ifPresent(nodes::add);
             }
         }
+
+        // Handle CanvasDocument -> WorkflowEdge
         List<WorkflowEdge> edges = document.getEdges().stream()
                 .filter(Objects::nonNull)
                 .map(edge -> new WorkflowEdge(edge.getId(), edge.getSource(), edge.getSourceHandle(), edge.getTarget()))
                 .toList();
         errors.throwIfAny();
+
+        // Build & return WorkflowDefinition (from WorkflowNode and WorkflowEdge)
         return new WorkflowDefinition(processKey, processName, List.copyOf(nodes), edges);
     }
 
@@ -80,6 +95,8 @@ public class CanvasWorkflowMapper {
                 : node.getConfig();
         try {
             NodeConfig config = strictMapper.treeToValue(raw, handlers.configType(type));
+
+            // Return WorkflowNode
             return Optional.of(new WorkflowNode(node.getId(), node.getKey(), type, node.getName(),
                     node.getDescription(), config));
         } catch (JsonMappingException exception) {

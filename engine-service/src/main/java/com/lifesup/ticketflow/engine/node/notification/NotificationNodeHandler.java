@@ -3,9 +3,9 @@ package com.lifesup.ticketflow.engine.node.notification;
 import static com.lifesup.ticketflow.engine.workflow.validation.Identifiers.isBlank;
 
 import com.lifesup.ticketflow.engine.node.notification.NotificationNodeConfig.RecipientSource;
-import com.lifesup.ticketflow.engine.workflow.NodeHandler;
-import com.lifesup.ticketflow.engine.workflow.NodeType;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandler;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConversionContext;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConvertedNode;
 import com.lifesup.ticketflow.engine.workflow.validation.NodeCheck;
@@ -42,9 +42,12 @@ public class NotificationNodeHandler extends NodeHandler<NotificationNodeConfig>
 
     @Override
     public ConvertedNode toBpmn(WorkflowNode node, NotificationNodeConfig config, ConversionContext context) {
+        // Service task gọi NotificationDelegate (xác định người nhận theo tf:config, gửi qua integration-service)
         ServiceTask task = init(new ServiceTask(), node, context);
         delegateTo(task, NotificationDelegate.BEAN);
+        // Chạy trong job nền để không gọi được integration-service thì thử lại, không chặn transaction trước đó
         task.setAsynchronous(true);
+        // Một phần tử duy nhất; không có nhánh error vì lỗi gửi thông báo không chặn quy trình
         return ConvertedNode.single(task);
     }
 }

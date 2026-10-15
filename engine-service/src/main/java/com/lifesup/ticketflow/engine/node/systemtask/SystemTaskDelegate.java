@@ -4,7 +4,7 @@ import com.lifesup.ticketflow.engine.client.IntegrationClient;
 import com.lifesup.ticketflow.engine.client.dto.ExecutionContextInfo;
 import com.lifesup.ticketflow.engine.client.dto.OperationExecuteRequest;
 import com.lifesup.ticketflow.engine.client.dto.OperationExecuteResult;
-import com.lifesup.ticketflow.engine.workflow.NodeConfigReader;
+import com.lifesup.ticketflow.engine.workflow.runtime.NodeConfigReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.AccessLevel;

@@ -2,10 +2,10 @@ package com.lifesup.ticketflow.engine.node.subprocess;
 
 import static com.lifesup.ticketflow.engine.workflow.validation.Identifiers.isBlank;
 
-import com.lifesup.ticketflow.engine.workflow.NodeHandler;
-import com.lifesup.ticketflow.engine.workflow.NodeType;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
-import com.lifesup.ticketflow.engine.workflow.WorkflowVariables;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandler;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.model.WorkflowVariables;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConversionContext;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConvertedNode;
 import com.lifesup.ticketflow.engine.workflow.validation.Identifiers;
@@ -65,19 +65,24 @@ public class SubProcessNodeHandler extends NodeHandler<SubProcessNodeConfig> {
 
     @Override
     public ConvertedNode toBpmn(WorkflowNode node, SubProcessNodeConfig config, ConversionContext context) {
+        // Call activity gọi quy trình con theo process key (= mã template con, latest version),
+        // quy trình con dùng chung businessKey với quy trình cha
         CallActivity activity = init(new CallActivity(), node, context);
         activity.setCalledElement(config.getSubProcessId());
         activity.setInheritBusinessKey(true);
 
-        // Đánh giá trên execution của quy trình cha
+        // Dữ liệu vào: đánh giá trên execution của quy trình cha, gom biến theo inputs thành {subField: giá trị}
+        // rồi gán vào __input của quy trình con (START của con map __input thành biến, như khởi tạo qua API)
         activity.getInParameters().add(parameter(
                 "${" + SubProcessIo.BEAN + ".input(execution, '" + activity.getId() + "')}", WorkflowVariables.INPUT));
-        // Đánh giá trên execution của quy trình con khi kết thúc
+        // Dữ liệu ra: đánh giá trên execution của quy trình con khi kết thúc, lấy __output[subField]
+        // (do END của con ghi) gán vào biến tương ứng của quy trình cha
         for (SubProcessNodeConfig.Output output : config.getOutputs()) {
             activity.getOutParameters().add(parameter(
                     "${" + SubProcessIo.BEAN + ".output(execution, '" + output.getSubField() + "')}",
                     output.getVariable()));
         }
+        // Một phần tử duy nhất: quy trình cha chờ quy trình con kết thúc rồi đi cổng next
         return ConvertedNode.single(activity);
     }
 

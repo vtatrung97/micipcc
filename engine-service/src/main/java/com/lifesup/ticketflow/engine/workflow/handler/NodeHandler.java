@@ -1,8 +1,12 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.handler;
 
+import com.lifesup.ticketflow.engine.workflow.model.SourceHandles;
 import com.lifesup.ticketflow.engine.workflow.bpmn.BpmnExtensions;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConversionContext;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConvertedNode;
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import com.lifesup.ticketflow.engine.workflow.validation.NodeCheck;
 import java.util.EnumSet;
 import java.util.Set;
@@ -64,7 +68,8 @@ public abstract class NodeHandler<C extends NodeConfig> {
 
     // ---- Tiện ích dựng phần tử BPMN cho các handler ----
 
-    /** Gán id, tên, mô tả và ghi cấu hình vào tf:config để bean runtime đọc lại. */
+    /** Gán id, tên, mô tả và ghi cấu hình (từ FE mà flowable ko support thì cho vào tf config)
+     * -> vào tf:config để bean runtime đọc lại. */
     protected <T extends FlowElement> T init(T element, WorkflowNode node, ConversionContext context) {
         element.setId(context.bpmnId(node.getId()));
         element.setName(node.getName());

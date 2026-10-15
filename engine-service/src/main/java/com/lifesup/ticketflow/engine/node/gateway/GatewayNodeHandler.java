@@ -2,10 +2,10 @@ package com.lifesup.ticketflow.engine.node.gateway;
 
 import static com.lifesup.ticketflow.engine.workflow.validation.Identifiers.isBlank;
 
-import com.lifesup.ticketflow.engine.workflow.NodeHandler;
-import com.lifesup.ticketflow.engine.workflow.NodeType;
-import com.lifesup.ticketflow.engine.workflow.SourceHandles;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandler;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.SourceHandles;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import com.lifesup.ticketflow.engine.workflow.bpmn.BpmnExtensions;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConversionContext;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConvertedNode;
@@ -104,21 +104,34 @@ public class GatewayNodeHandler extends NodeHandler<GatewayNodeConfig> {
 
     @Override
     public ConvertedNode toBpmn(WorkflowNode node, GatewayNodeConfig config, ConversionContext context) {
+        // Gateway BPMN cùng loại với node (exclusive / inclusive / parallel), tf:config chứa các nhánh và điều kiện.
+        // Điều kiện của từng nhánh được gắn lên sequence flow đi ra ở configureOutgoingFlow
         Gateway gateway = init(newGateway(node.getType()), node, context);
+
+        // Không có nhánh error (parallel không bao giờ có): chỉ một gateway, mọi edge vào / ra nối thẳng vào nó
         boolean hasErrorBranch = node.getType().isConditionalGateway()
                 && context.hasOutgoing(node.getId(), SourceHandles.ERROR);
         if (!hasErrorBranch) {
+            // 1 ConvertedNode, bên trong 1 phần tử
             return ConvertedNode.single(gateway);
         }
 
+        // Có nhánh error: gateway BPMN không ném lỗi được, nên chèn service task "đánh giá điều kiện" phía trước.
+        // Task đánh giá mọi nhánh một lần (GatewayEvaluationDelegate), lỗi thì ném BPMN error GATEWAY_ERROR,
+        // thành công thì để kết quả trong biến tạm cho gateway dùng lại
         ServiceTask evaluation = new ServiceTask();
         evaluation.setId(context.newId(gateway.getId(), "_evaluate"));
         evaluation.setName("Đánh giá điều kiện: " + node.getName());
         delegateTo(evaluation, GatewayEvaluationDelegate.BEAN);
+        // Task không có tf:config riêng, chỉ trỏ tới id gateway để delegate đọc cấu hình của gateway
         BpmnExtensions.put(evaluation, EXTENSION_GATEWAY_REF, gateway.getId());
+        // Boundary bắt GATEWAY_ERROR trên task, là điểm phát cổng error
         BoundaryEvent error = errorBoundary(evaluation, ERROR_GATEWAY, context);
+        // Sequence flow nội bộ: task đánh giá → gateway
         SequenceFlow toGateway = context.connect(evaluation, gateway);
 
+        // Edge vào nối vào task đánh giá; các nhánh điều kiện / default đi ra từ gateway; cổng error đi ra từ boundary
+        // 1 ConvertedNode, bên trong 2 phần tử
         return new ConvertedNode(evaluation, gateway, Map.of(SourceHandles.ERROR, error),
                 List.of(evaluation, error, gateway, toGateway));
     }
@@ -127,15 +140,20 @@ public class GatewayNodeHandler extends NodeHandler<GatewayNodeConfig> {
     public void configureOutgoingFlow(SequenceFlow flow, String handle, WorkflowNode node, GatewayNodeConfig config,
             ConversionContext context) {
         boolean conditional = node.getType().isConditionalGateway();
+        // Nhánh error đi ra từ boundary của task đánh giá, không cần điều kiện
         if (SourceHandles.ERROR.equals(handle)) {
             return;
         }
+        // Nhánh default: gateway có điều kiện thì đánh dấu là default flow (đi khi không nhánh nào khớp);
+        // parallel thì default chỉ là một nhánh song song như các nhánh khác
         if (SourceHandles.DEFAULT.equals(handle)) {
             if (conditional) {
                 ((Gateway) flow.getSourceFlowElement()).setDefaultFlow(flow.getId());
             }
             return;
         }
+        // Nhánh theo case (handle = id nhánh): đặt tên flow theo tên nhánh, gateway có điều kiện thì gắn biểu thức
+        // gọi ConditionEvaluator; parallel không gắn điều kiện vì mọi nhánh đều chạy
         GatewayNodeConfig.Case gatewayCase = findCase(config, handle)
                 .orElseThrow(() -> new IllegalStateException("Unknown gateway case: " + handle));
         flow.setName(gatewayCase.getName());

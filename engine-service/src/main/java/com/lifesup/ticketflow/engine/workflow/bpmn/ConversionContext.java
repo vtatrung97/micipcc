@@ -2,9 +2,9 @@ package com.lifesup.ticketflow.engine.workflow.bpmn;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lifesup.ticketflow.engine.workflow.NodeConfig;
-import com.lifesup.ticketflow.engine.workflow.WorkflowDefinition;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowDefinition;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import java.util.HashMap;
 import java.util.Map;
 import org.flowable.bpmn.model.FlowNode;

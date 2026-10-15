@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.engine.node.gateway;
 
-import com.lifesup.ticketflow.engine.workflow.NodeConfigReader;
-import com.lifesup.ticketflow.engine.workflow.WorkflowVariables;
+import com.lifesup.ticketflow.engine.workflow.runtime.NodeConfigReader;
+import com.lifesup.ticketflow.engine.workflow.model.WorkflowVariables;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

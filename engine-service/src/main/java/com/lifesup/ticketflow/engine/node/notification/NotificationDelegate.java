@@ -5,7 +5,7 @@ import com.lifesup.ticketflow.engine.client.dto.ExecutionContextInfo;
 import com.lifesup.ticketflow.engine.client.dto.NotificationSendRequest;
 import com.lifesup.ticketflow.engine.client.dto.NotificationSendResult;
 import com.lifesup.ticketflow.engine.node.notification.NotificationNodeConfig.RecipientSource;
-import com.lifesup.ticketflow.engine.workflow.NodeConfigReader;
+import com.lifesup.ticketflow.engine.workflow.runtime.NodeConfigReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;

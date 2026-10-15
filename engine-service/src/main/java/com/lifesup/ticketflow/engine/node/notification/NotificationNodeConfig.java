@@ -2,7 +2,7 @@ package com.lifesup.ticketflow.engine.node.notification;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.lifesup.ticketflow.engine.workflow.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;

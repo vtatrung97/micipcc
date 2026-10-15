@@ -2,8 +2,8 @@ package com.lifesup.ticketflow.engine.workflow.validation;
 
 import static com.lifesup.ticketflow.engine.workflow.validation.Identifiers.isBlank;
 
-import com.lifesup.ticketflow.engine.workflow.WorkflowDefinition;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowDefinition;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import java.util.Optional;
 import java.util.Set;
 

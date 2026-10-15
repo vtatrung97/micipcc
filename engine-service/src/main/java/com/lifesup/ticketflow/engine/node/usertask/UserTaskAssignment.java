@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.engine.node.usertask;
 
 import com.lifesup.ticketflow.engine.node.usertask.UserTaskNodeConfig.AssignType;
-import com.lifesup.ticketflow.engine.workflow.NodeConfigReader;
+import com.lifesup.ticketflow.engine.workflow.runtime.NodeConfigReader;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;

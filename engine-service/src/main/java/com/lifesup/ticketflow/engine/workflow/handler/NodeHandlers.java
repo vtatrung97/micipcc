@@ -1,8 +1,12 @@
-package com.lifesup.ticketflow.engine.workflow;
+package com.lifesup.ticketflow.engine.workflow.handler;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
+import com.lifesup.ticketflow.engine.workflow.model.NodeConfig;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import org.springframework.stereotype.Component;
 
 /** Tra handler theo loại node. Thiếu hoặc trùng handler là lỗi cấu hình, báo ngay khi khởi động. */

@@ -2,10 +2,10 @@ package com.lifesup.ticketflow.engine.node.systemtask;
 
 import static com.lifesup.ticketflow.engine.workflow.validation.Identifiers.isBlank;
 
-import com.lifesup.ticketflow.engine.workflow.NodeHandler;
-import com.lifesup.ticketflow.engine.workflow.NodeType;
-import com.lifesup.ticketflow.engine.workflow.SourceHandles;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandler;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.SourceHandles;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConversionContext;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConvertedNode;
 import com.lifesup.ticketflow.engine.workflow.validation.NodeCheck;
@@ -71,13 +71,22 @@ public class SystemTaskNodeHandler extends NodeHandler<SystemTaskNodeConfig> {
 
     @Override
     public ConvertedNode toBpmn(WorkflowNode node, SystemTaskNodeConfig config, ConversionContext context) {
+        // Service task gọi SystemTaskDelegate (gọi API qua integration-service, đọc tf:config để map input / output)
         ServiceTask task = init(new ServiceTask(), node, context);
         delegateTo(task, SystemTaskDelegate.BEAN);
+        // Chạy trong job nền: gọi API chậm / lỗi không làm treo hay rollback transaction trước đó, job lỗi được thử lại
         task.setAsynchronous(true);
+
+        // Không nối nhánh error: một phần tử, cổng success đi ra từ task
         if (!context.hasOutgoing(node.getId(), SourceHandles.ERROR)) {
+            // 1 ConvertedNode, bên trong 1 phần tử
             return ConvertedNode.single(task);
         }
+
+        // Có nhánh error: gắn boundary bắt BPMN error SYSTEM_TASK_ERROR (delegate ném khi API lỗi nghiệp vụ).
+        // Edge vào và cổng success dùng task, cổng error đi ra từ boundary
         BoundaryEvent error = errorBoundary(task, ERROR_SYSTEM_TASK, context);
+        // 1 ConvertedNode, bên trong 2 phần tử
         return new ConvertedNode(task, task, Map.of(SourceHandles.ERROR, error), List.of(task, error));
     }
 }

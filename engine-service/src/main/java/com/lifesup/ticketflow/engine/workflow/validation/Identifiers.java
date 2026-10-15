@@ -1,6 +1,6 @@
 package com.lifesup.ticketflow.engine.workflow.validation;
 
-import com.lifesup.ticketflow.engine.workflow.WorkflowVariables;
+import com.lifesup.ticketflow.engine.workflow.model.WorkflowVariables;
 import java.util.regex.Pattern;
 
 /**

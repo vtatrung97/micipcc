@@ -1,8 +1,8 @@
 package com.lifesup.ticketflow.engine.node.start;
 
-import com.lifesup.ticketflow.engine.workflow.NodeHandler;
-import com.lifesup.ticketflow.engine.workflow.NodeType;
-import com.lifesup.ticketflow.engine.workflow.WorkflowNode;
+import com.lifesup.ticketflow.engine.workflow.handler.NodeHandler;
+import com.lifesup.ticketflow.engine.workflow.model.NodeType;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowNode;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConversionContext;
 import com.lifesup.ticketflow.engine.workflow.bpmn.ConvertedNode;
 import com.lifesup.ticketflow.engine.workflow.validation.NodeCheck;
@@ -37,8 +37,11 @@ public class StartNodeHandler extends NodeHandler<StartNodeConfig> {
 
     @Override
     public ConvertedNode toBpmn(WorkflowNode node, StartNodeConfig config, ConversionContext context) {
+        // Start event: id, tên, mô tả và tf:config (danh sách biến cần khởi tạo)
         StartEvent event = init(new StartEvent(), node, context);
+        // Khi execution vào START: StartVariableListener tạo biến quy trình từ __input theo tf:config
         event.getExecutionListeners().add(listener(ExecutionListener.EVENTNAME_START, StartVariableListener.BEAN));
+        // Một phần tử duy nhất: vừa nhận edge vào, vừa phát edge ra (next)
         return ConvertedNode.single(event);
     }
 }

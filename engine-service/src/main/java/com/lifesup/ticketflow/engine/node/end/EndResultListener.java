@@ -1,7 +1,7 @@
 package com.lifesup.ticketflow.engine.node.end;
 
-import com.lifesup.ticketflow.engine.workflow.NodeConfigReader;
-import com.lifesup.ticketflow.engine.workflow.WorkflowVariables;
+import com.lifesup.ticketflow.engine.workflow.runtime.NodeConfigReader;
+import com.lifesup.ticketflow.engine.workflow.model.WorkflowVariables;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.AccessLevel;

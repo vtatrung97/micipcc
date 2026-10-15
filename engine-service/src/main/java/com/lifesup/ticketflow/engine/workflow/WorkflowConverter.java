@@ -1,6 +1,8 @@
 package com.lifesup.ticketflow.engine.workflow;
 
 import com.lifesup.ticketflow.engine.workflow.bpmn.BpmnModelBuilder;
+import com.lifesup.ticketflow.engine.workflow.canvas.CanvasWorkflowMapper;
+import com.lifesup.ticketflow.engine.workflow.model.definition.WorkflowDefinition;
 import com.lifesup.ticketflow.engine.workflow.validation.FlowableModelValidator;
 import com.lifesup.ticketflow.engine.workflow.validation.WorkflowValidator;
 import java.nio.charset.StandardCharsets;
