@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { forkJoin, Observable, of } from 'rxjs';
 import { KEYCLOAK, SERVICES } from '@env/environment';
 import { ResponseEnvelope } from '@core/models/response.model';
@@ -253,7 +253,18 @@ export class CoreService extends AbstractService {
 
   /** GET /api/v1/ticket-call-flows: Tìm kiếm / phân trang danh sách quy trình */
   searchTicketCallFlows(request?: TicketCallFlowSearchRequest): Observable<any> {
-    return this.http.get<any>(`${this.SERVICE_URL}/ticket-call-flows`, { params: request });
+    const req: any = { page: 1, size: 10, ...(request || {}) };
+    if (req.page < 1) {
+      req.page = 1;
+    }
+    let params = new HttpParams();
+    Object.keys(req).forEach(key => {
+      const val = req[key];
+      if (val !== undefined && val !== null && val !== '') {
+        params = params.set(key, String(val));
+      }
+    });
+    return this.http.get<any>(`${this.SERVICE_URL}/ticket-call-flows`, { params });
   }
 
   /** GET /api/v1/ticket-call-flows/stats: Thống kê số lượng */

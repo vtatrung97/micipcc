@@ -135,8 +135,8 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   loadTemplates(): void {
     this.isLoading = true;
     const params: any = {
-      page: this.page - 1,
-      size: this.pageSize
+      page: this.page || 1,
+      size: this.pageSize || 10
     };
     if (this.appliedKeyword) {
       params.keyword = this.appliedKeyword;
@@ -148,7 +148,10 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => (this.isLoading = false),
-        error: () => (this.isLoading = false)
+        error: (err) => {
+          this.isLoading = false;
+          console.error('Lỗi khi tải danh sách quy trình:', err);
+        }
       });
   }
 

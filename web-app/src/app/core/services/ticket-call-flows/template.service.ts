@@ -106,7 +106,7 @@ export class TemplateService {
   }
 
   public fetchTemplatesFromApi(request?: TicketCallFlowSearchRequest): Observable<ProcessTemplateItem[]> {
-    return this.coreService.searchTicketCallFlows(request || { page: 0, size: 100 }).pipe(
+    return this.coreService.searchTicketCallFlows(request || { page: 1, size: 10 }).pipe(
       map(res => {
         const content = res?.data?.content || res?.result?.content || res?.content || (Array.isArray(res?.result) ? res.result : (Array.isArray(res) ? res : []));
         if (Array.isArray(content) && content.length > 0) {
@@ -115,7 +115,7 @@ export class TemplateService {
         return [];
       }),
       catchError(err => {
-        console.warn('Lỗi khi tải danh sách quy trình từ API:', err);
+        console.warn('Lỗi khi tải danh sách quy trình từ API:', err?.error || err);
         return of(this.templatesSubject.value || []);
       }),
       tap(templates => {
