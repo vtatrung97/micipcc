@@ -1,13 +1,13 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "skipLibCheck": true,
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": [],
+    "skipLibCheck": true
   },
   "files": [
     "src/main.ts",
+    "src/bootstrap.ts",
     "src/polyfills.ts"
   ],
   "include": [

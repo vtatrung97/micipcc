@@ -1,0 +1,28 @@
+{
+  "status": "success",
+  "timestamp": 1712648917955,
+  "timestampISO8601": "2024-04-09T14:48:37+0700",
+  "data": {
+    "linkUrl": "/api/v1/files/content",
+    "linkUrlPublic": "/public/api/v1/files/content",
+    "filePath": "BexeKTnY2UNnF707wtCe_DeGZY2kvQurs1A8Qm3hkyWovaQFBmYzEQwKoTyZri8l3-SEmppDJlHXQvIeyHy_SzeLOJwPvWGMh3hzx-3a32RIcP5RW4qHw8sZztCzv87M",
+    "fileName": "Customer_rank_vip_template_Check_Result_09042024_144837.xlsx",
+    "fileSize": 6528,
+    "validRecord": [
+      {
+        "customerRankVipId": "d8a9e518-3afa-4f59-bb2b-beef996697e4",
+        "rankCode": "trungcode",
+        "rankName": "trungname",
+        "realmName": "demo",
+        "groupId": "b61bef87-8fdd-4e26-a992-9f1262717cd9",
+        "status": 1,
+        "createTime": 1712648917951,
+        "createBy": "longmt9",
+        "updateTime": null,
+        "updateBy": null
+      }
+    ],
+    "invalidCount": 0,
+    "validCount": 1
+  }
+}
