@@ -25,6 +25,7 @@ import com.lifesup.ticketflow.common.exception.AppException;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
 import com.lifesup.ticketflow.core.common.exception.CoreErrorCode;
 import static com.lifesup.ticketflow.core.common.util.QueryUtils.toLikePattern;
+import com.lifesup.ticketflow.core.repository.FormRepository;
 import com.lifesup.ticketflow.core.repository.TemplateRepository;
 import com.lifesup.ticketflow.core.repository.TemplateVersionRepository;
 import com.lifesup.ticketflow.core.service.TicketCallFlowService;
@@ -89,6 +90,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
     TemplateRepository templateRepository;
     TemplateVersionRepository templateVersionRepository;
+    FormRepository formRepository;
     ObjectMapper objectMapper;
     AuditorAware<String> auditorAware;
 
@@ -349,14 +351,17 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
      * Kiểm tra field bắt buộc theo loại kích hoạt rồi gán vào quy trình.
      * Chỉ lưu field của loại đã chọn, field của loại khác xoá về null để không còn cấu hình cũ.
      */
-    private static void applyTrigger(TemplateEntity entity, TicketCallFlowTriggerDto trigger) {
+    private void applyTrigger(TemplateEntity entity, TicketCallFlowTriggerDto trigger) {
         TriggerType type = trigger.getType();
         boolean once = type == TriggerType.SCHEDULE && trigger.getScheduleType() == ScheduleType.ONCE;
         boolean repeat = type == TriggerType.SCHEDULE && trigger.getScheduleType() == ScheduleType.REPEAT;
 
         // ponytail: HYBRID chưa có thiết kế chi tiết nên chưa kiểm field nào, bổ sung khi BA chốt
-        if (type == TriggerType.MANUAL && !StringUtils.hasText(trigger.getInputFormId())) {
+        if (type == TriggerType.MANUAL && trigger.getInputFormId() == null) {
             throw triggerInvalid("inputFormId");
+        }
+        if (type == TriggerType.MANUAL && !formRepository.existsByIdAndDeletedFalse(trigger.getInputFormId())) {
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_INPUT_FORM_NOT_FOUND);
         }
         if (type == TriggerType.AUTO && !StringUtils.hasText(trigger.getApiId())) {
             throw triggerInvalid("apiId");
