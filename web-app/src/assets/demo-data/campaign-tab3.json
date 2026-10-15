@@ -1,0 +1,39 @@
+{
+  "status": "success",
+  "timestamp": 1712050572698,
+  "timestampISO8601": "2024-04-02T16:36:12+0700",
+  "data": {
+    "data": [
+      {
+        "scriptId": "1",
+        "codeSms": "code sms 001",
+        "nameSms": "Đăng ký",
+        "content": "Tin nhắn 1",
+        "createBy": "agent_1",
+        "createTime": 1708585907641,
+        "updateBy": "agent_1",
+        "updateTime": 1708585907641,
+        "status": null,
+        "groupId": null,
+        "realmName": null
+      },
+      {
+        "scriptId": "2",
+        "codeSms": "code sms",
+        "nameSms": "Đăng ký",
+        "content": "Tin nhắn 2",
+        "createBy": "agent_1",
+        "createTime": 1708585907641,
+        "updateBy": "agent_1",
+        "updateTime": 1708585907641,
+        "status": null,
+        "groupId": null,
+        "realmName": null
+      }
+    ],
+    "recordsTotal": 2,
+    "recordsFiltered": 2,
+    "total_elements": 2,
+    "draw": 1
+  }
+}
