@@ -94,4 +94,8 @@ public class TemplateEntity extends BaseEntity {
 
     @Column(name = "deleted", nullable = false)
     boolean deleted;
+
+    /** Realm của người tạo (header x-ipcc2-realm, không có thì realm trong token); không đổi sau khi tạo. */
+    @Column(name = "realm", length = 100, updatable = false)
+    String realm;
 }

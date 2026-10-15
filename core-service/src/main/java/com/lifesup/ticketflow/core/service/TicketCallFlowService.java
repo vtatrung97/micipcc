@@ -4,10 +4,12 @@ import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCloneRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowPublishRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSearchRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSubProcessSearchRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
 import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
+import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSubProcessResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
@@ -35,6 +37,12 @@ public interface TicketCallFlowService {
 
     /** Mỗi phiên bản một dòng. */
     PageResponse<TicketCallFlowSummaryResponse> search(TicketCallFlowSearchRequest request);
+
+    /**
+     * Quy trình chọn được cho node Quy trình con (đang ban hành, không lập lịch, không chứa quy trình con),
+     * cùng realm với header x-ipcc2-realm (không có header = mọi realm); sắp theo tên.
+     */
+    PageResponse<TicketCallFlowSubProcessResponse> searchSubProcesses(TicketCallFlowSubProcessSearchRequest request);
 
     TicketCallFlowStatsResponse stats();
 

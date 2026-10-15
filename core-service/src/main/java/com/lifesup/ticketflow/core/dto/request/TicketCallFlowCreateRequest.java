@@ -18,6 +18,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -65,4 +67,13 @@ public class TicketCallFlowCreateRequest {
     @Schema(description = "Chuỗi JSON của canvas, BE lưu và trả lại nguyên văn")
     @NotBlank(message = "{validation.ticketCallFlow.flowJson.required}")
     String flowJson;
+
+    @Schema(description = "Dữ liệu đầu vào của quy trình, tên không trùng nhau")
+    List<@Valid TicketCallFlowParamDto> inputParams;
+
+    @Schema(description = "Dữ liệu đầu ra của quy trình, tên không trùng nhau")
+    List<@Valid TicketCallFlowParamDto> outputParams;
+
+    @Schema(description = "Canvas có node Quy trình con. Không truyền = false")
+    Boolean hasSubProcess;
 }

@@ -1,6 +1,7 @@
 package com.lifesup.ticketflow.core.entity;
 
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowParamDto;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.List;
 
 
 /**
@@ -58,6 +63,20 @@ public class TemplateVersionEntity extends BaseEntity {
     /** Dynamic Input schema (JSON). */
     @Column(name = "input_schema", columnDefinition = "longtext")
     String inputSchema;
+
+    /** Dữ liệu đầu vào của quy trình, lưu JSON array. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "input_params", columnDefinition = "longtext")
+    List<TicketCallFlowParamDto> inputParams;
+
+    /** Dữ liệu đầu ra của quy trình, lưu JSON array. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "output_params", columnDefinition = "longtext")
+    List<TicketCallFlowParamDto> outputParams;
+
+    /** Canvas có node Quy trình con (FE gửi kèm khi lưu). */
+    @Column(name = "has_sub_process", nullable = false)
+    boolean hasSubProcess;
 
     @Column(name = "process_definition_key")
     String processDefinitionKey;

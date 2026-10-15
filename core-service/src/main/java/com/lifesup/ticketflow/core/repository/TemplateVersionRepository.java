@@ -1,9 +1,12 @@
 package com.lifesup.ticketflow.core.repository;
 
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
+import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSubProcessResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
 import com.lifesup.ticketflow.core.dto.response.UserOptionResponse;
 import com.lifesup.ticketflow.core.entity.TemplateVersionEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,6 +27,49 @@ public interface TemplateVersionRepository extends JpaRepository<TemplateVersion
 
     @Query("select coalesce(max(v.versionNo), 0) from TemplateVersionEntity v where v.templateId = :templateId")
     int findMaxVersionNo(@Param("templateId") Long templateId);
+
+    /**
+     * Quy trình chọn được làm quy trình con: chưa xoá, đang ban hành (ACTIVE + bản PUBLISHED), loại kích hoạt khác
+     * SCHEDULE (NULL = quy trình cũ chưa có loại kích hoạt, vẫn lấy), bản ban hành không chứa node Quy trình con.
+     *
+     * @param realm null = mọi realm
+     * @param keyword chuỗi LIKE đã escape, so với mã / tên; null = không lọc
+     * @param excludeId quy trình bỏ khỏi danh sách; null = không bỏ
+     */
+    @Query(value = """
+                    select new com.lifesup.ticketflow.core.dto.response.TicketCallFlowSubProcessResponse(
+                        t.id, t.code, t.name, t.triggerType, v.id, v.versionNo, v.inputParams, v.outputParams)
+                    from TemplateVersionEntity v
+                    join TemplateEntity t on t.id = v.templateId
+                    where t.deleted = false
+                      and t.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus.ACTIVE
+                      and v.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.PUBLISHED
+                      and v.hasSubProcess = false
+                      and (t.triggerType is null
+                           or t.triggerType <> com.lifesup.ticketflow.core.common.enums.TriggerType.SCHEDULE)
+                      and (:realm is null or t.realm = :realm)
+                      and (:excludeId is null or t.id <> :excludeId)
+                      and (:keyword is null or t.code like :keyword escape '\\' or t.name like :keyword escape '\\')
+                    order by t.name, t.id
+                    """,
+            countQuery = """
+                    select count(v) from TemplateVersionEntity v
+                    join TemplateEntity t on t.id = v.templateId
+                    where t.deleted = false
+                      and t.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus.ACTIVE
+                      and v.status = com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus.PUBLISHED
+                      and v.hasSubProcess = false
+                      and (t.triggerType is null
+                           or t.triggerType <> com.lifesup.ticketflow.core.common.enums.TriggerType.SCHEDULE)
+                      and (:realm is null or t.realm = :realm)
+                      and (:excludeId is null or t.id <> :excludeId)
+                      and (:keyword is null or t.code like :keyword escape '\\' or t.name like :keyword escape '\\')
+                    """)
+    Page<TicketCallFlowSubProcessResponse> searchSubProcesses(
+            @Param("realm") String realm,
+            @Param("keyword") String keyword,
+            @Param("excludeId") Long excludeId,
+            Pageable pageable);
 
     /** Số quy trình chưa xoá có ít nhất 1 bản nháp. */
     @Query("""

@@ -4,11 +4,13 @@ import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCloneRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowPublishRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSearchRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSubProcessSearchRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
 import com.lifesup.ticketflow.common.api.ApiResponse;
 import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
+import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSubProcessResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
@@ -48,6 +50,12 @@ public class TicketCallFlowController {
     @GetMapping
     public ApiResponse<PageResponse<TicketCallFlowSummaryResponse>> search(@Valid TicketCallFlowSearchRequest request) {
         return ApiResponse.success(ticketCallFlowService.search(request));
+    }
+
+    @GetMapping("/sub-processes")
+    public ApiResponse<PageResponse<TicketCallFlowSubProcessResponse>> searchSubProcesses(
+            @Valid TicketCallFlowSubProcessSearchRequest request) {
+        return ApiResponse.success(ticketCallFlowService.searchSubProcesses(request));
     }
 
     @GetMapping("/stats")

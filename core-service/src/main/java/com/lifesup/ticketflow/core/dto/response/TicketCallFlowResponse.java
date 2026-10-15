@@ -2,6 +2,7 @@ package com.lifesup.ticketflow.core.dto.response;
 
 import com.lifesup.ticketflow.core.common.enums.SlaUnit;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowStatus;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowParamDto;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowTriggerDto;
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -13,6 +14,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 
 /**
@@ -49,6 +52,12 @@ public class TicketCallFlowResponse {
     Integer flowJsonVersionNo;
     /** Trạng thái phiên bản của flowJson ở trên. */
     TicketCallFlowVersionStatus flowJsonVersionStatus;
+    /** Dữ liệu đầu vào của phiên bản flowJson ở trên, null = chưa khai báo. */
+    List<TicketCallFlowParamDto> inputParams;
+    /** Dữ liệu đầu ra của phiên bản flowJson ở trên, null = chưa khai báo. */
+    List<TicketCallFlowParamDto> outputParams;
+    /** Phiên bản của flowJson ở trên có node Quy trình con. */
+    Boolean hasSubProcess;
     /** Bản đang ban hành, null = chưa có. */
     TicketCallFlowVersionSummaryResponse publishedVersion;
     /** Epoch millis. */
