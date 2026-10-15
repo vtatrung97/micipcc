@@ -12,9 +12,9 @@ service này chỉ sở hữu runtime và các bảng `ACT_*` của Flowable.
 ## Chạy local
 
 ```sql
-CREATE DATABASE flow_engine CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'flow_engine'@'%' IDENTIFIED BY 'change-me';
-GRANT ALL PRIVILEGES ON flow_engine.* TO 'flow_engine'@'%';
+CREATE DATABASE engine_service CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'engine_service'@'%' IDENTIFIED BY 'change-me';
+GRANT ALL PRIVILEGES ON engine_service.* TO 'engine_service'@'%';
 FLUSH PRIVILEGES;
 ```
 
