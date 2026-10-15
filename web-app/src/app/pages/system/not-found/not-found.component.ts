@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { RbacService } from '@core/rbac';
 
 @Component({
   selector: 'app-not-found',
@@ -15,7 +14,6 @@ export class NotFoundComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private location: Location,
-    private rbacService: RbacService
   ) {}
 
   ngOnInit(): void {
@@ -36,7 +34,6 @@ export class NotFoundComponent implements OnInit {
   }
 
   goToLanding(): void {
-    const defaultUrl = this.rbacService.getDefaultLandingUrl();
-    this.router.navigateByUrl(defaultUrl);
+    this.router.navigateByUrl('/');
   }
 }
