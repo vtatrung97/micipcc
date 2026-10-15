@@ -1,0 +1,259 @@
+@use 'processx-tokens' as px;
+
+// Màn "Danh sách quy trình"
+
+:host {
+  display: block;
+  min-height: 100%;
+  background: px.$neutral-100;
+  font-family: px.$font-family;
+}
+
+.process-list {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-24;
+  padding: px.$space-32 48px;
+  min-width: 0;
+}
+
+// 1. Tiêu đề (24/32 SemiBold) + nút primary
+.process-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: px.$space-16;
+}
+
+.process-list-title {
+  margin: 0;
+  font-family: px.$font-family;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  color: px.$neutral-900;
+}
+
+// 2. Hàng bộ lọc
+.process-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: px.$space-16;
+  flex-wrap: wrap;
+}
+
+.process-list-filters {
+  display: flex;
+  align-items: center;
+  gap: px.$space-16;
+  flex-wrap: wrap;
+}
+
+.process-list-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: px.$space-16;
+}
+
+// Thao tác hàng loạt: "Đã chọn n" (14/20 Medium Neutral/600) + nút viền đỏ, cách nhau 16
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: px.$space-16;
+}
+
+.bulk-count {
+  @include px.body-sm-medium;
+  color: px.$neutral-600;
+  white-space: nowrap;
+}
+
+// Nút secondary (viền Primary/400, chữ Primary/600): pad 8/16, radius 8, 16/24 SemiBold
+.px-btn-outline-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-8;
+  padding: px.$space-8 px.$space-16;
+  border: 1px solid px.$primary-400;
+  border-radius: px.$radius-md;
+  background: px.$white;
+  cursor: pointer;
+  color: px.$primary-600;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    border-color: px.$primary-600;
+    background: px.$primary-50;
+  }
+}
+
+// Nút primary (nền Primary/600, chữ trắng): icon 24 cách chữ 8, pad 8/16, radius 8, 16/24 SemiBold
+.px-btn-solid-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-8;
+  padding: px.$space-8 px.$space-16;
+  border: 1px solid px.$primary-600;
+  border-radius: px.$radius-md;
+  background: px.$primary-600;
+  cursor: pointer;
+  color: px.$white;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    border-color: px.$primary-500;
+    background: px.$primary-500;
+  }
+}
+
+// Ô tìm kiếm: chữ/placeholder 16/24 Medium (control mặc định là 400)
+:host ::ng-deep .process-list-search .px-input {
+  font-weight: 500;
+}
+
+.process-list-search {
+  width: 320px;
+}
+
+// Nút primary: h48, pad 12/24, radius 12, 16/24 SemiBold, gap icon 8
+.px-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-8;
+  height: 48px;
+  padding: px.$space-12 px.$space-24;
+  border: none;
+  border-radius: px.$radius-lg;
+  background: px.$primary-600;
+  color: px.$white;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  box-shadow: none;
+
+  &:hover,
+  &:focus {
+    background: px.$primary-500;
+    color: px.$white;
+  }
+
+  &:active {
+    background: px.$primary-700;
+  }
+}
+
+// Nút link primary: 16/24 Medium, icon trước, gap 4
+.px-btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-4;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: px.$primary-600;
+  @include px.body-md-medium;
+
+  &:hover {
+    color: px.$primary-500;
+  }
+}
+
+.px-btn-link-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 px.$space-6;
+  border-radius: 10px;
+  background: px.$primary-600;
+  color: px.$white;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+// Nút "Sắp xếp": viền Neutral/300, pad 8/16, radius 8, 16/24 SemiBold
+.px-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-8;
+  padding: px.$space-8 px.$space-16;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-md;
+  background: px.$white;
+  cursor: pointer;
+  color: px.$neutral-800;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: px.$primary-400;
+  }
+}
+
+// Panel ẩn/hiện cột (mở từ nút "Sắp xếp"): "Tất cả" tách bằng viền dưới, danh sách cuộn dọc
+.column-panel {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+  box-shadow: px.$shadow-menu;
+  overflow: hidden;
+
+  ant-checkbox {
+    display: flex;
+  }
+}
+
+.column-panel-all {
+  padding: px.$space-4 0;
+  border-bottom: 1px solid px.$neutral-300;
+}
+
+.column-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-4;
+  max-height: 320px;
+  padding: px.$space-4;
+  overflow-y: auto;
+}
+
+// Panel nằm trong overlay của nz-dropdown (ngoài host) nên không bọc bằng :host;
+// `.column-panel` vẫn mang attribute encapsulation nên style không lan ra ngoài.
+.column-panel ::ng-deep .px-cb {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// 3. Độ rộng cột (cột Tên quy trình co giãn)
+.col-index { width: 120px; }
+.col-name { min-width: 240px; }
+.col-code,
+.col-version { width: 120px; }
+.col-status { width: 200px; }
+.col-md { width: 164px; }
+.col-person { width: 200px; }
+.col-date { width: 200px; }
+.col-actions {
+  width: 140px;
+  text-align: center;
+}
