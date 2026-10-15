@@ -1,13 +1,12 @@
-import { AbstractService } from "@core/services/abstract.service";
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { SERVICES } from "@env/environment";
-import { AuthService } from "@core/services/auth/auth.service";
-import { ToastService } from "@core/services/toast-service";
-import { TranslateService } from "@ngx-translate/core";
-import { ApiResponse, PageResponse } from '../core-service/core-service.service';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, Observable, of } from 'rxjs';
+import { KEYCLOAK, SERVICES } from '@env/environment';
+import { ResponseEnvelope } from '@core/models/response.model';
+import { ToastService } from '@core/services/toast-service';
+import { AbstractService } from '@core/services/abstract.service';
+import { TranslateService } from '@ngx-translate/core';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 // ==========================================
 // INTEGRATION SERVICE MODELS
@@ -28,6 +27,7 @@ export interface ExternalSystemSearchRequest {
   size?: number;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
+  [key: string]: any;
 }
 
 export interface ExternalSystemCreateRequest {
@@ -71,6 +71,7 @@ export interface ConnectionSearchRequest {
   size?: number;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
+  [key: string]: any;
 }
 
 export interface ConnectionCreateRequest {
@@ -144,6 +145,7 @@ export interface OperationSearchRequest {
   size?: number;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
+  [key: string]: any;
 }
 
 export interface OperationCreateRequest {
@@ -203,17 +205,16 @@ export interface OperationResponse extends OperationSummaryResponse {
 }
 
 // ==========================================
-// INTEGRATION API SERVICE
+// INTEGRATION SERVICE
 // ==========================================
 
 @Injectable({
   providedIn: 'root'
 })
-export class IntegrationApiService extends AbstractService {
+export class IntegrationService extends AbstractService {
 
   constructor(
     private http: HttpClient,
-    private authSvc: AuthService,
     private toastSvc: ToastService,
     private translate: TranslateService
   ) {
@@ -221,39 +222,36 @@ export class IntegrationApiService extends AbstractService {
   }
 
   get SERVICE_URL(): string {
-    const root = (SERVICES?.INTEGRATION_SERVICE_API?.url || '').replace(/\/+$/, '');
-    return `${root}/api/v1/integrations`;
+    return `${(SERVICES?.INTEGRATION_SERVICE_API?.url || '').replace(/\/+$/, '')}/api/v1/integrations`;
   }
-
 
   // --------------------------------------------------
   // 1. EXTERNAL SYSTEMS (Hệ thống thứ 3)
   // --------------------------------------------------
 
   /** GET /api/v1/integrations/systems: Tìm kiếm hệ thống tích hợp */
-  public searchSystems(request?: ExternalSystemSearchRequest): Observable<ApiResponse<PageResponse<ExternalSystemResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/systems`, { params: this.buildParams(request) });
+  searchSystems(request?: ExternalSystemSearchRequest): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/systems`, { params: request });
   }
 
   /** GET /api/v1/integrations/systems/{id}: Chi tiết hệ thống */
-  public getSystemById(id: string | number): Observable<ApiResponse<ExternalSystemResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/systems/${id}`);
+  getSystemById(id: string | number): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/systems/${id}`);
   }
 
   /** POST /api/v1/integrations/systems: Tạo hệ thống mới */
-  public createSystem(request: ExternalSystemCreateRequest): Observable<ApiResponse<ExternalSystemResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/systems`, request);
+  createSystem(request: ExternalSystemCreateRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/systems`, request);
   }
 
   /** PUT /api/v1/integrations/systems/{id}: Cập nhật hệ thống */
-  public updateSystem(id: string | number, request: ExternalSystemUpdateRequest): Observable<ApiResponse<ExternalSystemResponse>> {
-    return this.putRequest(`${this.SERVICE_URL}/systems/${id}`, request);
+  updateSystem(id: string | number, request: ExternalSystemUpdateRequest): Observable<any> {
+    return this.http.put<any>(`${this.SERVICE_URL}/systems/${id}`, request);
   }
 
   /** DELETE /api/v1/integrations/systems/{id}: Xóa hệ thống */
-  public deleteSystem(id: string | number): Observable<ApiResponse<void>> {
-    return this.httpClient.delete<ApiResponse<void>>(`${this.SERVICE_URL}/systems/${id}`)
-      .pipe(catchError(error => this.handleError(error)));
+  deleteSystem(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${this.SERVICE_URL}/systems/${id}`);
   }
 
   // --------------------------------------------------
@@ -261,39 +259,38 @@ export class IntegrationApiService extends AbstractService {
   // --------------------------------------------------
 
   /** GET /api/v1/integrations/connections: Tìm kiếm kết nối */
-  public searchConnections(request?: ConnectionSearchRequest): Observable<ApiResponse<PageResponse<ConnectionSummaryResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/connections`, { params: this.buildParams(request) });
+  searchConnections(request?: ConnectionSearchRequest): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/connections`, { params: request });
   }
 
   /** GET /api/v1/integrations/connections/{id}: Chi tiết kết nối */
-  public getConnectionById(id: string | number): Observable<ApiResponse<ConnectionResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/connections/${id}`);
+  getConnectionById(id: string | number): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/connections/${id}`);
   }
 
   /** POST /api/v1/integrations/connections: Tạo kết nối mới */
-  public createConnection(request: ConnectionCreateRequest): Observable<ApiResponse<ConnectionResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/connections`, request);
+  createConnection(request: ConnectionCreateRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/connections`, request);
   }
 
   /** PUT /api/v1/integrations/connections/{id}: Cập nhật kết nối */
-  public updateConnection(id: string | number, request: ConnectionUpdateRequest): Observable<ApiResponse<ConnectionResponse>> {
-    return this.putRequest(`${this.SERVICE_URL}/connections/${id}`, request);
+  updateConnection(id: string | number, request: ConnectionUpdateRequest): Observable<any> {
+    return this.http.put<any>(`${this.SERVICE_URL}/connections/${id}`, request);
   }
 
   /** DELETE /api/v1/integrations/connections/{id}: Xóa kết nối */
-  public deleteConnection(id: string | number): Observable<ApiResponse<void>> {
-    return this.httpClient.delete<ApiResponse<void>>(`${this.SERVICE_URL}/connections/${id}`)
-      .pipe(catchError(error => this.handleError(error)));
+  deleteConnection(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${this.SERVICE_URL}/connections/${id}`);
   }
 
   /** POST /api/v1/integrations/connections/{id}/test: Test kết nối đã lưu */
-  public testConnection(id: string | number): Observable<ApiResponse<ConnectionTestResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/connections/${id}/test`, {});
+  testConnection(id: string | number): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/connections/${id}/test`, {});
   }
 
   /** POST /api/v1/integrations/connections/test: Test kết nối chưa lưu */
-  public testUnsavedConnection(request: ConnectionTestRequest): Observable<ApiResponse<ConnectionTestResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/connections/test`, request);
+  testUnsavedConnection(request: ConnectionTestRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/connections/test`, request);
   }
 
   // --------------------------------------------------
@@ -301,54 +298,55 @@ export class IntegrationApiService extends AbstractService {
   // --------------------------------------------------
 
   /** GET /api/v1/integrations/operations: Tìm kiếm operation */
-  public searchOperations(request?: OperationSearchRequest): Observable<ApiResponse<PageResponse<OperationSummaryResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/operations`, { params: this.buildParams(request) });
+  searchOperations(request?: OperationSearchRequest): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/operations`, { params: request });
   }
 
   /** GET /api/v1/integrations/operations/active: Lấy danh sách operation đang ACTIVE (cấu hình node) */
-  public getActiveOperations(keyword?: string, systemId?: number | string): Observable<ApiResponse<OperationSummaryResponse[]>> {
-    const params = this.buildParams({ keyword, systemId });
-    return this.getRequest(`${this.SERVICE_URL}/operations/active`, { params });
+  getActiveOperations(keyword?: string, systemId?: number | string): Observable<any> {
+    const params: any = {};
+    if (keyword) params.keyword = keyword;
+    if (systemId) params.systemId = systemId;
+    return this.http.get<any>(`${this.SERVICE_URL}/operations/active`, { params });
   }
 
   /** GET /api/v1/integrations/operations/{id}: Chi tiết operation */
-  public getOperationById(id: string | number): Observable<ApiResponse<OperationResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/operations/${id}`);
+  getOperationById(id: string | number): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/operations/${id}`);
   }
 
   /** GET /api/v1/integrations/operations/{id}/versions: Danh sách phiên bản operation */
-  public getOperationVersions(id: string | number): Observable<ApiResponse<OperationSummaryResponse[]>> {
-    return this.getRequest(`${this.SERVICE_URL}/operations/${id}/versions`);
+  getOperationVersions(id: string | number): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/operations/${id}/versions`);
   }
 
   /** POST /api/v1/integrations/operations: Tạo operation mới */
-  public createOperation(request: OperationCreateRequest): Observable<ApiResponse<OperationResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/operations`, request);
+  createOperation(request: OperationCreateRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/operations`, request);
   }
 
   /** PUT /api/v1/integrations/operations/{id}: Cập nhật operation */
-  public updateOperation(id: string | number, request: OperationUpdateRequest): Observable<ApiResponse<OperationResponse>> {
-    return this.putRequest(`${this.SERVICE_URL}/operations/${id}`, request);
+  updateOperation(id: string | number, request: OperationUpdateRequest): Observable<any> {
+    return this.http.put<any>(`${this.SERVICE_URL}/operations/${id}`, request);
   }
 
   /** POST /api/v1/integrations/operations/{id}/new-version: Tạo phiên bản mới */
-  public createOperationNewVersion(id: string | number): Observable<ApiResponse<OperationResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/operations/${id}/new-version`, {});
+  createOperationNewVersion(id: string | number): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/operations/${id}/new-version`, {});
   }
 
   /** POST /api/v1/integrations/operations/{id}/activate: Kích hoạt phiên bản */
-  public activateOperation(id: string | number, request?: RowVersionRequest): Observable<ApiResponse<OperationResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/operations/${id}/activate`, request || {});
+  activateOperation(id: string | number, request?: RowVersionRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/operations/${id}/activate`, request || {});
   }
 
   /** POST /api/v1/integrations/operations/{id}/deactivate: Hủy kích hoạt */
-  public deactivateOperation(id: string | number, request?: RowVersionRequest): Observable<ApiResponse<OperationResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/operations/${id}/deactivate`, request || {});
+  deactivateOperation(id: string | number, request?: RowVersionRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/operations/${id}/deactivate`, request || {});
   }
 
   /** DELETE /api/v1/integrations/operations/{id}: Xóa operation */
-  public deleteOperation(id: string | number): Observable<ApiResponse<void>> {
-    return this.httpClient.delete<ApiResponse<void>>(`${this.SERVICE_URL}/operations/${id}`)
-      .pipe(catchError(error => this.handleError(error)));
+  deleteOperation(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${this.SERVICE_URL}/operations/${id}`);
   }
 }

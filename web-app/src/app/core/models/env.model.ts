@@ -38,6 +38,10 @@ export interface ServiceCategory {
     CALL_BOT_SERVICE_API: ServiceAuthConfig;
     BOT_SERVER_API: ServiceAuthConfig;
     SYNC_SERVICE_API:ServiceAuthConfig;
+    CORE_SERVICE_API?: ServiceAuthConfig;
+    ENGINE_SERVICE_API?: ServiceAuthConfig;
+    INTEGRATION_SERVICE_API?: ServiceAuthConfig;
+    [key: string]: any;
 }
 
 export interface AppProperty {

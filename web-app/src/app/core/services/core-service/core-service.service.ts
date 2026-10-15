@@ -1,12 +1,12 @@
-import { AbstractService } from "@core/services/abstract.service";
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { SERVICES } from "@env/environment";
-import { AuthService } from "@core/services/auth/auth.service";
-import { ToastService } from "@core/services/toast-service";
-import { TranslateService } from "@ngx-translate/core";
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, Observable, of } from 'rxjs';
+import { KEYCLOAK, SERVICES } from '@env/environment';
+import { ResponseEnvelope } from '@core/models/response.model';
+import { ToastService } from '@core/services/toast-service';
+import { AbstractService } from '@core/services/abstract.service';
+import { TranslateService } from '@ngx-translate/core';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 // ==========================================
 // COMMON MODELS & ENVELOPES
@@ -58,6 +58,7 @@ export interface TicketCallFlowSearchRequest {
   sortDir?: 'asc' | 'desc';
   page?: number;
   size?: number;
+  [key: string]: any;
 }
 
 export interface TicketCallFlowCreateRequest {
@@ -226,17 +227,16 @@ export interface AppParamCreateRequest {
 }
 
 // ==========================================
-// CORE API SERVICE
+// CORE SERVICE
 // ==========================================
 
 @Injectable({
   providedIn: 'root'
 })
-export class CoreApiService extends AbstractService {
+export class CoreService extends AbstractService {
 
   constructor(
     private http: HttpClient,
-    private authSvc: AuthService,
     private toastSvc: ToastService,
     private translate: TranslateService
   ) {
@@ -244,76 +244,73 @@ export class CoreApiService extends AbstractService {
   }
 
   get SERVICE_URL(): string {
-    const root = (SERVICES?.CORE_SERVICE_API?.url || '').replace(/\/+$/, '');
-    return `${root}/api/v1`;
+    return `${(SERVICES?.CORE_SERVICE_API?.url || '').replace(/\/+$/, '')}/api/v1`;
   }
-
 
   // --------------------------------------------------
   // 1. TICKET CALL FLOWS (10 Endpoints)
   // --------------------------------------------------
 
   /** GET /api/v1/ticket-call-flows: Tìm kiếm / phân trang danh sách quy trình */
-  public searchTicketCallFlows(request?: TicketCallFlowSearchRequest): Observable<ApiResponse<PageResponse<TicketCallFlowSummaryResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/ticket-call-flows`, { params: this.buildParams(request) });
+  searchTicketCallFlows(request?: TicketCallFlowSearchRequest): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/ticket-call-flows`, { params: request });
   }
 
   /** GET /api/v1/ticket-call-flows/stats: Thống kê số lượng */
-  public getTicketCallFlowStats(): Observable<ApiResponse<TicketCallFlowStatsResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/ticket-call-flows/stats`);
+  getTicketCallFlowStats(): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/ticket-call-flows/stats`);
   }
 
   /** GET /api/v1/ticket-call-flows/{id}: Chi tiết quy trình kèm flowJson */
-  public getTicketCallFlowById(id: string | number): Observable<ApiResponse<TicketCallFlowResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/ticket-call-flows/${id}`);
+  getTicketCallFlowById(id: string | number): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/ticket-call-flows/${id}`);
   }
 
   /** POST /api/v1/ticket-call-flows: Tạo mới quy trình */
-  public createTicketCallFlow(request: TicketCallFlowCreateRequest): Observable<ApiResponse<TicketCallFlowResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/ticket-call-flows`, request);
+  createTicketCallFlow(request: TicketCallFlowCreateRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/ticket-call-flows`, request);
   }
 
   /** GET /api/v1/ticket-call-flows/{id}/versions: Danh sách phiên bản */
-  public getTicketCallFlowVersions(id: string | number): Observable<ApiResponse<TicketCallFlowVersionSummaryResponse[]>> {
-    return this.getRequest(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions`);
+  getTicketCallFlowVersions(id: string | number): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions`);
   }
 
   /** GET /api/v1/ticket-call-flows/{id}/versions/{versionId}: Chi tiết một phiên bản */
-  public getTicketCallFlowVersion(id: string | number, versionId: string | number): Observable<ApiResponse<TicketCallFlowVersionResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}`);
+  getTicketCallFlowVersion(id: string | number, versionId: string | number): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}`);
   }
 
   /** PUT /api/v1/ticket-call-flows/{id}/versions/{versionId}: Cập nhật phiên bản (Lưu nháp canvas) */
-  public updateTicketCallFlowVersion(
+  updateTicketCallFlowVersion(
     id: string | number,
     versionId: string | number,
     request: TicketCallFlowUpdateRequest
-  ): Observable<ApiResponse<TicketCallFlowResponse>> {
-    return this.putRequest(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}`, request);
+  ): Observable<any> {
+    return this.http.put<any>(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}`, request);
   }
 
   /** POST /api/v1/ticket-call-flows/{id}/versions/{versionId}/publish: Ban hành phiên bản */
-  public publishTicketCallFlowVersion(
+  publishTicketCallFlowVersion(
     id: string | number,
     versionId: string | number,
     request?: TicketCallFlowPublishRequest
-  ): Observable<ApiResponse<TicketCallFlowResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}/publish`, request || {});
+  ): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}/publish`, request || {});
   }
 
   /** POST /api/v1/ticket-call-flows/{id}/versions/{versionId}/clone: Nhân bản quy trình */
-  public cloneTicketCallFlowVersion(
+  cloneTicketCallFlowVersion(
     id: string | number,
     versionId: string | number,
     request: TicketCallFlowCloneRequest
-  ): Observable<ApiResponse<TicketCallFlowResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}/clone`, request);
+  ): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}/clone`, request);
   }
 
   /** DELETE /api/v1/ticket-call-flows/{id}/versions/{versionId}: Xóa phiên bản */
-  public deleteTicketCallFlowVersion(id: string | number, versionId: string | number): Observable<ApiResponse<void>> {
-    return this.httpClient.delete<ApiResponse<void>>(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}`)
-      .pipe(catchError(error => this.handleError(error)));
+  deleteTicketCallFlowVersion(id: string | number, versionId: string | number): Observable<any> {
+    return this.http.delete<any>(`${this.SERVICE_URL}/ticket-call-flows/${id}/versions/${versionId}`);
   }
 
   // --------------------------------------------------
@@ -321,18 +318,18 @@ export class CoreApiService extends AbstractService {
   // --------------------------------------------------
 
   /** GET /api/v1/agent-groups: Tìm kiếm nhóm agent */
-  public searchAgentGroups(params?: Record<string, any>): Observable<ApiResponse<PageResponse<AgentGroupResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/agent-groups`, { params: this.buildParams(params) });
+  searchAgentGroups(params?: Record<string, any>): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/agent-groups`, { params });
   }
 
   /** GET /api/v1/agents: Tìm kiếm agent/nhân viên */
-  public searchAgents(params?: Record<string, any>): Observable<ApiResponse<PageResponse<AgentResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/agents`, { params: this.buildParams(params) });
+  searchAgents(params?: Record<string, any>): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/agents`, { params });
   }
 
   /** GET /api/v1/keycloak-groups: Tìm kiếm nhóm Keycloak */
-  public searchKeycloakGroups(params?: Record<string, any>): Observable<ApiResponse<PageResponse<KeycloakGroupResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/keycloak-groups`, { params: this.buildParams(params) });
+  searchKeycloakGroups(params?: Record<string, any>): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/keycloak-groups`, { params });
   }
 
   // --------------------------------------------------
@@ -340,12 +337,12 @@ export class CoreApiService extends AbstractService {
   // --------------------------------------------------
 
   /** GET /api/v1/app-params: Tìm kiếm cấu hình hệ thống */
-  public searchAppParams(params?: Record<string, any>): Observable<ApiResponse<PageResponse<AppParamResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/app-params`, { params: this.buildParams(params) });
+  searchAppParams(params?: Record<string, any>): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/app-params`, { params });
   }
 
   /** POST /api/v1/app-params: Thêm mới tham số hệ thống */
-  public createAppParam(request: AppParamCreateRequest): Observable<ApiResponse<AppParamResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/app-params`, request);
+  createAppParam(request: AppParamCreateRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/app-params`, request);
   }
 }

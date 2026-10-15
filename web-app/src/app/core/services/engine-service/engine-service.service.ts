@@ -1,12 +1,12 @@
-import { AbstractService } from "@core/services/abstract.service";
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { SERVICES } from "@env/environment";
-import { AuthService } from "@core/services/auth/auth.service";
-import { ToastService } from "@core/services/toast-service";
-import { TranslateService } from "@ngx-translate/core";
-import { ApiResponse, PageResponse } from '../core-service/core-service.service';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, Observable, of } from 'rxjs';
+import { KEYCLOAK, SERVICES } from '@env/environment';
+import { ResponseEnvelope } from '@core/models/response.model';
+import { ToastService } from '@core/services/toast-service';
+import { AbstractService } from '@core/services/abstract.service';
+import { TranslateService } from '@ngx-translate/core';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 // ==========================================
 // ENGINE SERVICE MODELS
@@ -82,6 +82,7 @@ export interface TaskSearchRequest {
   processInstanceId?: string;
   page?: number;
   size?: number;
+  [key: string]: any;
 }
 
 export interface TaskResponse {
@@ -110,17 +111,16 @@ export interface CompleteTaskRequest {
 }
 
 // ==========================================
-// ENGINE API SERVICE
+// ENGINE SERVICE
 // ==========================================
 
 @Injectable({
   providedIn: 'root'
 })
-export class EngineApiService extends AbstractService {
+export class EngineService extends AbstractService {
 
   constructor(
     private http: HttpClient,
-    private authSvc: AuthService,
     private toastSvc: ToastService,
     private translate: TranslateService
   ) {
@@ -128,23 +128,21 @@ export class EngineApiService extends AbstractService {
   }
 
   get SERVICE_URL(): string {
-    const root = (SERVICES?.ENGINE_SERVICE_API?.url || '').replace(/\/+$/, '');
-    return `${root}/internal/v1`;
+    return `${(SERVICES?.ENGINE_SERVICE_API?.url || '').replace(/\/+$/, '')}/internal/v1`;
   }
-
 
   // --------------------------------------------------
   // 1. DEFINITIONS (Kiểm tra & Deploy)
   // --------------------------------------------------
 
   /** POST /internal/v1/definitions/validate: Kiểm tra cú pháp flowJson */
-  public validateDefinition(request: ValidateDefinitionRequest): Observable<ApiResponse<ValidationResultResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/definitions/validate`, request);
+  validateDefinition(request: ValidateDefinitionRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/definitions/validate`, request);
   }
 
   /** POST /internal/v1/definitions/deploy: Chuyển flowJson sang BPMN và deploy */
-  public deployDefinition(request: DeployDefinitionRequest): Observable<ApiResponse<DeploymentResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/definitions/deploy`, request);
+  deployDefinition(request: DeployDefinitionRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/definitions/deploy`, request);
   }
 
   // --------------------------------------------------
@@ -152,18 +150,18 @@ export class EngineApiService extends AbstractService {
   // --------------------------------------------------
 
   /** POST /internal/v1/instances: Khởi tạo phiên chạy mới */
-  public startInstance(request: StartInstanceRequest): Observable<ApiResponse<ProcessInstanceResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/instances`, request);
+  startInstance(request: StartInstanceRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/instances`, request);
   }
 
   /** GET /internal/v1/instances/{processInstanceId}: Trạng thái, bước đang chạy & biến */
-  public getInstance(processInstanceId: string): Observable<ApiResponse<ProcessInstanceResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/instances/${processInstanceId}`);
+  getInstance(processInstanceId: string): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/instances/${processInstanceId}`);
   }
 
   /** POST /internal/v1/instances/{processInstanceId}/cancel: Hủy phiên chạy */
-  public cancelInstance(processInstanceId: string, request?: CancelInstanceRequest): Observable<ApiResponse<void>> {
-    return this.postRequest(`${this.SERVICE_URL}/instances/${processInstanceId}/cancel`, request || {});
+  cancelInstance(processInstanceId: string, request?: CancelInstanceRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/instances/${processInstanceId}/cancel`, request || {});
   }
 
   // --------------------------------------------------
@@ -171,22 +169,22 @@ export class EngineApiService extends AbstractService {
   // --------------------------------------------------
 
   /** GET /internal/v1/tasks: Tìm danh sách task */
-  public searchTasks(request?: TaskSearchRequest): Observable<ApiResponse<PageResponse<TaskResponse>>> {
-    return this.getRequest(`${this.SERVICE_URL}/tasks`, { params: this.buildParams(request) });
+  searchTasks(request?: TaskSearchRequest): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/tasks`, { params: request });
   }
 
   /** GET /internal/v1/tasks/{taskId}: Chi tiết task kèm dữ liệu form */
-  public getTaskDetail(taskId: string): Observable<ApiResponse<TaskDetailResponse>> {
-    return this.getRequest(`${this.SERVICE_URL}/tasks/${taskId}`);
+  getTaskDetail(taskId: string): Observable<any> {
+    return this.http.get<any>(`${this.SERVICE_URL}/tasks/${taskId}`);
   }
 
   /** POST /internal/v1/tasks/{taskId}/claim: Nhận việc */
-  public claimTask(taskId: string, request: ClaimTaskRequest): Observable<ApiResponse<TaskResponse>> {
-    return this.postRequest(`${this.SERVICE_URL}/tasks/${taskId}/claim`, request);
+  claimTask(taskId: string, request: ClaimTaskRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/tasks/${taskId}/claim`, request);
   }
 
   /** POST /internal/v1/tasks/{taskId}/complete: Hoàn thành task */
-  public completeTask(taskId: string, request: CompleteTaskRequest): Observable<ApiResponse<void>> {
-    return this.postRequest(`${this.SERVICE_URL}/tasks/${taskId}/complete`, request);
+  completeTask(taskId: string, request: CompleteTaskRequest): Observable<any> {
+    return this.http.post<any>(`${this.SERVICE_URL}/tasks/${taskId}/complete`, request);
   }
 }
