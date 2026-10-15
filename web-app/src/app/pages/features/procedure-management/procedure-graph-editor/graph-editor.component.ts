@@ -16,6 +16,8 @@ import {
   TemplateService,
   ProcessTemplateItem,
 } from '@core/services/ticket-call-flows/template.service';
+import { CoreService } from '@core/services/core-service/core-service.service';
+import { graphToFlowDefinition } from './flow-definition/flow-definition.mapper';
 import { NodeType, isGatewayType } from './models/node-type';
 import {
   NODE_CARD_HEIGHT,
@@ -108,6 +110,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     private translate: TranslateService,
     private cdr: ChangeDetectorRef,
     private message: NzMessageService,
+    private coreService: CoreService,
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -366,10 +369,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.persistence.renderFlowDefinition(this.store.currentTemplate.flowDefinition);
     } else if (this.store.currentTemplate.graphData) {
       this.persistence.loadGraphData(this.store.currentTemplate.graphData);
-    } else if (initType === 'blank') {
-      this.samples.createBlankWorkflowSample();
     } else {
-      this.samples.loadSampleFlow('default');
+      this.samples.createBlankWorkflowSample();
     }
     this.store.graph.getEdges()?.forEach((e: any) => e.setLabels([]));
     // Chỉ xem: ẩn nút × xoá bước trên card
@@ -384,15 +385,30 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Popup xác nhận Dừng ban hành */
   public isStopConfirmOpen: boolean = false;
 
-  /** Xác nhận Dừng ban hành: chuyển quy trình sang Dừng ban hành, header hiện lại Hủy / Lưu nháp / Ban hành */
+  /** Xác nhận Dừng ban hành: gọi API chuyển trạng thái sang INACTIVE */
   public stopPublishing(): void {
     this.isStopConfirmOpen = false;
-    const code = this.store.currentTemplate?.code;
-    if (!code) return;
-    this.templateService.updateTemplate(code, { status: 'Inactive' });
-    this.store.currentTemplate = this.templateService.getTemplateByCode(code) || { ...this.store.currentTemplate, status: 'Inactive' };
-    this.message.success(this.t('HEADER.STOP_PUBLISH_SUCCESS', { code }));
+    const flowId = this.store.currentTemplate?.id || this.store.currentTemplate?.code;
+    const versionId = this.store.currentTemplate?.active_version_id || '1';
+    if (!flowId) return;
+
+    const def = graphToFlowDefinition(this.store.graph);
+    this.coreService.updateTicketCallFlowVersion(flowId, versionId, {
+      name: this.store.currentTemplate.name,
+      status: 'INACTIVE',
+      flowJson: JSON.stringify(def)
+    }).subscribe({
+      next: () => {
+        this.store.currentTemplate = { ...this.store.currentTemplate, status: 'Inactive' };
+        this.templateService.updateTemplate(this.store.currentTemplate.code, { status: 'Inactive' });
+        this.message.success(this.t('HEADER.STOP_PUBLISH_SUCCESS', { code: this.store.currentTemplate.code }));
+      },
+      error: (err) => {
+        this.message.error('Dừng ban hành thất bại: ' + (err?.error?.message || err?.message || 'Có lỗi xảy ra'));
+      }
+    });
   }
+
   private cleanSnapshot: string = '';
 
   /** Hủy: chưa thay đổi gì thì về danh sách luôn, có thay đổi thì hỏi xác nhận */
@@ -488,31 +504,10 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       slaValue: extra.slaValue,
       slaUnit: extra.slaUnit,
       sla: `${extra.slaValue} ${extra.slaUnit}`,
+      code: extra.code.toUpperCase(),
     };
 
-    if (this.store.isCreateMode) {
-      const created = this.templateService.createTemplate({
-        ...this.store.currentTemplate,
-        ...updates,
-        code: extra.code.toUpperCase(),
-        status: 'Draft',
-      });
-      // createTemplate() chỉ giữ các field cũ → ghi thêm loại kích hoạt / SLA tách số + đơn vị
-      this.templateService.updateTemplate(created.code, updates);
-      this.store.currentTemplate = { ...created, ...updates };
-      this.store.isCreateMode = false;
-      this.store.selectedCellInfo = this.t('INFO.STATUS_CREATED', { code: created.code });
-      // Gắn ?id= để F5 / mở lại vẫn đúng bản ghi (không rời màn hình)
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { id: created.code, mode: null, initType: null },
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
-      });
-    } else {
-      this.templateService.updateTemplate(this.store.currentTemplate.code, updates);
-      this.store.currentTemplate = { ...this.store.currentTemplate, ...updates };
-    }
+    this.store.currentTemplate = { ...this.store.currentTemplate, ...updates };
     return true;
   }
 
@@ -557,7 +552,7 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.store.currentTemplate.graphData) {
         this.persistence.loadGraphData(this.store.currentTemplate.graphData);
       } else {
-        this.samples.loadSampleFlow('default');
+        this.samples.createBlankWorkflowSample();
       }
       this.store.selectedCellInfo = this.t('STATUS.REVERTED');
     }

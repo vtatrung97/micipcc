@@ -1,11 +1,19 @@
 import { Injectable } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { edgeAttrs } from '../config/edge-style.config';
 import { normalizeNodeType } from '../models/node-type';
 import { GraphEditorStore } from '../state/graph-editor.store';
 import { GraphDialogService } from './graph-dialog.service';
 import { TemplateService } from '@core/services/ticket-call-flows/template.service';
-import { FlowDraftMockService } from './flow-draft-mock.service';
+import {
+  CoreService,
+  TicketCallFlowCreateRequest,
+  TicketCallFlowUpdateRequest,
+  SlaUnit,
+  TriggerDto
+} from '@core/services/core-service/core-service.service';
 import { NodeFactoryService } from './node-factory.service';
 import { NodeEditorService } from './node-editor.service';
 import { GraphHistoryService } from './graph-history.service';
@@ -21,10 +29,13 @@ export class FlowPersistenceService {
     private store: GraphEditorStore,
     private dialogs: GraphDialogService,
     private templateService: TemplateService,
-    private flowDraftService: FlowDraftMockService,
+    private coreService: CoreService,
     private factory: NodeFactoryService,
     private editor: NodeEditorService,
-    private history: GraphHistoryService
+    private history: GraphHistoryService,
+    private message: NzMessageService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
@@ -32,18 +43,121 @@ export class FlowPersistenceService {
     return this.translate.instant('PROCESS_GRAPH.' + key, params);
   }
 
+  private mapSlaUnit(unit?: string): SlaUnit {
+    if (unit === 'Giờ' || unit === 'HOUR') return 'HOUR';
+    if (unit === 'Ngày' || unit === 'DAY') return 'DAY';
+    if (unit === 'Phút' || unit === 'MINUTE') return 'MINUTE';
+    return 'HOUR';
+  }
 
-  /** Ban hành: hợp lệ thì lưu, sai thì mở danh sách lỗi. Trả về true nếu đã lưu. */
+  /** Ban hành: hợp lệ thì lưu draft trước nếu cần, sau đó gọi publish API */
   public saveProcessTemplate(): boolean {
     if (!this.store.graph || !this.ensureValid()) return false;
+    const definition = graphToFlowDefinition(this.store.graph);
+    const flowJsonStr = JSON.stringify(definition);
 
-    const graphData = this.store.graph.toJSON();
-    this.templateService.saveGraphData(this.store.currentTemplate.code, graphData);
-    this.store.selectedCellInfo = this.t('STATUS.PUBLISHED', { code: this.store.currentTemplate.code });
-    alert(
-      this.t('MESSAGES.PUBLISH_SUCCESS', { code: this.store.currentTemplate.code, name: this.store.currentTemplate.name }),
-    );
+    const info = this.store.processInfo;
+    const slaVal = Number(info.slaValue) || 24;
+    const slaU = this.mapSlaUnit(info.slaUnit);
+
+    const triggerDto: TriggerDto = {
+      triggerType: info.triggerType || 'MANUAL',
+      conditionExpression: info.triggerType === 'AUTO' && info.auto?.conditions?.rules?.length
+        ? JSON.stringify(info.auto.conditions)
+        : undefined
+    };
+
+    if (this.store.isCreateMode) {
+      const createReq: TicketCallFlowCreateRequest = {
+        code: info.code.trim().toUpperCase(),
+        name: info.name.trim(),
+        category: info.category || 'Xử lý khiếu nại',
+        description: info.description,
+        trigger: triggerDto,
+        slaValue: slaVal,
+        slaUnit: slaU,
+        status: 'ACTIVE',
+        flowJson: flowJsonStr
+      };
+
+      this.coreService.createTicketCallFlow(createReq).subscribe({
+        next: (res) => {
+          const result = res?.result || res?.data || res;
+          this.store.isCreateMode = false;
+          this.store.draftRowVersion = result.rowVersion || 1;
+          const flowId = String(result.id || result.templateId || createReq.code);
+          const versionId = String(result.flowJsonVersionId || result.templateVersionId || '1');
+          this.store.currentTemplate = {
+            ...this.store.currentTemplate,
+            id: flowId,
+            code: result.code || createReq.code,
+            name: result.name || createReq.name,
+            active_version_id: versionId,
+            status: 'Published'
+          };
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { id: flowId, mode: null, initType: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+          this.publishVersion(flowId, versionId);
+        },
+        error: (err) => {
+          this.message.error(err?.error?.message || err?.message || 'Lỗi khi tạo quy trình để ban hành');
+        }
+      });
+    } else {
+      const flowId = this.store.currentTemplate.id || this.store.currentTemplate.code;
+      const versionId = this.store.currentTemplate.active_version_id || '1';
+
+      const updateReq: TicketCallFlowUpdateRequest = {
+        name: info.name.trim(),
+        category: info.category || undefined,
+        description: info.description,
+        trigger: triggerDto,
+        slaValue: slaVal,
+        slaUnit: slaU,
+        status: 'ACTIVE',
+        flowJson: flowJsonStr,
+        rowVersion: this.store.draftRowVersion
+      };
+
+      this.coreService.updateTicketCallFlowVersion(flowId, versionId, updateReq).subscribe({
+        next: (res) => {
+          const result = res?.result || res?.data || res;
+          if (result?.rowVersion != null) {
+            this.store.draftRowVersion = result.rowVersion;
+          }
+          this.publishVersion(flowId, versionId);
+        },
+        error: (err) => {
+          this.message.error(err?.error?.message || err?.message || 'Lỗi khi lưu quy trình trước khi ban hành');
+        }
+      });
+    }
     return true;
+  }
+
+  private publishVersion(flowId: string | number, versionId: string | number): void {
+    this.coreService.publishTicketCallFlowVersion(flowId, versionId, { rowVersion: this.store.draftRowVersion }).subscribe({
+      next: () => {
+        this.store.currentTemplate = {
+          ...this.store.currentTemplate,
+          status: 'Published'
+        };
+        this.store.selectedCellInfo = this.t('STATUS.PUBLISHED', { code: this.store.currentTemplate.code });
+        this.message.success(
+          this.t('MESSAGES.PUBLISH_SUCCESS', {
+            code: this.store.currentTemplate.code,
+            name: this.store.currentTemplate.name
+          })
+        );
+      },
+      error: (err) => {
+        this.message.error('Ban hành thất bại: ' + (err?.error?.message || err?.message || 'Có lỗi xảy ra'));
+      }
+    });
   }
 
   /** Kiểm tra trường bắt buộc + nguyên tắc nối bước; sai thì mở danh sách lỗi (bấm để tới bước lỗi) */
@@ -55,14 +169,11 @@ export class FlowPersistenceService {
     return false;
   }
 
-
-
-  /** Dựng payload "Lưu nháp" (PUT /ticket-call-flows/{id}) từ canvas hiện tại */
+  /** Dựng payload "Lưu nháp" từ canvas hiện tại */
   public buildSaveDraftPayload() {
     const definition = graphToFlowDefinition(this.store.graph);
     const payload = buildSaveDraftPayload(
       {
-        // Tên / mô tả / cấu hình lấy từ tab "Thông tin chung"
         name: this.store.processInfo.name.trim(),
         description: this.store.processInfo.description,
         ...toProcessInfoPayload(this.store.processInfo),
@@ -76,48 +187,124 @@ export class FlowPersistenceService {
     return { payload, definition };
   }
 
-
-  /** Lưu nháp: kiểm tra như Ban hành; trả về true nếu đã gửi lưu */
+  /** Lưu nháp: kiểm tra như Ban hành; gửi lên API BE */
   public saveDraft(): boolean {
     if (!this.store.graph || !this.ensureValid()) return false;
-    const { payload, definition } = this.buildSaveDraftPayload();
-    // Payload đúng như gửi BE (flowJson là chuỗi) — copy từ console để gửi BE làm mẫu
-    console.log('[Lưu nháp] Payload gửi BE (PUT /api/v1/ticket-call-flows/{id}):\n' + JSON.stringify(payload, null, 2));
-    // Bản dễ đọc: flowJson dạng object
-    console.log('[Lưu nháp] Payload dễ đọc (flowJson dạng object):\n' + JSON.stringify({ ...payload, flowJson: definition }, null, 2));
+    const definition = graphToFlowDefinition(this.store.graph);
+    const flowJsonStr = JSON.stringify(definition);
 
-    this.flowDraftService
-      .saveDraft(this.store.currentTemplate.code, payload)
-      .subscribe({
+    const info = this.store.processInfo;
+    const slaVal = Number(info.slaValue) || 24;
+    const slaU = this.mapSlaUnit(info.slaUnit);
+
+    const triggerDto: TriggerDto = {
+      triggerType: info.triggerType || 'MANUAL',
+      conditionExpression: info.triggerType === 'AUTO' && info.auto?.conditions?.rules?.length
+        ? JSON.stringify(info.auto.conditions)
+        : undefined
+    };
+
+    if (this.store.isCreateMode) {
+      const createReq: TicketCallFlowCreateRequest = {
+        code: info.code.trim().toUpperCase(),
+        name: info.name.trim(),
+        category: info.category || 'Xử lý khiếu nại',
+        description: info.description,
+        trigger: triggerDto,
+        slaValue: slaVal,
+        slaUnit: slaU,
+        status: 'DRAFT',
+        flowJson: flowJsonStr
+      };
+
+      this.coreService.createTicketCallFlow(createReq).subscribe({
         next: (res) => {
-          this.store.draftRowVersion = res.result.rowVersion;
-          this.store.selectedCellInfo = this.t('STATUS.DRAFT_SAVED', { code: this.store.currentTemplate.code, rowVersion: res.result.rowVersion });
-          // Hiển thị payload; flowJson parse ra object cho dễ đọc (gửi thật là chuỗi)
-          this.dialogs.openJsonPreviewModal(
-            { ...payload, flowJson: definition },
-            this.t('MODALS.JSON_SAVE_DRAFT_TITLE'),
-          );
+          const result = res?.result || res?.data || res;
+          this.store.isCreateMode = false;
+          this.store.draftRowVersion = result?.rowVersion || 1;
+          const flowId = String(result?.id || result?.templateId || createReq.code);
+          const versionId = String(result?.flowJsonVersionId || result?.templateVersionId || '1');
+          this.store.currentTemplate = {
+            ...this.store.currentTemplate,
+            id: flowId,
+            code: result?.code || createReq.code,
+            name: result?.name || createReq.name,
+            active_version_id: versionId,
+            status: 'Draft'
+          };
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { id: flowId, mode: null, initType: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+          this.message.success(this.t('STATUS.DRAFT_SAVED', { code: this.store.currentTemplate.code, rowVersion: this.store.draftRowVersion }));
         },
         error: (err) => {
-          alert(this.t('MESSAGES.SAVE_DRAFT_FAILED', { error: err?.message || err }));
-        },
+          this.message.error(this.t('MESSAGES.SAVE_DRAFT_FAILED', { error: err?.error?.message || err?.message || 'Có lỗi xảy ra' }));
+        }
       });
+    } else {
+      const flowId = this.store.currentTemplate.id || this.store.currentTemplate.code;
+      const versionId = this.store.currentTemplate.active_version_id || '1';
+
+      const updateReq: TicketCallFlowUpdateRequest = {
+        name: info.name.trim(),
+        category: info.category || undefined,
+        description: info.description,
+        trigger: triggerDto,
+        slaValue: slaVal,
+        slaUnit: slaU,
+        status: 'DRAFT',
+        flowJson: flowJsonStr,
+        versionName: this.store.currentTemplate.version
+          ? `Phiên bản ${String(this.store.currentTemplate.version).replace(/^v/i, '')}`
+          : undefined,
+        rowVersion: this.store.draftRowVersion
+      };
+
+      this.coreService.updateTicketCallFlowVersion(flowId, versionId, updateReq).subscribe({
+        next: (res) => {
+          const result = res?.result || res?.data || res;
+          if (result?.rowVersion != null) {
+            this.store.draftRowVersion = result.rowVersion;
+          }
+          this.message.success(this.t('STATUS.DRAFT_SAVED', { code: this.store.currentTemplate.code, rowVersion: this.store.draftRowVersion }));
+        },
+        error: (err) => {
+          this.message.error(this.t('MESSAGES.SAVE_DRAFT_FAILED', { error: err?.error?.message || err?.message || 'Có lỗi xảy ra' }));
+        }
+      });
+    }
     return true;
   }
 
-
-  /** Mở lại bản nháp đã lưu (giả lập GET /ticket-call-flows/{id}). Trả false nếu chưa có bản nháp. */
-  public loadSavedDraft(code: string): boolean {
+  /** Mở lại bản nháp đã lưu từ API GET /ticket-call-flows/{id}. Trả false nếu chưa có. */
+  public loadSavedDraft(codeOrId: string): boolean {
     let loaded = false;
-    this.flowDraftService.getFlow(code).subscribe((res) => {
-      if (!res?.result) return;
-      try {
-        this.store.draftRowVersion = res.result.rowVersion;
-        this.renderFlowDefinition(parseFlowJson(res.result));
-        this.store.selectedCellInfo = this.t('STATUS.DRAFT_OPENED', { code, rowVersion: res.result.rowVersion });
-        loaded = true;
-      } catch (err) {
-        console.warn('Không đọc được flowJson của bản nháp:', err);
+    this.coreService.getTicketCallFlowById(codeOrId).subscribe({
+      next: (res) => {
+        const item = res?.result || res?.data || res;
+        if (!item?.flowJson) return;
+        try {
+          this.store.draftRowVersion = item.rowVersion;
+          this.store.currentTemplate = {
+            ...this.store.currentTemplate,
+            id: String(item.id || ''),
+            code: item.code || this.store.currentTemplate.code,
+            name: item.name || this.store.currentTemplate.name,
+            active_version_id: String(item.flowJsonVersionId || item.templateVersionId || '1'),
+            status: item.status === 'ACTIVE' || item.status === 'PUBLISHED' ? 'Published' : (item.status === 'INACTIVE' ? 'Inactive' : 'Draft')
+          };
+          this.renderFlowDefinition(parseFlowJson(item));
+          this.store.selectedCellInfo = this.t('STATUS.DRAFT_OPENED', { code: item.code || codeOrId, rowVersion: item.rowVersion });
+          loaded = true;
+        } catch (err) {
+          console.warn('Không đọc được flowJson:', err);
+        }
+      },
+      error: (err) => {
+        console.warn('Không tải được quy trình từ API:', err);
       }
     });
     return loaded;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpBackend, HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { ApiService } from '@core/http/api.service';
+import { SERVICES } from '@env/environment';
 import { ApiResponse } from '../models/flow-definition.model';
 import {
   NodeIconConfirmRequest,
@@ -13,9 +13,10 @@ import {
 import { ICON_ACCEPT, ICON_MAX_BYTES } from './node-icon.service';
 
 /** ⚠ Endpoint đề xuất — chờ BE chốt */
+const getBaseUrl = () => (SERVICES?.CORE_SERVICE_API?.url || '').replace(/\/+$/, '');
 const ICON_API = {
-  presign: '/api/v1/files/presigned-upload',
-  icons: '/api/v1/node-icons',
+  presign: () => `${getBaseUrl()}/api/v1/files/presigned-upload`,
+  icons: () => `${getBaseUrl()}/api/v1/node-icons`,
 };
 
 /**
@@ -28,7 +29,7 @@ export class NodeIconApiService {
   private readonly rawHttp: HttpClient;
 
   constructor(
-    private api: ApiService,
+    private http: HttpClient,
     httpBackend: HttpBackend,
   ) {
     this.rawHttp = new HttpClient(httpBackend);
@@ -45,7 +46,7 @@ export class NodeIconApiService {
       size: file.size,
       folder: 'node-icons',
     };
-    return this.api.post<ApiResponse<NodeIconPresignResult>>(ICON_API.presign, presignBody).pipe(
+    return this.http.post<ApiResponse<NodeIconPresignResult>>(ICON_API.presign(), presignBody).pipe(
       map((res) => res.result),
       switchMap((presign) =>
         this.putToS3(presign, file).pipe(
@@ -57,12 +58,12 @@ export class NodeIconApiService {
 
   /** Danh sách icon đã tải lên */
   getIcons(): Observable<NodeIconDto[]> {
-    return this.api.get<ApiResponse<NodeIconDto[]>>(ICON_API.icons).pipe(map((res) => res.result || []));
+    return this.http.get<ApiResponse<NodeIconDto[]>>(ICON_API.icons()).pipe(map((res) => res.result || []));
   }
 
   /** Xoá icon (BE xoá cả tệp trên S3) */
   deleteIcon(id: string): Observable<void> {
-    return this.api.delete<ApiResponse<unknown>>(`${ICON_API.icons}/${encodeURIComponent(id)}`).pipe(map(() => undefined));
+    return this.http.delete<ApiResponse<unknown>>(`${ICON_API.icons()}/${encodeURIComponent(id)}`).pipe(map(() => undefined));
   }
 
   private putToS3(presign: NodeIconPresignResult, file: File): Observable<unknown> {
@@ -71,6 +72,6 @@ export class NodeIconApiService {
   }
 
   private confirmUpload(body: NodeIconConfirmRequest): Observable<NodeIconDto> {
-    return this.api.post<ApiResponse<NodeIconDto>>(ICON_API.icons, body).pipe(map((res) => res.result));
+    return this.http.post<ApiResponse<NodeIconDto>>(ICON_API.icons(), body).pipe(map((res) => res.result));
   }
 }

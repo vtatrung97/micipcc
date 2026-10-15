@@ -104,7 +104,7 @@ export class ProcessViewerComponent implements AfterViewInit {
     } else if (this.template.graphData) {
       this.persistence.loadGraphData(this.template.graphData);
     } else {
-      this.samples.loadSampleFlow('default');
+      this.samples.createBlankWorkflowSample();
     }
     const graph = this.store.graph;
     graph.getEdges()?.forEach((e: any) => e.setLabels([]));

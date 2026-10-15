@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { ApiService } from '@core/http/api.service';
-import { DEFAULT_PRESET_TEMPLATES } from './preset-templates.constant';
+import { CoreService, TicketCallFlowSearchRequest } from '@core/services/core-service/core-service.service';
 
 /** Thời điểm dạng 'DD/MM/YYYY HH:mm:ss' (định dạng ngày giờ của danh sách quy trình) */
 function formatDateTime(d: Date): string {
@@ -88,8 +88,7 @@ export interface ProcessTemplateItem {
   providedIn: 'root'
 })
 export class TemplateService {
-  private readonly endpoint = '/templates';
-  // v5: 4 quy trình mẫu (4 loại kích hoạt), nhánh Lỗi có bước Báo lỗi xử lý → đổi key để bỏ cache cũ
+  private readonly endpoint = '/ticket-call-flows';
   private readonly STORAGE_KEY = 'ipcc_process_templates_store_v5';
   private readonly EXPERIMENT_KEY = 'ipcc_template_experiments_store';
 
@@ -100,66 +99,101 @@ export class TemplateService {
   public experiments$: Observable<TemplateExperimentConfig[]> = this.experimentsSubject.asObservable();
 
   constructor(
-    private apiService: ApiService
+    private coreService: CoreService,
+    private http: HttpClient
   ) {
     this.loadFromStorage();
   }
 
-  public fetchTemplatesFromApi(): Observable<ProcessTemplateItem[]> {
-    return this.apiService.get<{ templates: ProcessTemplateItem[] } | ProcessTemplateItem[]>(this.endpoint).pipe(
+  public fetchTemplatesFromApi(request?: TicketCallFlowSearchRequest): Observable<ProcessTemplateItem[]> {
+    return this.coreService.searchTicketCallFlows(request || { page: 0, size: 100 }).pipe(
       map(res => {
-        if (Array.isArray(res)) return res;
-        if (res && Array.isArray((res as any).templates)) {
-          return (res as any).templates;
+        const content = res?.data?.content || res?.result?.content || res?.content || (Array.isArray(res?.result) ? res.result : (Array.isArray(res) ? res : []));
+        if (Array.isArray(content) && content.length > 0) {
+          return content.map(item => this.mapApiItemToProcessTemplate(item));
         }
-        return this.templatesSubject.value.length > 0 ? this.templatesSubject.value : [...DEFAULT_PRESET_TEMPLATES];
+        return [];
       }),
-      catchError(() => {
-        return of(this.templatesSubject.value.length > 0 ? this.templatesSubject.value : [...DEFAULT_PRESET_TEMPLATES]);
+      catchError(err => {
+        console.warn('Lỗi khi tải danh sách quy trình từ API:', err);
+        return of(this.templatesSubject.value || []);
       }),
       tap(templates => {
         this.templatesSubject.next(templates);
-        this.saveToStorage();
       })
     );
   }
 
+  public mapApiItemToProcessTemplate(item: any): ProcessTemplateItem {
+    const statusMap: Record<string, 'Published' | 'Draft' | 'Inactive'> = {
+      ACTIVE: 'Published',
+      PUBLISHED: 'Published',
+      Published: 'Published',
+      INACTIVE: 'Inactive',
+      Inactive: 'Inactive',
+      DRAFT: 'Draft',
+      Draft: 'Draft'
+    };
+
+    const slaStatusMap: Record<string, 'normal' | 'warning' | 'danger' | 'overdue' | 'success'> = {
+      normal: 'normal',
+      warning: 'warning',
+      danger: 'danger',
+      overdue: 'overdue',
+      success: 'success'
+    };
+
+    return {
+      id: String(item.id || item.templateId || ''),
+      code: item.code || '',
+      name: item.name || '',
+      category: item.category || 'Xử lý khiếu nại',
+      version: item.versionName || (item.versionNo ? `V${item.versionNo}` : 'V1.0'),
+      active_version_id: item.templateVersionId,
+      owner_org_id: item.owner_org_id || 'ORG_CSKH',
+      owner_org_name: item.owner_org_name || 'TT CSKH',
+      sla: item.sla || `${item.slaValue || 0} ${item.slaUnit || 'HOUR'}`,
+      slaStatus: slaStatusMap[item.slaStatus] || 'normal',
+      status: statusMap[item.status] || 'Draft',
+      description: item.description || '',
+      published_at: item.publishedAt ? (typeof item.publishedAt === 'number' ? formatDateTime(new Date(item.publishedAt)) : item.publishedAt) : undefined,
+      published_by: item.publishedBy,
+      created_at: item.createdAt ? (typeof item.createdAt === 'number' ? formatDateTime(new Date(item.createdAt)) : item.createdAt) : undefined,
+      created_by: item.createdBy,
+      updatedAt: item.updatedAt ? (typeof item.updatedAt === 'number' ? formatDateTime(new Date(item.updatedAt)) : item.updatedAt) : undefined,
+      updated_by: item.updatedBy,
+      active_instances_count: item.active_instances_count || 0,
+      triggerType: item.triggerType || item.trigger?.triggerType || 'MANUAL',
+      triggerConfig: item.triggerConfig || null,
+      slaValue: item.slaValue,
+      slaUnit: item.slaUnit,
+      flowDefinition: item.flowJson ? (typeof item.flowJson === 'string' ? JSON.parse(item.flowJson) : item.flowJson) : null
+    };
+  }
+
   private loadFromStorage(): void {
     try {
-      const raw = localStorage.getItem(this.STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.templatesSubject.next(parsed);
-          return;
+      localStorage.removeItem(this.STORAGE_KEY);
+      localStorage.removeItem(this.EXPERIMENT_KEY);
+      // Xoá tất cả key mock flow draft cũ
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('mock_flow_draft_') || key.startsWith('ipcc_process_templates_store'))) {
+          keysToRemove.push(key);
         }
       }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
     } catch {}
-    this.templatesSubject.next([...DEFAULT_PRESET_TEMPLATES]);
-
-    try {
-      const expRaw = localStorage.getItem(this.EXPERIMENT_KEY);
-      if (expRaw) {
-        const parsedExp = JSON.parse(expRaw);
-        if (Array.isArray(parsedExp) && parsedExp.length > 0) {
-          this.experimentsSubject.next(parsedExp);
-          return;
-        }
-      }
-    } catch {}
-    this.experimentsSubject.next([]);
+    this.templatesSubject.next([]);
   }
 
   private saveToStorage(): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.templatesSubject.value));
-    } catch {}
+    // Không lưu vào localStorage, dữ liệu quản lý qua API Backend
   }
 
   private saveExperimentsToStorage(): void {
-    try {
-      localStorage.setItem(this.EXPERIMENT_KEY, JSON.stringify(this.experimentsSubject.value));
-    } catch {}
+    // Không lưu vào localStorage
   }
 
   public getTemplates(): ProcessTemplateItem[] {

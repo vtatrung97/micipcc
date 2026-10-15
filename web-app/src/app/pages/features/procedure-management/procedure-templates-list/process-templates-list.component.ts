@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { TemplateService, ProcessTemplateItem } from '@core/services/ticket-call-flows/template.service';
+import { CoreService } from '@core/services/core-service/core-service.service';
 import { ProcessCategoryService } from '@core/services/ticket-call-flows/process-category.service';
 import { SelectOption } from '@shared/components/ant-select/ant-select.component';
 import { ActionMenuItem } from '@shared/components/action-menu/action-menu.component';
@@ -108,6 +109,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
 
   constructor(
     private templateService: TemplateService,
+    private coreService: CoreService,
     private router: Router,
     private message: NzMessageService,
     private categoryService: ProcessCategoryService
@@ -132,7 +134,17 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
 
   loadTemplates(): void {
     this.isLoading = true;
-    this.templateService.fetchTemplatesFromApi()
+    const params: any = {
+      page: this.page - 1,
+      size: this.pageSize
+    };
+    if (this.appliedKeyword) {
+      params.keyword = this.appliedKeyword;
+    }
+    if (this.statusFilter) {
+      params.status = this.statusFilter === 'Published' ? 'ACTIVE' : 'DRAFT';
+    }
+    this.templateService.fetchTemplatesFromApi(params)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => (this.isLoading = false),
@@ -426,11 +438,28 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     this.openActionModal(key as ProcessAction, [row]);
   }
 
-  /** Lưu bản sao trạng thái Nháp với Tên / Mã người dùng nhập */
+  /** Lưu bản sao trạng thái Nháp với Tên / Mã người dùng nhập qua API */
   confirmClone(value: ProcessCloneValue): void {
     if (!this.cloneSource) return;
-    const cloned = this.templateService.cloneTemplate(this.cloneSource.code, value.code, value.name);
-    if (cloned) this.message.success(`Đã nhân bản thành bản nháp [${cloned.code}].`);
+    const source = this.cloneSource;
+    this.isLoading = true;
+    const flowId = source.id || source.code;
+    const versionId = source.active_version_id || '1';
+
+    this.coreService.cloneTicketCallFlowVersion(flowId, versionId, {
+      code: value.code,
+      name: value.name
+    }).subscribe({
+      next: (res) => {
+        const newCode = res?.result?.code || value.code;
+        this.message.success(`Đã nhân bản quy trình thành [${newCode}].`);
+        this.loadTemplates();
+      },
+      error: (err) => {
+        this.message.error('Nhân bản thất bại: ' + (err?.error?.message || err?.message || 'Có lỗi xảy ra'));
+        this.isLoading = false;
+      }
+    });
     this.cloneSource = null;
   }
 
@@ -463,25 +492,61 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   }
 
   confirmActionModal(): void {
-    const codes = this.modalRows.map(r => r.item.code);
+    if (this.modalRows.length === 0) return;
+    const rows = [...this.modalRows];
+    this.isLoading = true;
+
     switch (this.modalAction) {
       case 'publish': {
-        const now = this.formatNow();
-        codes.forEach(code => this.templateService.updateTemplate(code, { status: 'Published', published_at: now }));
-        this.message.success(`Đã ban hành ${codes.length} quy trình.`);
+        const calls = rows.map(r =>
+          this.coreService.publishTicketCallFlowVersion(r.item.id || r.item.code, r.item.active_version_id || '1')
+        );
+        forkJoin(calls).subscribe({
+          next: () => {
+            this.message.success(`Đã ban hành ${rows.length} quy trình.`);
+            this.loadTemplates();
+          },
+          error: (err) => {
+            this.message.error('Ban hành thất bại: ' + (err?.error?.message || err?.message || 'Có lỗi xảy ra'));
+            this.loadTemplates();
+          }
+        });
         break;
       }
-      case 'stop':
-        codes.forEach(code => this.templateService.updateTemplate(code, { status: 'Inactive' }));
-        this.message.success(`Đã dừng ban hành ${codes.length} quy trình.`);
+      case 'stop': {
+        const calls = rows.map(r =>
+          this.coreService.updateTicketCallFlowVersion(r.item.id || r.item.code, r.item.active_version_id || '1', {
+            name: r.item.name,
+            status: 'INACTIVE',
+            flowJson: JSON.stringify(r.item.flowDefinition || {})
+          })
+        );
+        forkJoin(calls).subscribe({
+          next: () => {
+            this.message.success(`Đã dừng ban hành ${rows.length} quy trình.`);
+            this.loadTemplates();
+          },
+          error: (err) => {
+            this.message.error('Dừng ban hành thất bại: ' + (err?.error?.message || err?.message || 'Có lỗi xảy ra'));
+            this.loadTemplates();
+          }
+        });
         break;
+      }
       case 'delete': {
-        const failed = codes
-          .map(code => this.templateService.deleteTemplate(code))
-          .filter(res => !res.success);
-        failed.length
-          ? failed.forEach(res => this.message.error(res.message))
-          : this.message.success(`Đã xóa ${codes.length} quy trình.`);
+        const calls = rows.map(r =>
+          this.coreService.deleteTicketCallFlowVersion(r.item.id || r.item.code, r.item.active_version_id || '1')
+        );
+        forkJoin(calls).subscribe({
+          next: () => {
+            this.message.success(`Đã xóa ${rows.length} quy trình.`);
+            this.loadTemplates();
+          },
+          error: (err) => {
+            this.message.error('Xóa thất bại: ' + (err?.error?.message || err?.message || 'Có lỗi xảy ra'));
+            this.loadTemplates();
+          }
+        });
         break;
       }
     }
