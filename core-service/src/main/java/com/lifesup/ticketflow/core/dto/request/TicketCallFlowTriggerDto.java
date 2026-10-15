@@ -1,6 +1,8 @@
 package com.lifesup.ticketflow.core.dto.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.lifesup.ticketflow.common.json.StringTrimDeserializer;
 import com.lifesup.ticketflow.core.common.enums.ScheduleRepeat;
 import com.lifesup.ticketflow.core.common.enums.ScheduleType;
@@ -29,10 +31,10 @@ public class TicketCallFlowTriggerDto {
     @NotNull(message = "{validation.ticketCallFlow.trigger.type.required}")
     TriggerType type;
 
-    @Schema(description = "Biểu mẫu dữ liệu đầu vào, bắt buộc khi type = MANUAL")
-    @Size(max = 100, message = "{validation.ticketCallFlow.trigger.id.size}")
-    @JsonDeserialize(using = StringTrimDeserializer.class)
-    String inputFormId;
+    @Schema(description = "Id biểu mẫu dữ liệu đầu vào (form.id), bắt buộc khi type = MANUAL",
+            type = "string", example = "900000000000000201")
+    @JsonSerialize(using = ToStringSerializer.class)
+    Long inputFormId;
 
     @Schema(description = "API kích hoạt, bắt buộc khi type = AUTO")
     @Size(max = 100, message = "{validation.ticketCallFlow.trigger.id.size}")

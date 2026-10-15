@@ -1,6 +1,7 @@
 package com.lifesup.ticketflow.core.dto.response;
 
 import com.lifesup.ticketflow.core.common.enums.TicketCallFlowVersionStatus;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowParamDto;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,6 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 
 /** Chi tiết một phiên bản, kèm JSON canvas để FE xem lại. */
@@ -33,6 +36,11 @@ public class TicketCallFlowVersionResponse {
     String versionDescription;
     /** Chuỗi JSON canvas, đúng nguyên văn như FE đã gửi lên. */
     String flowJson;
+    /** null = chưa khai báo. */
+    List<TicketCallFlowParamDto> inputParams;
+    /** null = chưa khai báo. */
+    List<TicketCallFlowParamDto> outputParams;
+    boolean hasSubProcess;
     Long publishedAt;
     String publishedBy;
     Long createdAt;

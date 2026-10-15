@@ -10,11 +10,15 @@ import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCloneRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowCreateRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowPublishRequest;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSearchRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowSubProcessSearchRequest;
+import com.lifesup.ticketflow.core.dto.request.TicketCallFlowParamDto;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowTriggerDto;
 import com.lifesup.ticketflow.core.dto.request.TicketCallFlowUpdateRequest;
+import com.lifesup.ticketflow.auth.util.SecurityContextUtils;
 import com.lifesup.ticketflow.common.api.PageResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowStatsResponse;
+import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSubProcessResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowSummaryResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionResponse;
 import com.lifesup.ticketflow.core.dto.response.TicketCallFlowVersionSummaryResponse;
@@ -25,6 +29,7 @@ import com.lifesup.ticketflow.common.exception.AppException;
 import com.lifesup.ticketflow.common.exception.ErrorCode;
 import com.lifesup.ticketflow.core.common.exception.CoreErrorCode;
 import static com.lifesup.ticketflow.core.common.util.QueryUtils.toLikePattern;
+import com.lifesup.ticketflow.core.repository.FormRepository;
 import com.lifesup.ticketflow.core.repository.TemplateRepository;
 import com.lifesup.ticketflow.core.repository.TemplateVersionRepository;
 import com.lifesup.ticketflow.core.service.TicketCallFlowService;
@@ -41,10 +46,14 @@ import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Quy trình gồm thông tin chung (template) và các phiên bản canvas (template_version):
@@ -63,6 +72,9 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
     /** Giới hạn kích thước JSON canvas (ký tự), tránh request quá lớn làm nặng DB. */
     static final int MAX_FLOW_JSON_LENGTH = 5_000_000;
+
+    /** Header realm của IPCC 2.0 (common-auth cũng dùng để chọn cấu hình Keycloak). */
+    static final String REALM_HEADER = "x-ipcc2-realm";
 
     /** Field sắp xếp (tên field trong TicketCallFlowSummaryResponse) → biểu thức JPQL trong TemplateRepository.search. */
     static final Map<String, String> SORT_FIELDS = Map.ofEntries(
@@ -89,6 +101,7 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
     TemplateRepository templateRepository;
     TemplateVersionRepository templateVersionRepository;
+    FormRepository formRepository;
     ObjectMapper objectMapper;
     AuditorAware<String> auditorAware;
 
@@ -110,7 +123,12 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         entity.setSlaValue(request.getSlaValue());
         entity.setSlaUnit(request.getSlaUnit());
 
-        TemplateVersionEntity version = insertWithUniqueCode(entity, validateFlowJson(request.getFlowJson()));
+        TemplateVersionEntity draft = newDraft(null, 1);
+        draft.setModelJson(validateFlowJson(request.getFlowJson()));
+        draft.setInputParams(validateParams(request.getInputParams()));
+        draft.setOutputParams(validateParams(request.getOutputParams()));
+        draft.setHasSubProcess(Boolean.TRUE.equals(request.getHasSubProcess()));
+        TemplateVersionEntity version = insertWithUniqueCode(entity, draft);
         log.info("Created template id={} code={}", entity.getId(), entity.getCode());
         return toResponse(entity, version);
     }
@@ -138,8 +156,13 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
         entity.setSlaValue(source.getSlaValue());
         entity.setSlaUnit(source.getSlaUnit());
 
-        // flowJson của bản gốc đã được kiểm tra lúc lưu, sao chép nguyên văn
-        TemplateVersionEntity version = insertWithUniqueCode(entity, sourceVersion.getModelJson());
+        // flowJson, dữ liệu đầu vào / đầu ra của bản gốc đã được kiểm tra lúc lưu, sao chép nguyên văn
+        TemplateVersionEntity draft = newDraft(null, 1);
+        draft.setModelJson(sourceVersion.getModelJson());
+        draft.setInputParams(sourceVersion.getInputParams());
+        draft.setOutputParams(sourceVersion.getOutputParams());
+        draft.setHasSubProcess(sourceVersion.isHasSubProcess());
+        TemplateVersionEntity version = insertWithUniqueCode(entity, draft);
         log.info("Cloned template sourceId={} versionNo={} -> id={} code={}",
                 source.getId(), sourceVersion.getVersionNo(), entity.getId(), entity.getCode());
         return toResponse(entity, version);
@@ -175,9 +198,23 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
 
         // Bản đang ban hành giữ nguyên cho Flow đang chạy: sửa thì sinh phiên bản mới; trạng thái khác sửa trực tiếp
         if (version.getStatus() == TicketCallFlowVersionStatus.PUBLISHED) {
+            TemplateVersionEntity published = version;
             version = newDraft(id, templateVersionRepository.findMaxVersionNo(id) + 1);
+            // Không truyền thì giữ nguyên = kế thừa từ bản đang ban hành
+            version.setInputParams(published.getInputParams());
+            version.setOutputParams(published.getOutputParams());
+            version.setHasSubProcess(published.isHasSubProcess());
+        }
+        if (request.getHasSubProcess() != null) {
+            version.setHasSubProcess(request.getHasSubProcess());
         }
         version.setModelJson(validateFlowJson(request.getFlowJson()));
+        if (request.getInputParams() != null) {
+            version.setInputParams(validateParams(request.getInputParams()));
+        }
+        if (request.getOutputParams() != null) {
+            version.setOutputParams(validateParams(request.getOutputParams()));
+        }
         applyVersionInfo(version, request.getVersionName(), request.getVersionDescription());
         templateVersionRepository.saveAndFlush(version);
 
@@ -231,6 +268,15 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
                 .or(() -> templateVersionRepository.findFirstByTemplateIdOrderByVersionNoDesc(id))
                 .orElse(null);
         return toResponse(entity, version);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<TicketCallFlowSubProcessResponse> searchSubProcesses(TicketCallFlowSubProcessSearchRequest request) {
+        // Không có header realm thì lấy mọi realm
+        return new PageResponse<>(templateVersionRepository.searchSubProcesses(
+                headerRealm(), toLikePattern(request.getKeyword()), request.getExcludeId(),
+                PageRequest.of(request.getPage() - 1, request.getSize())));
     }
 
     @Override
@@ -299,6 +345,9 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
                 .versionName(version.getVersionName())
                 .versionDescription(version.getVersionDescription())
                 .flowJson(version.getModelJson())
+                .inputParams(version.getInputParams())
+                .outputParams(version.getOutputParams())
+                .hasSubProcess(version.isHasSubProcess())
                 .publishedAt(version.getPublishedAt())
                 .publishedBy(version.getPublishedBy())
                 .createdAt(version.getCreatedAt())
@@ -331,32 +380,64 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
     }
 
     /**
-     * Thêm quy trình mới kèm phiên bản 1 (DRAFT), báo lỗi nếu mã đã có trong các quy trình chưa xoá (deleted = false).
-     * Trả về phiên bản 1; {@code entity} được persist tại chỗ (có id sau khi gọi).
+     * Thêm quy trình mới kèm phiên bản 1 {@code draft} (đã gán nội dung), báo lỗi nếu mã đã có trong các quy trình
+     * chưa xoá (deleted = false). Trả về phiên bản 1; {@code entity} được persist tại chỗ (có id sau khi gọi).
      */
-    private TemplateVersionEntity insertWithUniqueCode(TemplateEntity entity, String flowJson) {
+    private TemplateVersionEntity insertWithUniqueCode(TemplateEntity entity, TemplateVersionEntity draft) {
         // ponytail: chỉ kiểm ở ứng dụng, 2 request tạo cùng mã cùng lúc vẫn có thể lọt; cần chặn thì thêm lock theo mã
         if (templateRepository.existsByCodeAndDeletedFalse(entity.getCode())) {
             throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_CODE_EXISTED);
         }
+        entity.setRealm(currentRealm());
         templateRepository.saveAndFlush(entity);
-        TemplateVersionEntity draft = newDraft(entity.getId(), 1);
-        draft.setModelJson(flowJson);
+        draft.setTemplateId(entity.getId());
         return templateVersionRepository.saveAndFlush(draft);
+    }
+
+    /** Realm để lưu khi tạo quy trình: header x-ipcc2-realm, không có thì realm trong token, cả hai không có thì null. */
+    private static String currentRealm() {
+        String realm = headerRealm();
+        return realm != null ? realm : SecurityContextUtils.getRealm();
+    }
+
+    /** Header x-ipcc2-realm của request hiện tại, không có thì null. */
+    private static String headerRealm() {
+        if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
+            String realm = attributes.getRequest().getHeader(REALM_HEADER);
+            return StringUtils.hasText(realm) ? realm.trim() : null;
+        }
+        return null;
+    }
+
+    /** Tên trường dữ liệu đầu vào / đầu ra không được trùng trong cùng một danh sách. */
+    private static List<TicketCallFlowParamDto> validateParams(List<TicketCallFlowParamDto> params) {
+        if (params == null) {
+            return null;
+        }
+        Set<String> names = new HashSet<>();
+        for (TicketCallFlowParamDto param : params) {
+            if (!names.add(param.getName())) {
+                throw AppException.withArgs(CoreErrorCode.TICKET_CALL_FLOW_PARAM_DUPLICATED, param.getName());
+            }
+        }
+        return params;
     }
 
     /**
      * Kiểm tra field bắt buộc theo loại kích hoạt rồi gán vào quy trình.
      * Chỉ lưu field của loại đã chọn, field của loại khác xoá về null để không còn cấu hình cũ.
      */
-    private static void applyTrigger(TemplateEntity entity, TicketCallFlowTriggerDto trigger) {
+    private void applyTrigger(TemplateEntity entity, TicketCallFlowTriggerDto trigger) {
         TriggerType type = trigger.getType();
         boolean once = type == TriggerType.SCHEDULE && trigger.getScheduleType() == ScheduleType.ONCE;
         boolean repeat = type == TriggerType.SCHEDULE && trigger.getScheduleType() == ScheduleType.REPEAT;
 
         // ponytail: HYBRID chưa có thiết kế chi tiết nên chưa kiểm field nào, bổ sung khi BA chốt
-        if (type == TriggerType.MANUAL && !StringUtils.hasText(trigger.getInputFormId())) {
+        if (type == TriggerType.MANUAL && trigger.getInputFormId() == null) {
             throw triggerInvalid("inputFormId");
+        }
+        if (type == TriggerType.MANUAL && !formRepository.existsByIdAndDeletedFalse(trigger.getInputFormId())) {
+            throw new AppException(CoreErrorCode.TICKET_CALL_FLOW_INPUT_FORM_NOT_FOUND);
         }
         if (type == TriggerType.AUTO && !StringUtils.hasText(trigger.getApiId())) {
             throw triggerInvalid("apiId");
@@ -515,6 +596,9 @@ public class TicketCallFlowServiceImpl implements TicketCallFlowService {
                 .flowJsonVersionId(editing != null ? editing.getId() : null)
                 .flowJsonVersionNo(editing != null ? editing.getVersionNo() : null)
                 .flowJsonVersionStatus(editing != null ? editing.getStatus() : null)
+                .inputParams(editing != null ? editing.getInputParams() : null)
+                .outputParams(editing != null ? editing.getOutputParams() : null)
+                .hasSubProcess(editing != null ? editing.isHasSubProcess() : null)
                 .publishedVersion(toVersionSummary(published))
                 .createdAt(entity.getCreatedAt())
                 .createdBy(entity.getCreatedBy())

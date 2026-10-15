@@ -61,9 +61,9 @@ public class TemplateEntity extends BaseEntity {
     @Column(name = "trigger_type", length = 20)
     TriggerType triggerType;
 
-    /** Biểu mẫu dữ liệu đầu vào (MANUAL). */
-    @Column(name = "input_form_id", length = 100)
-    String inputFormId;
+    /** Biểu mẫu dữ liệu đầu vào (MANUAL), form.id. */
+    @Column(name = "input_form_id")
+    Long inputFormId;
 
     /** API kích hoạt (AUTO). */
     @Column(name = "trigger_api_id", length = 100)
@@ -94,4 +94,8 @@ public class TemplateEntity extends BaseEntity {
 
     @Column(name = "deleted", nullable = false)
     boolean deleted;
+
+    /** Realm của người tạo (header x-ipcc2-realm, không có thì realm trong token); không đổi sau khi tạo. */
+    @Column(name = "realm", length = 100, updatable = false)
+    String realm;
 }

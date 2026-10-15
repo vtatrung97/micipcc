@@ -72,7 +72,7 @@ File hướng dẫn cho Claude Code. **Không commit** (đã có trong `.gitigno
     **không trùng trên cả 2 thư mục** (Flyway chạy theo `n`), phần sau `__` là thời điểm viết + ý nghĩa.
   - File đã chạy lên môi trường nào thì **không sửa nội dung / đổi tên nữa**, thay đổi tiếp theo viết file mới.
 - `db/database_setup.sql`: DevOps chạy một lần bằng tài khoản quản trị để tạo DB + user (không tạo bảng).
-- Mỗi service 1 DB + 1 user trùng tên, **mật khẩu `<tênDB>#123`** (VD `flow_core` / `flow_core#123`).
+- Mỗi service 1 DB + 1 user trùng tên, **mật khẩu `<tênDB>#123`** (VD `core_service` / `core_service#123`).
   User có quyền DML + DDL trên schema của mình (Flyway chạy bằng user này); tách user migration → `FLYWAY_USERNAME/PASSWORD`.
 - Trong `.env`, giá trị có `#` hoặc khoảng trắng **phải đặt trong nháy kép** (IntelliJ coi `#` là comment).
 - Bảng: `utf8mb4 / utf8mb4_unicode_ci`.
