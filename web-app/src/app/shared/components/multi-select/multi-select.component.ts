@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectOption } from '../ant-select/ant-select.component';
-import { shouldDropUp } from '../../utils/dropdown-placement';
+import { shouldDropUp } from '../../util/dropdown-placement';
 
 const ICON_BASE = 'assets/icons/processx';
 
