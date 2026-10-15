@@ -52,7 +52,6 @@
             <groupId>io.hypersistence</groupId>
             <artifactId>hypersistence-utils-hibernate-63</artifactId>
         </dependency>
-        <!-- Migration schema flow_core (Architecture Design mục 2.1), script ở db/migration -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
