@@ -1,8 +1,32 @@
 .footer {
-  padding: 0;
-  color: #333333;
-  display: block;
-  position: relative;
+  height: 36px;
+  background-color: #ffffff;
+  border-top: 1px solid #e8e8e8;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
   width: 100%;
-  left: 0 !important;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .footer-logo {
+    height: 14px;
+    width: auto;
+    object-fit: contain;
+    display: inline-block;
+  }
+
+  .footer-text {
+    font-size: 12px;
+    color: #595959;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.1px;
+  }
 }
