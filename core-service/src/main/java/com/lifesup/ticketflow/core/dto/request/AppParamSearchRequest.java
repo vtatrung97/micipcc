@@ -22,6 +22,6 @@ public class AppParamSearchRequest {
     @Min(1)
     int page = 1;
     @Min(1)
-    @Max(100)
+    @Max(1000)
     int size = 20;
 }
