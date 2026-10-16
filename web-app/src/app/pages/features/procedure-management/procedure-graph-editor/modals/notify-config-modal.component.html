@@ -1,0 +1,18 @@
+<div class="notify-config-container">
+  <p class="notify-desc">{{ 'PROCESS_GRAPH.MODALS.NOTIFY_CONFIG.DESC' | translate }}</p>
+
+  <div class="notify-checks">
+    <label class="check-item">
+      <input type="checkbox" [(ngModel)]="webNotify" />
+      <span>{{ 'PROCESS_GRAPH.MODALS.NOTIFY_CONFIG.WEB' | translate }}</span>
+    </label>
+    <label class="check-item">
+      <input type="checkbox" [(ngModel)]="smsNotify" />
+      <span>{{ 'PROCESS_GRAPH.MODALS.NOTIFY_CONFIG.SMS' | translate }}</span>
+    </label>
+    <label class="check-item">
+      <input type="checkbox" [(ngModel)]="emailNotify" />
+      <span>{{ 'PROCESS_GRAPH.MODALS.NOTIFY_CONFIG.EMAIL' | translate }}</span>
+    </label>
+  </div>
+</div>

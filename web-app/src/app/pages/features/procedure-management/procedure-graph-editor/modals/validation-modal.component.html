@@ -1,0 +1,71 @@
+<div class="validation-modal-container">
+  <!-- Status Banner -->
+  <div class="validation-status-banner" [ngClass]="validationResult?.isValid ? 'banner-success' : 'banner-error'">
+    <div class="status-icon">
+      <ant-icon
+        [name]="validationResult?.isValid ? 'check-circle-fill' : 'close-circle-fill'"
+        [size]="24"
+        [color]="validationResult?.isValid ? '#52c41a' : '#ff4d4f'">
+      </ant-icon>
+    </div>
+    <div class="status-content">
+      <h5 class="status-title">{{ validationResult?.summary }}</h5>
+      <p class="status-subtitle" *ngIf="validationResult?.isValid">
+        {{ 'PROCESS_GRAPH.MODALS.VALIDATION.VALID_DESC' | translate }}
+      </p>
+      <p class="status-subtitle" *ngIf="!validationResult?.isValid">
+        {{ 'PROCESS_GRAPH.MODALS.VALIDATION.INVALID_DESC' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Errors List -->
+  <div class="validation-issues-list" *ngIf="validationResult && validationResult.errors.length > 0">
+    <div class="issues-heading">{{ 'PROCESS_GRAPH.MODALS.VALIDATION.ERRORS_HEADING' | translate: { count: validationResult.errors.length } }}</div>
+    <div class="issue-item issue-error" *ngFor="let err of validationResult.errors">
+      <div class="issue-type-badge" [ngClass]="err.type">{{ 'PROCESS_GRAPH.NODE_TYPES.' + err.type | translate }}</div>
+      <div class="issue-info">
+        <span class="issue-msg">{{ err.message }}</span>
+        <span class="issue-code" *ngIf="err.nodeKey">{{ 'PROCESS_GRAPH.MODALS.VALIDATION.STEP_CODE' | translate: { key: err.nodeKey } }}</span>
+      </div>
+      <button nz-button nzType="link" nzSize="small" *ngIf="err.nodeId" (click)="onFocusNode(err.nodeId)">
+        <span>{{ 'PROCESS_GRAPH.MODALS.VALIDATION.GO_TO_STEP' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Warnings List -->
+  <div class="validation-issues-list mt-3" *ngIf="validationResult && validationResult.warnings.length > 0">
+    <div class="issues-heading text-amber-600">{{ 'PROCESS_GRAPH.MODALS.VALIDATION.WARNINGS_HEADING' | translate: { count: validationResult.warnings.length } }}</div>
+    <div class="issue-item issue-warning" *ngFor="let warn of validationResult.warnings">
+      <div class="issue-type-badge warning">{{ 'PROCESS_GRAPH.NODE_TYPES.' + warn.type | translate }}</div>
+      <div class="issue-info">
+        <span class="issue-msg">{{ warn.message }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BPMN 7 Nodes Rules Summary Reference -->
+  <div class="bpmn-rules-summary">
+    <div class="rules-summary-title">{{ 'PROCESS_GRAPH.MODALS.VALIDATION.RULES_TITLE' | translate }}</div>
+    <div class="rules-grid">
+      <div class="rule-chip"><span class="chip-type">⚡ {{ 'PROCESS_GRAPH.NODE_TYPES.START' | translate }}:</span> {{ 'PROCESS_GRAPH.MODALS.VALIDATION.RULES.START' | translate }}</div>
+      <div class="rule-chip"><span class="chip-type">👤 {{ 'PROCESS_GRAPH.NODE_TYPES.USER_TASK' | translate }}:</span> {{ 'PROCESS_GRAPH.MODALS.VALIDATION.RULES.USER_TASK' | translate }}</div>
+      <div class="rule-chip"><span class="chip-type">🚀 {{ 'PROCESS_GRAPH.NODE_TYPES.SYSTEM_TASK' | translate }}:</span> {{ 'PROCESS_GRAPH.MODALS.VALIDATION.RULES.SYSTEM_TASK' | translate }}</div>
+      <div class="rule-chip"><span class="chip-type">❓ {{ 'PROCESS_GRAPH.PALETTE.CONDITION_GROUP' | translate }}:</span> {{ 'PROCESS_GRAPH.MODALS.VALIDATION.RULES.GATEWAY' | translate }}</div>
+      <div class="rule-chip"><span class="chip-type">⑃ {{ 'PROCESS_GRAPH.NODE_TYPES.JOIN' | translate }}:</span> {{ 'PROCESS_GRAPH.MODALS.VALIDATION.RULES.JOIN' | translate }}</div>
+      <div class="rule-chip"><span class="chip-type">🛑 {{ 'PROCESS_GRAPH.NODE_TYPES.END' | translate }}:</span> {{ 'PROCESS_GRAPH.MODALS.VALIDATION.RULES.END' | translate }}</div>
+    </div>
+  </div>
+
+  <!-- Modal Footer Buttons -->
+  <div class="validation-modal-footer">
+    <button nz-button nzType="default" (click)="onRevalidate()">
+      <ant-icon name="reload" [size]="13" style="margin-right: 5px;"></ant-icon>
+      <span>{{ 'PROCESS_GRAPH.MODALS.VALIDATION.REVALIDATE' | translate }}</span>
+    </button>
+    <button nz-button nzType="primary" (click)="closeModal()">
+      <span>{{ 'PROCESS_GRAPH.COMMON.CLOSE' | translate }}</span>
+    </button>
+  </div>
+</div>

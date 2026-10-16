@@ -39,11 +39,17 @@ import { SlaStatusPipe } from './pipes/sla-status.pipe';
 import { DateFormatPipe } from './pipes/date-format.pipe';
 import { SafeHtmlPipe } from './pipes/safe-html.pipe';
 
+const MODULES = [
+  CommonModule,
+  FormsModule,
+  ReactiveFormsModule,
+]
+
 const SHARED_MODULES = [
   CommonModule,
   FormsModule,
   ReactiveFormsModule,
-  
+
   // Module component dùng chung
   AntIconModule,
   BreadcrumbsModule,

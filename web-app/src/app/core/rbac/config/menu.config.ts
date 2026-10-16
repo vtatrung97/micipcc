@@ -397,8 +397,8 @@ export const SYSTEM_ROUTES = {
   // [PHÂN HỆ M1] - QUẢN LÝ QUY TRÌNH
   // ==========================================================================
   GRAPH: {
-    path: 'process/graph',
-    fullPath: '/process/graph',
+    path: 'processX/graph',
+    fullPath: '/processX/graph',
     resource: 'Template' as ResourceType,
     action: 'view' as ActionPermission,
     label: 'Canvas Builder',

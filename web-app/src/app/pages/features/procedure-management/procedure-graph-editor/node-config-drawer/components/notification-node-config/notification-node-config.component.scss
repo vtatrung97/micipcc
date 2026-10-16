@@ -1,0 +1,55 @@
+@use 'processx-tokens' as px;
+
+:host {
+  display: block;
+}
+
+// Các khối cách 24, ngăn bằng đường kẻ
+.notify-config {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-24;
+  font-family: px.$font-family;
+}
+
+.notify-section {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-16;
+}
+
+.notify-divider {
+  height: 1px;
+  background: px.$neutral-300;
+}
+
+// Tiêu đề khối + chevron thu gọn
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: px.$neutral-900;
+  text-align: left;
+}
+
+.section-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+
+  &.collapsed {
+    transform: rotate(180deg);
+  }
+}
+
+:host ::ng-deep .step-code .px-input-affix-wrapper {
+  color: px.$neutral-800;
+}

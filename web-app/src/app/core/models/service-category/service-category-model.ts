@@ -1,0 +1,36 @@
+export class SeriveceCategorySearchData {
+    columns: string
+    createTimeRange: string
+    draw: string
+    length: string
+    loadParams: any[]
+    order: string
+    search: string
+    sort: string
+    start: string
+    voiceChannelIds: string
+    voiceChannelId: string
+    voiceChannelCode: string
+    voiceChannelNumber: string
+    voiceChannelName: string
+    voiceChannelType: number
+    description: string
+    voiceChannelGroupId: string
+    realmName: string
+    groupId: string
+    kzAccountId: string
+    status: number
+    createTime: number
+    createBy: string
+    createByList: string
+    updateTime: number
+    updateTimeRange: string
+    updateBy: string
+    updateByList: string
+    defaultRoutingType: number
+    defaultRouting: string
+    isLastAgent: number
+    isDeleting: number
+    lockStatus: number
+    voiceChannelGroupName: string
+}

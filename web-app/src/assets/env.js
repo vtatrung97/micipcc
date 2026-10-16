@@ -12,7 +12,7 @@
     // };
 
     const KEYCLOAK = {
-        endpoint: 'http://192.168.10.24:8081',
+        endpoint: 'http://192.168.10.30:8081',
         requireHttps: false,
         showDebugInformation: false,
         strictDiscoveryDocumentValidation: false
@@ -62,13 +62,13 @@
         CALL_BACK_SERVICE_API: { url: '', authJwt: true, crossbarJwt: false },
         CALL_BOT_SERVICE_API: { url: 'https://171.226.10.112/predict', authJwt: false, crossbarJwt: false },
 
-        CORE_SERVICE_API: { url: 'https://192.168.10.48:8080/', authJwt: true, crossbarJwt: false },
+        CORE_SERVICE_API: { url: 'http://192.168.10.48:8080/', authJwt: true, crossbarJwt: false },
         // CORE_SERVICE_API: { url: 'https://192.168.10.48:8080/core-service', authJwt: true, crossbarJwt: false },
 
-        ENGINE_SERVICE_API: { url: 'https://192.168.10.30:8080/', authJwt: true, crossbarJwt: false },
+        ENGINE_SERVICE_API: { url: 'http://192.168.10.30:8002/', authJwt: true, crossbarJwt: false },
         // ENGINE_SERVICE_API: { url: 'https://demo.moj.gov.vn:8100/engine-service', authJwt: true, crossbarJwt: false },
 
-        INTEGRATION_SERVICE_API: { url: 'https://192.168.10.48:8090/', authJwt: true, crossbarJwt: false },
+        INTEGRATION_SERVICE_API: { url: 'http://192.168.10.30:8003/', authJwt: true, crossbarJwt: false }
         // INTEGRATION_SERVICE_API: { url: 'https://demo.moj.gov.vn:8100/integration-service', authJwt: true, crossbarJwt: false },
 
     }

@@ -1,0 +1,215 @@
+@use 'processx-tokens' as px;
+
+// Vùng tải lên: nhãn + khung nét đứt cao 140
+.upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-6;
+  font-family: px.$font-family;
+}
+
+.upload-label {
+  @include px.body-sm-semibold;
+  color: px.$neutral-900;
+
+  .required {
+    margin-left: px.$space-2;
+    color: px.$primary-600;
+  }
+}
+
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: px.$space-12;
+  height: 140px;
+  padding: px.$space-12;
+  border: 1px dashed px.$neutral-300;
+  border-radius: px.$radius-lg;
+  background: px.$white;
+  box-sizing: border-box;
+  cursor: pointer;
+
+  &:hover,
+  &.dragging {
+    border-color: px.$blue-300;
+  }
+}
+
+.upload-text {
+  display: flex;
+  align-items: center;
+  gap: px.$space-4;
+  @include px.body-md-medium;
+  color: px.$neutral-900;
+}
+
+.upload-or {
+  color: px.$neutral-500;
+}
+
+.upload-link {
+  @include px.body-sm-medium;
+  color: px.$blue-300;
+}
+
+.upload-hint {
+  @include px.body-sm-regular;
+  color: px.$neutral-500;
+}
+
+.upload-error {
+  @include px.body-sm-regular;
+  color: px.$primary-600;
+}
+
+.icon-divider {
+  flex-shrink: 0;
+  height: 1px;
+  background: px.$neutral-300;
+}
+
+// Danh sách icon: tiêu đề + các dòng cách 8, cuộn khi dài
+.icon-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+  min-height: 0;
+  font-family: px.$font-family;
+}
+
+.icon-list-title {
+  @include px.body-sm-semibold;
+  color: px.$neutral-900;
+}
+
+.icon-list {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+// Một dòng: icon 40 + tên · tải xuống / xoá; dòng đang chọn nền xám có viền
+.icon-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: px.$space-12;
+  padding: px.$space-6 px.$space-12;
+  border: 1px solid transparent;
+  border-radius: px.$radius-lg;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-100;
+  }
+
+  &.selected {
+    background: px.$neutral-100;
+    border-color: px.$neutral-300;
+  }
+}
+
+.icon-file {
+  display: flex;
+  align-items: center;
+  gap: px.$space-12;
+  min-width: 0;
+}
+
+.icon-thumb {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-md;
+  background: px.$neutral-50;
+  box-sizing: border-box;
+
+  img {
+    object-fit: contain;
+  }
+}
+
+.icon-name {
+  overflow: hidden;
+  @include px.body-sm-medium;
+  color: px.$neutral-900;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.icon-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: px.$space-4;
+}
+
+.icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8;
+  border: none;
+  border-radius: px.$radius-md;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-300;
+  }
+}
+
+// Nút footer: Hủy (viền) · Lưu (đỏ, mờ khi chưa đổi lựa chọn)
+.icon-modal-actions {
+  display: flex;
+  gap: px.$space-12;
+}
+
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 px.$space-16;
+  border: 1px solid transparent;
+  border-radius: px.$radius-md;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.px-btn-default {
+  background: px.$white;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &:hover {
+    border-color: px.$neutral-800;
+  }
+}
+
+.px-btn-primary {
+  background: px.$primary-600;
+  color: px.$white;
+
+  &:hover:not(:disabled) {
+    background: px.$primary-500;
+  }
+
+  &:disabled {
+    background: px.$primary-200;
+    cursor: not-allowed;
+  }
+}

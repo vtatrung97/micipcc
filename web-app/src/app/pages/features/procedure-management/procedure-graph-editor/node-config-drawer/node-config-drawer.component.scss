@@ -1,0 +1,958 @@
+@use 'processx-tokens' as px;
+
+:host {
+  display: contents;
+}
+
+// Drawer: rộng 500, viền trái, đổ bóng nhẹ
+.properties-side-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 500px;
+  max-width: 100%;
+  background: px.$white;
+  border-left: 1px solid px.$neutral-300;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+
+  // transform: none khi mở để dropdown position: fixed bên trong định vị theo màn hình
+  &.open {
+    transform: none;
+  }
+}
+
+/* ===== 1. Header: tiêu đề + nút đóng tròn ===== */
+.drawer-header {
+  padding: px.$space-16 px.$space-24;
+  border-bottom: 1px solid px.$neutral-300;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: px.$space-12;
+  background: px.$white;
+  flex-shrink: 0;
+
+  .drawer-title {
+    margin: 0;
+    font-family: px.$font-family;
+    font-size: 20px;
+    line-height: 30px;
+    font-weight: 700;
+    color: px.$neutral-900;
+  }
+
+  .drawer-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: px.$space-12;
+    min-width: 0;
+  }
+
+  // Ô icon 40×40, huy hiệu sửa 16px ở góc dưới phải
+  .drawer-node-icon {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: px.$radius-md;
+    box-sizing: border-box;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: default;
+    }
+
+    // Nền trắng (Bắt đầu / Kết thúc) thì thêm viền cho rõ ô
+    &.bordered {
+      border: 1px solid px.$neutral-300;
+    }
+
+    &:hover {
+      box-shadow: 0 0 0 2px px.$neutral-300;
+    }
+  }
+
+  .drawer-node-badge {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    display: flex;
+    padding: px.$space-2;
+    border-radius: 112px;
+    background: px.$white;
+  }
+
+  .drawer-close-circle-btn {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    padding: px.$space-8;
+    border: none;
+    border-radius: 112px;
+    background: px.$neutral-100;
+    cursor: pointer;
+
+    &:hover {
+      background: px.$neutral-300;
+    }
+  }
+}
+
+// Nội dung node Bắt đầu: padding 24
+.start-drawer-section {
+  padding: px.$space-24;
+}
+
+/* ===== 2. Scrollable body & accordions ===== */
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #ffffff;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #e4e4e7;
+    border-radius: 4px;
+  }
+}
+
+.flat-drawer-section {
+  padding: 20px;
+}
+
+.accordion-drawer-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-accordion-section {
+  border-bottom: 1px solid #f4f4f5;
+
+  .accordion-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s ease;
+
+    &:hover {
+      background: #fafafa;
+    }
+
+    .accordion-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #18181b;
+    }
+
+    .accordion-arrow {
+      color: #71717a;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+      &.collapsed {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .accordion-content {
+    padding: 2px 20px 18px;
+    animation: fadeIn 0.15s ease;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== 3. Form controls & fields ===== */
+.form-group-item {
+  margin-bottom: 14px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.drawer-field-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #3f3f46;
+  margin-bottom: 6px;
+
+  &.required::after {
+    content: ' *';
+    color: #ef4444;
+  }
+}
+
+/* Inputs & Textareas */
+.custom-drawer-input,
+.custom-drawer-textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e4e4e7;
+  font-size: 13px;
+  color: #18181b;
+  background: #ffffff;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: #a1a1aa;
+  }
+
+  &:focus,
+  &:hover {
+    border-color: #a1a1aa;
+  }
+}
+
+.custom-drawer-input {
+  height: 38px;
+  padding: 0 12px;
+}
+
+.custom-drawer-textarea {
+  padding: 8px 12px;
+  resize: vertical;
+  min-height: 72px;
+}
+
+/* Readonly Pill Input (for ma_buoc, Kiểu kích hoạt, etc.) */
+.readonly-pill-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #f4f4f5 !important;
+  border: 1px solid #e4e4e7 !important;
+  color: #52525b !important;
+  font-size: 13px;
+  cursor: default;
+}
+
+/* Custom Select Dropdowns */
+.custom-drawer-select {
+  width: 100%;
+
+  ::ng-deep .ant-select-selector {
+    height: 38px !important;
+    border-radius: 8px !important;
+    border: 1px solid #e4e4e7 !important;
+    padding: 0 12px !important;
+    display: flex;
+    align-items: center;
+
+    .ant-select-selection-placeholder {
+      line-height: 36px !important;
+      color: #a1a1aa !important;
+      font-size: 13px;
+    }
+
+    .ant-select-selection-item {
+      line-height: 36px !important;
+      font-size: 13px;
+      color: #18181b;
+    }
+  }
+
+  ::ng-deep .ant-select-arrow {
+    color: #71717a;
+  }
+}
+
+/* SLA Input Row */
+.sla-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .sla-number-input {
+    flex: 1;
+  }
+
+  .sla-unit-select {
+    width: 95px;
+    min-width: 95px;
+
+    ::ng-deep .ant-select-selector {
+      height: 38px !important;
+      border-radius: 8px !important;
+      border: 1px solid #e4e4e7 !important;
+      display: flex;
+      align-items: center;
+
+      .ant-select-selection-item,
+      .ant-select-selection-placeholder {
+        line-height: 36px !important;
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+.form-checkbox-row {
+  margin-top: 10px;
+
+  ::ng-deep .ant-checkbox-wrapper {
+    font-size: 12.5px;
+    color: #3f3f46;
+
+    .ant-checkbox-inner {
+      border-radius: 4px;
+      border-color: #d4d4d8;
+    }
+
+    .ant-checkbox-checked .ant-checkbox-inner {
+      background-color: #dc2626;
+      border-color: #dc2626;
+    }
+  }
+}
+
+/* Vertical checkbox list for Notification channels */
+.channel-vertical-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+
+  ::ng-deep .ant-checkbox-wrapper {
+    font-size: 13px;
+    color: #3f3f46;
+
+    .ant-checkbox-inner {
+      border-radius: 4px;
+      border-color: #d4d4d8;
+    }
+
+    .ant-checkbox-checked .ant-checkbox-inner {
+      background-color: #0284c7;
+      border-color: #0284c7;
+    }
+  }
+}
+
+/* Sub-process & Action Mapping Tables */
+.mapping-table-wrapper {
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+
+  .mapping-table-header {
+    display: flex;
+    background: #f4f4f5;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #52525b;
+
+    .col-head {
+      flex: 1;
+
+      &:first-child {
+        padding-right: 6px;
+      }
+      &:last-child {
+        padding-left: 6px;
+      }
+    }
+  }
+
+  .mapping-table-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid #f4f4f5;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .col-cell {
+      flex: 1;
+
+      &.source-cell {
+        font-size: 12.5px;
+        color: #18181b;
+        padding-right: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &.target-cell {
+        padding-left: 6px;
+
+        .table-compact-select {
+          width: 100%;
+
+          ::ng-deep .ant-select-selector {
+            height: 32px !important;
+            border-radius: 6px !important;
+            border: 1px solid #e4e4e7 !important;
+            padding: 0 8px !important;
+            display: flex;
+            align-items: center;
+
+            .ant-select-selection-item,
+            .ant-select-selection-placeholder {
+              line-height: 30px !important;
+              font-size: 12px !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.btn-link-add-mapping {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #0369a1;
+    text-decoration: underline;
+  }
+}
+
+/* Endpoint input wrapper (for Action node) */
+.endpoint-input-wrapper {
+  display: flex;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  overflow: hidden;
+
+  .method-mini-select {
+    width: 85px;
+
+    ::ng-deep .ant-select-selector {
+      border: none !important;
+      background: #f4f4f5 !important;
+      height: 38px !important;
+      font-weight: 700;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      border-radius: 0 !important;
+    }
+  }
+
+  .endpoint-text-input {
+    flex: 1;
+    border: none !important;
+    border-radius: 0 !important;
+    height: 38px;
+    padding: 0 10px;
+    font-size: 13px;
+
+    &:focus {
+      box-shadow: none !important;
+    }
+  }
+}
+
+/* ===== 4. Tác vụ hệ thống (Action node) ===== */
+.btn-test-connection {
+  border: 1px solid #ef4444;
+  background: #ffffff;
+  color: #ef4444;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626;
+  }
+}
+
+.execution-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  .input-with-suffix {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .input-suffix {
+      position: absolute;
+      right: 12px;
+      font-size: 12.5px;
+      color: #71717a;
+      pointer-events: none;
+    }
+
+    .custom-drawer-input {
+      padding-right: 42px;
+    }
+  }
+}
+
+/* ===== 5. Điều kiện (Condition, Split, Merge) ===== */
+.condition-case-card {
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: #ffffff;
+  overflow: hidden;
+
+  .case-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #fafafa;
+    border-bottom: 1px solid #f4f4f5;
+
+    .case-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+
+      .chevron-case {
+        color: #71717a;
+        flex-shrink: 0;
+      }
+
+      .case-title-input {
+        border: none;
+        background: transparent;
+        font-size: 13px;
+        font-weight: 600;
+        color: #18181b;
+        padding: 0;
+        height: auto;
+
+        &:focus {
+          box-shadow: none;
+          border-bottom: 1px solid #0284c7;
+          border-radius: 0;
+        }
+      }
+    }
+
+    .btn-remove-case {
+      border: none;
+      background: transparent;
+      color: #a1a1aa;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+
+      &:hover {
+        color: #ef4444;
+        background: #fee2e2;
+      }
+    }
+  }
+
+  .case-card-body {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .case-condition-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #e4e4e7;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12.5px;
+      color: #18181b;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: #0284c7;
+        color: #0284c7;
+      }
+
+      svg {
+        color: #71717a;
+      }
+    }
+
+    .btn-link-add-condition {
+      background: none;
+      border: none;
+      color: #0284c7;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 4px 0;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.btn-add-case-action {
+  width: 100%;
+  border: 1px dashed #0284c7;
+  background: #f0f9ff;
+  color: #0284c7;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 4px;
+
+  &:hover {
+    background: #e0f2fe;
+  }
+}
+
+.title-with-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .info-tooltip-icon {
+    font-size: 13px;
+    color: #a1a1aa;
+    cursor: help;
+  }
+}
+
+/* ===== 6. Modal điều kiện ===== */
+.condition-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+
+  .condition-modal-card {
+    width: 620px;
+    max-width: 90vw;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: scaleUp 0.18s ease;
+
+    .condition-modal-header {
+      height: 48px;
+      padding: 0 18px;
+      border-bottom: 1px solid #f4f4f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .condition-modal-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #18181b;
+        margin: 0;
+      }
+
+      .modal-close-circle-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #f4f4f5;
+        border: none;
+        color: #71717a;
+        font-size: 11px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: #e4e4e7;
+          color: #18181b;
+        }
+      }
+    }
+
+    .condition-modal-body {
+      padding: 16px 18px;
+
+      .condition-rules-table-header {
+        display: flex;
+        gap: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #52525b;
+        margin-bottom: 8px;
+
+        .col-param { flex: 1.2; }
+        .col-op { flex: 1.1; }
+        .col-val { flex: 1.2; }
+        .col-action { width: 32px; }
+      }
+
+      .condition-rules-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .logic-operator-divider {
+        margin: 4px 0;
+
+        .operator-mini-select {
+          width: 80px;
+
+          ::ng-deep .ant-select-selector {
+            height: 28px !important;
+            border-radius: 4px !important;
+            border: 1px solid #e4e4e7 !important;
+            font-size: 12px !important;
+            font-weight: 700;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+          }
+        }
+      }
+
+      .rule-inputs-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+
+        .col-param { flex: 1.2; }
+        .col-op { flex: 1.1; }
+        .col-val { flex: 1.2; }
+        .col-action {
+          width: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .btn-trash-rule {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+              background: #fee2e2;
+            }
+          }
+        }
+      }
+
+      .btn-link-add-rule {
+        background: none;
+        border: none;
+        color: #0284c7;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 4px 0;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .condition-modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid #f4f4f5;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      .btn-modal-cancel {
+        border: 1px solid #e4e4e7;
+        background: #ffffff;
+        color: #3f3f46;
+        padding: 6px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: #f4f4f5;
+        }
+      }
+
+      .btn-modal-save {
+        border: 1px solid #dc2626;
+        background: #dc2626;
+        color: #ffffff;
+        padding: 6px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: #b91c1c;
+        }
+      }
+    }
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===== 3. Footer cố định: Hủy · Lưu căn phải, cách 12 ===== */
+.drawer-footer {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: px.$space-12;
+  padding: px.$space-24;
+  border-top: 1px solid px.$neutral-300;
+  background: px.$white;
+}
+
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 px.$space-16;
+  border: 1px solid transparent;
+  border-radius: px.$radius-md;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.px-btn-default {
+  background: px.$white;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &:hover {
+    border-color: px.$neutral-800;
+  }
+}
+
+.px-btn-primary {
+  background: px.$primary-600;
+  border-color: px.$primary-600;
+  color: px.$white;
+
+  &:hover {
+    background: px.$primary-500;
+    border-color: px.$primary-500;
+  }
+}
+
+// Lỗi trường bắt buộc ở các drawer dùng nz-input (Điều kiện, Thông báo)
+.custom-drawer-input.is-invalid {
+  border-color: px.$primary-600;
+}
+
+.field-error {
+  display: block;
+  margin-top: px.$space-4;
+  font-family: px.$font-family;
+  @include px.body-sm-regular;
+  color: px.$primary-600;
+}
+
+// Ô chọn loại điều kiện cạnh tiêu đề drawer
+.gateway-type-select {
+  width: 196px;
+}
+
+// Chỉ xem: mọi ô nhập / chọn nền xám như trạng thái khoá
+:host ::ng-deep .properties-side-drawer.is-readonly {
+  .px-input-affix-wrapper,
+  .px-select-selector,
+  .px-textarea,
+  .px-input-number,
+  .ms-trigger {
+    background: px.$neutral-100;
+    color: px.$neutral-800;
+  }
+}

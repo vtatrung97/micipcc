@@ -14,7 +14,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { shouldDropUp } from '../../utils/dropdown-placement';
+import { shouldDropUp } from '../../util/dropdown-placement';
 
 export interface SelectOption<T = any> {
   value: T;

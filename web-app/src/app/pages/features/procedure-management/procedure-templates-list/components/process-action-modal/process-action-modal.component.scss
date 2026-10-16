@@ -1,0 +1,131 @@
+@use 'processx-tokens' as px;
+
+// Lớp nền + khung căn giữa (trên drawer / dropdown)
+.dialog-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.dialog-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-24;
+}
+
+// Hộp thoại: rộng 480, bo 16, phần thân và nút cách 8
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-8;
+  width: 480px;
+  max-width: 100%;
+  background: px.$white;
+  border-radius: px.$radius-xl;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+// Thân: đệm 24 (trên, ngang), chừa 32 bên phải cho nút đóng
+.dialog-body {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: px.$space-16;
+  padding: px.$space-24 56px 0 px.$space-24;
+}
+
+.dialog-icon {
+  flex-shrink: 0;
+}
+
+.dialog-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: px.$space-4;
+  min-width: 0;
+}
+
+.dialog-title {
+  font-family: px.$font-family;
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 700;
+  color: px.$neutral-900;
+}
+
+.dialog-message {
+  margin: 0;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  color: px.$neutral-600;
+}
+
+// Nút đóng: tròn 40, nền Neutral/100, cách góc 10
+.dialog-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8;
+  border: none;
+  border-radius: 112px;
+  background: px.$neutral-100;
+  cursor: pointer;
+
+  &:hover {
+    background: px.$neutral-300;
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: px.$space-12;
+  padding: px.$space-24;
+}
+
+// Nút Hủy (viền xám) / Xác nhận (đỏ): đệm 8/16, bo 8, chữ 16 Semi Bold
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: px.$space-8 px.$space-16;
+  border: 1px solid transparent;
+  border-radius: px.$radius-md;
+  font-family: px.$font-family;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.px-btn-default {
+  background: px.$white;
+  border-color: px.$neutral-300;
+  color: px.$neutral-800;
+
+  &:hover {
+    border-color: px.$neutral-800;
+  }
+}
+
+.px-btn-primary {
+  background: px.$primary-600;
+  color: px.$white;
+
+  &:hover {
+    background: px.$primary-500;
+  }
+}
