@@ -28,6 +28,7 @@ import { FormFieldModule } from './components/form-field/form-field.module';
 import { DataTableModule } from './components/data-table/data-table.module';
 import { PaginationModule } from './components/pagination/pagination.module';
 import { StatusTagModule } from './components/status-tag/status-tag.module';
+import { ProcessDiagramViewerModule } from './components/process-diagram-viewer/process-diagram-viewer.module';
 
 // 4. Nhóm Phản hồi & Tương tác
 import { ConfirmDialogModule } from './components/confirm-dialog/confirm-dialog.module';
@@ -72,6 +73,7 @@ const SHARED_MODULES = [
   DataTableModule,
   PaginationModule,
   StatusTagModule,
+  ProcessDiagramViewerModule,
   ConfirmDialogModule,
   EmptyStateModule,
   LoadingSpinnerModule
