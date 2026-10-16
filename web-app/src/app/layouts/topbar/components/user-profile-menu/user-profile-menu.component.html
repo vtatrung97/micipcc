@@ -1,0 +1,119 @@
+<!-- User Profile Dropdown Trigger -->
+<div
+    class="user-profile-box"
+    nz-dropdown
+    nzTrigger="click"
+    nzPlacement="bottomRight"
+    [nzDropdownMenu]="userMenu"
+    title="Tài khoản"
+>
+    <div class="avatar-wrap">
+        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img" (error)="avatarUrl = ''" />
+        <span *ngIf="!avatarUrl" class="avatar-text">{{ initials }}</span>
+    </div>
+
+    <div class="user-meta">
+        <span class="greeting">Xin chào</span>
+        <span class="user-name">{{ displayName }}</span>
+    </div>
+
+    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+</div>
+
+<!-- Dropdown Menu -->
+<nz-dropdown-menu #userMenu="nzDropdownMenu">
+    <div class="user-dropdown-card">
+        <!-- User Header Info -->
+        <div class="dropdown-header">
+            <div class="dropdown-avatar">
+                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img" />
+                <span *ngIf="!avatarUrl">{{ initials }}</span>
+            </div>
+            <div class="dropdown-user-info">
+                <div class="dropdown-name">{{ displayName }}</div>
+                <div class="dropdown-username" *ngIf="userName">@{{ userName }}</div>
+                <div class="dropdown-email" *ngIf="email">{{ email }}</div>
+            </div>
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <!-- Action Items -->
+        <ul class="dropdown-actions">
+            <li class="action-item" (click)="openProfileModal()">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Thông tin cá nhân</span>
+            </li>
+
+            <li class="action-item logout-item" (click)="onLogout()">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Đăng xuất</span>
+            </li>
+        </ul>
+    </div>
+</nz-dropdown-menu>
+
+<!-- Profile Info Modal -->
+<app-modal
+    [visible]="showProfileModal"
+    (closed)="closeProfileModal()"
+    title="Thông tin người dùng"
+    [width]="520"
+>
+    <div class="profile-modal-body">
+        <div class="profile-header-banner">
+            <div class="profile-avatar-large">
+                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img" />
+                <span *ngIf="!avatarUrl">{{ initials }}</span>
+            </div>
+            <div class="profile-header-text">
+                <h3 class="profile-name">{{ displayName }}</h3>
+                <span class="profile-badge" *ngIf="roleName">{{ roleName }}</span>
+            </div>
+        </div>
+
+        <div class="profile-details-list">
+            <div class="detail-row">
+                <span class="detail-label">Tên đăng nhập:</span>
+                <span class="detail-value highlight">{{ userName || '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Họ và tên:</span>
+                <span class="detail-value">{{ displayName || '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">{{ email || '—' }}</span>
+            </div>
+            <div class="detail-row" *ngIf="deptId">
+                <span class="detail-label">Phòng ban:</span>
+                <span class="detail-value">{{ deptId }}</span>
+            </div>
+            <div class="detail-row" *ngIf="roleName">
+                <span class="detail-label">Vai trò:</span>
+                <span class="detail-value">{{ roleName }}</span>
+            </div>
+            <div class="detail-row" *ngIf="tenant">
+                <span class="detail-label">Tenant / Realm:</span>
+                <span class="detail-value">{{ tenant }}</span>
+            </div>
+            <div class="detail-row" *ngIf="userId">
+                <span class="detail-label">Mã người dùng:</span>
+                <span class="detail-value code">{{ userId }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div modal-footer class="profile-modal-footer">
+        <button type="button" class="btn-close" (click)="closeProfileModal()">Đóng</button>
+    </div>
+</app-modal>

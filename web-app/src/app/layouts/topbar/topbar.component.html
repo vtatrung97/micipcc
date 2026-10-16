@@ -6,83 +6,15 @@
         </div>
     </div>
 
-    <!-- Right Side: Utility Icons & User Info -->
+    <!-- Right Side: Chuyển đơn vị dịch vụ & User Profile -->
     <div class="topbar-right">
-        <!-- Search Button -->
-        <button type="button" class="action-icon-btn" title="Tìm kiếm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-        </button>
-
-        <!-- Phone / VoIP -->
-        <button type="button" class="action-icon-btn" title="Thoại / Tổng đài">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-        </button>
-
-        <!-- Chat / Message Icon (Green accent) -->
-        <button type="button" class="action-icon-btn chat-btn" title="Tin nhắn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-        </button>
-
-        <!-- Note / Edit Icon (Red/Pink accent) -->
-        <button type="button" class="action-icon-btn note-btn" title="Ghi chú">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-        </button>
-
-        <!-- Notifications Bell with Badge -->
-        <div class="action-icon-wrapper notification-wrapper" title="Thông báo">
-            <button type="button" class="action-icon-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-            </button>
-            <span class="badge" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
-        </div>
-
-        <!-- Help Icon -->
-        <button type="button" class="action-icon-btn" title="Trợ giúp">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-        </button>
+        <!-- 1. Chuyển đơn vị dịch vụ Component -->
+        <app-service-owner-select></app-service-owner-select>
 
         <!-- Divider -->
         <div class="v-divider"></div>
 
-        <!-- User Profile Dropdown Area -->
-        <div class="user-profile-box" title="Tài khoản">
-            <div class="avatar-wrap">
-                <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                        alt="Avatar"
-                        class="avatar-img"
-                        onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\' viewBox=\'0 0 24 24\' fill=\'%23d1d5db\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 4-6 8-6s8 2 8 6\'/></svg>'"
-                />
-            </div>
-
-            <div class="user-meta">
-                <span class="greeting">Xin chào</span>
-                <span class="user-name">{{ userName }}</span>
-            </div>
-
-            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-
-            <!-- Online Status indicator -->
-            <span class="status-indicator online"></span>
-        </div>
+        <!-- 2. Thông tin User & Dropdown Profile Component -->
+        <app-user-profile-menu></app-user-profile-menu>
     </div>
 </header>
