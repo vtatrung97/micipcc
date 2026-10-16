@@ -1,4 +1,4 @@
-INSERT INTO keycloak_group (ID, NAME, PARENT_GROUP, REALM_NAME, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, `TYPE`, CODE, GROUP_SOURCE_ID, IS_DELETING, STATUS)
+INSERT IGNORE INTO keycloak_group (ID, NAME, PARENT_GROUP, REALM_NAME, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, `TYPE`, CODE, GROUP_SOURCE_ID, IS_DELETING, STATUS)
 values
 ('004862ea-5508-499e-9808-f84449d0221e', 'dzGrGr02', 'b61bef87-8fdd-4e26-a992-9f1262717cd9', 'demo', 'trangnk1', 1742631176254, 'trangnk1', 1742631225559, 0, 'dzGrGr02', 'b61bef87-8fdd-4e26-a992-9f1262717cd9', 0, 1),
 ('01631ae2-8f1a-40a6-95ab-177ea761e203', 'Group 49', '378ee13c-f4ba-4d41-b023-6d1b8239951d', 'demo', 'chaubau', 1787652606934, 'chaubau', 1787728356441, 0, 'GR-00049', '01631ae2-8f1a-40a6-95ab-177ea761e203', 0, 1),
@@ -124,7 +124,7 @@ values
 ('fe888d6b-525c-4edf-9fd5-24e2d2a4f62f', 'Nhóm CSKH Hà Nội 001-update', '023e0c59-e4b9-4cab-a3fd-25393349b58e', 'demo', NULL, 1789349757674, NULL, 1789351947002, 1, 'GRP_CSKH_HN_001-update', NULL, 0, 1),
 ('ff562715-8533-4e3a-a0a3-63cfcbd93ddc', 'Group 08', NULL, 'demo', 'chaubau', 1788963859293, NULL, 1788963858310, 1, 'GROUP-DEMO-08', 'ff562715-8533-4e3a-a0a3-63cfcbd93ddc', 0, 1);
 
-INSERT INTO `user_account` (id,keycloak_id,username,full_name,email,org_unit_id,manager_user,status,synced_at,kz_user_id,kz_account_id,vsa_user_login,description,tenant_id,realm,group_id,created_at,created_by,updated_at,updated_by,row_version) VALUES
+INSERT IGNORE INTO `user_account` (id,keycloak_id,username,full_name,email,org_unit_id,manager_user,status,synced_at,kz_user_id,kz_account_id,vsa_user_login,description,tenant_id,realm,group_id,created_at,created_by,updated_at,updated_by,row_version) VALUES
 	 (102073524453114318,'0018efe2-03a3-42ba-9e1e-3a98d9185306','ad_01','linh linh','ad_01@gmail.com',NULL,NULL,1,1791947473204,'0cc67d80be363c7ff24475c89d0a577d','c73d23988068164e62cf31d016bbd69c','ad_01',NULL,NULL,'demo','b61bef87-8fdd-4e26-a992-9f1262717cd9',1791947473204,'system',NULL,NULL,0),
 	 (102073524453114319,'004bf476-a0f0-4732-99b2-1116c2a135cc','datlm6',NULL,NULL,NULL,NULL,1,1791947473204,'f3dda59388de3a2df29f0669ccf45fa5','c73d23988068164e62cf31d016bbd69c','datlm6',NULL,NULL,'demo',NULL,1791947473204,'system',NULL,NULL,0),
 	 (102073524453114320,'00d15022-0728-4909-809d-e90e7b49dd2d','nguyenminhanh1/ANFQIgcoSQmAnekOe0ndLQ','minhanh1 nguyen','nguyenminhanh1@gmail.com/ANFQIgcoSQmAnekOe0ndLQ',NULL,NULL,1,1791947473204,NULL,'c73d23988068164e62cf31d016bbd69c','nguyenminhanh1/ANFQIgcoSQmAnekOe0ndLQ',NULL,NULL,'demo','3133a59d-086c-4113-aa3a-0c68652475d6',1791947473204,'system',NULL,NULL,0),
@@ -388,7 +388,7 @@ INSERT INTO `user_account` (id,keycloak_id,username,full_name,email,org_unit_id,
 	 (102073524453114578,'ffcf2154-5160-4310-8c66-8d8400dcf11b','thaott10','thaott10 thaott10','thaott10@viettel.com.vn',NULL,NULL,1,1791947473204,'7eb9017f0cfce0bdf877ce0583bcb14e','c73d23988068164e62cf31d016bbd69c','thaott10',NULL,NULL,'demo',NULL,1791947473204,'system',NULL,NULL,0),
 	 (102073524453114579,'ffe57b6e-9a7c-47ce-9f30-ea419b1d6d69','aksdhlak','Hieu Nguyen','deleted-_-V7bpp8R86fMOpBmx1taQ',NULL,NULL,1,1791947473204,'449d2b89be0eec368b5757781fed2e68','c73d23988068164e62cf31d016bbd69c','aksdhlak',NULL,NULL,'demo','b61bef87-8fdd-4e26-a992-9f1262717cd9',1791947473204,'system',NULL,NULL,0);
 
-INSERT INTO agent_group (agent_group_id,agent_group_code,agent_group_name,description,realm_name,kz_account_id,group_id,status,create_time,create_by,update_time,update_by,AGENT_LEADER_ID,ipcc_src,ipcc_ver) VALUES
+INSERT IGNORE INTO agent_group (agent_group_id,agent_group_code,agent_group_name,description,realm_name,kz_account_id,group_id,status,create_time,create_by,update_time,update_by,AGENT_LEADER_ID,ipcc_src,ipcc_ver) VALUES
 	 ('01f0bbde-5609-4090-97ca-0fddceb1310a','011012','011012',NULL,'tongdai112','e1cbb55fe07b6e7b26001550e5b11fbc','3605ecfb-5d71-491a-8519-da7ce15ca1de',1,1751339573449,'tongdai112',NULL,NULL,NULL,'1',1),
 	 ('0782bdc7-9761-47c2-9746-a26f088361b0','hantt55_2','hantt55_2','hantt55_2','demo','c73d23988068164e62cf31d016bbd69c','ae6c8d9d-e887-4261-8601-bc2a3382e945',1,1730773574190,'hantt49',NULL,NULL,NULL,'1',1),
 	 ('08ade3c4-7bad-46c8-bf46-96966e6efde5','23543','Test',NULL,'demo','c73d23988068164e62cf31d016bbd69c','a582dfac-6c8e-4bc7-9b11-365abcbf9fec',1,1726214707700,'longmt9',NULL,NULL,NULL,'1',1),
