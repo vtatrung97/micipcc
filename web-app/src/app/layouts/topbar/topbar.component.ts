@@ -9,10 +9,6 @@ export class TopBarComponent implements OnInit {
   @Input() collapsed: boolean = false;
   @Output() toggleCollapse = new EventEmitter<void>();
 
-  userName: string = 'Leo Nguyen';
-  unreadNotifications: number = 5;
-  userStatus: 'online' | 'offline' | 'busy' = 'online';
-
   constructor() {}
 
   ngOnInit(): void {}
