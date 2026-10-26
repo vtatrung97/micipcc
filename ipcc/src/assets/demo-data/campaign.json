@@ -1,0 +1,35 @@
+{
+  "status": "success",
+  "timestamp": 1712050572698,
+  "timestampISO8601": "2024-04-02T16:36:12+0700",
+  "data": {
+    "data": [
+      {
+        "customerId": "CA",
+        "numberPhone": "086232312",
+        "createBy": "agent_1",
+        "createTime": 1708585907641,
+        "updateBy": "agent_1",
+        "updateTime": 1708585907641,
+        "status": null,
+        "groupId": null,
+        "realmName": null
+      },
+      {
+        "customerId": "CB",
+        "numberPhone": "086232312",
+        "createBy": "agent_1",
+        "createTime": 1708585907641,
+        "updateBy": "agent_1",
+        "updateTime": 1708585907641,
+        "status": null,
+        "groupId": null,
+        "realmName": null
+      }
+    ],
+    "recordsTotal": 2,
+    "recordsFiltered": 2,
+    "total_elements": 2,
+    "draw": 1
+  }
+}

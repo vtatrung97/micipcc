@@ -12,7 +12,7 @@ const routes: Routes = [
         loadChildren: () => import('./features/process-management/process-management.module').then(m => m.ProcessManagementModule)
     },
 
-    { path: '', loadChildren: () => import('./features/procedure-management/procedure-management.module').then(m => m.ProcedureManagementModule) },
+    { path: '', redirectTo: 'procedure-management', pathMatch: 'full' },
 ];
 @NgModule({
     imports: [RouterModule.forChild(routes)],

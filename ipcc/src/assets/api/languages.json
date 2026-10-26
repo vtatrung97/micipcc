@@ -1,0 +1,72 @@
+[
+  {
+    "key": "us",
+    "alt": "United States",
+    "title": "English (US)"
+  },
+  {
+    "key": "vn",
+    "alt": "Tiếng Việt",
+    "title": "Tiếng Việt"
+  },
+  {
+    "key": "112",
+    "alt": "112",
+    "title": "112"
+  },
+  {
+    "key": "vi",
+    "alt": "Tiếng Việt",
+    "title": "Tiếng Việt"
+  },
+  {
+    "key": "en",
+    "alt": "English",
+    "title": "English"
+  }
+  /*,{
+      "key": "fr",
+      "alt": "France",
+      "title": "Français"
+  },
+  {
+      "key": "es",
+      "alt": "Spanish",
+      "title": "Español"
+  },
+  {
+      "key": "de",
+      "alt": "German",
+      "title": "Deutsch"
+  },
+  {
+      "key": "jp",
+      "alt": "Japan",
+      "title": "日本語"
+  },
+  {
+      "key": "cn",
+      "alt": "China",
+      "title": "中文"
+  },
+  {
+      "key": "it",
+      "alt": "Italy",
+      "title": "Italiano"
+  },
+  {
+      "key": "pt",
+      "alt": "Portugal",
+      "title": "Portugal"
+  },
+  {
+      "key": "ru",
+      "alt": "Russia",
+      "title": "Русский язык"
+  },
+  {
+      "key": "kr",
+      "alt": "Korea",
+      "title": "한국어"
+  }*/
+]

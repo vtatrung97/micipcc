@@ -1,0 +1,111 @@
+@use '../../styles/processx-tokens' as px;
+
+// Mặc định cao 48, radius 12, 16/24 Medium.
+// Viền nằm trong khung nên chốt cứng height (border-box) thay vì padding 12 + viền = 50px.
+
+:host {
+  display: inline-block;
+  width: 100%;
+}
+
+.px-input-affix-wrapper {
+  @include px.field-box;
+  @include px.body-md-regular;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: px.$space-8;
+  width: 100%;
+  min-width: 0;
+  @include px.field-size(middle);
+
+  &:hover:not(.px-input-affix-wrapper-disabled):not(.px-input-affix-wrapper-readonly) {
+    border-color: px.$neutral-800;
+  }
+
+  &.px-input-affix-wrapper-focused {
+    border-color: px.$neutral-800;
+    outline: 0;
+  }
+
+  // Disabled / readonly: nền xám, chữ Neutral/800
+  &.px-input-affix-wrapper-disabled,
+  &.px-input-affix-wrapper-readonly {
+    background: px.$neutral-100;
+    color: px.$neutral-800;
+
+    &.px-input-affix-wrapper-focused {
+      border-color: px.$neutral-300;
+    }
+  }
+
+  &.px-input-affix-wrapper-disabled {
+    cursor: not-allowed;
+
+    .px-input {
+      cursor: not-allowed;
+    }
+  }
+
+  &.px-input-affix-wrapper-status-error,
+  &.px-input-affix-wrapper-status-error:hover {
+    border-color: px.$primary-600;
+  }
+
+  &.px-input-affix-wrapper-status-warning,
+  &.px-input-affix-wrapper-status-warning:hover {
+    border-color: px.$warning;
+  }
+
+  /* Sizes: small 40 · middle 48 (mặc định) · large 56 — xem $field-sizes */
+  &.px-input-affix-wrapper-sm {
+    @include px.field-size(small);
+  }
+
+  &.px-input-affix-wrapper-lg {
+    @include px.field-size(large);
+  }
+}
+
+.px-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  border: none;
+  outline: none;
+  background: transparent;
+
+  &::placeholder {
+    color: px.$neutral-500;
+  }
+}
+
+.px-input-prefix,
+.px-input-suffix {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: px.$neutral-500;
+}
+
+.px-input-clear-icon {
+  display: flex;
+  align-items: center;
+  color: px.$neutral-400;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: px.$neutral-600;
+  }
+}
+
+.px-input-show-count {
+  @include px.body-sm-regular;
+  color: px.$neutral-500;
+  white-space: nowrap;
+  user-select: none;
+}

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 4201 --live-reload=false",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -16,6 +16,7 @@
     "@angular/common": "^14.3.0",
     "@angular/compiler": "^14.3.0",
     "@angular/core": "^14.3.0",
+    "@angular/elements": "^14.3.0",
     "@angular/forms": "^14.3.0",
     "@angular/material": "^14.2.7",
     "@angular/platform-browser": "^14.3.0",
@@ -26,10 +27,10 @@
     "@antv/x6": "^3.1.8",
     "@auth0/angular-jwt": "^5.0.2",
     "@ng-bootstrap/ng-bootstrap": "^12.1.2",
-    "@popperjs/core": "^2.9.2",
     "@ng-select/ng-select": "^8.1.1",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "^7.0.0",
+    "@popperjs/core": "^2.9.2",
     "@types/uuid": "^8.3.4",
     "angular-oauth2-oidc": "^14.0.1",
     "bootstrap": "^5.2.3",

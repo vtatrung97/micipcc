@@ -1,0 +1,172 @@
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  forwardRef,
+  HostListener,
+  Input,
+  Output,
+  ViewChild
+} from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { shouldDropUp } from '../../util/dropdown-placement';
+
+/**
+ * Chọn ngày trong tháng (1 → 31) cho lịch chạy định kỳ, không gắn với tháng/năm cụ thể.
+ * ngModel: `number[]` (sắp xếp tăng dần) khi multiple, `number | null` khi chọn một.
+ */
+@Component({
+  selector: 'app-month-day-picker',
+  templateUrl: './month-day-picker.component.html',
+  styleUrls: ['./month-day-picker.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => MonthDayPickerComponent),
+      multi: true
+    }
+  ]
+})
+export class MonthDayPickerComponent implements ControlValueAccessor, AfterViewInit {
+  @Input() placeholder: string = 'Chọn ngày';
+  @Input() multiple: boolean = true;
+  @Input() disabled: boolean = false;
+  @Input() allowClear: boolean = true;
+  @Input() status: 'error' | 'warning' | '' = '';
+  /** Kích thước: small 40 · middle 48 (mặc định) · large 56 */
+  @Input() size: 'small' | 'middle' | 'large' = 'middle';
+  /** Các ngày không cho chọn, ví dụ [29, 30, 31] */
+  @Input() disabledDays: number[] = [];
+  /** Vị trí popup so với ô nhập */
+  @Input() placement: 'bottomLeft' | 'bottomRight' = 'bottomRight';
+  /** Mở sẵn lưới ngày ngay khi ô được hiển thị (vd: vừa chọn "Hàng tháng") */
+  @Input() autoOpen: boolean = false;
+
+  @Output() valueChange = new EventEmitter<number[] | number | null>();
+
+  readonly days: number[] = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  isOpen: boolean = false;
+  /** Popup mở lên trên khi phía dưới không đủ chỗ */
+  dropUp: boolean = false;
+  /** Đang đo kích thước popup (ẩn tạm) */
+  measuring: boolean = false;
+
+  @ViewChild('panel') panelRef?: ElementRef<HTMLDivElement>;
+  selected: number[] = [];
+
+  private onChange: (val: number[] | number | null) => void = () => {};
+  private onTouched: () => void = () => {};
+
+  constructor(private elRef: ElementRef) {}
+
+  ngAfterViewInit(): void {
+    // Đợi vòng click hiện tại (vd: chọn option ở ô khác) kết thúc để document:click không đóng ngay
+    if (this.autoOpen) setTimeout(() => !this.isOpen && !this.disabled && this.open());
+  }
+
+  get hasValue(): boolean {
+    return this.selected.length > 0;
+  }
+
+  get displayValue(): string {
+    return this.selected.join(', ');
+  }
+
+  isSelected(day: number): boolean {
+    return this.selected.includes(day);
+  }
+
+  isDayDisabled(day: number): boolean {
+    return this.disabledDays.includes(day);
+  }
+
+  writeValue(val: number[] | number | null): void {
+    if (Array.isArray(val)) {
+      this.selected = this.normalize(val);
+    } else if (typeof val === 'number') {
+      this.selected = [val];
+    } else {
+      this.selected = [];
+    }
+  }
+
+  registerOnChange(fn: (val: number[] | number | null) => void): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+    if (isDisabled) this.isOpen = false;
+  }
+
+  togglePicker(): void {
+    if (this.disabled) return;
+    this.isOpen ? this.close() : this.open();
+  }
+
+  toggleDay(day: number): void {
+    if (this.disabled || this.isDayDisabled(day)) return;
+
+    if (this.multiple) {
+      this.selected = this.isSelected(day)
+        ? this.selected.filter(d => d !== day)
+        : this.normalize([...this.selected, day]);
+    } else {
+      this.selected = this.isSelected(day) ? [] : [day];
+      this.close();
+    }
+    this.emit();
+  }
+
+  clearValue(event: MouseEvent): void {
+    event.stopPropagation();
+    this.selected = [];
+    this.emit();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.isOpen && !this.elRef.nativeElement.contains(event.target)) {
+      this.close();
+    }
+  }
+
+  @HostListener('keydown.escape')
+  onEscape(): void {
+    if (this.isOpen) this.close();
+  }
+
+  private open(): void {
+    this.isOpen = true;
+    this.dropUp = false;
+    this.measuring = true;
+    setTimeout(() => {
+      if (!this.isOpen) return;
+      this.dropUp = shouldDropUp(this.elRef.nativeElement, this.panelRef?.nativeElement.offsetHeight || 0, 4);
+      this.measuring = false;
+    });
+  }
+
+  private close(): void {
+    this.isOpen = false;
+    this.onTouched();
+  }
+
+  private emit(): void {
+    const value = this.multiple ? [...this.selected] : (this.selected[0] ?? null);
+    this.onChange(value);
+    this.valueChange.emit(value);
+  }
+
+  private normalize(days: number[]): number[] {
+    return Array.from(new Set(days))
+      .filter(d => Number.isInteger(d) && d >= 1 && d <= 31)
+      .sort((a, b) => a - b);
+  }
+}

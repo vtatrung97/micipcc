@@ -1,0 +1,49 @@
+<div 
+  class="px-input-affix-wrapper"
+  [class.px-input-affix-wrapper-focused]="isFocused"
+  [class.px-input-affix-wrapper-disabled]="disabled"
+  [class.px-input-affix-wrapper-readonly]="readonly"
+  [class.px-input-affix-wrapper-status-error]="status === 'error'"
+  [class.px-input-affix-wrapper-status-warning]="status === 'warning'"
+  [class.px-input-affix-wrapper-sm]="size === 'small'"
+  [class.px-input-affix-wrapper-lg]="size === 'large'">
+  
+  <span class="px-input-prefix" *ngIf="prefixSrc; else prefixIconTpl">
+    <img [src]="prefixSrc" width="24" height="24" alt="" />
+  </span>
+  <ng-template #prefixIconTpl>
+    <span class="px-input-prefix" *ngIf="prefixIcon">
+      <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
+    </span>
+  </ng-template>
+
+  <input
+    #inputElement
+    [type]="type"
+    class="px-input"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    [readonly]="readonly"
+    [attr.maxlength]="maxLength || null"
+    [value]="value"
+    (input)="onInput($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    (keydown.enter)="onEnter.emit(value)" />
+
+  <span 
+    class="px-input-clear-icon" 
+    *ngIf="allowClear && value && !disabled && !readonly"
+    (click)="clearValue($event)"
+    title="Xóa nội dung">
+    <ant-icon name="close-circle-fill" [size]="12"></ant-icon>
+  </span>
+
+  <span class="px-input-suffix" *ngIf="suffixIcon && (!allowClear || !value)">
+    <ant-icon [name]="suffixIcon" [size]="14"></ant-icon>
+  </span>
+
+  <span class="px-input-show-count" *ngIf="showCount && maxLength">
+    {{ (value || '').length }} / {{ maxLength }}
+  </span>
+</div>

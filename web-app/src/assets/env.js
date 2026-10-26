@@ -12,7 +12,7 @@
     // };
 
     const KEYCLOAK = {
-        endpoint: 'http://192.168.10.30:8081',
+        endpoint: 'http://localhost:8080',
         requireHttps: false,
         showDebugInformation: false,
         strictDiscoveryDocumentValidation: false

@@ -49,49 +49,26 @@ export class AuthService {
 
         this._impersonatedTenant = this._tenant;
         console.log('[AuthService] Construct with realm:', this._tenant);
-        this.oauthSvc.configure(AuthzCodeFlowConfig(this._tenant));
-
-        /*  pyc 1355: 21/08/2026 */
-        this.oauthSvc.events.subscribe(event => {
-            if (event.type === 'token_refresh_error') {
-                console.warn('[AuthService] Refresh token that bai, phien da het han:', event);
-                this.logout();
-            }
-        });
+        // Tắt gọi cấu hình Keycloak
+        // this.oauthSvc.configure(AuthzCodeFlowConfig(this._tenant));
     }
 
     public isLoggedIn(): Promise<boolean> {
-        return new Promise((resolve, reject) => {
-            if (this.isAuthenticated()) {
-                resolve(true);
-            } else {
-                console.log(`[AuthService] Tokens is not valid, try re-login via auth server`);
-
-                this.oauthSvc.loadDiscoveryDocumentAndLogin().then((result: boolean) => {
-                    console.log('[AuthService] Login result is: ' + result);
-
-                    this.oauthSvc.setupAutomaticSilentRefresh(); // Optional
-                    this.authenticationEventObservable.next(result);
-                    resolve(result);
-                }).catch((error: any) => {
-                    console.log('[AuthService] Login error: ', error);
-                    this.logout();
-                    reject(false);
-                });
-            }
-        })
+        // Bypass đăng nhập Keycloak
+        return Promise.resolve(true);
     }
 
     public logout() {
-        this.oauthSvc.logOut({id_token_hint: localStorage.getItem('id_token_hint')});
+        console.log('[AuthService] Logout called (bypassed)');
     }
 
     public isAuthenticated(): boolean {
-        return this.oauthSvc.hasValidAccessToken() && this.oauthSvc.hasValidIdToken() && !this.jwtHelper.isTokenExpired(this.accessToken);
+        // Luôn trả về true để bỏ qua bước xác thực Keycloak
+        return true;
     }
 
     get accessToken(): string {
-        return this.oauthSvc.getAccessToken();
+        return this.oauthSvc.getAccessToken() || 'mock-access-token';
     }
 
     get realmName(): string {
@@ -192,8 +169,17 @@ export class AuthService {
         return this.scopes.indexOf(scope) >= 0;
     }
 
-    get claims() {
-        return this.oauthSvc.getIdentityClaims();
+    get claims(): any {
+        return this.oauthSvc.getIdentityClaims() || {
+            sub: 'mock-user-id',
+            preferred_username: 'admin',
+            userId: '1',
+            deptId: '1',
+            name: 'Administrator',
+            'kz-aid': 'mock-kz-aid',
+            'kz-uid': 'mock-kz-uid',
+            iss: 'http://localhost/realms/demo'
+        };
     }
 
     get scopes(): string[] {

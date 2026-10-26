@@ -1,0 +1,80 @@
+<aside class="sidebar-container" [class.collapsed]="collapsed">
+    <!-- Brand Header IPCC Host -->
+    <div class="sidebar-header">
+        <div class="brand-box" (click)="onToggle()" title="Thu gọn / Mở rộng menu">
+            <!-- Hamburger Toggle Button -->
+            <button type="button" class="header-toggle-btn" (click)="$event.stopPropagation(); onToggle()" title="Đóng / Mở menu">
+                <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- IPCC Brand Logo & Name -->
+            <div class="brand-title-wrap" *ngIf="!collapsed">
+                <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                </svg>
+                <span class="brand-name">IPCC 2.0</span>
+            </div>
+        </div>
+
+        <div class="header-action" *ngIf="!collapsed" (click)="onToggle()">
+            <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Navigation Menu List -->
+    <nav class="sidebar-nav">
+        <ul class="menu-list">
+            <ng-container *ngFor="let item of menuItems">
+                <!-- Group/Parent Item hoặc Leaf Item -->
+                <li
+                    class="menu-item"
+                    [class.has-children]="item.subItems && item.subItems.length > 0"
+                    [class.open]="isSubmenuOpen(item)"
+                    [class.active]="isItemActive(item)"
+                    (click)="onItemClick(item, $event)"
+                    [title]="item.label || item.nameVi"
+                >
+                    <div class="item-content">
+                        <span class="item-icon" [innerHTML]="item.safeSvg"></span>
+                        <span class="item-label" *ngIf="!collapsed">{{ item.label || item.nameVi }}</span>
+                    </div>
+
+                    <!-- Chevron nếu có submenu -->
+                    <span class="menu-arrow" *ngIf="!collapsed && item.subItems && item.subItems.length > 0">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </span>
+                </li>
+
+                <!-- Submenu Accordion Dropdown -->
+                <ul class="sub-menu-list" *ngIf="!collapsed && item.subItems && item.subItems.length > 0 && isSubmenuOpen(item)">
+                    <li
+                        *ngFor="let child of item.subItems"
+                        class="sub-menu-item"
+                        [class.active]="isChildActive(child)"
+                        (click)="onItemClick(child, $event)"
+                        [title]="child.label || child.nameVi"
+                    >
+                        <span class="sub-dot"></span>
+                        <span class="sub-label">{{ child.label || child.nameVi }}</span>
+                    </li>
+                </ul>
+            </ng-container>
+        </ul>
+    </nav>
+
+    <!-- Bottom Footer Tool (Localstorage info) -->
+    <div class="sidebar-footer" *ngIf="!collapsed">
+        <div class="footer-hint" title="Menu đang nạp trực tiếp từ localStorage">
+            <span class="storage-badge">Local Cache</span>
+            <button class="reset-btn" (click)="resetToDefaultMenu()" title="Khôi phục danh mục IPCC gốc">Reset</button>
+        </div>
+    </div>
+</aside>

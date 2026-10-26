@@ -1,0 +1,53 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "src",
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2020",
+    "module": "es2020",
+    "lib": [
+      "ES2021.String",
+      "es2020",
+      "dom"
+    ],
+    "paths": {
+      "@models": ["app/models"],
+      "@models/*": ["app/models/*"],
+      "@core": ["app/core"],
+      "@core/*": ["app/core/*"],
+      "@shared": ["app/shared"],
+      "@shared/*": ["app/shared/*"],
+      "@pages": ["app/pages"],
+      "@pages/*": ["app/pages/*"],
+      "@testing": ["testing"],
+      "@testing/*": ["testing/*"],
+      "@env": ["environments"],
+      "@env/*": ["environments/*"],
+      "@environments": ["environments"],
+      "@environments/*": ["environments/*"]
+    },
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": false,
+    "allowSyntheticDefaultImports": true
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "templates": [
+    {
+      "code": "PRC_BASIC_CSAT_FEEDBACK",
+      "name": "Quy trình tiếp nhận và ghi nhận ý kiến đóng góp khách hàng (CSAT)",
+      "category": "Khảo sát CSAT",
+      "version": "V1.0",
+      "owner_org_id": "ORG_CSKH_MB",
+      "owner_org_name": "TT CSKH Miền Bắc",
+      "sla": "1h SLA",
+      "slaStatus": "normal",
+      "status": "Published",
+      "description": "Tiếp nhận ý kiến phản hồi từ cổng thông tin, tổng đài viên ghi nhận và tự động gửi SMS cảm ơn",
+      "published_at": "05/10/2026 16:30",
+      "updatedAt": "05/10/2026 16:30",
+      "active_instances_count": 2,
+      "versions": [
+        {
+          "version_id": "ver-csat-101",
+          "version_no": "V1.0",
+          "status": "Published",
+          "published_at": "05/10/2026 16:30",
+          "created_by": "Admin Hệ thống",
+          "changelog": "Ban hành luồng cơ bản CSAT",
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "code": "PRC_BILLING_DISPUTE_REVERSAL",
+      "name": "Quy trình xử lý khiếu nại cước & Tự động hoàn cước viễn thông",
+      "category": "Xử lý khiếu nại",
+      "version": "V2.0",
+      "owner_org_id": "ORG_BILLING",
+      "owner_org_name": "Trung tâm Đối soát & Tính cước",
+      "sla": "2h SLA",
+      "slaStatus": "normal",
+      "status": "Published",
+      "description": "Tiếp nhận khiếu nại cước: Cước <= 200k tự động hoàn qua API Core BSS; Cước > 200k chuyển Trưởng ca phê duyệt",
+      "published_at": "05/10/2026 16:35",
+      "updatedAt": "05/10/2026 16:35",
+      "active_instances_count": 8,
+      "versions": [
+        {
+          "version_id": "ver-bill-201",
+          "version_no": "V2.0",
+          "status": "Published",
+          "published_at": "05/10/2026 16:35",
+          "created_by": "Admin Hệ thống",
+          "changelog": "Tích hợp API Core BSS tự động hoàn cước và nhánh rẽ điều kiện",
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "code": "PRC_VIP_ENTERPRISE_INCIDENT",
+      "name": "Quy trình điều hành xử lý sự cố hạ tầng & Kênh truyền số liệu KHDN VIP",
+      "category": "Cảnh báo chỉ số",
+      "version": "V4.0",
+      "owner_org_id": "ORG_KT_BROADBAND",
+      "owner_org_name": "Phòng Kỹ thuật Broadband",
+      "sla": "2h SLA",
+      "slaStatus": "warning",
+      "status": "Published",
+      "description": "Xử lý sự cố kênh truyền VIP: Chạy song song luồng kỹ thuật đo kiểm (SubProcess) và CSKH KAM đa kênh SMS/Email, hội tụ đóng ticket tự động",
+      "published_at": "05/10/2026 16:40",
+      "updatedAt": "05/10/2026 16:40",
+      "active_instances_count": 5,
+      "versions": [
+        {
+          "version_id": "ver-vip-401",
+          "version_no": "V4.0",
+          "status": "Published",
+          "published_at": "05/10/2026 16:40",
+          "created_by": "Admin Hệ thống",
+          "changelog": "Tối ưu nhánh song song và tích hợp quy trình con BTS",
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "code": "PRC_COMPLAINT_BILLING",
+      "name": "Quy trình xử lý khiếu nại cước di động trả sau đa phòng ban",
+      "category": "Xử lý khiếu nại",
+      "version": "V2.1",
+      "owner_org_id": "ORG_CSKH_MB",
+      "owner_org_name": "TT CSKH Miền Bắc",
+      "sla": "2h SLA",
+      "slaStatus": "normal",
+      "status": "Published",
+      "description": "Quy trình tiếp nhận, tra cứu cước CDR, đối soát khuyến mãi và gửi SMS kết quả phản hồi khách hàng",
+      "published_at": "28/09/2026 14:30",
+      "updatedAt": "28/09/2026 14:30",
+      "active_instances_count": 14,
+      "versions": [
+        {
+          "version_id": "ver-103",
+          "version_no": "V2.1",
+          "status": "Published",
+          "published_at": "28/09/2026 14:30",
+          "created_by": "Admin Hệ thống",
+          "changelog": "Tối ưu nhánh rẽ Exclusive Gateway và tích hợp cổng lỗi Exception Path tự động",
+          "is_active": true
+        },
+        {
+          "version_id": "ver-102",
+          "version_no": "V2.0",
+          "status": "Archived",
+          "published_at": "15/08/2026 09:00",
+          "created_by": "Nguyễn Văn Quản trị",
+          "changelog": "Bổ sung bước BO Duyệt phê duyệt hoàn cước",
+          "is_active": false
+        }
+      ]
+    },
+    {
+      "code": "PRC_FTTH_SUPPORT",
+      "name": "Hỗ trợ kỹ thuật truyền hình & Internet cáp quang FTTH",
+      "category": "Cảnh báo chỉ số",
+      "version": "V1.4",
+      "owner_org_id": "ORG_KT_BROADBAND",
+      "owner_org_name": "Phòng Kỹ thuật Broadband",
+      "sla": "4h SLA",
+      "slaStatus": "warning",
+      "status": "Published",
+      "description": "Điều phối nhân viên kỹ thuật đo kiểm quang độ, reset port OLT và thay thế thiết bị ONT tại nhà",
+      "published_at": "27/09/2026 09:15",
+      "updatedAt": "27/09/2026 09:15",
+      "active_instances_count": 6,
+      "versions": [
+        {
+          "version_id": "ver-202",
+          "version_no": "V1.4",
+          "status": "Published",
+          "published_at": "27/09/2026 09:15",
+          "created_by": "Trần Kỹ Thuật",
+          "changelog": "Thêm kiểm tra suy hao OLT tự động trước khi điều xe",
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "code": "PRC_MNP_AUTOMATION",
+      "name": "Chuyển mạng giữ số (MNP) tự động & Đồng bộ CSDL quốc gia",
+      "category": "Chăm sóc sau tương tác",
+      "version": "V1.0",
+      "owner_org_id": "ORG_BILLING",
+      "owner_org_name": "Trung tâm Đối soát & Tính cước",
+      "sla": "24h SLA",
+      "slaStatus": "normal",
+      "status": "Draft",
+      "description": "Tự động kiểm tra điều kiện chuyển mạng, đồng bộ cơ sở dữ liệu chuyển mạng trung tâm quốc gia",
+      "published_at": "26/09/2026 16:45",
+      "updatedAt": "26/09/2026 16:45",
+      "active_instances_count": 0,
+      "versions": [
+        {
+          "version_id": "ver-301",
+          "version_no": "V1.0",
+          "status": "Draft",
+          "published_at": "26/09/2026 16:45",
+          "created_by": "Phạm Thị Hương",
+          "changelog": "Bản nháp đang cấu hình kiểm tra điều kiện thuê bao",
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "code": "PRC_TELESALES_UPGRADE",
+      "name": "Happy Call khảo sát & Telesales nâng cấp gói cước băng rộng Home Mesh",
+      "category": "Happy Call / Telesales",
+      "version": "V1.2",
+      "owner_org_id": "ORG_TELESALES",
+      "owner_org_name": "Phòng Kinh doanh & Telesales",
+      "sla": "8h SLA",
+      "slaStatus": "normal",
+      "status": "Published",
+      "description": "Phân phối danh sách khách hàng tiềm năng đến tổng đài viên, ghi nhận ý kiến và tạo đơn hàng gói cước mới",
+      "published_at": "25/09/2026 11:20",
+      "updatedAt": "25/09/2026 11:20",
+      "active_instances_count": 3,
+      "versions": [
+        {
+          "version_id": "ver-402",
+          "version_no": "V1.2",
+          "status": "Published",
+          "published_at": "25/09/2026 11:20",
+          "created_by": "Lê Hoàng Yến",
+          "changelog": "Tích hợp kịch bản gọi tự động Auto-Dialer",
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "code": "PRC_CSAT_SURVEY",
+      "name": "Khảo sát mức độ hài lòng khách hàng (CSAT/NPS) sau cuộc gọi tổng đài",
+      "category": "Khảo sát CSAT",
+      "version": "V1.0",
+      "owner_org_id": "ORG_CSKH_MN",
+      "owner_org_name": "TT CSKH Miền Nam",
+      "sla": "1h SLA",
+      "slaStatus": "normal",
+      "status": "Inactive",
+      "description": "Bắn tin nhắn SMS Brandname và gọi IVR Outbound tự động thu thập điểm đánh giá chất lượng phục vụ",
+      "published_at": "20/09/2026 10:00",
+      "updatedAt": "20/09/2026 10:00",
+      "active_instances_count": 0,
+      "versions": [
+        {
+          "version_id": "ver-501",
+          "version_no": "V1.0",
+          "status": "Inactive",
+          "published_at": "20/09/2026 10:00",
+          "created_by": "Võ Minh Trí",
+          "changelog": "Tạm ngưng khảo sát bảo trì kênh SMS Brandname",
+          "is_active": true
+        }
+      ]
+    }
+  ]
+}

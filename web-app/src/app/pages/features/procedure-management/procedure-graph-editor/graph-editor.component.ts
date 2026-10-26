@@ -28,6 +28,8 @@ import {
 import { GraphEditorStore } from './state/graph-editor.store';
 import { GraphBridgeService } from './services/graph-bridge.service';
 import { GraphCanvasService } from './services/graph-canvas.service';
+import viTranslations from './i18n/vi.json';
+import { getInitialProcessGraphLang } from './i18n/process-graph-i18n';
 import { NodeFactoryService } from './services/node-factory.service';
 import { NodeEditorService } from './services/node-editor.service';
 import { GatewayJoinService } from './services/gateway-join.service';
@@ -51,6 +53,7 @@ import {
 
 // Giữ đường import cũ cho drawer / component con: `import { NodePropertyModel } from '../graph-editor.component'`
 export * from './models/node-property.model';
+import { Location } from '@angular/common';
 
 /**
  * Màn Canvas Builder: chỉ điều phối sự kiện từ template / drawer / router sang service.
@@ -111,7 +114,12 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private message: NzMessageService,
     private coreService: CoreService,
-  ) {}
+    private location: Location
+  ) { }
+
+  goBack() {
+    this.cancelEdit();
+  }
 
   /** Dịch key trong PROCESS_GRAPH.* (xem i18n/vi.json, en.json) */
   private t(key: string, params?: Record<string, any>): string {
@@ -226,6 +234,10 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   // ----- Vòng đời & sự kiện -----
 
   ngOnInit(): void {
+    const lang = getInitialProcessGraphLang() || 'vi';
+    this.translate.setTranslation(lang, viTranslations, true);
+    this.translate.use(lang);
+
     // 1. Lắng nghe cập nhật từ NodeConfigDrawer qua Bridge Service
     this.routeSub.add(
       this.bridgeService.nodeUpdated$.subscribe((event) => {
@@ -422,7 +434,9 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public leaveEditor(): void {
     this.isCancelConfirmOpen = false;
-    this.router.navigate(['/procedure-management']);
+    const isProcessX = this.router.url.includes('/processX');
+    const targetUrl = isProcessX ? '/processX/procedure-management' : '/procedure-management';
+    this.router.navigateByUrl(targetUrl);
   }
 
   /** Dấu vân tay của Thông tin chung + canvas (node, vị trí, cấu hình, edge) để so thay đổi */
@@ -430,8 +444,8 @@ export class GraphEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     const graph = this.store.graph;
     const cells = graph
       ? graph.getCells().map((c: any) => c.isNode()
-          ? [c.id, c.getPosition(), c.getData()]
-          : [c.id, c.getSourceCellId(), c.getSourcePortId(), c.getTargetCellId(), c.getData()])
+        ? [c.id, c.getPosition(), c.getData()]
+        : [c.id, c.getSourceCellId(), c.getSourcePortId(), c.getTargetCellId(), c.getData()])
       : [];
     return JSON.stringify([this.store.processInfo, cells]);
   }

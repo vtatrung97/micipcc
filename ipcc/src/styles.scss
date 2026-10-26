@@ -1,0 +1,92 @@
+/* Ant Design (ng-zorro-antd) Styles */
+
+/* Modern Global SCSS Design System */
+:root {
+  --font-primary: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  --bg-dark: #0b0f19;
+  --bg-card: rgba(18, 24, 38, 0.7);
+  --bg-card-hover: rgba(28, 36, 56, 0.8);
+
+  --accent-primary: #6366f1;
+  --accent-secondary: #a855f7;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --glow-gradient: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 70%);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(99, 102, 241, 0.3);
+
+  --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.12) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-primary);
+}
+
+/* ==========================================================================
+   Thanh cuộn chung (dọc + ngang): thumb Neutral/300 #E3E3E3, nền trong suốt,
+   ẩn nút mũi tên hai đầu. Component nào tự khai báo ::-webkit-scrollbar sẽ ghi đè.
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e3e3e3;
+  border: 3px solid transparent;
+  /* chừa lề để thumb hiển thị mảnh 6px */
+  border-radius: 8px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Firefox không hỗ trợ ::-webkit-scrollbar: dùng thuộc tính chuẩn (Chrome bỏ qua nhánh này
+   vì đặt scrollbar-color trên Chrome ≥121 sẽ vô hiệu ::-webkit-scrollbar và hiện lại mũi tên) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #e3e3e3 transparent;
+  }
+}

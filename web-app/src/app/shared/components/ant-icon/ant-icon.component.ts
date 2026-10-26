@@ -168,7 +168,7 @@ export class AntIconComponent implements OnInit, OnChanges {
   trustedSvg: SafeHtml | null = null;
   parsedSize: string | null = null;
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(private sanitizer: DomSanitizer) { }
 
   ngOnInit(): void {
     this.updateSvg();
@@ -203,7 +203,7 @@ export class AntIconComponent implements OnInit, OnChanges {
     }
 
     let key = this.name.trim().toLowerCase();
-    
+
     if (this.theme === 'fill' && !key.endsWith('-fill') && ICON_REGISTRY[`${key}-fill`]) {
       key = `${key}-fill`;
     }

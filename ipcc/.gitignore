@@ -1,0 +1,18 @@
+# Angular CLI build cache
+.angular/
+/.angular/cache
+
+# Build output & dependencies
+/dist
+/node_modules
+
+# Environment & local files
+.env
+local.env
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml

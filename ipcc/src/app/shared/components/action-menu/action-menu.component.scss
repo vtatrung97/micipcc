@@ -1,0 +1,107 @@
+@use '../../styles/processx-tokens' as px;
+
+:host {
+  display: inline-flex;
+}
+
+// Nút "⋮": giống nút icon trong cột Hành động (p8, radius 8, icon 20 → 36x36)
+.px-action-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: px.$space-8;
+  border: none;
+  border-radius: px.$radius-md;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover,
+  &.is-open {
+    background: px.$neutral-200;
+  }
+
+  &:focus-visible {
+    outline: 2px solid px.$primary-200;
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: transparent;
+  }
+}
+
+// Menu: radius 12, viền Neutral/300, đổ bóng menu, list padding 4/0
+.px-action-panel {
+  position: fixed;
+  z-index: 1060;
+  display: flex;
+  flex-direction: column;
+  min-width: 188px;
+  padding: px.$space-4 0;
+  background: px.$white;
+  border: 1px solid px.$neutral-300;
+  border-radius: px.$radius-lg;
+  box-shadow: px.$shadow-menu;
+  backdrop-filter: blur(16px);
+  box-sizing: border-box;
+  animation: pxActionMenuIn 0.15s ease;
+}
+
+// Item: khung ngoài 2/6, nội dung 10, radius 6, 16/24 Medium, icon 20 cách chữ 8
+.px-action-item {
+  @include px.body-md-medium;
+  display: flex;
+  align-items: center;
+  gap: px.$space-8;
+  margin: px.$space-2 px.$space-6;
+  padding: 10px;
+  border: none;
+  border-radius: px.$radius-sm;
+  background: transparent;
+  color: px.$neutral-900;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    background: px.$neutral-100;
+    outline: none;
+  }
+
+  &:disabled {
+    color: px.$neutral-500;
+    cursor: not-allowed;
+
+    .px-action-item-icon {
+      opacity: 0.4;
+    }
+  }
+
+  // Mục nguy hiểm (Xóa): chữ đỏ
+  &.px-action-item-danger:not(:disabled) {
+    color: px.$red-400;
+  }
+}
+
+.px-action-item-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.px-action-item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes pxActionMenuIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

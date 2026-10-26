@@ -1,0 +1,7 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="alert circle">
+<path id="stroke" d="M10 10L10 6.66667" stroke="#F10E0E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle id="stroke_2" cx="10" cy="10" r="7.5" stroke="#F10E0E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="stroke_3" d="M10 13.3333C10.2301 13.3333 10.4167 13.1468 10.4167 12.9167C10.4167 12.6865 10.2301 12.5 10 12.5C9.76988 12.5 9.58333 12.6865 9.58333 12.9167C9.58333 13.1468 9.76988 13.3333 10 13.3333Z" fill="#F10E0E" stroke="#F10E0E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

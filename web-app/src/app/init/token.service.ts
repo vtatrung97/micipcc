@@ -5,8 +5,8 @@ import { AuthService } from '@core/services/auth/auth.service';
 import { KEYCLOAK } from '@env/environment';
 import { AccountService } from '@core/services/auth/account.service';
 import { Router } from '@angular/router';
-import {ToastService} from "@core/services/toast-service";
-import {TranslateService} from "@ngx-translate/core";
+import { ToastService } from "@core/services/toast-service";
+import { TranslateService } from "@ngx-translate/core";
 
 @Injectable({
   providedIn: 'root'
@@ -107,9 +107,6 @@ export class TokenService extends AbstractService {
   }
 
   public checkRouter(url: string): boolean {
-    // return url == '/'
-    // || (this._menuUrl && this._menuUrl.filter(
-    //   (_url: any) => _url != '' && url.includes(_url)).length > 0) || url.includes('role-menu') || url.includes('personal-profile') || url.includes('process');
     return true;
   }
 

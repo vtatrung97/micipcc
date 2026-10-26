@@ -1,0 +1,18 @@
+<div class="enterprise-shell">
+    <!-- Left Aside / Sidebar with Toggle Button on ProcessX -->
+    <app-sidebar [collapsed]="isCollapsed" (toggleCollapse)="toggleSidebar()"></app-sidebar>
+
+    <!-- Right Application Shell -->
+    <div class="enterprise-viewport">
+        <!-- Top-bar Header -->
+        <app-topbar [collapsed]="isCollapsed"></app-topbar>
+
+        <!-- Dynamic Router Outlet for Pages -->
+        <main class="enterprise-body">
+            <router-outlet></router-outlet>
+        </main>
+
+        <!-- Footer Copyright -->
+        <app-footer></app-footer>
+    </div>
+</div>

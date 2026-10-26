@@ -1,0 +1,68 @@
+@use '../../styles/processx-tokens' as px;
+
+// Host được directive gắn thẳng vào <body> và đặt toạ độ (position: fixed)
+:host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1200; // trên dropdown và modal (1100/1101)
+  pointer-events: none;
+}
+
+.px-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: px.$space-4 px.$space-8;
+  border-radius: px.$space-4;
+  background: px.$neutral-900;
+  animation: pxTooltipIn 0.12s ease;
+}
+
+// Chữ 14/20 Medium, trắng; xuống dòng theo max-width hoặc ký tự \n trong text
+.px-tooltip-text {
+  font-family: px.$font-family;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: px.$white;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+}
+
+// Mũi tên 12x6 (SVG gốc chĩa lên) — xoay theo cạnh đặt
+.px-tooltip-arrow {
+  position: absolute;
+  width: 12px;
+  height: 6px;
+}
+
+// Tooltip phía trên đối tượng → mũi tên ở đáy, chĩa xuống
+.px-tooltip-top .px-tooltip-arrow {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+}
+
+.px-tooltip-bottom .px-tooltip-arrow {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.px-tooltip-left .px-tooltip-arrow {
+  right: -9px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.px-tooltip-right .px-tooltip-arrow {
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+@keyframes pxTooltipIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -1,0 +1,41 @@
+.topbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 0 20px;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  user-select: none;
+  z-index: 10;
+  position: relative;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  height: 100%;
+
+  .brand-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1890ff;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .v-divider {
+    width: 1px;
+    height: 18px;
+    background-color: #e8e8e8;
+    margin: 0 2px;
+  }
+}

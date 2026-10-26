@@ -1,14 +1,8 @@
 <section class="process-list">
   <!-- 1. Tiêu đề + nút tạo mới -->
   <header class="process-list-header">
-    <h1 class="process-list-title">Danh sách quy trình</h1>
-    <button
-      *ngIf="canCreate"
-      nz-button
-      nzType="primary"
-      type="button"
-      class="px-btn-primary"
-      (click)="openCreate()">
+    <h1 class="process-list-title">Danh sách quy trình 111</h1>
+    <button *ngIf="canCreate" nz-button nzType="primary" type="button" class="px-btn-primary" (click)="openCreate()">
       <img [src]="icons.plus" width="24" height="24" alt="" />
       <span>Tạo quy trình</span>
     </button>
@@ -17,21 +11,12 @@
   <!-- 2. Hàng bộ lọc -->
   <div class="process-list-toolbar">
     <div class="process-list-filters">
-      <ant-input
-        class="process-list-search"
-        prefixSrc="assets/icons/processx/search.svg"
-        placeholder="Tìm theo tên hoặc mã quy trình"
-        [allowClear]="true"
-        [maxLength]="searchMaxLength"
-        [(ngModel)]="searchKeyword"
-        (onEnter)="onSearch()"
-        (valueChange)="onSearchChange($event)">
+      <ant-input class="process-list-search" prefixSrc="assets/icons/processx/search.svg"
+        placeholder="Tìm theo tên hoặc mã quy trình" [allowClear]="true" [maxLength]="searchMaxLength"
+        [(ngModel)]="searchKeyword" (onEnter)="onSearch()" (valueChange)="onSearchChange($event)">
       </ant-input>
 
-      <app-quick-filter
-        [options]="statusOptions"
-        [(ngModel)]="statusFilter"
-        (valueChange)="onStatusChange()">
+      <app-quick-filter [options]="statusOptions" [(ngModel)]="statusFilter" (valueChange)="onStatusChange()">
       </app-quick-filter>
 
       <button type="button" class="px-btn-link" (click)="showAdvancedFilter = true">
@@ -46,79 +31,50 @@
       <div class="bulk-actions" *ngIf="selectedRows.length > 0">
         <span class="bulk-count">Đã chọn {{ selectedRows.length }}</span>
         <!-- Dừng ban hành: viền đỏ · Ban hành: nền đỏ; chỉ hiện khi có bản ghi đúng trạng thái -->
-        <button
-          *ngIf="canEdit && stoppableSelected.length > 0"
-          type="button"
-          class="px-btn-outline-primary"
+        <button *ngIf="canEdit && stoppableSelected.length > 0" type="button" class="px-btn-outline-primary"
           (click)="openActionModal('stop', stoppableSelected)">
           <img [src]="icons.bulkStop" width="24" height="24" alt="" />
           <span>Dừng ban hành</span>
         </button>
-        <button
-          *ngIf="canEdit && publishableSelected.length > 0"
-          type="button"
-          class="px-btn-solid-primary"
+        <button *ngIf="canEdit && publishableSelected.length > 0" type="button" class="px-btn-solid-primary"
           (click)="openActionModal('publish', publishableSelected)">
           <img [src]="icons.bulkPublish" width="24" height="24" alt="" />
           <span>Ban hành</span>
         </button>
       </div>
 
-    <button
-      type="button"
-      class="px-btn-outline"
-      nz-dropdown
-      nzTrigger="click"
-      nzPlacement="bottomRight"
-      [nzDropdownMenu]="columnMenu"
-      title="Ẩn / hiện cột">
-      <img [src]="icons.sort" width="24" height="24" alt="" />
-      <span>Sắp xếp</span>
-    </button>
-    <!-- Panel ẩn/hiện cột: "Tất cả" + danh sách cột; Mã + Tên quy trình luôn hiện (ô tích khoá), cột Hành động không có ở đây -->
-    <nz-dropdown-menu #columnMenu="nzDropdownMenu">
-      <div class="column-panel" (click)="$event.stopPropagation()">
-        <div class="column-panel-all">
-          <ant-checkbox
-            type="drag"
-            label="Tất cả"
-            [ngModel]="isAllColumnsVisible"
-            [indeterminate]="isSomeColumnsVisible"
-            (checkedChange)="toggleAllColumns($event)"></ant-checkbox>
+      <button type="button" class="px-btn-outline" nz-dropdown nzTrigger="click" nzPlacement="bottomRight"
+        [nzDropdownMenu]="columnMenu" title="Ẩn / hiện cột">
+        <img [src]="icons.sort" width="24" height="24" alt="" />
+        <span>Sắp xếp</span>
+      </button>
+      <!-- Panel ẩn/hiện cột: "Tất cả" + danh sách cột; Mã + Tên quy trình luôn hiện (ô tích khoá), cột Hành động không có ở đây -->
+      <nz-dropdown-menu #columnMenu="nzDropdownMenu">
+        <div class="column-panel" (click)="$event.stopPropagation()">
+          <div class="column-panel-all">
+            <ant-checkbox type="drag" label="Tất cả" [ngModel]="isAllColumnsVisible"
+              [indeterminate]="isSomeColumnsVisible" (checkedChange)="toggleAllColumns($event)"></ant-checkbox>
+          </div>
+          <div class="column-panel-list">
+            <ant-checkbox *ngFor="let col of columns" type="drag" [label]="col.label" [disabled]="!!col.locked"
+              [ngModel]="isColumnVisible(col.key)" (checkedChange)="toggleColumn(col.key, $event)"></ant-checkbox>
+          </div>
         </div>
-        <div class="column-panel-list">
-          <ant-checkbox
-            *ngFor="let col of columns"
-            type="drag"
-            [label]="col.label"
-            [disabled]="!!col.locked"
-            [ngModel]="isColumnVisible(col.key)"
-            (checkedChange)="toggleColumn(col.key, $event)"></ant-checkbox>
-        </div>
-      </div>
-    </nz-dropdown-menu>
+      </nz-dropdown-menu>
     </div>
   </div>
 
   <!-- 3. Bảng danh sách + phân trang -->
-  <app-data-table
-    [loading]="isLoading"
-    [total]="filteredRows.length"
-    [page]="page"
-    [pageSize]="pageSize"
-    emptyTitle="Không tìm thấy quy trình nào"
-    emptyDescription="Thử đổi từ khóa tìm kiếm hoặc điều kiện lọc."
-    (onPageChange)="onPageChange($event)"
-    (onPageSizeChange)="onPageSizeChange($event)">
+  <app-data-table [loading]="isLoading" [total]="filteredRows.length" [page]="page" [pageSize]="pageSize"
+    emptyTitle="Không tìm thấy quy trình nào" emptyDescription="Thử đổi từ khóa tìm kiếm hoặc điều kiện lọc."
+    (onPageChange)="onPageChange($event)" (onPageSizeChange)="onPageSizeChange($event)">
     <table>
       <thead>
         <tr>
           <th class="col-index">
             <div class="px-cell-check">
-              <ant-checkbox
-                [ngModel]="selection.isAllSelected(pagedRows)"
-                [indeterminate]="selection.isSomeSelected(pagedRows)"
-                [disabled]="pagedRows.length === 0"
+              <ant-checkbox [ngModel]="selection.isAllSelected(pagedRows)"
+                [indeterminate]="selection.isSomeSelected(pagedRows)" [disabled]="pagedRows.length === 0"
                 (checkedChange)="selection.toggleAll(pagedRows, $event)"></ant-checkbox>STT
             </div>
           </th>
@@ -139,13 +95,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          *ngFor="let row of pagedRows; let i = index; trackBy: trackByCode"
+        <tr *ngFor="let row of pagedRows; let i = index; trackBy: trackByCode"
           [class.is-selected]="selection.isSelected(row)">
           <td>
             <div class="px-cell-check">
-              <ant-checkbox
-                [ngModel]="selection.isSelected(row)"
+              <ant-checkbox [ngModel]="selection.isSelected(row)"
                 (checkedChange)="selection.toggle(row, $event)"></ant-checkbox>{{ rowIndex(i) }}
             </div>
           </td>
@@ -166,20 +120,14 @@
           <td *ngIf="isColumnVisible('sla')">{{ row.slaLabel }}</td>
           <td>
             <div class="px-cell-actions">
-              <button
-                *ngIf="canEdit"
-                type="button"
-                class="px-cell-action-btn"
-                title="Chỉnh sửa"
+              <button *ngIf="canEdit" type="button" class="px-cell-action-btn" title="Chỉnh sửa"
                 (click)="openEdit(row)">
                 <img [src]="icons.edit" width="20" height="20" alt="" />
               </button>
               <button type="button" class="px-cell-action-btn" title="Xem" (click)="openView(row)">
                 <img [src]="icons.view" width="20" height="20" alt="" />
               </button>
-              <app-action-menu
-                [items]="row.menuItems"
-                [disabled]="row.menuItems.length === 0"
+              <app-action-menu [items]="row.menuItems" [disabled]="row.menuItems.length === 0"
                 (action)="onRowAction($event, row)">
               </app-action-menu>
             </div>
@@ -191,25 +139,15 @@
 </section>
 
 <!-- Drawer "Bộ lọc nâng cao" -->
-<app-advanced-filter-drawer
-  [visible]="showAdvancedFilter"
-  [value]="advancedFilter"
-  [options]="filterOptions"
-  (apply)="applyAdvancedFilter($event)"
-  (closed)="showAdvancedFilter = false">
+<app-advanced-filter-drawer [visible]="showAdvancedFilter" [value]="advancedFilter" [options]="filterOptions"
+  (apply)="applyAdvancedFilter($event)" (closed)="showAdvancedFilter = false">
 </app-advanced-filter-drawer>
 
 <!-- Modal xác nhận: ban hành / dừng ban hành / xóa (1 hoặc nhiều quy trình) -->
-<app-process-action-modal
-  [action]="modalAction"
-  [processes]="modalRows"
-  (confirmed)="confirmActionModal()"
+<app-process-action-modal [action]="modalAction" [processes]="modalRows" (confirmed)="confirmActionModal()"
   (closed)="closeActionModal()">
 </app-process-action-modal>
 
 <!-- Popup nhân bản: nhập Tên + Mã cho bản sao -->
-<app-process-clone-modal
-  [source]="cloneSource"
-  (confirmed)="confirmClone($event)"
-  (closed)="cloneSource = null">
+<app-process-clone-modal [source]="cloneSource" (confirmed)="confirmClone($event)" (closed)="cloneSource = null">
 </app-process-clone-modal>

@@ -1,6 +1,10 @@
-import {APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
+import {APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule, Injector, ApplicationRef, DoBootstrap} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {DatePipe} from '@angular/common';
+import { createCustomElement } from '@angular/elements';
+import { ProcessXElementComponent } from './element/process-x-element.component';
+import { ProcedureElementComponent } from './element/procedure-element.component';
+import { ProcessElementComponent } from './element/process-element.component';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {LayoutsModule} from "./layouts/layouts.module";
@@ -21,6 +25,7 @@ import {TranslateLangService} from "@core/services/translate-lang.service";
 import {PendingChangesGuard} from "@core/guards/pending-changes.guard";
 import {InitModule} from "./init/init.module";
 import { LanguageService } from '@core/services/language.service';
+import { ProcessXElementModule } from './element/process-x-element.module';
 
 
 // Required for AOT compilation
@@ -58,6 +63,7 @@ export function oAuthStorageFactory(): OAuthStorage {
             }
         }),
         SharedModule,
+        ProcessXElementModule,
     ],
     exports: [
         TranslateModule
@@ -76,8 +82,31 @@ export function oAuthStorageFactory(): OAuthStorage {
         },
         WebphoneService
     ],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    bootstrap: [AppComponent]
+    schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class AppModule {
+export class AppModule implements DoBootstrap {
+    constructor(private injector: Injector) {}
+
+    ngDoBootstrap(appRef: ApplicationRef): void {
+        if (typeof window !== 'undefined' && window.customElements) {
+            if (!customElements.get('process-procedure-app')) {
+                const procEl = createCustomElement(ProcedureElementComponent, { injector: this.injector });
+                customElements.define('process-procedure-app', procEl);
+            }
+            if (!customElements.get('process-management-app')) {
+                const procMgmtEl = createCustomElement(ProcessElementComponent, { injector: this.injector });
+                customElements.define('process-management-app', procMgmtEl);
+            }
+            if (!customElements.get('process-x-app')) {
+                const element = createCustomElement(ProcessXElementComponent, { injector: this.injector });
+                customElements.define('process-x-app', element);
+            }
+            console.log('[ProcessX] Đã kích hoạt Custom Elements: <process-procedure-app>, <process-management-app>, <process-x-app>');
+        }
+
+        // Chỉ bootstrap AppComponent khi chạy standalone trên dev port 4201
+        if (typeof window !== 'undefined' && window.location.port === '4201' && document.querySelector('app-root')) {
+            appRef.bootstrap(AppComponent);
+        }
+    }
 }

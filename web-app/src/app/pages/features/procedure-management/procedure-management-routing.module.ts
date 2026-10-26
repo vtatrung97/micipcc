@@ -12,6 +12,7 @@ const routes: Routes = [
   { path: 'graph', component: GraphEditorComponent },
   { path: 'graph/:id', component: GraphEditorComponent }
 ];
+console.log('aaa', routes);
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

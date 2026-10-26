@@ -10,6 +10,17 @@ import {CustomReuseStrategy} from "./route-reuse";
 
 const routes: Routes = [
     {
+        path: 'processX',
+        component: LayoutComponent,
+        children: [
+          {
+            path: '',
+            loadChildren: () => import('./pages/pages.module').then(m => m.PagesModule),
+            canActivate: [AuthGuard]
+          }
+        ]
+    },
+    {
         path: '',
         component: LayoutComponent,
         children: [

@@ -1,0 +1,117 @@
+<div class="dp"
+     [class.dp-sm]="size === 'small'"
+     [class.dp-lg]="size === 'large'"
+     [class.dp-open]="isOpen"
+     [class.dp-disabled]="disabled"
+     [class.dp-has-value]="hasValue"
+     [class.dp-status-error]="status === 'error'"
+     [class.dp-status-warning]="status === 'warning'">
+
+  <!-- Ô hiển thị -->
+  <div class="dp-field" role="button" tabindex="0"
+       [attr.aria-expanded]="isOpen"
+       [attr.aria-disabled]="disabled"
+       (click)="togglePicker()"
+       (keydown.enter)="togglePicker()">
+    <ng-container *ngIf="!isRange">
+      <span class="dp-value" [appTooltip]="displaySingle" [tooltipOnlyTruncated]="true" *ngIf="displaySingle; else singlePlaceholder">{{ displaySingle }}</span>
+      <ng-template #singlePlaceholder>
+        <span class="dp-placeholder">{{ placeholder || 'DD/MM/YYYY' }}</span>
+      </ng-template>
+    </ng-container>
+
+    <!-- Khoảng ngày chưa chọn + có placeholder → hiện một dòng placeholder -->
+    <span class="dp-placeholder" *ngIf="isRange && !hasValue && placeholder">{{ placeholder }}</span>
+    <ng-container *ngIf="isRange && (hasValue || !placeholder)">
+      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayStart" [appTooltip]="displayStart || startPlaceholder || 'Từ ngày'" [tooltipOnlyTruncated]="true">{{ displayStart || startPlaceholder || 'Từ ngày' }}</span>
+      <span class="dp-separator">→</span>
+      <span class="dp-value dp-range-part" [class.dp-placeholder]="!displayEnd" [appTooltip]="displayEnd || endPlaceholder || 'Đến ngày'" [tooltipOnlyTruncated]="true">{{ displayEnd || endPlaceholder || 'Đến ngày' }}</span>
+    </ng-container>
+
+    <span class="dp-clear" *ngIf="allowClear && hasValue && !disabled"
+          (click)="clearValue($event)" title="Xoá ngày">
+      <ant-icon name="close-circle-fill" [size]="14"></ant-icon>
+    </span>
+    <img class="dp-suffix" [src]="icons.calendar" width="24" height="24" alt="" />
+  </div>
+
+  <!-- Một lịch tháng: header (‹ Tháng › ) + ô nhập + lưới ngày -->
+  <ng-template #calendarPane let-key>
+    <div class="dp-pane">
+      <div class="dp-header">
+        <button type="button" class="dp-nav" (click)="shiftMonth(key, -1)" aria-label="Tháng trước">
+          <img [src]="icons.prev" width="20" height="20" alt="" />
+        </button>
+        <span class="dp-title">{{ monthTitle(key) }}</span>
+        <button type="button" class="dp-nav" (click)="shiftMonth(key, 1)" aria-label="Tháng sau">
+          <img [src]="icons.next" width="20" height="20" alt="" />
+        </button>
+      </div>
+
+      <div class="dp-toolbar">
+        <input type="text" class="dp-input" placeholder="DD/MM/YYYY"
+               [ngModel]="pane(key).typed"
+               (ngModelChange)="pane(key).typed = $event"
+               (keydown.enter)="commitTypedDate(key)"
+               (blur)="commitTypedDate(key)" />
+        <button type="button" class="dp-today" *ngIf="!isRange" (click)="selectToday()">Hôm nay</button>
+      </div>
+
+      <div class="dp-calendar">
+        <div class="dp-weekdays">
+          <span class="dp-weekday" *ngFor="let w of weekdays">{{ w }}</span>
+        </div>
+        <div class="dp-grid">
+          <button type="button" class="dp-cell" *ngFor="let cell of pane(key).cells"
+                  [class.dp-cell-outside]="!cell.inMonth"
+                  [class.dp-cell-selected]="isSelected(key, cell)"
+                  [disabled]="isDisabled(key, cell)"
+                  [attr.aria-pressed]="isSelected(key, cell)"
+                  (click)="selectCell(key, cell)">
+            {{ cell.day }}
+            <img class="dp-dot" *ngIf="cell.isToday && !isSelected(key, cell)" [src]="icons.dot" width="5" height="5" alt="" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Popup -->
+  <div #panel class="dp-panel" *ngIf="isOpen"
+       [class.dp-panel-range]="isRange"
+       [class.dp-panel-right]="alignRight"
+       [class.dp-panel-up]="dropUp"
+       [class.dp-panel-fixed]="fixedPanel"
+       [style.top.px]="fixedPanel ? panelTop : null"
+       [style.left.px]="fixedPanel ? panelLeft : null"
+       [style.visibility]="measuring ? 'hidden' : null"
+       (click)="$event.stopPropagation()">
+
+    <!-- Một ngày -->
+    <ng-container *ngIf="!isRange">
+      <ng-container *ngTemplateOutlet="calendarPane; context: { $implicit: 'start' }"></ng-container>
+    </ng-container>
+
+    <!-- Khoảng ngày -->
+    <ng-container *ngIf="isRange">
+      <div class="dp-range-labels">
+        <span>Ngày bắt đầu</span>
+        <span>Ngày kết thúc</span>
+      </div>
+
+      <div class="dp-range-panes">
+        <ng-container *ngFor="let key of paneKeys">
+          <ng-container *ngTemplateOutlet="calendarPane; context: { $implicit: key }"></ng-container>
+        </ng-container>
+      </div>
+
+      <div class="dp-actions">
+        <span class="dp-summary">{{ draftSummary }}</span>
+        <div class="dp-actions-buttons">
+          <button type="button" class="dp-btn dp-btn-default" (click)="resetDraft()">Đặt lại</button>
+          <button type="button" class="dp-btn dp-btn-primary" [disabled]="!canApply" (click)="applyRange()">Chọn</button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

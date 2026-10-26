@@ -1,12 +1,6 @@
 <!-- User Profile Dropdown Trigger -->
-<div
-    class="user-profile-box"
-    nz-dropdown
-    nzTrigger="click"
-    nzPlacement="bottomRight"
-    [nzDropdownMenu]="userMenu"
-    title="Tài khoản"
->
+<div class="user-profile-box" nz-dropdown nzTrigger="click" nzPlacement="bottomRight" [nzDropdownMenu]="userMenu"
+    title="Tài khoản">
     <div class="avatar-wrap">
         <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img" (error)="avatarUrl = ''" />
         <span *ngIf="!avatarUrl" class="avatar-text">{{ initials }}</span>
@@ -63,12 +57,7 @@
 </nz-dropdown-menu>
 
 <!-- Profile Info Modal -->
-<app-modal
-    [visible]="showProfileModal"
-    (closed)="closeProfileModal()"
-    title="Thông tin người dùng"
-    [width]="520"
->
+<app-modal [visible]="showProfileModal" (closed)="closeProfileModal()" title="Thông tin người dùng" [width]="520">
     <div class="profile-modal-body">
         <div class="profile-header-banner">
             <div class="profile-avatar-large">

@@ -1,0 +1,97 @@
+{
+"status": "success",
+"timestamp": 1712201680027,
+"timestampISO8601": "2024-04-04T10:34:40+0700",
+"data": {
+    "data": [
+        {
+            "blackListId": "null1",
+            "phoneNumber": "0123456789",
+            "channelId": ["197","198","199"],
+            "blockForm":2,
+            "blockStartDate": 1712120791251,
+            "blockEndDate": null,
+            "totalCalls":2,
+            "applyStatus":1,
+            "blockReason":1,
+            "refBlockRuleId":"1sa12fr3",
+            "createBy": "longmt9",
+            "updateBy": null,
+            "createType": 2,
+            "groupId": null,
+            "realmName":"demo",
+            "status": 1,
+            "createTime": 1712126000226,
+            "updateTime": null
+           
+        },
+        {
+            "blackListId": "null2",
+            "phoneNumber": "0123456789",
+            "channelId": ["197","198","199"],
+            "blockForm":2,
+            "blockStartDate": 1712120791251,
+            "blockEndDate": null,
+            "totalCalls":2,
+            "applyStatus":1,
+            "blockReason":1,
+            "refBlockRuleId":"1sa12fr3",
+            "createBy": "longmt9",
+            "updateBy": null,
+            "createType": 2,
+            "groupId": null,
+            "realmName":"demo",
+            "status": 1,
+            "createTime": 1712125992613,
+            "updateTime": null
+            
+        },
+        {
+            "blackListId": "null3",
+            "phoneNumber": "0123456789",
+            "channelId": ["197","198","199"],
+            "blockForm":2,
+            "blockStartDate": 1712120791251,
+            "blockEndDate": null,
+            "totalCalls":2,
+            "applyStatus":1,
+            "blockReason":1,
+            "refBlockRuleId":"1sa12fr3",
+            "createBy": "longmt9",
+            "updateBy": null,
+            "createType": 2,
+            "groupId": null,
+            "realmName":"demo",
+            "status": 1,
+            "createTime": 1712120791251,
+            "updateTime": null
+           
+        },
+        {
+            "blackListId": "null4",
+            "phoneNumber": "0123456789",
+            "channelId": ["197","198","199"],
+            "blockForm":2,
+            "blockStartDate": 1712120791251,
+            "blockEndDate": null,
+            "totalCalls":2,
+            "applyStatus":1,
+            "blockReason":1,
+            "refBlockRuleId":"1sa12fr3",
+            "createBy": "longmt9",
+            "updateBy": null,
+            "createType": 2,
+            "groupId": null,
+            "realmName":"demo",
+            "status": 1,
+            "createTime": 1712120704227,
+            "updateTime": null
+           
+        }
+    ],
+    "recordsTotal": 4,
+    "recordsFiltered": 4,
+    "total_elements": 4,
+    "draw": 1
+}
+}

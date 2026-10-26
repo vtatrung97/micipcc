@@ -1,0 +1,28 @@
+<ng-container *ngIf="visible">
+  <div class="modal-mask" (click)="onMaskClick()"></div>
+
+  <div class="modal-wrap" (click)="onMaskClick()">
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="title"
+      [style.width.px]="width"
+      (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <span class="modal-title">{{ title }}</span>
+        <button type="button" class="modal-close" (click)="close()" aria-label="Đóng">
+          <img src="assets/icons/processx/close-modal.svg" width="24" height="24" alt="" />
+        </button>
+      </header>
+
+      <div class="modal-body">
+        <ng-content></ng-content>
+      </div>
+
+      <footer class="modal-footer">
+        <ng-content select="[modal-footer]"></ng-content>
+      </footer>
+    </section>
+  </div>
+</ng-container>

@@ -1,0 +1,362 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "_comment": "MẪU 2: LUỒNG TRUNG BÌNH (EXCLUSIVE GATEWAY & API ACTION) - Xử lý Khiếu nại Cước & Tự động Hoàn cước",
+  "template": {
+    "code": "PRC_BILLING_DISPUTE_REVERSAL",
+    "name": "Quy trình xử lý khiếu nại cước & Tự động hoàn cước viễn thông",
+    "category": "Xử lý khiếu nại",
+    "version": "V2.0",
+    "owner_org_id": "ORG_BILLING",
+    "owner_org_name": "Trung tâm Đối soát & Tính cước",
+    "sla": "2h SLA",
+    "slaStatus": "normal",
+    "status": "Published",
+    "description": "Tiếp nhận khiếu nại cước: Dưới 200k tự động hoàn cước qua API Core; Trên 200k chuyển Trưởng ca phê duyệt",
+    "published_at": "05/10/2026 16:35",
+    "updatedAt": "05/10/2026 16:35"
+  },
+  "executionGraph": {
+    "engineVersion": "BPMN_2.0_JSON",
+    "totalNodes": 8,
+    "totalTransitions": 9,
+    "entryNodeId": "TRG_BILLING_01",
+    "exitNodeIds": ["END_BILLING_SUCCESS", "END_BILLING_ERROR"],
+    "nodes": [
+      {
+        "id": "node-trg-02",
+        "nodeKey": "TRG_BILLING_01",
+        "type": "trigger",
+        "label": "Tiếp nhận khiếu nại",
+        "category": "general",
+        "config": {
+          "triggerType": "Inbound Call",
+          "triggerEvent": "Customer Call via Hotline 18008098",
+          "triggerFormSchedule": "Tức thời (Real-time)",
+          "sla": "10 phút",
+          "description": "Khởi tạo từ cuộc gọi tổng đài, kèm biến flow.variables.dispute_amount, flow.variables.sub_id"
+        }
+      },
+      {
+        "id": "node-tsk-check",
+        "nodeKey": "TSK_CHECK_CDR",
+        "type": "task",
+        "label": "Tra cứu chi tiết cước",
+        "category": "general",
+        "config": {
+          "department": "Trung tâm Đối soát & Tính cước",
+          "team": "Tổ Xử lý khiếu nại cước",
+          "agent": "Điện thoại viên (FO/BO)",
+          "assignee": "Chuyên viên đối soát",
+          "sla": "45 phút",
+          "slaWarning": true,
+          "isApprovalStep": false,
+          "formTemplate": "FORM_CDR_VERIFY_V2",
+          "formOutput": "output_verified_amount",
+          "description": "Kiểm tra log cước CDR, xác nhận số tiền cước phát sinh sai sót"
+        }
+      },
+      {
+        "id": "node-cnd-amount",
+        "nodeKey": "CND_AMOUNT_CHECK",
+        "type": "condition",
+        "gatewayType": "exclusive",
+        "label": "Kiểm tra hạn mức cước",
+        "category": "condition",
+        "config": {
+          "logicOperator": "AND",
+          "conditionVariable": "flow.variables.dispute_amount",
+          "branches": [
+            {
+              "id": "branch-auto-refund",
+              "name": "Nhánh 1: Cước <= 200,000 VNĐ (Tự động)",
+              "defaultLabel": "Nhánh 1",
+              "value": "LE_200K",
+              "expression": "flow.variables.dispute_amount <= 200000",
+              "isDefault": false,
+              "rules": [
+                {
+                  "param": "flow.variables.dispute_amount",
+                  "operator": "Nhỏ hơn hoặc bằng (<=)",
+                  "value": "200000"
+                }
+              ]
+            },
+            {
+              "id": "branch-manual-approval",
+              "name": "Nhánh 2: Mặc định (> 200,000 VNĐ)",
+              "defaultLabel": "Mặc định",
+              "value": "GT_200K",
+              "expression": "default",
+              "isDefault": true,
+              "rules": []
+            }
+          ],
+          "defaultFlowOutput": "branch-manual-approval",
+          "errorFlowOutput": "flow-error-fallback",
+          "description": "Rẽ 1 nhánh duy nhất: Cước nhỏ tự động hoàn; Cước lớn cần phê duyệt"
+        }
+      },
+      {
+        "id": "node-act-refund",
+        "nodeKey": "ACT_CORE_REFUND",
+        "type": "action",
+        "label": "Tác vụ hoàn cước API",
+        "category": "general",
+        "config": {
+          "actionSource": "custom",
+          "integratedSystem": "BILLING_CORE_BSS",
+          "selectedApi": "POST /api/v2/invoices/reverse-charge",
+          "actionMethod": "POST",
+          "actionEndpoint": "https://billing-core.viettel.vn/api/v2/invoices/reverse-charge",
+          "timeoutSeconds": 5,
+          "slaSeconds": 5,
+          "retryCount": 3,
+          "retryInterval": "2s",
+          "circuitBreakerTimeoutMs": 5000,
+          "requestBodyMapping": "{\n  \"subscriberId\": \"${flow.variables.sub_id}\",\n  \"amount\": ${flow.variables.dispute_amount},\n  \"reasonCode\": \"DISPUTE_APPROVED\",\n  \"ticketId\": \"${flow.variables.ticket_id}\"\n}",
+          "responseMapping": "flow.variables.refund_transaction_id = response.data.transactionId;\nflow.variables.refund_status = response.data.status;",
+          "apiOutput": "output_refund_result",
+          "description": "Gọi Rest API sang hệ thống tính cước BSS để thực hiện điều chỉnh hóa đơn"
+        }
+      },
+      {
+        "id": "node-tsk-approve",
+        "nodeKey": "TSK_LEADER_APPROVE",
+        "type": "task",
+        "label": "Trưởng ca duyệt hoàn cước",
+        "category": "general",
+        "config": {
+          "department": "TT CSKH Miền Bắc",
+          "team": "Ban Giám đốc / Trưởng ca",
+          "agent": "Trưởng ca trực",
+          "assignee": "Trưởng ca trực CSKH",
+          "sla": "1h SLA",
+          "slaWarning": true,
+          "isApprovalStep": true,
+          "formTemplate": "FORM_LEADER_APPROVAL_V1",
+          "formOutput": "output_approval_decision",
+          "description": "Bước phê duyệt dành riêng cho Trưởng ca đối với số tiền hoàn > 200,000 VNĐ"
+        }
+      },
+      {
+        "id": "node-ntf-result",
+        "nodeKey": "NTF_REFUND_SUCCESS",
+        "type": "notification",
+        "label": "SMS thông báo kết quả",
+        "category": "general",
+        "config": {
+          "notificationChannel": "SMS",
+          "channelNotification": true,
+          "channelEmail": false,
+          "notificationRecipient": "${flow.variables.customer_phone}",
+          "notificationTitle": "Viettel - Kết quả đối soát cước",
+          "notificationContent": "Viettel thông báo: Yêu cầu hoàn cước số tiền ${flow.variables.dispute_amount}d của Quý khách đã được xử lý thành công (Mã GD: ${flow.variables.refund_transaction_id}). Trân trọng!",
+          "description": "Gửi SMS Brandname tự động sau khi giao dịch hoàn cước thành công"
+        }
+      },
+      {
+        "id": "node-end-success",
+        "nodeKey": "END_BILLING_SUCCESS",
+        "type": "end",
+        "label": "Hoàn tất thành công",
+        "category": "general",
+        "config": {
+          "endFormTemplate": "FORM_END_BILLING_OK",
+          "description": "Kết thúc quy trình bình thường"
+        }
+      },
+      {
+        "id": "node-end-error",
+        "nodeKey": "END_BILLING_ERROR",
+        "type": "end",
+        "label": "Kết thúc lỗi ngoại lệ",
+        "category": "general",
+        "config": {
+          "endFormTemplate": "FORM_END_EXCEPTION",
+          "description": "Ghi nhận mã lỗi sự cố hoàn cước và tạo task thủ công đối soát sau"
+        }
+      }
+    ],
+    "transitions": [
+      {
+        "id": "t-01",
+        "fromNode": "TRG_BILLING_01",
+        "toNode": "TSK_CHECK_CDR",
+        "type": "sequence"
+      },
+      {
+        "id": "t-02",
+        "fromNode": "TSK_CHECK_CDR",
+        "toNode": "CND_AMOUNT_CHECK",
+        "type": "sequence"
+      },
+      {
+        "id": "t-branch-auto",
+        "fromNode": "CND_AMOUNT_CHECK",
+        "toNode": "ACT_CORE_REFUND",
+        "type": "condition_branch",
+        "branchId": "branch-auto-refund",
+        "conditionExpression": "flow.variables.dispute_amount <= 200000"
+      },
+      {
+        "id": "t-branch-manual",
+        "fromNode": "CND_AMOUNT_CHECK",
+        "toNode": "TSK_LEADER_APPROVE",
+        "type": "condition_branch",
+        "branchId": "branch-manual-approval",
+        "isDefaultBranch": true,
+        "conditionExpression": "default"
+      },
+      {
+        "id": "t-branch-error",
+        "fromNode": "CND_AMOUNT_CHECK",
+        "toNode": "END_BILLING_ERROR",
+        "type": "error_flow",
+        "conditionExpression": "hasError == true"
+      },
+      {
+        "id": "t-approved-to-act",
+        "fromNode": "TSK_LEADER_APPROVE",
+        "toNode": "ACT_CORE_REFUND",
+        "type": "sequence"
+      },
+      {
+        "id": "t-act-to-ntf",
+        "fromNode": "ACT_CORE_REFUND",
+        "toNode": "NTF_REFUND_SUCCESS",
+        "type": "sequence"
+      },
+      {
+        "id": "t-act-error-to-end",
+        "fromNode": "ACT_CORE_REFUND",
+        "toNode": "END_BILLING_ERROR",
+        "type": "error_flow",
+        "conditionExpression": "response.status >= 400"
+      },
+      {
+        "id": "t-ntf-to-end",
+        "fromNode": "NTF_REFUND_SUCCESS",
+        "toNode": "END_BILLING_SUCCESS",
+        "type": "sequence"
+      }
+    ]
+  },
+  "graphData": {
+    "cells": [
+      {
+        "position": { "x": 60, "y": 240 },
+        "size": { "width": 48, "height": 48 },
+        "shape": "circle",
+        "id": "node-trg-02",
+        "data": {
+          "id": "node-trg-02",
+          "nodeKey": "TRG_BILLING_01",
+          "type": "trigger",
+          "typeTitle": "Bắt đầu",
+          "label": "Tiếp nhận khiếu nại"
+        }
+      },
+      {
+        "position": { "x": 160, "y": 224 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-tsk-check",
+        "data": {
+          "id": "node-tsk-check",
+          "nodeKey": "TSK_CHECK_CDR",
+          "type": "task",
+          "typeTitle": "Giao việc",
+          "label": "Tra cứu chi tiết cước"
+        }
+      },
+      {
+        "position": { "x": 380, "y": 224 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-cnd-amount",
+        "data": {
+          "id": "node-cnd-amount",
+          "nodeKey": "CND_AMOUNT_CHECK",
+          "type": "condition",
+          "gatewayType": "exclusive",
+          "typeTitle": "Chọn một nhánh",
+          "label": "Kiểm tra hạn mức cước"
+        }
+      },
+      {
+        "position": { "x": 600, "y": 140 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-act-refund",
+        "data": {
+          "id": "node-act-refund",
+          "nodeKey": "ACT_CORE_REFUND",
+          "type": "action",
+          "typeTitle": "Tác vụ hệ thống",
+          "label": "Tác vụ hoàn cước API"
+        }
+      },
+      {
+        "position": { "x": 600, "y": 310 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-tsk-approve",
+        "data": {
+          "id": "node-tsk-approve",
+          "nodeKey": "TSK_LEADER_APPROVE",
+          "type": "task",
+          "typeTitle": "Giao việc",
+          "label": "Trưởng ca duyệt hoàn cước",
+          "isApprovalStep": true
+        }
+      },
+      {
+        "position": { "x": 820, "y": 140 },
+        "size": { "width": 172, "height": 80 },
+        "shape": "rect",
+        "id": "node-ntf-result",
+        "data": {
+          "id": "node-ntf-result",
+          "nodeKey": "NTF_REFUND_SUCCESS",
+          "type": "notification",
+          "typeTitle": "Gửi thông báo",
+          "label": "SMS thông báo kết quả"
+        }
+      },
+      {
+        "position": { "x": 1040, "y": 156 },
+        "size": { "width": 48, "height": 48 },
+        "shape": "circle",
+        "id": "node-end-success",
+        "data": {
+          "id": "node-end-success",
+          "nodeKey": "END_BILLING_SUCCESS",
+          "type": "end",
+          "typeTitle": "Kết thúc",
+          "label": "Hoàn tất thành công"
+        }
+      },
+      {
+        "position": { "x": 820, "y": 326 },
+        "size": { "width": 48, "height": 48 },
+        "shape": "circle",
+        "id": "node-end-error",
+        "data": {
+          "id": "node-end-error",
+          "nodeKey": "END_BILLING_ERROR",
+          "type": "end",
+          "typeTitle": "Kết thúc",
+          "label": "Kết thúc lỗi ngoại lệ"
+        }
+      },
+      { "shape": "edge", "id": "t-01", "source": "node-trg-02", "target": "node-tsk-check" },
+      { "shape": "edge", "id": "t-02", "source": "node-tsk-check", "target": "node-cnd-amount" },
+      { "shape": "edge", "id": "t-branch-auto", "source": "node-cnd-amount", "target": "node-act-refund" },
+      { "shape": "edge", "id": "t-branch-manual", "source": "node-cnd-amount", "target": "node-tsk-approve" },
+      { "shape": "edge", "id": "t-approved-to-act", "source": "node-tsk-approve", "target": "node-act-refund" },
+      { "shape": "edge", "id": "t-act-to-ntf", "source": "node-act-refund", "target": "node-ntf-result" },
+      { "shape": "edge", "id": "t-ntf-to-end", "source": "node-ntf-result", "target": "node-end-success" },
+      { "shape": "edge", "id": "t-branch-error", "source": "node-cnd-amount", "target": "node-end-error" }
+    ]
+  }
+}

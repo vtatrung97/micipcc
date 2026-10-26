@@ -10,3 +10,10 @@ local.env
 Thumbs.db
 /web-app/.angular/
 /web-app/node_modules/
+/web-app/dist/
+
+# IPCC
+/ipcc/.angular/
+/ipcc/node_modules/
+/ipcc/dist/
+.git_backup

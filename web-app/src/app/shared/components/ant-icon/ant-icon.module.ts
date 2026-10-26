@@ -7,4 +7,4 @@ import { AntIconComponent } from './ant-icon.component';
   imports: [CommonModule],
   exports: [AntIconComponent]
 })
-export class AntIconModule {}
+export class AntIconModule { }

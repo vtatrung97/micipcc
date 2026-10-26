@@ -1,0 +1,50 @@
+<div class="px-pagination" *ngIf="total > 0">
+  <!-- Trái: số dòng hiển thị + khoảng bản ghi -->
+  <div class="px-pagination-left">
+    <div class="px-pagination-size" *ngIf="showSizeChanger">
+      <span class="px-pagination-text">Số dòng hiển thị</span>
+      <ant-select
+        class="px-pagination-select"
+        size="small"
+        placeholder=""
+        [options]="sizeOptions"
+        [ngModel]="pageSize"
+        (ngModelChange)="onPageSizeChange($event)">
+      </ant-select>
+    </div>
+
+    <div class="px-pagination-info" *ngIf="showTotal">
+      <span class="px-pagination-text">{{ rangeStart }} - {{ rangeEnd }}</span>
+      <span class="px-pagination-text">/</span>
+      <span class="px-pagination-result">
+        <span class="px-pagination-total">{{ total }}</span>
+        <span class="px-pagination-text">kết quả</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Phải: ‹ 1 2 3 … 88 89 90 › -->
+  <div class="px-pagination-pages">
+    <button type="button" class="px-pagination-nav" [disabled]="isFirst" (click)="goToPage(page - 1)" title="Trang trước">
+      <img [src]="isFirst ? icons.prevDisabled : icons.prev" width="20" height="20" alt="" />
+    </button>
+
+    <div class="px-pagination-list">
+      <ng-container *ngFor="let item of items; trackBy: trackByKey">
+        <span class="px-pagination-item px-pagination-ellipsis" *ngIf="item.page === null">...</span>
+        <button
+          *ngIf="item.page !== null"
+          type="button"
+          class="px-pagination-item"
+          [class.is-active]="item.page === page"
+          (click)="goToPage(item.page)">
+          {{ item.page }}
+        </button>
+      </ng-container>
+    </div>
+
+    <button type="button" class="px-pagination-nav" [disabled]="isLast" (click)="goToPage(page + 1)" title="Trang sau">
+      <img [src]="isLast ? icons.nextDisabled : icons.next" width="20" height="20" alt="" />
+    </button>
+  </div>
+</div>

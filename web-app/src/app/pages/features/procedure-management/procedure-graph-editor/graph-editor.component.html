@@ -2,7 +2,7 @@
   <!-- ===== 1. Toolbar: ← · Tên · Phiên bản · Hủy · Lưu nháp · Ban hành ===== -->
   <header class="studio-topbar">
     <div class="topbar-left-section">
-      <a class="back-btn" routerLink="/procedure-management" [title]="'PROCESS_GRAPH.HEADER.BACK_TITLE' | translate">
+      <a class="back-btn" (click)="goBack()" [title]="'PROCESS_GRAPH.HEADER.BACK_TITLE' | translate">
         <img src="assets/icons/processx/back.svg" width="20" height="20" alt="" />
       </a>
 
@@ -14,14 +14,14 @@
         <!-- "Phiên bản n" + badge trạng thái + chevron -->
         <div class="version-dropdown-badge" [title]="'PROCESS_GRAPH.HEADER.VERSION_TITLE' | translate">
           <span class="version-name">{{ 'PROCESS_GRAPH.HEADER.VERSION' | translate: { version: headerVersion } }}</span>
-          <span class="draft-tag" *ngIf="headerStatus === 'Draft'">{{ 'PROCESS_GRAPH.HEADER.DRAFT_TAG' | translate }}</span>
-          <app-status-tag
-            *ngIf="headerStatus !== 'Draft'"
-            appearance="fill"
+          <span class="draft-tag" *ngIf="headerStatus === 'Draft'">{{ 'PROCESS_GRAPH.HEADER.DRAFT_TAG' | translate
+            }}</span>
+          <app-status-tag *ngIf="headerStatus !== 'Draft'" appearance="fill"
             [status]="headerStatus === 'Published' ? 'published' : 'inactive'"
             [text]="(headerStatus === 'Published' ? 'PROCESS_GRAPH.HEADER.PUBLISHED_TAG' : 'PROCESS_GRAPH.HEADER.INACTIVE_TAG') | translate">
           </app-status-tag>
-          <img class="dropdown-arrow" src="assets/icons/processx/chevron-down-neutral-500.svg" width="24" height="24" alt="" />
+          <img class="dropdown-arrow" src="assets/icons/processx/chevron-down-neutral-500.svg" width="24" height="24"
+            alt="" />
         </div>
       </div>
     </div>
@@ -29,7 +29,8 @@
     <!-- Đang ban hành: chỉ có "Dừng ban hành" (sửa: bấm được, mở popup xác nhận; xem: khoá).
          Còn lại: sửa / tạo mới có Hủy · Lưu nháp · Ban hành; xem không có nút -->
     <div class="topbar-actions-container">
-      <button *ngIf="showEditActions" type="button" class="topbar-btn text-btn" (click)="cancelEdit()" [title]="'PROCESS_GRAPH.HEADER.CANCEL_TITLE' | translate">
+      <button *ngIf="showEditActions" type="button" class="topbar-btn text-btn" (click)="cancelEdit()"
+        [title]="'PROCESS_GRAPH.HEADER.CANCEL_TITLE' | translate">
         <span>{{ 'PROCESS_GRAPH.HEADER.CANCEL' | translate }}</span>
       </button>
 
@@ -39,7 +40,8 @@
       </button>
 
       <ng-container *ngIf="showEditActions">
-        <button type="button" class="topbar-btn outline-btn" (click)="saveDraft()" [title]="'PROCESS_GRAPH.HEADER.SAVE_DRAFT_TITLE' | translate">
+        <button type="button" class="topbar-btn outline-btn" (click)="saveDraft()"
+          [title]="'PROCESS_GRAPH.HEADER.SAVE_DRAFT_TITLE' | translate">
           <span>{{ 'PROCESS_GRAPH.HEADER.SAVE_DRAFT' | translate }}</span>
         </button>
 
@@ -54,7 +56,8 @@
   <!-- ===== 2. Stepper: ① Thông tin chung ── ② Thiết kế quy trình · nút bên phải ===== -->
   <div class="sub-header-tabs">
     <!-- Bước 2: "Quay lại" bên trái, về bước 1 -->
-    <button *ngIf="activeSubTab === 'design'" type="button" class="stepper-next-btn stepper-back-btn" (click)="setSubTab('info')">
+    <button *ngIf="activeSubTab === 'design'" type="button" class="stepper-next-btn stepper-back-btn"
+      (click)="setSubTab('info')">
       {{ 'PROCESS_GRAPH.TABS.BACK' | translate }}
     </button>
 
@@ -64,7 +67,8 @@
         <span class="stepper-label">{{ 'PROCESS_GRAPH.TABS.GENERAL' | translate }}</span>
       </button>
       <div class="stepper-divider"></div>
-      <button type="button" class="stepper-item" [class.active]="activeSubTab === 'design'" (click)="setSubTab('design')">
+      <button type="button" class="stepper-item" [class.active]="activeSubTab === 'design'"
+        (click)="setSubTab('design')">
         <span class="stepper-index">2</span>
         <span class="stepper-label">{{ 'PROCESS_GRAPH.TABS.DESIGN' | translate }}</span>
       </button>
@@ -81,7 +85,8 @@
   <div class="studio-workspace">
 
     <!-- THƯ VIỆN BƯỚC -->
-    <aside class="node-palette" [class.is-readonly]="isReadonly" [attr.inert]="isReadonly ? '' : null" [attr.aria-label]="'PROCESS_GRAPH.PALETTE.TITLE' | translate">
+    <aside class="node-palette" [class.is-readonly]="isReadonly" [attr.inert]="isReadonly ? '' : null"
+      [attr.aria-label]="'PROCESS_GRAPH.PALETTE.TITLE' | translate">
       <div class="node-palette-head">
         <h2 class="node-palette-title">{{ 'PROCESS_GRAPH.PALETTE.TITLE' | translate }}</h2>
         <p class="node-palette-desc">{{ 'PROCESS_GRAPH.PALETTE.SUBTITLE' | translate }}</p>
@@ -112,9 +117,9 @@
 
     <!-- Một bước trên Thư viện: kéo thả vào canvas hoặc bấm để thêm -->
     <ng-template #paletteRow let-type>
-      <div class="palette-row" [attr.draggable]="!isReadonly"
-        (dragstart)="onPaletteDragStart($event, type)" (click)="addStandardNode(type)"
-        [appTooltip]="'PROCESS_GRAPH.PALETTE.ITEMS.' + type + '.TOOLTIP' | translate" tooltipPlacement="right">
+      <div class="palette-row" [attr.draggable]="!isReadonly" (dragstart)="onPaletteDragStart($event, type)"
+        (click)="addStandardNode(type)" [appTooltip]="'PROCESS_GRAPH.PALETTE.ITEMS.' + type + '.TOOLTIP' | translate"
+        tooltipPlacement="right">
         <span class="palette-icon" [style.background]="paletteIconBg(type)">
           <img [src]="paletteIconSrc(type)" width="24" height="24" alt="" />
         </span>
@@ -129,40 +134,29 @@
       <app-add-step-overlay #addStep [style.display]="isReadonly ? 'none' : null"></app-add-step-overlay>
 
       <!-- Toolbar: Hoàn tác · Làm lại | Thu nhỏ · % · Phóng to | Căn vừa màn hình · Sắp xếp lại -->
-      <app-canvas-toolbar class="canvas-toolbar-host" [canUndo]="!isReadonly && canUndo" [canRedo]="!isReadonly && canRedo" [zoom]="currentZoom"
-        (undo)="undo()" (redo)="redo()" (zoomIn)="zoomIn()" (zoomOut)="zoomOut()" (resetZoom)="resetZoom()"
-        (fit)="zoomToFit()" (autoLayout)="autoLayout()"></app-canvas-toolbar>
+      <app-canvas-toolbar class="canvas-toolbar-host" [canUndo]="!isReadonly && canUndo"
+        [canRedo]="!isReadonly && canRedo" [zoom]="currentZoom" (undo)="undo()" (redo)="redo()" (zoomIn)="zoomIn()"
+        (zoomOut)="zoomOut()" (resetZoom)="resetZoom()" (fit)="zoomToFit()"
+        (autoLayout)="autoLayout()"></app-canvas-toolbar>
     </main>
 
     <!-- DRAWER CẤU HÌNH BƯỚC (BÊN PHẢI) -->
     <app-node-config-drawer [readonly]="isReadonly"></app-node-config-drawer>
 
     <!-- TAB "THÔNG TIN CHUNG": phủ lên canvas, canvas vẫn giữ nguyên trong DOM -->
-    <app-process-info-form
-      *ngIf="activeSubTab === 'info'"
-      class="info-tab-panel"
-      [info]="processInfo"
-      [errors]="processInfoErrors"
-      [readonly]="isReadonly"
-      [codeEditable]="isCreateMode">
+    <app-process-info-form *ngIf="activeSubTab === 'info'" class="info-tab-panel" [info]="processInfo"
+      [errors]="processInfoErrors" [readonly]="isReadonly" [codeEditable]="isCreateMode">
     </app-process-info-form>
 
     <!-- Hủy khi đang có thay đổi chưa lưu -->
-    <app-confirm-cancel-modal
-      [visible]="isCancelConfirmOpen"
-      (confirmed)="leaveEditor()"
+    <app-confirm-cancel-modal [visible]="isCancelConfirmOpen" (confirmed)="leaveEditor()"
       (closed)="isCancelConfirmOpen = false">
     </app-confirm-cancel-modal>
 
     <!-- Dừng ban hành (màn sửa bản Đang ban hành) -->
-    <app-confirm-cancel-modal
-      [visible]="isStopConfirmOpen"
-      titleKey="PROCESS_GRAPH.STOP_CONFIRM.TITLE"
-      messageKey="PROCESS_GRAPH.STOP_CONFIRM.MESSAGE"
-      iconSrc="assets/icons/processx/dialog-stop.svg"
-      [iconSize]="32"
-      (confirmed)="stopPublishing()"
-      (closed)="isStopConfirmOpen = false">
+    <app-confirm-cancel-modal [visible]="isStopConfirmOpen" titleKey="PROCESS_GRAPH.STOP_CONFIRM.TITLE"
+      messageKey="PROCESS_GRAPH.STOP_CONFIRM.MESSAGE" iconSrc="assets/icons/processx/dialog-stop.svg" [iconSize]="32"
+      (confirmed)="stopPublishing()" (closed)="isStopConfirmOpen = false">
     </app-confirm-cancel-modal>
   </div>
 </div>

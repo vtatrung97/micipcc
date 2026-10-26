@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    </style>
+</head>
+<body>
+
+<script
+        src="__LOADER_URL__"
+        data-link="__LINK_URL__"
+        data-id="__BOT_ID__"
+        data-bubble-background-color="__BUBBLE_BG_COLOR__"
+        data-bubble-color="__BUBBLE_COLOR__"
+        data-bubble-content="__BUBBLE_CONTENT__"
+        data-bubble-padding="__BUBBLE_PADDING__"
+        data-bubble-border-radius="__BUBBLE_BORDER_RADIUS__"
+        data-widget-background-color="__WIDGET_BG_COLOR__"
+        data-widget-header-background-color="__WIDGET_HEADER_BG_COLOR__"
+        data-widget-color="__WIDGET_COLOR__"
+        data-content-img="__CONTENT_IMG__"
+        data-content-text="__CONTENT_TEXT__"
+        data-chat-text-size="__CHAT_TEXT_SIZE__"
+        data-chat-line-height="__CHAT_LINE_HEIGHT__"
+        data-assistant-background="__ASSISTANT_BG__"
+        data-assistant-color="__ASSISTANT_COLOR__"
+        data-assistant-avatar="__ASSISTANT_AVATAR__"
+        data-user-background="__USER_BG__"
+        data-user-color="__USER_COLOR__"
+        data-powered-by="__POWERED_BY__"
+        data-powered-by-color="__POWERED_BY_COLOR__"
+        data-auto-open-widget="__AUTO_OPEN_WIDGET__"
+></script>
+
+<script type="text/javascript">
+    window.addEventListener('message', function (evt) {
+        if (evt.data && evt.data.type === 'SET_USER') {
+            var user = evt.data.payload;
+            var count = 0;
+            var t = setInterval(function () {
+                count++;
+                if (typeof window.setUser === 'function') {
+                    window.setUser(user);
+                }
+                if (count >= 4) clearInterval(t);
+            }, 500);
+        }
+    });
+</script>
+
+</body>
+</html>

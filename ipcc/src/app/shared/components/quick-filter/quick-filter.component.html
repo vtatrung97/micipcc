@@ -1,0 +1,10 @@
+<div class="qf" role="radiogroup" [class.qf-disabled]="disabled">
+  <button type="button" class="qf-chip" *ngFor="let opt of options"
+          role="radio"
+          [attr.aria-checked]="isActive(opt)"
+          [class.qf-chip-active]="isActive(opt)"
+          [disabled]="disabled || opt.disabled"
+          (click)="select(opt)">
+    {{ opt.label }}
+  </button>
+</div>

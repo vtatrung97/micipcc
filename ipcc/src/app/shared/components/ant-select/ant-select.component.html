@@ -1,0 +1,138 @@
+<div 
+  #container
+  class="px-select" 
+  [class.px-select-open]="isOpen"
+  [class.px-select-disabled]="disabled"
+  [class.px-select-focused]="isOpen"
+  [class.px-select-allow-clear]="allowClear"
+  [class.px-select-sm]="size === 'small'"
+  [class.px-select-lg]="size === 'large'"
+  [class.has-prefix]="!!prefixIcon">
+  
+  <!-- Ô trigger -->
+  <div class="px-select-selector" (click)="toggleDropdown($event)">
+    <span class="px-select-prefix" *ngIf="prefixIcon">
+      <ant-icon [name]="prefixIcon" [size]="14"></ant-icon>
+    </span>
+
+    <!-- Ô tìm kiếm khi bật showSearch và dropdown đang mở -->
+    <span class="px-select-selection-search" *ngIf="showSearch && !panelSearch && isOpen">
+      <input 
+        #searchInput
+        type="text" 
+        class="px-select-selection-search-input"
+        [(ngModel)]="searchQuery" 
+        (click)="$event.stopPropagation()"
+        (keydown)="onKeyDown($event)"
+        [placeholder]="selectedOption ? selectedOption.label : placeholder" />
+    </span>
+
+    <span class="px-select-selection-item" *ngIf="selectedOption && (!showSearch || panelSearch || !isOpen)">
+      <span 
+        class="option-dot" 
+        *ngIf="selectedOption.dotColor" 
+        [style.background]="selectedOption.dotColor">
+      </span>
+
+      <ant-icon 
+        *ngIf="selectedOption.icon" 
+        [name]="selectedOption.icon" 
+        [size]="13" 
+        [color]="selectedOption.iconColor"
+        style="margin-right: 5px;">
+      </ant-icon>
+
+      <span class="selection-item-text" [appTooltip]="selectedOption.label" [tooltipOnlyTruncated]="true">{{ selectedOption.label }}</span>
+    </span>
+
+    <span class="px-select-selection-placeholder" [appTooltip]="placeholder" [tooltipOnlyTruncated]="true" *ngIf="!selectedOption && !(showSearch && !panelSearch && isOpen)">
+      {{ placeholder }}
+    </span>
+
+    <span 
+      class="px-select-clear" 
+      *ngIf="allowClear && selectedOption && !disabled" 
+      (click)="clearSelection($event)"
+      title="Xóa lựa chọn">
+      <ant-icon name="close-circle-fill" [size]="14"></ant-icon>
+    </span>
+
+    <span class="px-select-arrow" [class.px-select-arrow-loading]="loading">
+      <img *ngIf="!loading" [src]="isOpen ? 'assets/icons/processx/chevron-up-active.svg' : 'assets/icons/processx/chevron-down.svg'" width="24" height="24" alt="" />
+      <ant-icon *ngIf="loading" name="sync" [size]="18" [spin]="true"></ant-icon>
+    </span>
+  </div>
+
+  <!-- Dropdown -->
+  <div 
+    #dropdown
+    class="px-select-dropdown"
+    [class.px-select-dropdown-up]="dropUp"
+    [class.px-select-dropdown-fixed]="fixedPanel"
+    [style.top.px]="fixedPanel ? panelTop : null"
+    [style.left.px]="fixedPanel ? panelLeft : null"
+    [style.width.px]="fixedPanel ? panelWidth : null"
+    [style.visibility]="measuring ? 'hidden' : null" 
+    *ngIf="isOpen" 
+    [class.has-panel-extra]="panelSearch || footerTemplate"
+    (click)="$event.stopPropagation()">
+
+    <!-- Ô tìm kiếm đầu dropdown -->
+    <div class="px-select-panel-search" *ngIf="panelSearch">
+      <img src="assets/icons/processx/search.svg" width="20" height="20" alt="" />
+      <input #panelSearchInput type="text" [(ngModel)]="searchQuery" (keydown)="onKeyDown($event)"
+             [placeholder]="panelSearchPlaceholder" />
+    </div>
+
+    <div class="dropdown-options-list" *ngIf="filteredOptions.length > 0">
+      <div 
+        *ngFor="let opt of filteredOptions; let i = index; trackBy: trackByValue"
+        class="px-select-item px-select-item-option"
+        [class.px-select-item-option-selected]="isSelected(opt)"
+        [class.px-select-item-option-disabled]="opt.disabled"
+        [class.px-select-item-option-active]="i === activeHoverIndex"
+        (click)="selectOption(opt, $event)"
+        (mouseenter)="activeHoverIndex = i">
+        
+        <ng-container *ngIf="optionTemplate; else defaultOption">
+          <ng-container *ngTemplateOutlet="optionTemplate; context: { $implicit: opt, selected: isSelected(opt) }"></ng-container>
+        </ng-container>
+
+        <ng-template #defaultOption>
+        <div class="option-content">
+          <span 
+            class="option-dot" 
+            *ngIf="opt.dotColor" 
+            [style.background]="opt.dotColor">
+          </span>
+
+          <ant-icon 
+            *ngIf="opt.icon" 
+            [name]="opt.icon" 
+            [size]="13" 
+            [color]="opt.iconColor"
+            style="margin-right: 6px;">
+          </ant-icon>
+
+          <span class="option-label-text" [appTooltip]="opt.label" [tooltipOnlyTruncated]="true" tooltipPlacement="right">{{ opt.label }}</span>
+          <span class="option-badge" *ngIf="opt.badge">{{ opt.badge }}</span>
+        </div>
+
+        <span class="option-check" *ngIf="isSelected(opt)">
+          <img src="assets/icons/processx/check-primary.svg" width="20" height="20" alt="" />
+        </span>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="px-select-empty" *ngIf="filteredOptions.length === 0">
+      <ant-icon name="inbox" [size]="28" color="#d9d9d9"></ant-icon>
+      <span class="empty-text">Không có dữ liệu</span>
+    </div>
+
+    <!-- Chân dropdown (vd: "Thêm mới") -->
+    <div class="px-select-panel-footer" *ngIf="footerTemplate">
+      <ng-container *ngTemplateOutlet="footerTemplate; context: { $implicit: searchQuery, close: closePanel }"></ng-container>
+    </div>
+  </div>
+</div>

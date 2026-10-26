@@ -1,0 +1,31 @@
+<label class="px-cb"
+       [class.px-cb-drag]="type === 'drag'"
+       [class.px-cb-checked]="checked && !indeterminate"
+       [class.px-cb-indeterminate]="indeterminate"
+       [class.px-cb-disabled]="disabled"
+       [class.px-cb-readonly]="readonly"
+       [class.px-cb-interactive]="interactive">
+
+  <span class="px-cb-control">
+    <input type="checkbox"
+           class="px-cb-input"
+           [checked]="checked"
+           [indeterminate]="indeterminate"
+           [disabled]="disabled"
+           [attr.aria-readonly]="readonly || null"
+           (change)="onCheckboxChange($event)" />
+    <span class="px-cb-box">
+      <img *ngIf="checked && !indeterminate" class="px-cb-icon" [class.px-cb-icon-lg]="disabled"
+           [src]="checkIcon" alt="" />
+      <ng-container *ngIf="indeterminate">
+        <img class="px-cb-icon px-cb-minus" [class.px-cb-icon-lg]="disabled" [src]="minusIcon" alt="" />
+        <img *ngIf="interactive" class="px-cb-icon px-cb-minus-hover" [src]="minusHoverIcon" alt="" />
+      </ng-container>
+    </span>
+  </span>
+
+  <span class="px-cb-text" [hidden]="!hasText">
+    <span class="px-cb-label" #labelEl><ng-content></ng-content>{{ label }}</span>
+    <span class="px-cb-desc" *ngIf="description">{{ description }}</span>
+  </span>
+</label>

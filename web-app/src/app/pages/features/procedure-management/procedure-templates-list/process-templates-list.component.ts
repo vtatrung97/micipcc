@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -112,8 +112,9 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
     private coreService: CoreService,
     private router: Router,
     private message: NzMessageService,
-    private categoryService: ProcessCategoryService
-  ) {}
+    private categoryService: ProcessCategoryService,
+    private route: ActivatedRoute,
+  ) { }
 
   ngOnInit(): void {
     this.templateService.templates$
@@ -218,7 +219,7 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   private saveHiddenColumns(): void {
     try {
       localStorage.setItem(this.hiddenColumnsStorageKey, JSON.stringify(Array.from(this.hiddenColumns)));
-    } catch {}
+    } catch { }
   }
 
   /**
@@ -407,16 +408,23 @@ export class ProcessTemplatesListComponent implements OnInit, OnDestroy {
   // ===== Hành động =====
   /** "Tạo quy trình": mở Canvas Builder ở tab "Thông tin chung" */
   openCreate(): void {
-    this.router.navigate(['/procedure-management/graph'], { queryParams: { mode: 'create', initType: 'blank' } });
+    console.log('openCreate', this.router.url, this.router.navigate(['/graph']));
+
+    // this.router.navigate(['/graph'], { queryParams: { mode: 'create', initType: 'blank' } });
+
+    this.router.navigate(['graph'], {
+      relativeTo: this.route,
+      queryParams: { mode: 'create', initType: 'blank' }
+    });
   }
 
   openEdit(row: ProcessRow): void {
-    this.router.navigate(['/procedure-management/graph'], { queryParams: { id: row.item.code } });
+    this.router.navigate(['/graph'], { queryParams: { id: row.item.code } });
   }
 
   /** Xem: mở màn thiết kế ở chế độ chỉ xem (khoá mọi ô, không thao tác) */
   openView(row: ProcessRow): void {
-    this.router.navigate(['/procedure-management/graph'], { queryParams: { id: row.item.code, mode: 'view' } });
+    this.router.navigate(['/graph'], { queryParams: { id: row.item.code, mode: 'view' } });
   }
 
   /**

@@ -8,7 +8,8 @@
   "files": [
     "src/main.ts",
     "src/bootstrap.ts",
-    "src/polyfills.ts"
+    "src/polyfills.ts",
+    "src/app/element/process-x-element.module.ts"
   ],
   "include": [
     "src/**/*.d.ts"

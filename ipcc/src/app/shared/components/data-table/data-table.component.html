@@ -1,0 +1,43 @@
+<div class="px-table" [class.px-table-loading]="loading">
+  <!-- 1. Loading phủ phần thân bảng (header vẫn hiện) -->
+  <div class="px-table-spin" *ngIf="loading">
+    <app-loading-spinner
+      [loading]="true"
+      [type]="loadingType"
+      [tip]="loadingTip"
+      [color]="loadingColor">
+    </app-loading-spinner>
+  </div>
+
+  <!-- 2. Vùng cuộn ngang chứa <table> của feature -->
+  <div
+    #scroller
+    class="px-table-scroll"
+    [class.px-table-fixed-last]="fixedLastColumn"
+    [class.px-table-fixed-shadow]="fixedLastColumn && showFixedShadow"
+    [class.px-table-striped]="striped"
+    (scroll)="updateFixedShadow()">
+    <div class="px-table-content" [class.px-table-blur]="loading">
+      <ng-content></ng-content>
+    </div>
+  </div>
+
+  <!-- 3. Empty state khi nạp xong mà không có dữ liệu -->
+  <div class="px-table-empty" *ngIf="!loading && total === 0">
+    <app-empty-state
+      [title]="emptyTitle || 'Không tìm thấy dữ liệu'"
+      [description]="emptyDescription || 'Thử điều chỉnh lại bộ lọc tìm kiếm.'">
+    </app-empty-state>
+  </div>
+
+  <!-- 4. Phân trang dính đáy card -->
+  <app-pagination
+    *ngIf="showPagination && total > 0 && !loading"
+    [total]="total"
+    [page]="page"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    (pageChange)="onPageChange.emit($event)"
+    (pageSizeChange)="onPageSizeChange.emit($event)">
+  </app-pagination>
+</div>

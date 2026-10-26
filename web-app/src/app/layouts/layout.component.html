@@ -1,18 +1,18 @@
-<div class="enterprise-shell">
-    <!-- Left Aside / Sidebar with Toggle Button on ProcessX -->
-    <app-sidebar [collapsed]="isCollapsed" (toggleCollapse)="toggleSidebar()"></app-sidebar>
+<div class="enterprise-shell" [class.is-embedded]="isEmbedded">
+    <!-- Left Aside / Sidebar with Toggle Button on ProcessX (ẩn khi nhúng vào IPCC) -->
+    <app-sidebar *ngIf="!isEmbedded" [collapsed]="isCollapsed" (toggleCollapse)="toggleSidebar()"></app-sidebar>
 
     <!-- Right Application Shell -->
-    <div class="enterprise-viewport">
-        <!-- Top-bar Header -->
-        <app-topbar [collapsed]="isCollapsed"></app-topbar>
+    <div class="enterprise-viewport" [class.is-embedded]="isEmbedded">
+        <!-- Top-bar Header (ẩn khi nhúng vào IPCC) -->
+        <app-topbar *ngIf="!isEmbedded" [collapsed]="isCollapsed"></app-topbar>
 
         <!-- Dynamic Router Outlet for Pages -->
-        <main class="enterprise-body">
+        <main class="enterprise-body" [style.padding]="isEmbedded ? '0' : ''">
             <router-outlet></router-outlet>
         </main>
 
-        <!-- Footer Copyright -->
-        <app-footer></app-footer>
+        <!-- Footer Copyright (ẩn khi nhúng vào IPCC) -->
+        <app-footer *ngIf="!isEmbedded"></app-footer>
     </div>
 </div>

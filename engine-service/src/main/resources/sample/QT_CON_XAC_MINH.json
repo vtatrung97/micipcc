@@ -1,5 +1,0 @@
-{
-  "name": "Quy trình con xác minh (dữ liệu test)",
-  "code": "QT_CON_XAC_MINH",
-  "flowJson": "{\"nodes\": [{\"id\": \"child-start\", \"type\": \"START\", \"name\": \"Bắt đầu\", \"key\": \"bat_dau\", \"description\": \"\", \"position\": {\"x\": 0, \"y\": 0}, \"config\": {\"variables\": [{\"name\": \"ma_ticket\", \"formField\": \"ticketId\", \"apiField\": null, \"value\": null, \"displayName\": \"Mã ticket\"}]}}, {\"id\": \"child-end\", \"type\": \"END\", \"name\": \"Kết thúc\", \"key\": \"ket_thuc\", \"description\": \"\", \"position\": {\"x\": 300, \"y\": 0}, \"config\": {\"endFormId\": null, \"results\": [{\"variable\": \"ma_ticket\", \"formField\": \"result\"}]}}], \"edges\": [{\"id\": \"child-e1\", \"source\": \"child-start\", \"sourceHandle\": \"next\", \"target\": \"child-end\"}], \"viewport\": {\"zoom\": 1, \"x\": 0, \"y\": 0}}"
-}

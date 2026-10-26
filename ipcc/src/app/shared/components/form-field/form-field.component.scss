@@ -1,0 +1,70 @@
+@use '../../styles/processx-tokens' as px;
+
+// Label SemiBold 14/20, dấu * đỏ phía sau, cách ô nhập 6px.
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.px-form-item {
+  display: flex;
+  flex-direction: column;
+  gap: px.$space-6;
+  margin-bottom: px.$space-16;
+}
+
+.px-form-item-label {
+  @include px.body-sm-semibold;
+  display: flex;
+  align-items: center;
+  gap: px.$space-2;
+  color: px.$neutral-900;
+
+  .required-star {
+    color: px.$primary-600;
+  }
+}
+
+.px-form-item-control {
+  display: flex;
+  flex-direction: column;
+}
+
+.px-form-item-control-input {
+  position: relative;
+  width: 100%;
+}
+
+.px-form-item-explain-error {
+  @include px.body-sm-regular;
+  display: flex;
+  align-items: center;
+  gap: px.$space-4;
+  margin-top: px.$space-6;
+  color: px.$primary-600;
+  animation: errorFadeIn 0.2s ease;
+}
+
+.px-form-item-extra {
+  @include px.body-sm-regular;
+  margin-top: px.$space-6;
+  color: px.$neutral-600;
+}
+
+@keyframes errorFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Đang báo lỗi: viền đỏ cho ô nhập / ô chọn đặt trực tiếp trong field (không lan vào bảng bên trong)
+:host ::ng-deep .has-error > .px-form-item-control > .px-form-item-control-input {
+  > ant-input .px-input-affix-wrapper,
+  > ant-select .px-select-selector,
+  > ant-textarea .px-textarea,
+  > app-date-picker .dp-field,
+  > ant-input-number .px-input-number,
+  > app-multi-select .ms-trigger {
+    border-color: px.$primary-600;
+  }
+}

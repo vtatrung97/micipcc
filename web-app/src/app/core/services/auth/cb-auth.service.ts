@@ -107,7 +107,7 @@ export class CbAuthService {
 
 
     public logout() {
-        this.oauthSvc.logOut({id_token_hint: localStorage.getItem('id_token_hint')});
+        console.log('[CbAuthService] Logout called (bypassed)');
     }
 
 

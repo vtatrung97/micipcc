@@ -1,0 +1,14 @@
+services:
+  web-app:
+    container_name: ticketflow-web-app
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      # Cổng 80 mặc định
+      - "0.0.0.0:80:80"
+    volumes:
+      # Mount cấu hình Nginx (giữ nguyên default.conf gốc của repo)
+      - ./nginx-dev.conf:/etc/nginx/conf.d/default.conf:ro
+      # Mount thư mục build từ máy host vào Nginx:
+      # Mỗi khi bạn sửa code và build (hoặc watch), container tự động mount dữ liệu mới
+      - ./dist/processX:/usr/share/nginx/html:ro
